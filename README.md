@@ -1,34 +1,34 @@
 # Fenergo (fenergo)
-Welcome to the Fenergo SaaS Platforms API Documents Section. Here you will find links to REDOC versions of all the APIs we offer on the platform which also contain links to download the Open API Specifications.
+
+Fenergo is a financial services SaaS platform for Client Lifecycle Management (CLM), Know Your Customer (KYC), client onboarding, transaction monitoring, and regulatory compliance. The Fenergo SaaS Platform exposes API specifications across Entity Data, Journey, ETL, Data Migration, External Data, Policy, Legal Entity Screening, Risk, Event Notification & Ingress, Portal, Review Journey Scheduling, and Transaction Monitoring domains.
 
 **URL:** [Visit APIs.json URL](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/apis.yml)
 
 ## Scope
 
-- **Type:** Index 
-- **Position:** Consuming 
-- **Access:** 3rd-Party 
+- **Type:** Index
+- **Position:** Consuming
+- **Access:** 3rd-Party
 
-## Tags:
+## Tags
 
- - API, Financial, Compliance
+- Compliance, Financial, KYC, Onboarding
 
 ## Timestamps
 
-- **Created:** 2025-05-02 
-- **Modified:** 2026-03-16 
+- **Created:** 2025-05-02
+- **Modified:** 2026-04-28
 
 ## APIs
 
-### Fenergo
-Welcome to the Fenergo SaaS Platforms API Documents Section. Here you will find links to REDOC versions of all the APIs we offer on the platform which also contain links to download the Open API Specifications.
+### Fenergo SaaS Platform API
+The Fenergo SaaS Platform API surface covers Entity Data, Journey, ETL, Data Migration, External Data, Policy, Legal Entity Screening, Risk, Event Notification & Ingress, Portal, Review Journey Scheduling, and Transaction Monitoring. Each specification is published in OpenAPI and browsable through ReDoc viewers in the Fenergo documentation portal.
 
 **Human URL:** [https://docs.fenergox.com/api-docs/fenergo-saas-api-specifications/introduction](https://docs.fenergox.com/api-docs/fenergo-saas-api-specifications/introduction)
 
+#### Tags
 
-#### Tags:
-
- - API
+- Compliance, Financial, KYC, Onboarding
 
 #### Properties
 

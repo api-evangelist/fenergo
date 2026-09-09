@@ -1,0 +1,2805 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "Fenergo Nebula Journey Logic Engine",
+    "description": "**Journey Logic Engine API**:\n\n<br> Logic Engine API is a rules engine impementation in Journey domain. The Logic Engine API should be used in tandem with Journey Command API and Journey Query API. Use the Journey Command API to create and manage Journey Schemas and Journey Instances. Use the Command Query API to retrieve Journey Schema and Journey Instance aggregates.\n\n<br> **Journey Logic Engine API Provides**:\n\n<br><ul><li> The ability to evaluate the logic conditions. The request should contain the values configured in the conditions (typically Entity attributes). The Logic Engine will execute the logic and return all matching Journey Schemas.The matched Journey Schema ID can be used then to create a new Journey Instance.</li></ul>",
+    "version": "2.0"
+  },
+  "servers": [
+    {
+      "url": "/journeylogicengine"
+    }
+  ],
+  "paths": {
+    "/api/v2/cache/flush": {
+      "delete": {
+        "tags": [
+          "Cache"
+        ],
+        "summary": "Allows clearing the Logic Engine API cache.\nThis is an maintenance endpoint and does not need to be used under normal circumstances.",
+        "description": "<br /><br /><b>Required permissions:</b><br />Following permissions are required: JourneyBuilderDelete",
+        "parameters": [
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Cache was flushed successfully."
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server exception. Please, contact your provider.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "Internal server exception. Please, contact your provider.",
+                      "type": "Error",
+                      "errorCode": "INTERNAL_SERVER_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/engine/evaluate-journey-schema": {
+      "post": {
+        "tags": [
+          "Engine"
+        ],
+        "summary": "Evaluates logic condition to retrieve matching Journey Schema(s)",
+        "description": "<ul>\n  <li>Executes logic engine to retrieve all journey schemas that requests match with defined conditions.</li>\n  <li>Returns the collection of matching journey schemas filtered by journey type if filter provided.</li>\n</ul><br /><br /><b>Required permissions:</b><br />Following permissions are required: JourneyCreate",
+        "operationId": "EvaluateJourneySchemaV2",
+        "parameters": [
+          {
+            "name": "journeyTypeFilter",
+            "in": "query",
+            "description": "Optional filter(s) to retrieve matched schemas only for specified journey type.\nIf multiple filters specified (i.e. Client Onboarding and Client Offboarding) both journey types will be returned (if matched).\nIf empty (no filters), all matched journey types will be returned.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "description": "Service request with key-value data required for evaluation",
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EvaluateJourneySchemaRequestV2DtoServiceRequest"
+                  }
+                ],
+                "description": "Service request data"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. The list of evaluated journey schemas is returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvaluateJourneySchemaResponseDtoIEnumerableServiceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server exception. Please, contact your provider.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "Internal server exception. Please, contact your provider.",
+                      "type": "Error",
+                      "errorCode": "INTERNAL_SERVER_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AccountRelatedFundDto": {
+        "required": [
+          "properties"
+        ],
+        "type": "object",
+        "properties": {
+          "properties": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PropertiesDto"
+              }
+            ],
+            "description": "Generic properties"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AccountRelatedFundsDataSource": {
+        "required": [
+          "accountRelatedFunds"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "accountRelatedFunds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccountRelatedFundDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "AlertAssessmentDataSource": {
+        "required": [
+          "assessments",
+          "lastAssessment"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "assessments": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlertAssessmentDto"
+            }
+          },
+          "lastAssessment": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AlertAssessmentDto"
+              }
+            ]
+          },
+          "lastAssessmentOutcome": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AlertAssessmentDto": {
+        "required": [
+          "category"
+        ],
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AlertDataSource": {
+        "required": [
+          "attribute",
+          "source",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "source": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "attribute": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AutoCreditAssessmentDataSource": {
+        "required": [
+          "autoCreditAssessments"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "autoCreditAssessments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AutoCreditAssessmentDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "AutoCreditAssessmentDto": {
+        "required": [
+          "properties"
+        ],
+        "type": "object",
+        "properties": {
+          "properties": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PropertyDto"
+            },
+            "description": "Generic properties setup in policy for manual credit assessment",
+            "example": {
+              "firstName": {
+                "type": "Single",
+                "value": "Tom"
+              },
+              "dateOfBirth": {
+                "type": "Single",
+                "value": "2021-07-15"
+              },
+              "address": {
+                "type": "Collection",
+                "dataGroupId": "dfde9f06-040a-4127-b9a0-2c802a6502fc",
+                "collections": {
+                  "54a25d24-1a4b-45c6-a5b4-980e5d3a1df5": {
+                    "properties": {
+                      "country": "Ireland",
+                      "city": "Dublin",
+                      "street": "Mayor Street"
+                    }
+                  },
+                  "47010265-3b85-4407-be61-90d04525f020": {
+                    "properties": {
+                      "country": "Ireland",
+                      "city": "Dublin",
+                      "street": "E Wall Rd"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "assessmentOutcome": {
+            "type": "string",
+            "description": "Assessment Outcome of this manual credit assessment",
+            "nullable": true
+          },
+          "providerInternalIdentifier": {
+            "type": "string",
+            "description": "Provider Internal Identifier",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AutoCreditScreeningDataSource": {
+        "required": [
+          "creditScreenings"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "creditScreenings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AutoCreditScreeningDto"
+            }
+          },
+          "relatedPartyCreditScreenings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AutoCreditScreeningDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AutoCreditScreeningDto": {
+        "required": [
+          "properties"
+        ],
+        "type": "object",
+        "properties": {
+          "entityId": {
+            "type": "string",
+            "description": "Entity Id",
+            "format": "uuid"
+          },
+          "creditScreeningOutcome": {
+            "type": "string",
+            "description": "The outcome recorded for a manual screening task.",
+            "nullable": true
+          },
+          "properties": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PropertyDto"
+            },
+            "description": "Generic properties setup in policy for auto credit screening",
+            "example": {
+              "firstName": {
+                "type": "Single",
+                "value": "Tom"
+              },
+              "dateOfBirth": {
+                "type": "Single",
+                "value": "2021-07-15"
+              },
+              "address": {
+                "type": "Collection",
+                "dataGroupId": "dfde9f06-040a-4127-b9a0-2c802a6502fc",
+                "collections": {
+                  "54a25d24-1a4b-45c6-a5b4-980e5d3a1df5": {
+                    "properties": {
+                      "country": "Ireland",
+                      "city": "Dublin",
+                      "street": "Mayor Street"
+                    }
+                  },
+                  "47010265-3b85-4407-be61-90d04525f020": {
+                    "properties": {
+                      "country": "Ireland",
+                      "city": "Dublin",
+                      "street": "E Wall Rd"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "providerInternalIdentifier": {
+            "type": "string",
+            "description": "Provider Internal Identifier",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ChangedFieldDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ChangedFieldsDataSource": {
+        "required": [
+          "changedFields"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "changedFields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChangedFieldDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "ChannelTypeDto": {
+        "enum": [
+          "Internal",
+          "External",
+          "InternalAndExternal"
+        ],
+        "type": "string"
+      },
+      "CollateralDataSource": {
+        "required": [
+          "collaterals"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "collaterals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CollateralDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "CollateralDto": {
+        "required": [
+          "properties"
+        ],
+        "type": "object",
+        "properties": {
+          "properties": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PropertyDto"
+            },
+            "description": "Generic properties setup in policy",
+            "example": {
+              "firstName": {
+                "type": "Single",
+                "value": "Tom"
+              },
+              "dateOfBirth": {
+                "type": "Single",
+                "value": "2021-07-15"
+              },
+              "address": {
+                "type": "Collection",
+                "dataGroupId": "dfde9f06-040a-4127-b9a0-2c802a6502fc",
+                "collections": {
+                  "54a25d24-1a4b-45c6-a5b4-980e5d3a1df5": {
+                    "properties": {
+                      "country": "Ireland",
+                      "city": "Dublin",
+                      "street": "Mayor Street"
+                    }
+                  },
+                  "47010265-3b85-4407-be61-90d04525f020": {
+                    "properties": {
+                      "country": "Ireland",
+                      "city": "Dublin",
+                      "street": "E Wall Rd"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "CollectionDto": {
+        "type": "object",
+        "properties": {
+          "isValid": {
+            "type": "boolean"
+          },
+          "properties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "nullable": true
+            },
+            "nullable": true
+          },
+          "propertiesInfo": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/CollectionPropertyInfoDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CollectionItemDto": {
+        "type": "object",
+        "properties": {
+          "properties": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/SinglePropertyDto2"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CollectionPropertyDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PropertyDto"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "dataGroupId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "dataGroupVersionNumber": {
+                "type": "integer",
+                "format": "int32",
+                "nullable": true
+              },
+              "collections": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/CollectionDto"
+                },
+                "nullable": true
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "CollectionPropertyDto2": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/CollectionItemDto"
+            },
+            "nullable": true
+          },
+          "collectionId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CollectionPropertyInfoDto": {
+        "type": "object",
+        "properties": {
+          "valueId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreditAssessmentDto": {
+        "required": [
+          "properties",
+          "taskId"
+        ],
+        "type": "object",
+        "properties": {
+          "properties": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PropertyDto"
+            },
+            "description": "Generic properties setup in policy for manual credit assessment",
+            "example": {
+              "firstName": {
+                "type": "Single",
+                "value": "Tom"
+              },
+              "dateOfBirth": {
+                "type": "Single",
+                "value": "2021-07-15"
+              },
+              "address": {
+                "type": "Collection",
+                "dataGroupId": "dfde9f06-040a-4127-b9a0-2c802a6502fc",
+                "collections": {
+                  "54a25d24-1a4b-45c6-a5b4-980e5d3a1df5": {
+                    "properties": {
+                      "country": "Ireland",
+                      "city": "Dublin",
+                      "street": "Mayor Street"
+                    }
+                  },
+                  "47010265-3b85-4407-be61-90d04525f020": {
+                    "properties": {
+                      "country": "Ireland",
+                      "city": "Dublin",
+                      "street": "E Wall Rd"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "assessmentOutcome": {
+            "type": "string",
+            "description": "Assessment Outcome of this manual credit assessment",
+            "nullable": true
+          },
+          "assessmentComment": {
+            "type": "string",
+            "description": "Assessment Comment of this credit assessment",
+            "nullable": true
+          },
+          "taskId": {
+            "type": "string",
+            "description": "Task Id"
+          },
+          "taskDataKey": {
+            "type": "string",
+            "description": "Task Data Key",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CurrentDataGroupItemDataSource": {
+        "required": [
+          "properties"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "properties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "nullable": true
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "CurrentFieldDataSource": {
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "currentField": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CurrentJourneysDataSource": {
+        "required": [
+          "inProgressJourneyTypes"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "inProgressJourneyTypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "CurrentProductDataSource": {
+        "required": [
+          "properties"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "properties": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PropertyDto"
+            },
+            "description": "Generic properties setup in product policy",
+            "example": {
+              "firstName": {
+                "type": "Single",
+                "value": "Tom"
+              },
+              "dateOfBirth": {
+                "type": "Single",
+                "value": "2021-07-15"
+              },
+              "address": {
+                "type": "Collection",
+                "dataGroupId": "dfde9f06-040a-4127-b9a0-2c802a6502fc",
+                "collections": {
+                  "54a25d24-1a4b-45c6-a5b4-980e5d3a1df5": {
+                    "properties": {
+                      "country": "Ireland",
+                      "city": "Dublin",
+                      "street": "Mayor Street"
+                    }
+                  },
+                  "47010265-3b85-4407-be61-90d04525f020": {
+                    "properties": {
+                      "country": "Ireland",
+                      "city": "Dublin",
+                      "street": "E Wall Rd"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "lifecycleStatus": {
+            "type": "string",
+            "description": "System field used in backend for status of a product in lifecycle",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CurrentProductMetadataDataSource": {
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "isAgency": {
+            "type": "string",
+            "nullable": true
+          },
+          "lifecycleStatus": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CurrentUserDataSource": {
+        "required": [
+          "teamIds"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "teamIds": {
+            "type": "array",
+            "items": {
+              "minLength": 1,
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "isSystemUser": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CustomPropertyDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PropertyDto"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "customTypeId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "properties": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/PropertyDto"
+                },
+                "nullable": true,
+                "example": {
+                  "firstName": {
+                    "type": "Single",
+                    "value": "Tom"
+                  },
+                  "dateOfBirth": {
+                    "type": "Single",
+                    "value": "2021-07-15"
+                  },
+                  "address": {
+                    "type": "Collection",
+                    "dataGroupId": "dfde9f06-040a-4127-b9a0-2c802a6502fc",
+                    "collections": {
+                      "54a25d24-1a4b-45c6-a5b4-980e5d3a1df5": {
+                        "properties": {
+                          "country": "Ireland",
+                          "city": "Dublin",
+                          "street": "Mayor Street"
+                        }
+                      },
+                      "47010265-3b85-4407-be61-90d04525f020": {
+                        "properties": {
+                          "country": "Ireland",
+                          "city": "Dublin",
+                          "street": "E Wall Rd"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "CustomPropertyDto2": {
+        "type": "object",
+        "properties": {
+          "singleProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/SinglePropertyDto2"
+            },
+            "nullable": true
+          },
+          "customProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/CustomPropertyDto2"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DataSourcesDto": {
+        "type": "object",
+        "properties": {
+          "entityDataMetadata": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EntityDataMetadataDataSource"
+              }
+            ],
+            "description": "DataSource for EntityDraft information beside generic properties",
+            "nullable": true
+          },
+          "eventIngress": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EventIngressDataSource"
+              }
+            ],
+            "description": "DataSource for EventIngress event details",
+            "nullable": true
+          },
+          "changedFields": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChangedFieldsDataSource"
+              }
+            ],
+            "description": "DataSource for detecting changed EntityDraft properties in comparasion with verified Entity",
+            "nullable": true
+          },
+          "relatedClient": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RelatedClientDataSource"
+              }
+            ],
+            "description": "DataSource for new Related Client properties added in Association task",
+            "nullable": true
+          },
+          "relatedProducts": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RelatedProductsDataSource"
+              }
+            ],
+            "description": "DataSource for new Related Product properties added in Manage Product task",
+            "nullable": true
+          },
+          "currentDataGroupItem": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CurrentDataGroupItemDataSource"
+              }
+            ],
+            "description": "DataSource for single, current data group row item. Can be used only for Data Group field conditions.",
+            "nullable": true
+          },
+          "externalDataAdapter": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ExternalDataAdapterDataSource"
+              }
+            ],
+            "description": "DataSource for External Data Adapter (Ongoing Monitoring) event details",
+            "nullable": true
+          },
+          "entityAssociation": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EntityAssociationDataSource"
+              }
+            ],
+            "description": "DataSource for entity association details",
+            "nullable": true
+          },
+          "manualCreditAssessment": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ManualCreditAssessmentV2DataSource"
+              }
+            ],
+            "description": "DataSource for manual credit assessment",
+            "nullable": true
+          },
+          "reviewAndApproval": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReviewAndApprovalDataSource"
+              }
+            ],
+            "description": "DataSource for review and approval",
+            "nullable": true
+          },
+          "autoCreditAssessment": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AutoCreditAssessmentDataSource"
+              }
+            ],
+            "description": "DataSource for auto credit assessment",
+            "nullable": true
+          },
+          "manualCreditScreening": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ManualCreditScreeningDataSource"
+              }
+            ],
+            "nullable": true
+          },
+          "collateral": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CollateralDataSource"
+              }
+            ],
+            "nullable": true
+          },
+          "currentJourneys": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CurrentJourneysDataSource"
+              }
+            ],
+            "description": "DataSource for entity current journeys",
+            "nullable": true
+          },
+          "autoCreditScreening": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AutoCreditScreeningDataSource"
+              }
+            ],
+            "description": "DataSource for auto credit screening",
+            "nullable": true
+          },
+          "currentProduct": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CurrentProductDataSource"
+              }
+            ],
+            "description": "DataSource for product scoping",
+            "nullable": true
+          },
+          "relatedDeals": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RelatedDealsDataSource"
+              }
+            ],
+            "description": "DataSource for related deals",
+            "nullable": true
+          },
+          "mainEntity": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MainEntityDataSource"
+              }
+            ],
+            "description": "DataSource for main entity properties used for condition evaluation",
+            "nullable": true
+          },
+          "relatedAssets": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RelatedAssetsDataSource"
+              }
+            ],
+            "description": "DataSource for related assets",
+            "nullable": true
+          },
+          "relatedAssociations": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RelatedAssociationsDataSource"
+              }
+            ],
+            "description": "DataSource for related associations",
+            "nullable": true
+          },
+          "accountRelatedFunds": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AccountRelatedFundsDataSource"
+              }
+            ],
+            "description": "DataSource for account related funds",
+            "nullable": true
+          },
+          "investmentAccountFund": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InvestmentAccountFundDataSource"
+              }
+            ],
+            "description": "DataSource for investment account fund",
+            "nullable": true
+          },
+          "investmentAccountRelatedFundShareClass": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InvestmentAccountRelatedFundShareClassDataSource"
+              }
+            ],
+            "description": "DataSource for investment account related fund share class",
+            "nullable": true
+          },
+          "investmentAccount": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InvestmentAccountDataSource"
+              }
+            ],
+            "description": "DataSource for in-scope investment accounts, evaluated across all accounts on the entity",
+            "nullable": true
+          },
+          "journeyLevelData": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JourneyLevelDataDataSource"
+              }
+            ],
+            "description": "DataSource for draft properties using journey level data requirements used for journey scoping",
+            "nullable": true
+          },
+          "relatedParties": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RelatedPartiesDataSource"
+              }
+            ],
+            "description": "DataSource for related parties entity properties",
+            "nullable": true
+          },
+          "currentField": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CurrentFieldDataSource"
+              }
+            ],
+            "description": "DataSource for condtional limit validation",
+            "nullable": true
+          },
+          "significanceEngine": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SignificanceEngineDataSource"
+              }
+            ],
+            "description": "DataSource for significance engine",
+            "nullable": true
+          },
+          "alert": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AlertDataSource"
+              }
+            ],
+            "description": "DataSource for Transaction Monitoring Alert",
+            "nullable": true
+          },
+          "relatedFCRs": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RelatedFCRsDataSource"
+              }
+            ],
+            "description": "DataSource for related FCRs in product domain",
+            "nullable": true
+          },
+          "relatedInvestmentManager": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RelatedInvestmentManagerDataSource"
+              }
+            ],
+            "description": "Related Investment Manager data source for product domain",
+            "nullable": true
+          },
+          "relatedUnderlyingPrincipalOwner": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RelatedUnderlyingPrincipalOwnerDataSource"
+              }
+            ],
+            "description": "Data Source for Related UP Owners",
+            "nullable": true
+          },
+          "alertAssessment": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AlertAssessmentDataSource"
+              }
+            ],
+            "description": "DataSource for Transaction Monitoring Alert assessment outcomes",
+            "nullable": true
+          },
+          "currentProductMetadata": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CurrentProductMetadataDataSource"
+              }
+            ],
+            "description": "DataSource for Product Metadata",
+            "nullable": true
+          },
+          "currentUser": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CurrentUserDataSource"
+              }
+            ],
+            "description": "DataSource for current user",
+            "nullable": true
+          },
+          "relatedDocuments": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RelatedDocumentsDataSource"
+              }
+            ],
+            "description": "DataSource for related documents",
+            "nullable": true
+          },
+          "screeningMateriality": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ScreeningMaterialityDataSource"
+              }
+            ],
+            "description": "DataSource for Screening Materiality Assessment outcomes for the entity being evaluated (main entity or a specific related party).",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EntityAssociationDataSource": {
+        "required": [
+          "associationToClient",
+          "associationType"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "associationType": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "ownershipPercentage": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "associationToClient": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "properties": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PropertiesDto"
+              }
+            ],
+            "description": "Generic properties",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EntityDataMetadataDataSource": {
+        "required": [
+          "entityType"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "entityType": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EvaluateJourneySchemaRequestV2Dto": {
+        "required": [
+          "properties"
+        ],
+        "type": "object",
+        "properties": {
+          "properties": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PropertyDto"
+            },
+            "description": "Entity data properties for condition evaluation",
+            "example": {
+              "firstName": {
+                "type": "Single",
+                "value": "Tom"
+              },
+              "dateOfBirth": {
+                "type": "Single",
+                "value": "2021-07-15"
+              },
+              "address": {
+                "type": "Collection",
+                "dataGroupId": "dfde9f06-040a-4127-b9a0-2c802a6502fc",
+                "collections": {
+                  "54a25d24-1a4b-45c6-a5b4-980e5d3a1df5": {
+                    "properties": {
+                      "country": "Ireland",
+                      "city": "Dublin",
+                      "street": "Mayor Street"
+                    }
+                  },
+                  "47010265-3b85-4407-be61-90d04525f020": {
+                    "properties": {
+                      "country": "Ireland",
+                      "city": "Dublin",
+                      "street": "E Wall Rd"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "dataSources": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DataSourcesDto"
+              }
+            ],
+            "description": "Additional data sources used for evaluation",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request DTO representing entity data properties used to evaluate the condition of journey schema"
+      },
+      "EvaluateJourneySchemaRequestV2DtoServiceRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EvaluateJourneySchemaRequestV2Dto"
+              }
+            ],
+            "description": "The service request DTO",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Service request data"
+      },
+      "EvaluateJourneySchemaResponseDto": {
+        "type": "object",
+        "properties": {
+          "journeySchemaId": {
+            "type": "string",
+            "description": "The UiD of matched journey schema",
+            "format": "uuid",
+            "example": "118313c6-91e6-4b05-a537-5a1ab906418f"
+          },
+          "journeySchemaVersion": {
+            "type": "integer",
+            "description": "The version number of matched journey schema",
+            "format": "int32",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of matched journey schema",
+            "nullable": true,
+            "example": "Individual Client Onboarding"
+          },
+          "identifier": {
+            "type": "string",
+            "description": "Short identifier of matched journey schema",
+            "nullable": true,
+            "example": "IND_ONB_1"
+          },
+          "journeyType": {
+            "type": "string",
+            "description": "Type of matched journey schema",
+            "nullable": true,
+            "example": "Client Onboarding"
+          },
+          "channelType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChannelTypeDto"
+              }
+            ],
+            "description": "Channel type of matched journey schema"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Response DTO representing parameters of matched journey schema"
+      },
+      "EvaluateJourneySchemaResponseDtoIEnumerableServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EvaluateJourneySchemaResponseDto"
+            },
+            "description": "The service response DTO",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "description": "List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Service response data"
+      },
+      "EventIngressDataSource": {
+        "required": [
+          "eventSubtype",
+          "eventType"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "eventType": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "eventSubtype": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ExternalDataAdapterDataSource": {
+        "required": [
+          "eventSubtype",
+          "eventType"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "eventType": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "eventSubtype": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "InvestmentAccountDataSource": {
+        "required": [
+          "investmentAccount"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "investmentAccount": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvestmentAccountDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "InvestmentAccountDto": {
+        "required": [
+          "properties"
+        ],
+        "type": "object",
+        "properties": {
+          "properties": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PropertiesDto"
+              }
+            ],
+            "description": "Generic properties of a single in-scope investment account"
+          }
+        },
+        "additionalProperties": false
+      },
+      "InvestmentAccountFundDataSource": {
+        "required": [
+          "properties"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "properties": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PropertiesDto"
+              }
+            ],
+            "description": "Properties of the single investment account fund"
+          }
+        },
+        "additionalProperties": false
+      },
+      "InvestmentAccountRelatedFundShareClassDataSource": {
+        "required": [
+          "properties"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "properties": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PropertiesDto"
+              }
+            ],
+            "description": "Properties of the investment account related fund share class"
+          }
+        },
+        "additionalProperties": false
+      },
+      "JourneyLevelDataDataSource": {
+        "required": [
+          "properties"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "properties": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PropertiesDto"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "MainEntityDataSource": {
+        "required": [
+          "properties"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "properties": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PropertiesDto"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "ManualCreditAssessmentV2DataSource": {
+        "required": [
+          "creditAssessments"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "creditAssessments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreditAssessmentDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "ManualCreditScreeningDataSource": {
+        "required": [
+          "creditScreenings"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "creditScreenings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ManualCreditScreeningDto"
+            }
+          },
+          "relatedPartyCreditScreenings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ManualCreditScreeningDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ManualCreditScreeningDto": {
+        "required": [
+          "properties"
+        ],
+        "type": "object",
+        "properties": {
+          "taskDataKey": {
+            "type": "string",
+            "description": "Task Data Key",
+            "nullable": true
+          },
+          "taskId": {
+            "type": "string",
+            "description": "Task Id",
+            "format": "uuid"
+          },
+          "entityId": {
+            "type": "string",
+            "description": "Entity Id",
+            "format": "uuid"
+          },
+          "creditScreeningOutcome": {
+            "type": "string",
+            "description": "The outcome recorded for a manual screening task.",
+            "nullable": true
+          },
+          "properties": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PropertyDto"
+            },
+            "description": "Generic properties setup in policy for manual credit screening",
+            "example": {
+              "firstName": {
+                "type": "Single",
+                "value": "Tom"
+              },
+              "dateOfBirth": {
+                "type": "Single",
+                "value": "2021-07-15"
+              },
+              "address": {
+                "type": "Collection",
+                "dataGroupId": "dfde9f06-040a-4127-b9a0-2c802a6502fc",
+                "collections": {
+                  "54a25d24-1a4b-45c6-a5b4-980e5d3a1df5": {
+                    "properties": {
+                      "country": "Ireland",
+                      "city": "Dublin",
+                      "street": "Mayor Street"
+                    }
+                  },
+                  "47010265-3b85-4407-be61-90d04525f020": {
+                    "properties": {
+                      "country": "Ireland",
+                      "city": "Dublin",
+                      "street": "E Wall Rd"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "ObjectServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "description": "The service response DTO",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "description": "List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Service response data"
+      },
+      "PropertiesDto": {
+        "type": "object",
+        "properties": {
+          "singleProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/SinglePropertyDto2"
+            },
+            "nullable": true
+          },
+          "collectionProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/CollectionPropertyDto2"
+            },
+            "nullable": true
+          },
+          "customProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/CustomPropertyDto2"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PropertyDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PropertyType"
+              }
+            ],
+            "readOnly": true
+          },
+          "discriminator": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PropertyType"
+              }
+            ],
+            "readOnly": true
+          },
+          "isValid": {
+            "type": "boolean",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PropertyType": {
+        "enum": [
+          "Single",
+          "Custom",
+          "Collection"
+        ],
+        "type": "string"
+      },
+      "RelatedAssetDto": {
+        "required": [
+          "properties"
+        ],
+        "type": "object",
+        "properties": {
+          "properties": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PropertyDto"
+            },
+            "description": "Generic properties setup in policy",
+            "example": {
+              "firstName": {
+                "type": "Single",
+                "value": "Tom"
+              },
+              "dateOfBirth": {
+                "type": "Single",
+                "value": "2021-07-15"
+              },
+              "address": {
+                "type": "Collection",
+                "dataGroupId": "dfde9f06-040a-4127-b9a0-2c802a6502fc",
+                "collections": {
+                  "54a25d24-1a4b-45c6-a5b4-980e5d3a1df5": {
+                    "properties": {
+                      "country": "Ireland",
+                      "city": "Dublin",
+                      "street": "Mayor Street"
+                    }
+                  },
+                  "47010265-3b85-4407-be61-90d04525f020": {
+                    "properties": {
+                      "country": "Ireland",
+                      "city": "Dublin",
+                      "street": "E Wall Rd"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "RelatedAssetsDataSource": {
+        "required": [
+          "assets"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "assets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RelatedAssetDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "RelatedAssociationDto": {
+        "required": [
+          "properties"
+        ],
+        "type": "object",
+        "properties": {
+          "associationType": {
+            "type": "string",
+            "description": "Type of this association",
+            "nullable": true,
+            "example": "Employee of "
+          },
+          "ownershipPercentage": {
+            "type": "number",
+            "description": "Ownership Percentage of this association",
+            "format": "double",
+            "nullable": true,
+            "example": 0.5
+          },
+          "associationToClient": {
+            "type": "string",
+            "description": "Association To Client",
+            "nullable": true,
+            "example": "Direct/Indirect"
+          },
+          "properties": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PropertiesDto"
+              }
+            ],
+            "description": "Generic properties"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RelatedAssociationsDataSource": {
+        "required": [
+          "relatedAssociations"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "relatedAssociations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RelatedAssociationDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "RelatedClientDataSource": {
+        "required": [
+          "properties"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "properties": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PropertyDto"
+            },
+            "example": {
+              "firstName": {
+                "type": "Single",
+                "value": "Tom"
+              },
+              "dateOfBirth": {
+                "type": "Single",
+                "value": "2021-07-15"
+              },
+              "address": {
+                "type": "Collection",
+                "dataGroupId": "dfde9f06-040a-4127-b9a0-2c802a6502fc",
+                "collections": {
+                  "54a25d24-1a4b-45c6-a5b4-980e5d3a1df5": {
+                    "properties": {
+                      "country": "Ireland",
+                      "city": "Dublin",
+                      "street": "Mayor Street"
+                    }
+                  },
+                  "47010265-3b85-4407-be61-90d04525f020": {
+                    "properties": {
+                      "country": "Ireland",
+                      "city": "Dublin",
+                      "street": "E Wall Rd"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "RelatedDealDto": {
+        "required": [
+          "properties"
+        ],
+        "type": "object",
+        "properties": {
+          "properties": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PropertyDto"
+            },
+            "description": "Generic properties setup in policy",
+            "example": {
+              "firstName": {
+                "type": "Single",
+                "value": "Tom"
+              },
+              "dateOfBirth": {
+                "type": "Single",
+                "value": "2021-07-15"
+              },
+              "address": {
+                "type": "Collection",
+                "dataGroupId": "dfde9f06-040a-4127-b9a0-2c802a6502fc",
+                "collections": {
+                  "54a25d24-1a4b-45c6-a5b4-980e5d3a1df5": {
+                    "properties": {
+                      "country": "Ireland",
+                      "city": "Dublin",
+                      "street": "Mayor Street"
+                    }
+                  },
+                  "47010265-3b85-4407-be61-90d04525f020": {
+                    "properties": {
+                      "country": "Ireland",
+                      "city": "Dublin",
+                      "street": "E Wall Rd"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "RelatedDealsDataSource": {
+        "required": [
+          "relatedDeals"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "relatedDeals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RelatedDealDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "RelatedDocumentDto": {
+        "required": [
+          "document"
+        ],
+        "type": "object",
+        "properties": {
+          "document": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RelatedDocumentVersionedDto"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "RelatedDocumentVersionedDto": {
+        "type": "object",
+        "properties": {
+          "documentKey": {
+            "type": "string",
+            "nullable": true
+          },
+          "documentType": {
+            "type": "string",
+            "nullable": true
+          },
+          "properties": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PropertyDto"
+            },
+            "nullable": true,
+            "example": {
+              "firstName": {
+                "type": "Single",
+                "value": "Tom"
+              },
+              "dateOfBirth": {
+                "type": "Single",
+                "value": "2021-07-15"
+              },
+              "address": {
+                "type": "Collection",
+                "dataGroupId": "dfde9f06-040a-4127-b9a0-2c802a6502fc",
+                "collections": {
+                  "54a25d24-1a4b-45c6-a5b4-980e5d3a1df5": {
+                    "properties": {
+                      "country": "Ireland",
+                      "city": "Dublin",
+                      "street": "Mayor Street"
+                    }
+                  },
+                  "47010265-3b85-4407-be61-90d04525f020": {
+                    "properties": {
+                      "country": "Ireland",
+                      "city": "Dublin",
+                      "street": "E Wall Rd"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "RelatedDocumentsDataSource": {
+        "required": [
+          "documents"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "documents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RelatedDocumentDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "RelatedFCRDto": {
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "The status of the FCR."
+          },
+          "createdDate": {
+            "type": "string",
+            "description": "The date the FCR was created.",
+            "format": "date-time"
+          },
+          "submittedDate": {
+            "type": "string",
+            "description": "The date the FCR was submitted.",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RelatedFCRsDataSource": {
+        "required": [
+          "fcRs"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "fcRs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RelatedFCRDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "RelatedInvestmentManagerDataSource": {
+        "required": [
+          "properties"
+        ],
+        "type": "object",
+        "properties": {
+          "properties": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PropertiesDto"
+              }
+            ]
+          },
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RelatedPartiesDataSource": {
+        "required": [
+          "relatedParties"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "relatedParties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RelatedPartyDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "RelatedPartyDto": {
+        "required": [
+          "properties"
+        ],
+        "type": "object",
+        "properties": {
+          "properties": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PropertiesDto"
+              }
+            ],
+            "description": "Generic properties setup in policy"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "nullable": true
+            },
+            "description": "The properties from the actual relationship",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RelatedProductDto": {
+        "required": [
+          "properties"
+        ],
+        "type": "object",
+        "properties": {
+          "properties": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PropertyDto"
+            },
+            "description": "Generic properties setup in product policy",
+            "example": {
+              "firstName": {
+                "type": "Single",
+                "value": "Tom"
+              },
+              "dateOfBirth": {
+                "type": "Single",
+                "value": "2021-07-15"
+              },
+              "address": {
+                "type": "Collection",
+                "dataGroupId": "dfde9f06-040a-4127-b9a0-2c802a6502fc",
+                "collections": {
+                  "54a25d24-1a4b-45c6-a5b4-980e5d3a1df5": {
+                    "properties": {
+                      "country": "Ireland",
+                      "city": "Dublin",
+                      "street": "Mayor Street"
+                    }
+                  },
+                  "47010265-3b85-4407-be61-90d04525f020": {
+                    "properties": {
+                      "country": "Ireland",
+                      "city": "Dublin",
+                      "street": "E Wall Rd"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "lifecycleStatus": {
+            "type": "string",
+            "description": "System field used in backend for status of a product in lifecycle",
+            "nullable": true
+          },
+          "relationshipTypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "System field used in backend for product of a product relationship",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RelatedProductsDataSource": {
+        "required": [
+          "products"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RelatedProductDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "RelatedUnderlyingPrincipalOwnerDataSource": {
+        "required": [
+          "properties"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "properties": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PropertiesDto"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "ReviewAndApprovalDataSource": {
+        "required": [
+          "reviewAndApprovals"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "reviewAndApprovals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewAndApprovalDto"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "ReviewAndApprovalDto": {
+        "required": [
+          "approvalOutcome"
+        ],
+        "type": "object",
+        "properties": {
+          "properties": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PropertyDto"
+            },
+            "description": "Generic properties setup in policy for review and approval task",
+            "nullable": true,
+            "example": {
+              "firstName": {
+                "type": "Single",
+                "value": "Tom"
+              },
+              "dateOfBirth": {
+                "type": "Single",
+                "value": "2021-07-15"
+              },
+              "address": {
+                "type": "Collection",
+                "dataGroupId": "dfde9f06-040a-4127-b9a0-2c802a6502fc",
+                "collections": {
+                  "54a25d24-1a4b-45c6-a5b4-980e5d3a1df5": {
+                    "properties": {
+                      "country": "Ireland",
+                      "city": "Dublin",
+                      "street": "Mayor Street"
+                    }
+                  },
+                  "47010265-3b85-4407-be61-90d04525f020": {
+                    "properties": {
+                      "country": "Ireland",
+                      "city": "Dublin",
+                      "street": "E Wall Rd"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "approvalOutcome": {
+            "type": "string",
+            "description": "The Approval Outcome of the task"
+          },
+          "approvalReason": {
+            "type": "string",
+            "description": "The Reason of the approval decision.",
+            "nullable": true
+          },
+          "taskId": {
+            "type": "string",
+            "description": "Task Id",
+            "nullable": true
+          },
+          "taskDataKey": {
+            "type": "string",
+            "description": "Task Data Key",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ScreeningMaterialityAssessmentDto": {
+        "required": [
+          "adverseMediaJurisdictions",
+          "enforcementsJurisdictions",
+          "otherJurisdictions",
+          "pepJurisdictions",
+          "sanctionsJurisdictions"
+        ],
+        "type": "object",
+        "properties": {
+          "mainEntity": {
+            "type": "boolean",
+            "description": "Whether this assessment is for the main entity (true) or a related party (false)."
+          },
+          "materialityOutcome": {
+            "type": "string",
+            "description": "Overall materiality outcome of the screening assessment (e.g. \"Material\", \"Non-Material\").",
+            "nullable": true
+          },
+          "pepMaterialityStatus": {
+            "type": "string",
+            "description": "PEP (Politically Exposed Person) materiality status.",
+            "nullable": true
+          },
+          "sanctionsMaterialityStatus": {
+            "type": "string",
+            "description": "Sanctions materiality status.",
+            "nullable": true
+          },
+          "adverseMediaMaterialityStatus": {
+            "type": "string",
+            "description": "Adverse media materiality status.",
+            "nullable": true
+          },
+          "enforcementsMaterialityStatus": {
+            "type": "string",
+            "description": "Enforcements materiality status.",
+            "nullable": true
+          },
+          "otherMaterialityStatus": {
+            "type": "string",
+            "description": "Other (non-categorised) materiality status.",
+            "nullable": true
+          },
+          "pepJurisdictions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "PEP jurisdictions associated with this assessment."
+          },
+          "sanctionsJurisdictions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Sanctions jurisdictions associated with this assessment."
+          },
+          "adverseMediaJurisdictions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Adverse media jurisdictions associated with this assessment."
+          },
+          "enforcementsJurisdictions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Enforcements jurisdictions associated with this assessment."
+          },
+          "otherJurisdictions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Other jurisdictions associated with this assessment."
+          },
+          "sanctionsProceedDecision": {
+            "type": "string",
+            "description": "Sanctions ok-to-proceed decision text returned by Screening (e.g. \"Ok to proceed\", \"Not to proceed\").",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ScreeningMaterialityDataSource": {
+        "required": [
+          "assessments"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "assessments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScreeningMaterialityAssessmentDto"
+            }
+          }
+        },
+        "additionalProperties": false,
+        "description": "Data source for Screening Materiality Assessment outcomes.\nContains a list of assessments — one per entity in the batch (main entity and related parties)."
+      },
+      "ServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string",
+            "description": "The service response DTO",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "description": "List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Service response data"
+      },
+      "ServiceResponseMessage": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "The message",
+            "nullable": true,
+            "example": "Success"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of the message\nOne of Info, Warning, Error, Forbidden",
+            "nullable": true,
+            "example": "Info"
+          },
+          "errorCode": {
+            "type": "string",
+            "description": "Error Code",
+            "nullable": true,
+            "example": "INTERNAL_SERVER_ERROR"
+          }
+        },
+        "additionalProperties": false,
+        "description": "The message associated to the service response"
+      },
+      "SignificanceEngineDataSource": {
+        "required": [
+          "significanceEngine"
+        ],
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "significanceEngine": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SignificanceEngineDto"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "SignificanceEngineDto": {
+        "type": "object",
+        "properties": {
+          "singleFields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "collections": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "nullable": true
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SinglePropertyDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PropertyDto"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "string",
+                "nullable": true
+              },
+              "valueId": {
+                "type": "string",
+                "nullable": true
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "SinglePropertyDto2": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "nullable": true
+          },
+          "valueId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StringServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string",
+            "description": "The service response DTO",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "description": "List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Service response data"
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "apiKey",
+        "description": "Please insert JWT with Bearer into field",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ]
+}

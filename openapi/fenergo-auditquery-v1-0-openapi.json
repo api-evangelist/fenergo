@@ -1,0 +1,1264 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Fenergo Nebula Audit Query",
+    "description": "The Audit Query API enables the retrieval of audit event data related to various activities within the system. It currently supports data for Journeys, Entities, Screening Tasks, and Financial Analysis events.\n\n<br><b>Version 1</b>\n\nProvides the following: \n\n<ul><li>The ability to retrieve audit events by providing a list of resource IDs, which represent a list of globally unique identifiers referring to the identifier of the records being sought.</li><li>The ability to search for audit events by specifying a search term, which can be a field name or value.</li><br></ul>",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "/auditquery"
+    }
+  ],
+  "paths": {
+    "/api/auditevent/resources": {
+      "post": {
+        "tags": [
+          "AuditEvent"
+        ],
+        "summary": "Get Audit Events for a specific list of resource IDs.",
+        "description": "\n\r\n            This method accepts a list of resource IDs, which refer to the identifiers of the records being sought. \r\n            \r\n\n\r\n            The resource IDs can be for entities, journeys, or any other record type.\r\n            \r\n\n\r\n            The method returns a list of audit events for each resourceID.\r\n            <br /><br /><b>Required permissions:</b><br />Following permissions are required: AuditAccessAndSearch",
+        "operationId": "GetAuditEventsForMultipleResources",
+        "parameters": [
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ResourceQueryDtoServiceRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ResourceQueryDtoServiceRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ResourceQueryDtoServiceRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success. The relevant audit events are returned",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditEventDtoIEnumerableServiceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditEventDtoIEnumerableServiceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditEventDtoIEnumerableServiceResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          },
+          "413": {
+            "description": "Payload Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "The amount of data requested is too large. Please request smaller data set.",
+                      "type": "Error",
+                      "errorCode": "PAYLOAD_TOO_LARGE"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auditevent/searchterm": {
+      "post": {
+        "tags": [
+          "AuditEvent"
+        ],
+        "summary": "Get Audit Events for a specific search term",
+        "description": "\n\r\n            This method takes in a list of resource IDs and a search term. \r\n            \r\n\n\r\n            The resource IDs represent the identifiers of entities, journeys, or any other type of record, while the search term filters these records by either specifying a field name or a field value.\r\n            \r\n\n\r\n            The method then returns a list of audit events for each specified resource ID that has a match based on the search term.\r\n            <br /><br /><b>Required permissions:</b><br />Following permissions are required: AuditAccessAndSearch",
+        "operationId": "SearchByTerm",
+        "parameters": [
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SearchTermDtoServiceRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SearchTermDtoServiceRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SearchTermDtoServiceRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorModelListServiceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorModelListServiceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorModelListServiceResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success. The relevant audit events for your search and resource IDs are returned",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditEventDtoIEnumerableServiceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditEventDtoIEnumerableServiceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditEventDtoIEnumerableServiceResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "The amount of data requested is too large. Please request smaller data set.",
+                      "type": "Error",
+                      "errorCode": "PAYLOAD_TOO_LARGE"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error."
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AggregatePagerDto": {
+        "type": "object",
+        "properties": {
+          "size": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          "from": {
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32"
+          },
+          "sortBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "sortOrder": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SortOrder"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "AuditEventDto": {
+        "type": "object",
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "description": "Event id",
+            "nullable": true,
+            "example": "f9bb19a8-07e7-4306-94c9-a00988eadb0f"
+          },
+          "resourceId": {
+            "type": "string",
+            "description": "The unique identifier of the Resource that was updated",
+            "nullable": true,
+            "example": "31a7bd8b-753f-404e-a78b-ee84de61822e"
+          },
+          "resourceType": {
+            "type": "string",
+            "description": "The type of resource this Audit Event relates to",
+            "nullable": true,
+            "example": "Entity"
+          },
+          "entityReferenceId": {
+            "type": "string",
+            "description": "The underlying EntityId that is linked to this Audit Event",
+            "nullable": true,
+            "example": "4514d583-7114-4b49-a17e-b424495b9cc7"
+          },
+          "journeyReferenceId": {
+            "type": "string",
+            "description": "The underlying JourneyInstanceId that is linked to this Audit Event",
+            "nullable": true,
+            "example": "5e61d26e-9f2f-4c03-99e7-bc823b55fefc"
+          },
+          "eventType": {
+            "type": "string",
+            "description": "The type of event that initiated this Audit Event",
+            "nullable": true,
+            "example": "EntityCreated"
+          },
+          "eventSubType": {
+            "type": "string",
+            "description": "The event sub type",
+            "nullable": true,
+            "example": "Created"
+          },
+          "beforeValue": {
+            "type": "object",
+            "additionalProperties": {
+              "nullable": true
+            },
+            "description": "Contains the complete object in its previous state.",
+            "nullable": true
+          },
+          "afterValue": {
+            "type": "object",
+            "additionalProperties": {
+              "nullable": true
+            },
+            "description": "Contains the complete object in its current state.",
+            "nullable": true,
+            "example": {
+              "Properties": {
+                "Nationality": {
+                  "Value": "Spain",
+                  "Type": "Single",
+                  "Discriminator": "Single"
+                }
+              }
+            }
+          },
+          "version": {
+            "type": "string",
+            "description": "Version",
+            "nullable": true,
+            "example": "0"
+          },
+          "date": {
+            "type": "string",
+            "description": "Date the Audit Event was logged",
+            "format": "date-time",
+            "nullable": true
+          },
+          "userId": {
+            "type": "string",
+            "description": "The Id of the user that affected the change",
+            "nullable": true,
+            "example": "f3bdd83c-ac18-42a3-a904-ca3fefda3e5f"
+          },
+          "clientId": {
+            "type": "string",
+            "description": "The underlying client identifier / system that affected the change",
+            "nullable": true,
+            "example": "111e07b2-915f-483f-8815-61e2e05b1351"
+          },
+          "service": {
+            "type": "string",
+            "description": "Identifies the service that affected the change",
+            "nullable": true,
+            "example": "EntityData"
+          },
+          "tenant": {
+            "type": "string",
+            "description": "Tenant id",
+            "nullable": true,
+            "example": "449de204-e9d2-4204-918d-1c3b86e91aa6"
+          },
+          "correlationId": {
+            "type": "string",
+            "description": "Correlation id",
+            "nullable": true,
+            "example": "78ae8b73-24bc-4175-91a0-1326388a7de9"
+          },
+          "metadata": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AuditMetadata"
+              }
+            ],
+            "nullable": true
+          },
+          "eventMetadata": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "nullable": true
+            },
+            "description": "Additional optional Audit Event Metadata",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "An object representing a single Audit Event"
+      },
+      "AuditEventDtoIEnumerableServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuditEventDto"
+            },
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AuditMetadata": {
+        "type": "object",
+        "properties": {
+          "stages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": { }
+            },
+            "nullable": true
+          },
+          "userName": {
+            "type": "string",
+            "nullable": true
+          },
+          "tenantName": {
+            "type": "string",
+            "nullable": true
+          },
+          "journeyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "eventName": {
+            "type": "string",
+            "nullable": true
+          },
+          "taskReassignedUserBefore": {
+            "type": "string",
+            "nullable": true
+          },
+          "taskReassignedUserAfter": {
+            "type": "string",
+            "nullable": true
+          },
+          "taskReassignedTeamNameBefore": {
+            "type": "string",
+            "nullable": true
+          },
+          "taskReassignedTeamNameAfter": {
+            "type": "string",
+            "nullable": true
+          },
+          "reopenedByNameBefore": {
+            "type": "string",
+            "nullable": true
+          },
+          "reopenedByNameAfter": {
+            "type": "string",
+            "nullable": true
+          },
+          "completedByNameBefore": {
+            "type": "string",
+            "nullable": true
+          },
+          "completedByNameAfter": {
+            "type": "string",
+            "nullable": true
+          },
+          "taskUnpausedByNameBefore": {
+            "type": "string",
+            "nullable": true
+          },
+          "taskUnpausedByNameAfter": {
+            "type": "string",
+            "nullable": true
+          },
+          "taskPausedByNameBefore": {
+            "type": "string",
+            "nullable": true
+          },
+          "taskPausedByNameAfter": {
+            "type": "string",
+            "nullable": true
+          },
+          "dateIsoFormat": {
+            "type": "string",
+            "nullable": true
+          },
+          "journeyOwnerReassignedTeamNameBefore": {
+            "type": "string",
+            "nullable": true
+          },
+          "journeyOwnerReassignedTeamNameAfter": {
+            "type": "string",
+            "nullable": true
+          },
+          "journeyOwnerReassignedUserBefore": {
+            "type": "string",
+            "nullable": true
+          },
+          "journeyOwnerReassignedUserAfter": {
+            "type": "string",
+            "nullable": true
+          },
+          "originatedEventId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EntityEventAggregatorDto": {
+        "required": [
+          "fieldName",
+          "sortings"
+        ],
+        "type": "object",
+        "properties": {
+          "fieldName": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Specifies the property to Group By",
+            "example": "fieldName"
+          },
+          "sortings": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SortDto"
+            },
+            "description": "List of field properties to sort by, including the sort order.",
+            "example": [
+              {
+                "sortFieldName": "resourceType",
+                "sortOrder": "Ascending"
+              },
+              {
+                "sortFieldName": "lastUpdated",
+                "sortOrder": "Descending"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "EntityEventDetailQueryDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ResourceQueryDto"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "fieldName": {
+                "type": "string",
+                "description": "Field name by which you want to search. Search field must be one from AuditDetailedESModel",
+                "nullable": true,
+                "example": "lastName"
+              },
+              "excludeDrafts": {
+                "type": "boolean",
+                "description": "Exclude draft values from search results"
+              },
+              "excludeSystemFields": {
+                "type": "boolean",
+                "description": "Exclude system fields from search results"
+              }
+            },
+            "additionalProperties": false
+          }
+        ],
+        "description": "The request object that contains a list of resource IDs and other filters for which to fetch Audit Events."
+      },
+      "EntityEventDetailQueryPagedDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntityEventDetailQueryDto"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "pager": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PagerDto"
+                  }
+                ],
+                "description": "A pager object to specify pagination parameters",
+                "nullable": true,
+                "example": {
+                  "size": 10,
+                  "from": 0,
+                  "sortBy": "date",
+                  "sortOrder": "Descending"
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        ],
+        "description": "The request object that contains a list of resource IDs, a pager object and other filters for which to fetch Audit Events."
+      },
+      "GetFinancialAnalysisAuditEventsRequestDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SearchTermPagedDto"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false
+          }
+        ],
+        "description": "Request DTO to get financial analysis audit events within paged list of resources"
+      },
+      "GetGroupedEntityAuditEventsDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ResourceQueryDto"
+          },
+          {
+            "required": [
+              "aggregator"
+            ],
+            "type": "object",
+            "properties": {
+              "pager": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AggregatePagerDto"
+                  }
+                ],
+                "description": "Pager details",
+                "nullable": true,
+                "example": {
+                  "from": 0,
+                  "size": 10,
+                  "sortOrder": "Descending"
+                }
+              },
+              "aggregator": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EntityEventAggregatorDto"
+                  }
+                ],
+                "description": "Specifies how to aggregate the Entity Audit Data. (Mandatory)"
+              },
+              "searchProperties": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SearchFieldsDto"
+                  }
+                ],
+                "description": "(Optional) Search object to filter returned fields",
+                "nullable": true
+              },
+              "excludeDrafts": {
+                "type": "boolean",
+                "description": "Exclude draft values from search results"
+              },
+              "excludeSystemFields": {
+                "type": "boolean",
+                "description": "Exclude system fields from search results"
+              }
+            },
+            "additionalProperties": false
+          }
+        ],
+        "description": "The request object that contains a list of entity IDs for which to fetch entity specific audit events."
+      },
+      "GetJourneyAuditEventsRequestDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ResourceQueryDto"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "pager": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PagerDto"
+                  }
+                ],
+                "description": "A pager object to specify pagination parameters",
+                "nullable": true,
+                "example": {
+                  "size": 10,
+                  "from": 0,
+                  "sortBy": "date",
+                  "sortOrder": "Descending"
+                }
+              },
+              "searchPhrase": {
+                "type": "string",
+                "description": "Phrase you want to search by",
+                "nullable": true
+              }
+            },
+            "additionalProperties": false
+          }
+        ],
+        "description": "The request object that contains a list of JourneyIDs, a pager object and other filters for which to fetch Journey related Audit Events"
+      },
+      "GetNarrativeAuditEventsRequestDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SearchTermPagedDto"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "entityId": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "GetSelfServiceUserManagementAuditEventsRequestDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ResourceQueryPagedDto"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "eventTypes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "nullable": true
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "ObjectServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PagerDto": {
+        "type": "object",
+        "properties": {
+          "size": {
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          "from": {
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32"
+          },
+          "sortBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "sortOrder": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SortOrder"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "ResourceQueryDto": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The list of resource IDs for which to fetch Audit Events.",
+            "nullable": true,
+            "example": [
+              "7304b842-769f-4c22-9499-7c5d069ffb8f",
+              "ad6cf1b0-0925-4d65-98e7-a4e7901cce46",
+              "abb80516-3914-4366-a061-2f10e018fdeb"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "description": "The request object that contains a list of resource IDs for which to fetch Audit Events."
+      },
+      "ResourceQueryDtoServiceRequest": {
+        "required": [
+          "data"
+        ],
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ResourceQueryDto"
+              }
+            ],
+            "description": "The request object that contains a list of resource IDs for which to fetch Audit Events."
+          }
+        },
+        "additionalProperties": false
+      },
+      "ResourceQueryPagedDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ResourceQueryDto"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "pager": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PagerDto"
+                  }
+                ],
+                "description": "A pager object to specify pagination parameters",
+                "nullable": true,
+                "example": {
+                  "size": 10,
+                  "from": 0,
+                  "sortBy": "date",
+                  "sortOrder": "Descending"
+                }
+              },
+              "excludeEventTypes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Optional list of event types to exclude from results.\r\nWhen provided, audit events whose `eventType` matches any value in this list are omitted.",
+                "nullable": true
+              }
+            },
+            "additionalProperties": false
+          }
+        ],
+        "description": "The request object that contains a list of resource IDs for which to fetch Audit Events. Includes a pager object."
+      },
+      "ScreeningAuditEventsRequestDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ResourceQueryDto"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "pager": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PagerDto"
+                  }
+                ],
+                "description": "A pager object to specify pagination parameters",
+                "nullable": true,
+                "example": {
+                  "size": 10,
+                  "from": 0,
+                  "sortBy": "date",
+                  "sortOrder": "Descending"
+                }
+              },
+              "searchProperties": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SearchFieldsDto"
+                  }
+                ],
+                "description": "(Optional) Search object to filter returned fields",
+                "nullable": true
+              }
+            },
+            "additionalProperties": false
+          }
+        ],
+        "description": "The request object that contains a list of Journey IDs, and a pager object and other filters for which to fetch Screening related Audit Events"
+      },
+      "SearchFieldsDto": {
+        "required": [
+          "searchPhrase"
+        ],
+        "type": "object",
+        "properties": {
+          "searchPhrase": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Phrase with which you want to search",
+            "example": "FirstName"
+          },
+          "fieldName": {
+            "type": "string",
+            "description": "Field name by which you want to search. Search field must be one from AuditDetailedESModel",
+            "nullable": true,
+            "example": "fieldName"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request object used for searching in fields"
+      },
+      "SearchTermDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ResourceQueryDto"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "searchTerm": {
+                "type": "string",
+                "description": "A search term that can be used to further filter your results. Can be any data found in your Audit Events, e.g. 'EntityCreated','Ireland' etc.",
+                "nullable": true,
+                "example": "EntityCreated"
+              }
+            },
+            "additionalProperties": false
+          }
+        ],
+        "description": "A search request object comprising a list of resource IDs and a search term to retrieve results."
+      },
+      "SearchTermDtoServiceRequest": {
+        "required": [
+          "data"
+        ],
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SearchTermDto"
+              }
+            ],
+            "description": "A search request object comprising a list of resource IDs and a search term to retrieve results."
+          }
+        },
+        "additionalProperties": false
+      },
+      "SearchTermPagedDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SearchTermDto"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "pager": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PagerDto"
+                  }
+                ],
+                "description": "A pager object to specify pagination parameters",
+                "nullable": true,
+                "example": {
+                  "size": 10,
+                  "from": 0,
+                  "sortBy": "date",
+                  "sortOrder": "Descending"
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        ],
+        "description": "A search request object comprising a list of resource IDs, a search term, and a pager object to retrieve results."
+      },
+      "ServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ServiceResponseMessage": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "errorCode": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SortDto": {
+        "required": [
+          "sortFieldName"
+        ],
+        "type": "object",
+        "properties": {
+          "sortFieldName": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "sortOrder": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SortOrder"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "SortOrder": {
+        "enum": [
+          "Ascending",
+          "Descending"
+        ],
+        "type": "string"
+      },
+      "StringServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ValidationErrorModel": {
+        "type": "object",
+        "properties": {
+          "propertyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true
+          },
+          "attemptedValue": {
+            "nullable": true
+          },
+          "errorCode": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ValidationErrorModelListServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidationErrorModel"
+            },
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "example": {
+          "data": [
+            {
+              "propertyName": "data",
+              "errorMessage": "Data is required",
+              "attemptedValue": "",
+              "errorCode": "NotNullValidator"
+            }
+          ],
+          "messages": [
+            {
+              "message": "Data is required",
+              "type": "Error",
+              "errorCode": "Error Code"
+            }
+          ]
+        }
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "apiKey",
+        "description": "Please insert JWT with Bearer into field",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ]
+}

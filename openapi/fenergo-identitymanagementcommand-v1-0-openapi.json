@@ -1,0 +1,1921 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Fenergo Nebula Identity - Self-Service Management Command",
+    "description": "**Self-Service Management Command API**:\n\n<br> The Self-Service Management Command API provides methods to manage Users, Clients and their information per Tenant. Use the Self-Service Management Query API to retrieve User and Client information per Tenant.\n\n<br> **Self-Service Management Command API provides**:<br><ul><li> The ability to add Users to a Tenant and delete Users from a Tenant.</li><li> The ability to update User details and custom properties per Tenant.</li><li> The ability to trigger sending of Verification Email to Users.</li><li> The ability to add Clients to a Tenant and delete Clients from a Tenant.</li><li> The ability to update Client details per Tenant.</li><li> The ability to add Secrets to a Client and delete Secrets from a Client.</li></ul>",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "/identitymanagementcommand"
+    }
+  ],
+  "paths": {
+    "/api/clients": {
+      "post": {
+        "tags": [
+          "Clients"
+        ],
+        "summary": "Adds a new client to the tenant, with the data specified in the request",
+        "description": "<br /><br /><b>Required permissions:</b><br />Following permissions are required: SecurityCreateClient, ClientAdministration",
+        "operationId": "CreateClient",
+        "parameters": [
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "description": "Create client request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateClientDtoServiceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. Client added to the tenant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientCreatedDtoServiceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict saving changes in expected version",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "There are conflicts that cannot be resolved automatically, get latest and apply your changes",
+                      "type": "Error",
+                      "errorCode": "CONFLICT"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/clients/{clientId}": {
+      "delete": {
+        "tags": [
+          "Clients"
+        ],
+        "summary": "Removes an existing client from the tenant",
+        "description": "<br /><br /><b>Required permissions:</b><br />Following permissions are required: SecurityDeleteClient, ClientAdministration",
+        "operationId": "DeleteClient",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "description": "The ID of the client that would be removed",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Client removed from the tenant"
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not found. The client hasn't been found",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Clients"
+        ],
+        "summary": "Updates some data of a client that already exists in the tenant",
+        "description": "<br /><br /><b>Required permissions:</b><br />Following permissions are required: SecurityEditClient, ClientAdministration",
+        "operationId": "PatchClient",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "description": "The ID of the client that would be updated",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "description": "Patch client request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchClientDtoServiceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. Client data updated"
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not found. The client hasn't been found",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/clients/{clientId}/secrets": {
+      "post": {
+        "tags": [
+          "Clients"
+        ],
+        "summary": "Adds a new secret to the client",
+        "description": "<br /><br /><b>Required permissions:</b><br />Following permissions are required: SecurityCreateSecret, SecretAdministration",
+        "operationId": "CreateClientSecret",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "description": "The ID of the client",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "description": "Create secret request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateClientSecretDtoServiceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. Secret added to the client",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedClientSecretDtoServiceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values or secret count limit has exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict saving changes in expected version",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "There are conflicts that cannot be resolved automatically, get latest and apply your changes",
+                      "type": "Error",
+                      "errorCode": "CONFLICT"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/clients/{clientId}/secrets/{secretId}": {
+      "delete": {
+        "tags": [
+          "Clients"
+        ],
+        "summary": "Removes an existing secret from the client",
+        "description": "<br /><br /><b>Required permissions:</b><br />Following permissions are required: SecurityDeleteSecret, SecretAdministration",
+        "operationId": "DeleteClientSecret",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "description": "The ID of the client",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "secretId",
+            "in": "path",
+            "description": "The ID of the secret",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Secret removed from the client"
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not found. The client secret has not been found",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server exception. Please, contact your provider.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "Internal server exception. Please, contact your provider.",
+                      "type": "Error",
+                      "errorCode": "INTERNAL_SERVER_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Adds a new user to the tenant, with the data specified in the request",
+        "description": "\nIf the user doesn't exist in Fen-X Identity, it is created and added to the tenant.\r\n\nIf the user already exists, the user is just added to the tenant and the ID of the existing user is returned.\r\n\n\r\n            If there are repeated keys in the custom properties (for example, {\"prop1\": \"value1\", \"prop1\": \"value2\"}, the\r\n            API will remove the duplicates and store only the last value (following the example, {\"prop1\": \"value2\"}).\r\n            <br /><br /><b>Required permissions:</b><br />Following permissions are required: SecurityCreateUser, UserAdministration",
+        "operationId": "CreateUser",
+        "parameters": [
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "description": "Create user request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserDtoServiceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success. User added to the tenant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserCreatedDtoServiceResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict saving changes in expected version",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "There are conflicts that cannot be resolved automatically, get latest and apply your changes",
+                      "type": "Error",
+                      "errorCode": "CONFLICT"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/{id}": {
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Removes an existing user from the tenant",
+        "description": "\nThe user is not removed from Fen-X Identity, just the assignment to the tenant and its corresponding data<br /><br /><b>Required permissions:</b><br />Following permissions are required: SecurityDeleteUser, UserAdministration",
+        "operationId": "DeleteUser",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the user that would be removed",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. User removed from the tenant"
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not found. The user hasn't been found",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Updates all the data of a user that already exists in the tenant",
+        "description": "\nThis endpoint overwrites all the user details with the data specified in the body of the request\r\n\n\r\n            If there are repeated keys in the custom properties (for example, {\"prop1\": \"value1\", \"prop1\": \"value2\"}, the\r\n            API will remove the duplicates and store only the last value (following the example, {\"prop1\": \"value2\"}).\r\n            <br /><br /><b>Required permissions:</b><br />Following permissions are required: SecurityEditUser, UserAdministration",
+        "operationId": "UpdateUser",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the user that would be updated",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "description": "Update user request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDtoServiceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. User data updated"
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not found. The user hasn't been found",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict saving changes in expected version",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "There are conflicts that cannot be resolved automatically, get latest and apply your changes",
+                      "type": "Error",
+                      "errorCode": "CONFLICT"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Updates some data of a user that already exists in the tenant",
+        "description": "\nThis endpoint will just update the properties specified in the request\r\n\n\r\n            If there are repeated keys in the custom properties (for example, {\"prop1\": \"value1\", \"prop1\": \"value2\"}, the\r\n            API will remove the duplicates and store only the last value (following the example, {\"prop1\": \"value2\"}).\r\n            <br /><br /><b>Required permissions:</b><br />Following permissions are required: SecurityEditUser, UserAdministration",
+        "operationId": "PatchUser",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the user that would be updated",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "description": "Patch user request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchUserDtoServiceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. User data updated"
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not found. The user hasn't been found",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/{id}/unlock": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Unlocks a user",
+        "description": "\nThe endpoint is responsible for unlocking a locked user<br /><br /><b>Required permissions:</b><br />Following permissions are required: SecurityEditUser, UserAdministration",
+        "operationId": "UnlockUser",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the user",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. User unlocked successfully"
+          },
+          "400": {
+            "description": "Bad request. The user is not locked",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not found. The user hasn't been found",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/{id}/send-verification-email": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Sends verification email to the user",
+        "description": "\nThe endpoint is responsible for sending a verification email to the user<br /><br /><b>Required permissions:</b><br />Following permissions are required: SecurityEditUser, UserAdministration",
+        "operationId": "SendVerificationEmail",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the user",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Email sent successfully"
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not found. The user hasn't been found",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ClientCreatedDto": {
+        "required": [
+          "clientId"
+        ],
+        "type": "object",
+        "properties": {
+          "clientId": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The id of the client created.",
+            "example": "cli-tool-1_b2e58c3e-d66f-4d02-b40e-c8e6585a72a7"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the data transfer object for a client created."
+      },
+      "ClientCreatedDtoServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ClientCreatedDto"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateClientDto": {
+        "required": [
+          "allowedScopes",
+          "clientEmails",
+          "clientName"
+        ],
+        "type": "object",
+        "properties": {
+          "clientName": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The name of the client",
+            "example": "cli-tool-1"
+          },
+          "allowedScopes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Scopes the client has access to",
+            "example": [
+              "scimapi.resource.update",
+              "scimapi.resource.query",
+              "scimapi.resource.delete",
+              "fenx.product.read"
+            ]
+          },
+          "clientEmails": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "type": "string",
+            "description": "Client emails used for notifications about certificate expiration.",
+            "example": "Test@fenergo.com"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the data transfer object for creating a client."
+      },
+      "CreateClientDtoServiceRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CreateClientDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateClientSecretDto": {
+        "type": "object",
+        "properties": {
+          "expiration": {
+            "type": "string",
+            "description": "The expiration date of the client secret.",
+            "format": "date-time",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "The description of the client secret.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents client secret."
+      },
+      "CreateClientSecretDtoServiceRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CreateClientSecretDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateUserDto": {
+        "required": [
+          "email",
+          "firstName",
+          "lastName"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The email address of the user",
+            "example": "john.doe@test.com"
+          },
+          "firstName": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The first name of the user",
+            "example": "John"
+          },
+          "lastName": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The last name of the user",
+            "example": "Doe"
+          },
+          "customProperties": {
+            "type": "object",
+            "additionalProperties": { },
+            "description": "A dictionary of custom properties for the user\r\nExample: {\"stringProperty\": \"value\", \"booleanProperty\": false, \"numberProperty\": 1}",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the data transfer object for creating a user."
+      },
+      "CreateUserDtoServiceRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CreateUserDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreatedClientSecretDto": {
+        "type": "object",
+        "properties": {
+          "secretId": {
+            "type": "integer",
+            "description": "The id of the created client secret.",
+            "format": "int32"
+          },
+          "secretValue": {
+            "type": "string",
+            "description": "The value of created secret token.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreatedClientSecretDtoServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CreatedClientSecretDto"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ObjectServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PatchClientDto": {
+        "required": [
+          "clientEmails"
+        ],
+        "type": "object",
+        "properties": {
+          "clientName": {
+            "type": "string",
+            "description": "The name of the client",
+            "nullable": true,
+            "example": "cli-tool-1"
+          },
+          "allowedScopes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Scopes the client has access to",
+            "nullable": true,
+            "example": [
+              "scimapi.resource.update",
+              "scimapi.resource.query",
+              "scimapi.resource.delete",
+              "fenx.product.read"
+            ]
+          },
+          "clientEmails": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "type": "string",
+            "description": "Client emails used for notifications about certificate expiration.",
+            "example": "Test@fenergo.com"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the data transfer object for patching a client (PATCH)."
+      },
+      "PatchClientDtoServiceRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PatchClientDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PatchUserDto": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "description": "The first name of the user",
+            "nullable": true,
+            "example": "John"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "The last name of the user",
+            "nullable": true,
+            "example": "Doe"
+          },
+          "customProperties": {
+            "type": "object",
+            "additionalProperties": { },
+            "description": "A dictionary of custom properties for the user\r\nExample: {\"stringProperty\": \"value\", \"booleanProperty\": false, \"numberProperty\": 1}",
+            "nullable": true
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "A flag that indicates if user is active or suspended in current tenant",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the data transfer object for updating a user (PATCH)."
+      },
+      "PatchUserDtoServiceRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PatchUserDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ServiceResponseMessage": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "errorCode": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StringServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateUserDto": {
+        "required": [
+          "firstName",
+          "lastName"
+        ],
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The first name of the user",
+            "example": "John"
+          },
+          "lastName": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The last name of the user",
+            "example": "Doe"
+          },
+          "customProperties": {
+            "type": "object",
+            "additionalProperties": { },
+            "description": "A dictionary of custom properties for the user\r\nExample: {\"stringProperty\": \"value\", \"booleanProperty\": false, \"numberProperty\": 1}",
+            "nullable": true
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "A flag that indicates if user is active or suspended in current tenant",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the data transfer object for updating a user (PUT)."
+      },
+      "UpdateUserDtoServiceRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/UpdateUserDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UserCreatedDto": {
+        "required": [
+          "userId"
+        ],
+        "type": "object",
+        "properties": {
+          "userId": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The id of the user created.",
+            "example": "b2e58c3e-d66f-4d02-b40e-c8e6585a72a7"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the data transfer object for a user created."
+      },
+      "UserCreatedDtoServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/UserCreatedDto"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "apiKey",
+        "description": "Please insert JWT with Bearer into field",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ]
+}

@@ -1,0 +1,1227 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "Fenergo Nebula External Data Adapter Receptor",
+    "description": "## Purpose of the API\n\nThe purpose of the External Data Adapter Receptor API is to integrate the different External Data adapters (e.g. Kompany, BvD) with the main External Data service, by receiving the results of the available External Data operations (e.g. Test, Get, Search, Request Document, Ongoing Monitoring).\n\nOnce the results are sent to the Receptor by the Adapters, they will forwarded to the main External Data service for them to be processed.\n\n## Authentication\n\nThe authentication in the Receptor is driven by the headers that are available in the endpoints (X-TENANT-ID, X-PROVIDER-ID, X-ENCRYPTION-IV, X-AUTHENTICATION-MAC).\n\nTo authenticate the requests coming to the Receptor, two keys are used to encrypt and authenticate the request. There are a few things to take into account:\n\n<ul><li>The keys have a size of 256 bit. These keys should be encoded in base64 format and added to the External Data configuration of the provider and tenant</li>\n\n<li>For authentication, HMAC (SHA256) is used</li><li>For encryption, AES-CBC is used</li><li>The order of the process is: Encrypt-then-MAC. This means that the request body must be encrypted first using the encryption key, and then authenticated using the authentication key</li></ul>\n\n",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "/externaldatareceptor"
+    }
+  ],
+  "paths": {
+    "/receptor/callback": {
+      "post": {
+        "tags": [
+          "Receptor"
+        ],
+        "summary": "Callback",
+        "description": "\nThis method will handle adapters responses.\n            Processes Adapter Responses",
+        "operationId": "Callback",
+        "parameters": [
+          {
+            "name": "Compression-Algorithm",
+            "in": "header",
+            "description": "Compression Algorithm e.g. gzip",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          },
+          {
+            "name": "X-PROVIDER-ID",
+            "in": "header",
+            "description": "The ID of the provider",
+            "schema": {
+              "type": "string"
+            },
+            "example": "ProviderId"
+          },
+          {
+            "name": "X-ENCRYPTION-IV",
+            "in": "header",
+            "description": "The encryption IV key, base64 encoded",
+            "schema": {
+              "type": "string"
+            },
+            "example": "HgyUHIO81m0FcZfPS1lnUw=="
+          },
+          {
+            "name": "X-AUTHENTICATION-MAC",
+            "in": "header",
+            "description": "The authentication MAC key, base64 encoded",
+            "schema": {
+              "type": "string"
+            },
+            "example": "frr2J1pP5rUC6DLe8q1WNko7FmRqUOD8zYTQN4ABgiE="
+          }
+        ],
+        "requestBody": {
+          "description": "Adapter response",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdapterResponseDto"
+              },
+              "examples": {
+                "Search operation - Success - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Search","status":"Success","errorDetails":null,"response":{"results":[{"id":"76ce4f1a-8676-4d4f-be0f-ae57b99b7e27","entityType":"Company","fullName":"My Company","matchHint":"Selected","matchScore":78,"data":{"companyType":"Some Value"}}]}}
+                },
+                "Search operation - Error - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Search","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"response":null}
+                },
+                "Get operation - Success - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Get","status":"Success","errorDetails":null,"response":{"documents":null,"client":{"id":"1234567","entityType":"Company","fullName":"Legal Entity Name","data":{"name":"Name"}},"hierarchy":{"associatedEntities":[{"id":"12345678","entityType":"Individual","fullName":"Legal Entity Name Related","uboType":null,"isActive":null,"data":{"id":"_dummy"}}],"associations":[{"parentId":"parentId","childId":"childId","ownershipPercentage":1.34,"associationType":"CompanyOfficial","data":{"id":"_dummy"}}]}}}
+                },
+                "Get operation - Error - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Get","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"response":null}
+                },
+                "Test operation - Success - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Test","status":"Success","errorDetails":null,"response":{"adapterSchema":{"lookups":[{"name":"EntityType","values":["Private Company","Public Company"]}],"schema":{"searchRequest":{"searchCriteria":{"fields":[{"name":"LegalEntityName","friendlyName":"Legal Entity Name","type":"text","description":null,"lookup":null,"fields":null}]}},"searchResponse":{"searchResultsData":{"fields":[{"name":"LegalEntityName","friendlyName":"Legal Entity Name","type":"text","description":null,"lookup":null,"fields":null}]}},"getRequest":{"requestData":{"fields":[{"name":"Id","friendlyName":"Id","type":"text","description":null,"lookup":null,"fields":null}]}},"getResponse":{"clientData":{"fields":[{"name":"LegalEntityName","friendlyName":"Legal Entity Name","type":"text","description":null,"lookup":null,"fields":null}]},"associatedEntitiesCompanyData":{"fields":[{"name":"LegalEntityName","friendlyName":"Legal Entity Name","type":"text","description":null,"lookup":null,"fields":null}]},"associatedEntitiesIndividualData":{"fields":[{"name":"LegalEntityName","friendlyName":"Legal Entity Name","type":"text","description":null,"lookup":null,"fields":null}]},"associationsData":{"fields":[{"name":"ChildId","friendlyName":"Child Id","type":"text","description":null,"lookup":null,"fields":null}]}}}},"adapterSchemaIndividual":null}}
+                },
+                "Test operation - Error - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Test","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"response":null}
+                },
+                "Document operation - Success - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Document","status":"Success","errorDetails":null,"response":{"results":[{"documentId":"docId1","fileLocation":"sample1.pdf","status":"DocumentReceived","errorDetails":null,"data":null,"receiveDate":null}]}}
+                },
+                "Document operation - Error - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Document","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"response":null}
+                },
+                "Ubo operation - Success - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Ubo","status":"Success","errorDetails":null,"response":{"results":{"id":"1234567","entityId":"entityId","status":"Aborted","fileLocation":null,"purchasedDocuments":null,"hierarchy":{"associatedEntities":[{"id":"12345678","entityType":"Individual","fullName":"Legal Entity Name Related","uboType":null,"isActive":null,"data":{"id":"_dummy"}}],"associations":[{"parentId":"parentId","childId":"childId","ownershipPercentage":1.34,"associationType":"CompanyOfficial","data":{"id":"_dummy"}}]},"errorDetails":{"source":"adapter","errorCode":"code","message":"Ubo Discovery was aborted on demand of user."}}}}
+                },
+                "Ubo operation - Error - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Ubo","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"response":null}
+                },
+                "OngoingMonitoringSubscription operation - Success - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingMonitoringSubscription","status":"Success","errorDetails":null,"response":{"subscriptionId":"subscriptionId","data":null}}
+                },
+                "OngoingMonitoringSubscription operation - Error - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingMonitoringSubscription","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"response":null}
+                },
+                "OngoingMonitoringUnsubscription operation - Success - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingMonitoringUnsubscription","status":"Success","errorDetails":null,"response":{"subscriptionId":"subscriptionId","data":null}}
+                },
+                "OngoingMonitoringUnsubscription operation - Error - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingMonitoringUnsubscription","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"response":null}
+                },
+                "OngoingMonitoringNotification operation - Success - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingMonitoringNotification","status":"Success","errorDetails":null,"response":{"entityId":"EntityId","eventType":null,"eventSubtype":null,"data":null}}
+                },
+                "OngoingMonitoringNotification operation - Error - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingMonitoringNotification","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"response":null}
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdapterResponseDto"
+              },
+              "examples": {
+                "Search operation - Success - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Search","status":"Success","errorDetails":null,"response":{"results":[{"id":"76ce4f1a-8676-4d4f-be0f-ae57b99b7e27","entityType":"Company","fullName":"My Company","matchHint":"Selected","matchScore":78,"data":{"companyType":"Some Value"}}]}}
+                },
+                "Search operation - Error - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Search","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"response":null}
+                },
+                "Get operation - Success - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Get","status":"Success","errorDetails":null,"response":{"documents":null,"client":{"id":"1234567","entityType":"Company","fullName":"Legal Entity Name","data":{"name":"Name"}},"hierarchy":{"associatedEntities":[{"id":"12345678","entityType":"Individual","fullName":"Legal Entity Name Related","uboType":null,"isActive":null,"data":{"id":"_dummy"}}],"associations":[{"parentId":"parentId","childId":"childId","ownershipPercentage":1.34,"associationType":"CompanyOfficial","data":{"id":"_dummy"}}]}}}
+                },
+                "Get operation - Error - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Get","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"response":null}
+                },
+                "Test operation - Success - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Test","status":"Success","errorDetails":null,"response":{"adapterSchema":{"lookups":[{"name":"EntityType","values":["Private Company","Public Company"]}],"schema":{"searchRequest":{"searchCriteria":{"fields":[{"name":"LegalEntityName","friendlyName":"Legal Entity Name","type":"text","description":null,"lookup":null,"fields":null}]}},"searchResponse":{"searchResultsData":{"fields":[{"name":"LegalEntityName","friendlyName":"Legal Entity Name","type":"text","description":null,"lookup":null,"fields":null}]}},"getRequest":{"requestData":{"fields":[{"name":"Id","friendlyName":"Id","type":"text","description":null,"lookup":null,"fields":null}]}},"getResponse":{"clientData":{"fields":[{"name":"LegalEntityName","friendlyName":"Legal Entity Name","type":"text","description":null,"lookup":null,"fields":null}]},"associatedEntitiesCompanyData":{"fields":[{"name":"LegalEntityName","friendlyName":"Legal Entity Name","type":"text","description":null,"lookup":null,"fields":null}]},"associatedEntitiesIndividualData":{"fields":[{"name":"LegalEntityName","friendlyName":"Legal Entity Name","type":"text","description":null,"lookup":null,"fields":null}]},"associationsData":{"fields":[{"name":"ChildId","friendlyName":"Child Id","type":"text","description":null,"lookup":null,"fields":null}]}}}},"adapterSchemaIndividual":null}}
+                },
+                "Test operation - Error - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Test","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"response":null}
+                },
+                "Document operation - Success - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Document","status":"Success","errorDetails":null,"response":{"results":[{"documentId":"docId1","fileLocation":"sample1.pdf","status":"DocumentReceived","errorDetails":null,"data":null,"receiveDate":null}]}}
+                },
+                "Document operation - Error - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Document","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"response":null}
+                },
+                "Ubo operation - Success - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Ubo","status":"Success","errorDetails":null,"response":{"results":{"id":"1234567","entityId":"entityId","status":"Aborted","fileLocation":null,"purchasedDocuments":null,"hierarchy":{"associatedEntities":[{"id":"12345678","entityType":"Individual","fullName":"Legal Entity Name Related","uboType":null,"isActive":null,"data":{"id":"_dummy"}}],"associations":[{"parentId":"parentId","childId":"childId","ownershipPercentage":1.34,"associationType":"CompanyOfficial","data":{"id":"_dummy"}}]},"errorDetails":{"source":"adapter","errorCode":"code","message":"Ubo Discovery was aborted on demand of user."}}}}
+                },
+                "Ubo operation - Error - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Ubo","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"response":null}
+                },
+                "OngoingMonitoringSubscription operation - Success - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingMonitoringSubscription","status":"Success","errorDetails":null,"response":{"subscriptionId":"subscriptionId","data":null}}
+                },
+                "OngoingMonitoringSubscription operation - Error - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingMonitoringSubscription","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"response":null}
+                },
+                "OngoingMonitoringUnsubscription operation - Success - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingMonitoringUnsubscription","status":"Success","errorDetails":null,"response":{"subscriptionId":"subscriptionId","data":null}}
+                },
+                "OngoingMonitoringUnsubscription operation - Error - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingMonitoringUnsubscription","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"response":null}
+                },
+                "OngoingMonitoringNotification operation - Success - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingMonitoringNotification","status":"Success","errorDetails":null,"response":{"entityId":"EntityId","eventType":null,"eventSubtype":null,"data":null}}
+                },
+                "OngoingMonitoringNotification operation - Error - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingMonitoringNotification","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"response":null}
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdapterResponseDto"
+              },
+              "examples": {
+                "Search operation - Success - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Search","status":"Success","errorDetails":null,"response":{"results":[{"id":"76ce4f1a-8676-4d4f-be0f-ae57b99b7e27","entityType":"Company","fullName":"My Company","matchHint":"Selected","matchScore":78,"data":{"companyType":"Some Value"}}]}}
+                },
+                "Search operation - Error - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Search","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"response":null}
+                },
+                "Get operation - Success - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Get","status":"Success","errorDetails":null,"response":{"documents":null,"client":{"id":"1234567","entityType":"Company","fullName":"Legal Entity Name","data":{"name":"Name"}},"hierarchy":{"associatedEntities":[{"id":"12345678","entityType":"Individual","fullName":"Legal Entity Name Related","uboType":null,"isActive":null,"data":{"id":"_dummy"}}],"associations":[{"parentId":"parentId","childId":"childId","ownershipPercentage":1.34,"associationType":"CompanyOfficial","data":{"id":"_dummy"}}]}}}
+                },
+                "Get operation - Error - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Get","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"response":null}
+                },
+                "Test operation - Success - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Test","status":"Success","errorDetails":null,"response":{"adapterSchema":{"lookups":[{"name":"EntityType","values":["Private Company","Public Company"]}],"schema":{"searchRequest":{"searchCriteria":{"fields":[{"name":"LegalEntityName","friendlyName":"Legal Entity Name","type":"text","description":null,"lookup":null,"fields":null}]}},"searchResponse":{"searchResultsData":{"fields":[{"name":"LegalEntityName","friendlyName":"Legal Entity Name","type":"text","description":null,"lookup":null,"fields":null}]}},"getRequest":{"requestData":{"fields":[{"name":"Id","friendlyName":"Id","type":"text","description":null,"lookup":null,"fields":null}]}},"getResponse":{"clientData":{"fields":[{"name":"LegalEntityName","friendlyName":"Legal Entity Name","type":"text","description":null,"lookup":null,"fields":null}]},"associatedEntitiesCompanyData":{"fields":[{"name":"LegalEntityName","friendlyName":"Legal Entity Name","type":"text","description":null,"lookup":null,"fields":null}]},"associatedEntitiesIndividualData":{"fields":[{"name":"LegalEntityName","friendlyName":"Legal Entity Name","type":"text","description":null,"lookup":null,"fields":null}]},"associationsData":{"fields":[{"name":"ChildId","friendlyName":"Child Id","type":"text","description":null,"lookup":null,"fields":null}]}}}},"adapterSchemaIndividual":null}}
+                },
+                "Test operation - Error - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Test","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"response":null}
+                },
+                "Document operation - Success - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Document","status":"Success","errorDetails":null,"response":{"results":[{"documentId":"docId1","fileLocation":"sample1.pdf","status":"DocumentReceived","errorDetails":null,"data":null,"receiveDate":null}]}}
+                },
+                "Document operation - Error - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Document","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"response":null}
+                },
+                "Ubo operation - Success - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Ubo","status":"Success","errorDetails":null,"response":{"results":{"id":"1234567","entityId":"entityId","status":"Aborted","fileLocation":null,"purchasedDocuments":null,"hierarchy":{"associatedEntities":[{"id":"12345678","entityType":"Individual","fullName":"Legal Entity Name Related","uboType":null,"isActive":null,"data":{"id":"_dummy"}}],"associations":[{"parentId":"parentId","childId":"childId","ownershipPercentage":1.34,"associationType":"CompanyOfficial","data":{"id":"_dummy"}}]},"errorDetails":{"source":"adapter","errorCode":"code","message":"Ubo Discovery was aborted on demand of user."}}}}
+                },
+                "Ubo operation - Error - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Ubo","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"response":null}
+                },
+                "OngoingMonitoringSubscription operation - Success - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingMonitoringSubscription","status":"Success","errorDetails":null,"response":{"subscriptionId":"subscriptionId","data":null}}
+                },
+                "OngoingMonitoringSubscription operation - Error - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingMonitoringSubscription","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"response":null}
+                },
+                "OngoingMonitoringUnsubscription operation - Success - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingMonitoringUnsubscription","status":"Success","errorDetails":null,"response":{"subscriptionId":"subscriptionId","data":null}}
+                },
+                "OngoingMonitoringUnsubscription operation - Error - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingMonitoringUnsubscription","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"response":null}
+                },
+                "OngoingMonitoringNotification operation - Success - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingMonitoringNotification","status":"Success","errorDetails":null,"response":{"entityId":"EntityId","eventType":null,"eventSubtype":null,"data":null}}
+                },
+                "OngoingMonitoringNotification operation - Error - Entity type 'Company'": {
+                  "value": {"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingMonitoringNotification","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"response":null}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Success. Data Accepted"
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/receptor/getPresignedUrl": {
+      "post": {
+        "tags": [
+          "Receptor"
+        ],
+        "summary": "Create presigned url for S3 upload",
+        "operationId": "GetPresignedUrl",
+        "parameters": [
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          },
+          {
+            "name": "X-PROVIDER-ID",
+            "in": "header",
+            "description": "The ID of the provider",
+            "schema": {
+              "type": "string"
+            },
+            "example": "ProviderId"
+          },
+          {
+            "name": "X-ENCRYPTION-IV",
+            "in": "header",
+            "description": "The encryption IV key, base64 encoded",
+            "schema": {
+              "type": "string"
+            },
+            "example": "HgyUHIO81m0FcZfPS1lnUw=="
+          },
+          {
+            "name": "X-AUTHENTICATION-MAC",
+            "in": "header",
+            "description": "The authentication MAC key, base64 encoded",
+            "schema": {
+              "type": "string"
+            },
+            "example": "frr2J1pP5rUC6DLe8q1WNko7FmRqUOD8zYTQN4ABgiE="
+          }
+        ],
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSignedUrlRequestDto"
+              },
+              "example": {"documentData":[{"extension":"pdf"},{"extension":".pdf"}]}
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSignedUrlRequestDto"
+              },
+              "example": {"documentData":[{"extension":"pdf"},{"extension":".pdf"}]}
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSignedUrlRequestDto"
+              },
+              "example": {"documentData":[{"extension":"pdf"},{"extension":".pdf"}]}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateSignedUrlResponseDtoListServiceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateSignedUrlResponseDtoListServiceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateSignedUrlResponseDtoListServiceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AdapterResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Id of the request",
+            "nullable": true,
+            "example": "76ce4f1a-8676-4d4f-be0f-ae57b99b7e27"
+          },
+          "tenant": {
+            "type": "string",
+            "description": "The tenant for which the request was for.",
+            "nullable": true
+          },
+          "providerId": {
+            "type": "string",
+            "description": "Id of the external data provider.",
+            "nullable": true,
+            "example": "76ce4f1a-8676-4d4f-be0f-ae57b99b7e27"
+          },
+          "type": {
+            "enum": [
+              "Document",
+              "Get",
+              "Search",
+              "Test",
+              "Ubo",
+              "OngoingMonitoringNotification",
+              "OngoingMonitoringSubscription",
+              "OngoingMonitoringUnsubscription"
+            ],
+            "type": "string",
+            "description": "Type of the adapter response.",
+            "nullable": true,
+            "example": "Search"
+          },
+          "status": {
+            "enum": [
+              "Success",
+              "Error"
+            ],
+            "type": "string",
+            "description": "Status of the adapter response.",
+            "nullable": true,
+            "example": "Success"
+          },
+          "errorDetails": {
+            "$ref": "#/components/schemas/AdapterResponseErrorDetails"
+          },
+          "response": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/GetResponseDto"
+              },
+              {
+                "$ref": "#/components/schemas/SearchResponseDto"
+              },
+              {
+                "$ref": "#/components/schemas/TestResponseDto"
+              },
+              {
+                "$ref": "#/components/schemas/DocumentResponseDto"
+              },
+              {
+                "$ref": "#/components/schemas/UltimateBeneficialOwnerResponseDto"
+              },
+              {
+                "$ref": "#/components/schemas/OngoingMonitoringSubscriptionResponseDto"
+              },
+              {
+                "$ref": "#/components/schemas/OngoingMonitoringNotificationResponseDto"
+              },
+              {
+                "$ref": "#/components/schemas/OngoingMonitoringUnsubscriptionResponseDto"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AdapterResponseErrorDetails": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "description": "Source of the error.",
+            "nullable": true
+          },
+          "errorCode": {
+            "type": "string",
+            "description": "Error code specifying type of the error.",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "description": "Error message",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "This class contains the error details if ther was an error with adapter request."
+      },
+      "AdapterSchemaDto": {
+        "type": "object",
+        "properties": {
+          "lookups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LookupDto"
+            },
+            "description": "Collection of lookup information for the external data adapter schema.\nThose lookups are used for the mapping of the external data to the Fenergo data model.",
+            "nullable": true
+          },
+          "schema": {
+            "$ref": "#/components/schemas/SchemaDto"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Root entity for the external data adapter schema."
+      },
+      "CreateSignedUrlRequestDto": {
+        "type": "object",
+        "properties": {
+          "documentData": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DocumentData"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateSignedUrlResponseDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "nullable": true
+          },
+          "fileName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateSignedUrlResponseDtoListServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateSignedUrlResponseDto"
+            },
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DocumentData": {
+        "type": "object",
+        "properties": {
+          "extension": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DocumentResponseDto": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectDocumentResultDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DocumentResultStatus": {
+        "enum": [
+          "DocumentReceived",
+          "DocumentFailed"
+        ],
+        "type": "string",
+        "description": "Represents the status of a document result.\nAllowed values: DocumentReceived, DocumentFailed"
+      },
+      "FieldDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the field.",
+            "nullable": true,
+            "example": "myTextField"
+          },
+          "friendlyName": {
+            "type": "string",
+            "description": "Friendly name of the field, displayed in the UI for the user.",
+            "nullable": true,
+            "example": "My Text Field"
+          },
+          "type": {
+            "enum": [
+              "text",
+              "number",
+              "date",
+              "select",
+              "multiselect",
+              "datagroup",
+              "multidatagroup"
+            ],
+            "type": "string",
+            "description": "Type of the field.",
+            "nullable": true,
+            "example": "number"
+          },
+          "description": {
+            "type": "string",
+            "description": "Field description.",
+            "nullable": true
+          },
+          "lookup": {
+            "type": "string",
+            "description": "Lookup related to the field, if field is of type \"select\" or \"multiselect\".",
+            "nullable": true,
+            "example": "Country"
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldDto"
+            },
+            "description": "Collection of internal fields, if field is of type \"datagroup\" or \"multidatagroup\".",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "This class represents single field information."
+      },
+      "GetRequestSchemaDto": {
+        "type": "object",
+        "properties": {
+          "requestData": {
+            "$ref": "#/components/schemas/SchemaEntryDto"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Schema for the \"get\" request."
+      },
+      "GetResponseDto": {
+        "type": "object",
+        "properties": {
+          "client": {
+            "$ref": "#/components/schemas/ObjectClientDto"
+          },
+          "hierarchy": {
+            "$ref": "#/components/schemas/ObjectObjectHierarchyDto"
+          },
+          "documents": {
+            "$ref": "#/components/schemas/ObjectDocumentsDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetResponseSchemaDto": {
+        "type": "object",
+        "properties": {
+          "clientData": {
+            "$ref": "#/components/schemas/SchemaEntryDto"
+          },
+          "associatedEntitiesCompanyData": {
+            "$ref": "#/components/schemas/SchemaEntryDto"
+          },
+          "associatedEntitiesIndividualData": {
+            "$ref": "#/components/schemas/SchemaEntryDto"
+          },
+          "associationsData": {
+            "$ref": "#/components/schemas/SchemaEntryDto"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Schema for the \"get\" response."
+      },
+      "LookupDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the lookup",
+            "nullable": true
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Values of the lookup that can be used.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ObjectAssociatedPartyDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "entityType": {
+            "type": "string",
+            "nullable": true
+          },
+          "fullName": {
+            "type": "string",
+            "nullable": true
+          },
+          "uboType": {
+            "type": "string",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "data": {
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ObjectAssociationDto": {
+        "type": "object",
+        "properties": {
+          "parentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "childId": {
+            "type": "string",
+            "nullable": true
+          },
+          "ownershipPercentage": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "associationType": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ObjectClientDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "entityType": {
+            "type": "string",
+            "nullable": true
+          },
+          "fullName": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ObjectDocumentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "data": {
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ObjectDocumentResultDto": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "description": "Document Id",
+            "nullable": true,
+            "example": "d046f87e-2f26-41d4-833a-ed57fb897ee6"
+          },
+          "fileLocation": {
+            "type": "string",
+            "description": "File Location in the Doc Storage",
+            "nullable": true,
+            "example": "//path/file"
+          },
+          "status": {
+            "$ref": "#/components/schemas/DocumentResultStatus"
+          },
+          "errorDetails": {
+            "$ref": "#/components/schemas/AdapterResponseErrorDetails"
+          },
+          "data": {
+            "description": "Generic data depending on the external provider, can contain specifics about the document.",
+            "nullable": true
+          },
+          "receiveDate": {
+            "type": "string",
+            "description": "Receive date",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2021-01-01T14:48:00.000Z"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ObjectDocumentsDto": {
+        "type": "object",
+        "properties": {
+          "entityDocuments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectDocumentDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ObjectObjectHierarchyDto": {
+        "type": "object",
+        "properties": {
+          "associatedEntities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectAssociatedPartyDto"
+            },
+            "nullable": true
+          },
+          "associations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectAssociationDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ObjectObjectUltimateBeneficialOwnerResultDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Id of the ultimate beneficial owner entry.",
+            "nullable": true
+          },
+          "entityId": {
+            "type": "string",
+            "description": "Entity ID for which the request was made to get ultimate beneficial owners.",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Status of the ultimate beneficial owner request.",
+            "nullable": true
+          },
+          "fileLocation": {
+            "type": "string",
+            "nullable": true
+          },
+          "purchasedDocuments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PurchasedDocumentsDto"
+            },
+            "nullable": true
+          },
+          "hierarchy": {
+            "$ref": "#/components/schemas/ObjectObjectHierarchyDto"
+          },
+          "errorDetails": {
+            "$ref": "#/components/schemas/AdapterResponseErrorDetails"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ObjectSearchResultDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Id of the entity.",
+            "nullable": true,
+            "example": "76ce4f1a-8676-4d4f-be0f-ae57b99b7e27"
+          },
+          "entityType": {
+            "enum": [
+              "Company",
+              "Individual"
+            ],
+            "type": "string",
+            "description": "Type of the entity",
+            "nullable": true
+          },
+          "fullName": {
+            "type": "string",
+            "description": "Full name of the entity",
+            "nullable": true,
+            "example": "My Entity Name"
+          },
+          "matchHint": {
+            "type": "string",
+            "description": "Hint how entity is matching search (exact or partial).",
+            "nullable": true,
+            "example": "Selected"
+          },
+          "matchScore": {
+            "type": "number",
+            "description": "Score how much entity matches the search request.",
+            "format": "double",
+            "nullable": true,
+            "example": 25
+          },
+          "data": {
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "OngoingMonitoringNotificationResponseDto": {
+        "type": "object",
+        "properties": {
+          "entityId": {
+            "type": "string",
+            "description": "Entity ID for which notification was sent.",
+            "nullable": true,
+            "example": "bb8cd902-1aa8-456e-a22d-a4fc470e8386"
+          },
+          "eventType": {
+            "type": "string",
+            "description": "Event Type of the notification.",
+            "nullable": true
+          },
+          "eventSubtype": {
+            "type": "string",
+            "description": "Subtype of the notification.",
+            "nullable": true
+          },
+          "data": {
+            "description": "Generic data depending on the external provider, can contain specifics about the entity change.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "This class represents the response for ongoing monitoring notification."
+      },
+      "OngoingMonitoringSubscriptionResponseDto": {
+        "type": "object",
+        "properties": {
+          "subscriptionId": {
+            "type": "string",
+            "description": "Id of subscription confirming the monitoring of the entity.",
+            "nullable": true
+          },
+          "data": {
+            "description": "Generic data, depending on the external provider, can contain specifics of the entity to be monitored.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Response of the ongoing monitoring subscription."
+      },
+      "OngoingMonitoringUnsubscriptionResponseDto": {
+        "type": "object",
+        "properties": {
+          "subscriptionId": {
+            "type": "string",
+            "description": "Subscription id of the unsubscribed data.",
+            "nullable": true,
+            "example": "bb8cd902-1aa8-456e-a22d-a4fc470e8386"
+          },
+          "data": {
+            "description": "Generic data, depending on the external provider, can contain specifics of the entity to be unsubscribed.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Response for ongoing monitoring unsubscription request."
+      },
+      "PurchasedDocumentsDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "fileLocation": {
+            "type": "string",
+            "nullable": true
+          },
+          "errorDetails": {
+            "$ref": "#/components/schemas/AdapterResponseErrorDetails"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SchemaDto": {
+        "type": "object",
+        "properties": {
+          "searchRequest": {
+            "$ref": "#/components/schemas/SearchRequestSchemaDto"
+          },
+          "searchResponse": {
+            "$ref": "#/components/schemas/SearchResponseSchemaDto"
+          },
+          "getRequest": {
+            "$ref": "#/components/schemas/GetRequestSchemaDto"
+          },
+          "getResponse": {
+            "$ref": "#/components/schemas/GetResponseSchemaDto"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Schema of the external data adapter."
+      },
+      "SchemaEntryDto": {
+        "type": "object",
+        "properties": {
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "This class represents single schema information from external data."
+      },
+      "SearchRequestSchemaDto": {
+        "type": "object",
+        "properties": {
+          "searchCriteria": {
+            "$ref": "#/components/schemas/SchemaEntryDto"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Schema for the \"search\" request."
+      },
+      "SearchResponseDto": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ObjectSearchResultDto"
+            },
+            "description": "List of results for the search request.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Response for the \"Search\" request type."
+      },
+      "SearchResponseSchemaDto": {
+        "type": "object",
+        "properties": {
+          "searchResultsData": {
+            "$ref": "#/components/schemas/SchemaEntryDto"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Schema for the \"search\" response."
+      },
+      "ServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ServiceResponseMessage": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "errorCode": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TestResponseDto": {
+        "type": "object",
+        "properties": {
+          "adapterSchema": {
+            "$ref": "#/components/schemas/AdapterSchemaDto"
+          },
+          "adapterSchemaIndividual": {
+            "$ref": "#/components/schemas/AdapterSchemaDto"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Response for the \"Test\" request type.\nIt contains updated adapter schema for the provider."
+      },
+      "UltimateBeneficialOwnerResponseDto": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "$ref": "#/components/schemas/ObjectObjectUltimateBeneficialOwnerResultDto"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Response from the external data adapter with ultimate beneficial owners information."
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "SearchResponseDto",
+      "description": "<SchemaDefinition schemaRef=\"#/components/schemas/SearchResponseDto\" />",
+      "x-displayName": "The SearchResponseDto model"
+    },
+    {
+      "name": "GetResponseDto",
+      "description": "<SchemaDefinition schemaRef=\"#/components/schemas/GetResponseDto\" />",
+      "x-displayName": "The GetResponseDto model"
+    },
+    {
+      "name": "TestResponseDto",
+      "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TestResponseDto\" />",
+      "x-displayName": "The TestResponseDto model"
+    },
+    {
+      "name": "DocumentResponseDto",
+      "description": "<SchemaDefinition schemaRef=\"#/components/schemas/DocumentResponseDto\" />",
+      "x-displayName": "The DocumentResponseDto model"
+    },
+    {
+      "name": "UltimateBeneficialOwnerResponseDto",
+      "description": "<SchemaDefinition schemaRef=\"#/components/schemas/UltimateBeneficialOwnerResponseDto\" />",
+      "x-displayName": "The UltimateBeneficialOwnerResponseDto model"
+    },
+    {
+      "name": "OngoingMonitoringSubscriptionResponseDto",
+      "description": "<SchemaDefinition schemaRef=\"#/components/schemas/OngoingMonitoringSubscriptionResponseDto\" />",
+      "x-displayName": "The OngoingMonitoringSubscriptionResponseDto model"
+    },
+    {
+      "name": "OngoingMonitoringUnsubscriptionResponseDto",
+      "description": "<SchemaDefinition schemaRef=\"#/components/schemas/OngoingMonitoringUnsubscriptionResponseDto\" />",
+      "x-displayName": "The OngoingMonitoringUnsubscriptionResponseDto model"
+    },
+    {
+      "name": "OngoingMonitoringNotificationResponseDto",
+      "description": "<SchemaDefinition schemaRef=\"#/components/schemas/OngoingMonitoringNotificationResponseDto\" />",
+      "x-displayName": "The OngoingMonitoringNotificationResponseDto model"
+    }
+  ],
+  "x-tagGroups": [
+    {
+      "name": "Endpoints",
+      "tags": [
+        "Receptor"
+      ]
+    },
+    {
+      "name": "Models",
+      "tags": [
+        "SearchResponseDto",
+        "GetResponseDto",
+        "TestResponseDto",
+        "DocumentResponseDto",
+        "UltimateBeneficialOwnerResponseDto",
+        "OngoingMonitoringSubscriptionResponseDto",
+        "OngoingMonitoringUnsubscriptionResponseDto",
+        "OngoingMonitoringNotificationResponseDto"
+      ]
+    }
+  ]
+}

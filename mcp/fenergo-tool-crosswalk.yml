@@ -1,0 +1,120 @@
+generated: '2026-09-09'
+method: derived
+source: mcp/fenergo-mcp.yml + openapi/ (145 contracts) + the Supergraph GraphQL surface
+note: 'Fenergo has no MCP server, so there is no published tool set to bind. This crosswalk records the REAL divergence
+  that does exist: a REST estate of 2381 operations, a GraphQL Supergraph that projects only four of those domains,
+  and a derived MCP candidate. Every crosswalk row below binds a CANDIDATE tool to a verified operationId; confidence
+  is high because the binding is 1:1 with an operation that exists, not because a provider tool was matched.'
+surfaces:
+  openapi:
+    location: openapi/
+    contracts: 145
+    operations: 2381
+    gated: false
+    note: Contracts are anonymously downloadable from api.fenergox.com/{service}/swagger/{version}/swagger.json;
+      calling the APIs requires a tenant and a token.
+  graphql:
+    endpoint: https://api.{environment}.fenergox.com/supergraph
+    gated: true
+    http_status: 401
+    domains:
+    - EntityData
+    - Journey
+    - Associations
+    - Product
+    note: Introspection returned 401 {"message":"Unauthorized"} anonymously on 2026-09-09, so no SDL was harvested.
+      Fenergo states the endpoint returns the schema in introspective JSON to an authenticated caller. A second
+      GraphQL surface exists for Comments (scope fenx.comments).
+  mcp:
+    url: null
+    gated: null
+    note: No MCP server published; see mcp/fenergo-mcp.yml deployment.mode = none.
+coverage:
+  tools_named: 10
+  tools_bound: 10
+  mcp_only: 0
+  rest_operations_total: 2381
+  rest_operations_with_a_tool: 10
+  graphql_covered_domains: 4
+  rest_domains: 108
+crosswalk:
+- tool: get_legal_entity
+  category: associationquery
+  rest:
+  - GetEntityById
+  binding: rest
+  confidence: high
+  note: Candidate tool; binding verified against the operationId in the named contract.
+- tool: list_legal_entities
+  category: screeningquery
+  rest:
+  - GetEntitiesList
+  binding: rest
+  confidence: high
+  note: Candidate tool; binding verified against the operationId in the named contract.
+- tool: list_entity_drafts
+  category: entitydataquery
+  rest:
+  - GetEntityDrafts
+  binding: rest
+  confidence: high
+  note: Candidate tool; binding verified against the operationId in the named contract.
+- tool: create_legal_entity
+  category: entitydatacommand
+  rest:
+  - CreateEntity
+  binding: rest
+  confidence: high
+  note: Candidate tool; binding verified against the operationId in the named contract.
+- tool: reject_entity_draft
+  category: entitydatacommand
+  rest:
+  - RejectEntityDraft
+  binding: rest
+  confidence: high
+  note: Candidate tool; binding verified against the operationId in the named contract.
+- tool: abort_journey
+  category: journeycommand
+  rest:
+  - AbortJourneyInstance
+  binding: rest
+  confidence: high
+  note: Candidate tool; binding verified against the operationId in the named contract.
+- tool: cancel_job
+  category: bulkloadcommand
+  rest:
+  - CancelJob
+  binding: rest
+  confidence: high
+  note: Candidate tool; binding verified against the operationId in the named contract.
+- tool: list_teams
+  category: authorizationquery
+  rest:
+  - GetAllTeams
+  binding: rest
+  confidence: high
+  note: Candidate tool; binding verified against the operationId in the named contract.
+- tool: list_access_layers
+  category: authorizationquery
+  rest:
+  - GetAllAccessLayers
+  binding: rest
+  confidence: high
+  note: Candidate tool; binding verified against the operationId in the named contract.
+- tool: list_collaterals
+  category: collateralquery
+  rest:
+  - GetCollaterals
+  binding: rest
+  confidence: high
+  note: Candidate tool; binding verified against the operationId in the named contract.
+mcp_only: []
+rest_only:
+- capability: the remaining 2371 operations across 108 CLM services and 8 Transaction Monitoring services
+  reason: No MCP server exists, so every operation is rest_only by definition. Listed here as a capability count
+    rather than 2,371 rows.
+graphql_only:
+- capability: cross-domain single-query joins across EntityData + Journey + Associations + Product
+  reason: The Supergraph resolves a client query into multiple REST calls server-side; that composition has no single
+    REST operation.
+  source: https://docs.fenergox.com/developer-hub/data-extraction/supergraph-query-overview

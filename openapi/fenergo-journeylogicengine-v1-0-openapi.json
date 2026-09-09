@@ -1,0 +1,446 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "Fenergo Nebula Journey Logic Engine",
+    "description": "**Journey Logic Engine API**:\n\n<br> Logic Engine API is a rules engine impementation in Journey domain. The Logic Engine API should be used in tandem with Journey Command API and Journey Query API. Use the Journey Command API to create and manage Journey Schemas and Journey Instances. Use the Command Query API to retrieve Journey Schema and Journey Instance aggregates.\n\n<br> **Journey Logic Engine API Provides**:\n\n<br><ul><li> The ability to evaluate the logic conditions. The request should contain the values configured in the conditions (typically Entity attributes). The Logic Engine will execute the logic and return all matching Journey Schemas.The matched Journey Schema ID can be used then to create a new Journey Instance.</li></ul>",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "/journeylogicengine"
+    }
+  ],
+  "paths": {
+    "/api/cache/flush": {
+      "delete": {
+        "tags": [
+          "Cache"
+        ],
+        "summary": "Allows clearing the Logic Engine API cache.\nThis is an maintenance endpoint and does not need to be used under normal circumstances.",
+        "description": "<br /><br /><b>Required permissions:</b><br />Following permissions are required: JourneyBuilderDelete",
+        "parameters": [
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Cache was flushed successfully."
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server exception. Please, contact your provider.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "Internal server exception. Please, contact your provider.",
+                      "type": "Error",
+                      "errorCode": "INTERNAL_SERVER_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/engine/evaluate-journey-schema": {
+      "post": {
+        "tags": [
+          "Engine"
+        ],
+        "summary": "Evaluates logic condition to retrieve matching Journey Schema(s)",
+        "description": "<ul>\n  <li>Executes logic engine to retrieve all journey schemas that requests match with defined conditions.</li>\n  <li>Returns the collection of matching journey schemas filtered by journey type if filter provided.</li>\n</ul><br /><br /><b>Required permissions:</b><br />Following permissions are required: JourneyCreate",
+        "operationId": "EvaluateJourneySchema",
+        "parameters": [
+          {
+            "name": "journeyTypeFilter",
+            "in": "query",
+            "description": "Optional filter(s) to retrieve matched schemas only for specified journey type.\nIf multiple filters specified (i.e. Client Onboarding and Client Offboarding) both journey types will be returned (if matched).\nIf empty (no filters), all matched journey types will be returned.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "description": "Service request with key-value data required for evaluation",
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EvaluateJourneySchemaRequestDtoServiceRequest"
+                  }
+                ],
+                "description": "Service request data"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. The list of evaluated journey schemas is returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvaluateJourneySchemaResponseDtoIEnumerableServiceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server exception. Please, contact your provider.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "Internal server exception. Please, contact your provider.",
+                      "type": "Error",
+                      "errorCode": "INTERNAL_SERVER_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ChannelTypeDto": {
+        "enum": [
+          "Internal",
+          "External",
+          "InternalAndExternal"
+        ],
+        "type": "string"
+      },
+      "EvaluateJourneySchemaRequestDtoServiceRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Key-value pairs used to evaluate the condition",
+            "nullable": true,
+            "example": {
+              "entityType": "Company"
+            }
+          }
+        },
+        "additionalProperties": false,
+        "description": "Service request data"
+      },
+      "EvaluateJourneySchemaResponseDto": {
+        "type": "object",
+        "properties": {
+          "journeySchemaId": {
+            "type": "string",
+            "description": "The UiD of matched journey schema",
+            "format": "uuid",
+            "example": "118313c6-91e6-4b05-a537-5a1ab906418f"
+          },
+          "journeySchemaVersion": {
+            "type": "integer",
+            "description": "The version number of matched journey schema",
+            "format": "int32",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of matched journey schema",
+            "nullable": true,
+            "example": "Individual Client Onboarding"
+          },
+          "identifier": {
+            "type": "string",
+            "description": "Short identifier of matched journey schema",
+            "nullable": true,
+            "example": "IND_ONB_1"
+          },
+          "journeyType": {
+            "type": "string",
+            "description": "Type of matched journey schema",
+            "nullable": true,
+            "example": "Client Onboarding"
+          },
+          "channelType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChannelTypeDto"
+              }
+            ],
+            "description": "Channel type of matched journey schema"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Response DTO representing parameters of matched journey schema"
+      },
+      "EvaluateJourneySchemaResponseDtoIEnumerableServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EvaluateJourneySchemaResponseDto"
+            },
+            "description": "The service response DTO",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "description": "List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Service response data"
+      },
+      "ObjectServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "description": "The service response DTO",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "description": "List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Service response data"
+      },
+      "ServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string",
+            "description": "The service response DTO",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "description": "List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Service response data"
+      },
+      "ServiceResponseMessage": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "The message",
+            "nullable": true,
+            "example": "Success"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of the message\nOne of Info, Warning, Error, Forbidden",
+            "nullable": true,
+            "example": "Info"
+          },
+          "errorCode": {
+            "type": "string",
+            "description": "Error Code",
+            "nullable": true,
+            "example": "INTERNAL_SERVER_ERROR"
+          }
+        },
+        "additionalProperties": false,
+        "description": "The message associated to the service response"
+      },
+      "StringServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string",
+            "description": "The service response DTO",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "description": "List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Service response data"
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "apiKey",
+        "description": "Please insert JWT with Bearer into field",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ]
+}

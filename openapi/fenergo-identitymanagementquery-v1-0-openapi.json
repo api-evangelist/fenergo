@@ -1,0 +1,1421 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Fenergo Nebula Identity - Self-Service Management Query",
+    "description": "**Self-Service Management Query API**:\n\n<br> The Self-Service Management Query API provides methods to retrieve Users, Clients and their information per Tenant. Use the Self-Service Management Command API to create and manage user and client data. \n\n<br> **Self-Service Management Query API provides**:<br><ul><li> The ability to query for All Users within a single Tenant.</li><li> The ability to query for Single User Details by User Id within a given Tenant.</li><li> The ability to query for All Clients within a single Tenant.</li><li> The ability to query for Single Client Details by Client Id within a given Tenant.</li><li> The ability to query for All Secrets within a single Client.</li><li> The ability to query for Single Secret by Secret Id within a given Client.</li><li> The ability to query for All Scopes a Client can have assigned.</li></ul>",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "/identitymanagementquery"
+    }
+  ],
+  "paths": {
+    "/api/clients": {
+      "get": {
+        "tags": [
+          "Clients"
+        ],
+        "summary": "Returns all clients from the tenant",
+        "description": "<br /><br /><b>Required permissions:</b><br />Following permissions are required: ClientAdministration",
+        "operationId": "GetClients",
+        "parameters": [
+          {
+            "name": "Size",
+            "in": "query",
+            "description": "Non-negative value indicating desired number of results",
+            "schema": {
+              "maximum": 100000,
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "example": 100
+            },
+            "example": 100
+          },
+          {
+            "name": "From",
+            "in": "query",
+            "description": "Non-negative value indicating the 0-based index of the query result",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "example": 0
+            },
+            "example": 0
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Clients data retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientApiDtoIEnumerableServiceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/clients/{clientId}": {
+      "get": {
+        "tags": [
+          "Clients"
+        ],
+        "summary": "Returns the client with the specified id",
+        "description": "<br /><br /><b>Required permissions:</b><br />Following permissions are required: ClientAdministration",
+        "operationId": "GetClientById",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "description": "Client Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Client data retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientApiDtoServiceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not found. The client hasn't been found",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/clients/{clientId}/secrets": {
+      "get": {
+        "tags": [
+          "Clients"
+        ],
+        "summary": "Returns all secrets from the client",
+        "description": "<br /><br /><b>Required permissions:</b><br />Following permissions are required: SecretAdministration",
+        "operationId": "GetClientSecrets",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "description": "The clientId of the client",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Size",
+            "in": "query",
+            "description": "Non-negative value indicating desired number of results",
+            "schema": {
+              "maximum": 100000,
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "example": 100
+            },
+            "example": 100
+          },
+          {
+            "name": "From",
+            "in": "query",
+            "description": "Non-negative value indicating the 0-based index of the query result",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "example": 0
+            },
+            "example": 0
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Client secrets retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientSecretsDtoServiceResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not found. Client secrets have not been found",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server exception. Please, contact your provider.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "Internal server exception. Please, contact your provider.",
+                      "type": "Error",
+                      "errorCode": "INTERNAL_SERVER_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/clients/{clientId}/secrets/{secretId}": {
+      "get": {
+        "tags": [
+          "Clients"
+        ],
+        "summary": "Returns the secret by id from the client",
+        "description": "<br /><br /><b>Required permissions:</b><br />Following permissions are required: SecretAdministration",
+        "operationId": "GetClientSecretById",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "description": "The clientId of the client",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "secretId",
+            "in": "path",
+            "description": "The ID of the client secret",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Client secret retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecretDtoServiceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not found. The client secret has not been found",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scopes": {
+      "get": {
+        "tags": [
+          "Clients"
+        ],
+        "summary": "Returns all scopes",
+        "description": "<br /><br /><b>Required permissions:</b><br />Following permissions are required: ClientAdministration",
+        "operationId": "GetScopes",
+        "parameters": [
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Scopes retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScopesDtoServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server exception. Please, contact your provider.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "Internal server exception. Please, contact your provider.",
+                      "type": "Error",
+                      "errorCode": "INTERNAL_SERVER_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Returns all users from the tenant",
+        "description": "<br /><br /><b>Required permissions:</b><br />Following permissions are required: UserAdministration",
+        "operationId": "GetUsers",
+        "parameters": [
+          {
+            "name": "SearchTerm",
+            "in": "query",
+            "description": "Free-text search matched against the start of the user's email address. Case insensitive.",
+            "schema": {
+              "type": "string",
+              "example": "john.doe@fenergo"
+            },
+            "example": "john.doe@fenergo"
+          },
+          {
+            "name": "Size",
+            "in": "query",
+            "description": "Non-negative value indicating desired number of results",
+            "schema": {
+              "maximum": 100000,
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "example": 100
+            },
+            "example": 100
+          },
+          {
+            "name": "From",
+            "in": "query",
+            "description": "Non-negative value indicating the 0-based index of the query result",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "example": 0
+            },
+            "example": 0
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Users data retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsersPaginationResponseDtoServiceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/{id}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Returns the user with the specified id",
+        "description": "<br /><br /><b>Required permissions:</b><br />Following permissions are required: UserAdministration",
+        "operationId": "GetUserById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "User Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. User data retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDtoServiceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not found. The user hasn't been found",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ClientApiDto": {
+        "required": [
+          "allowedGrantTypes",
+          "allowedScopes",
+          "clientEmails",
+          "clientId",
+          "clientName",
+          "updated"
+        ],
+        "type": "object",
+        "properties": {
+          "clientId": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The unique identifier of the client",
+            "example": "cli-tool-1_b2e58c3e-d66f-4d02-b40e-c8e6585a72a7"
+          },
+          "clientName": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The name of the client",
+            "example": "cli-tool-1"
+          },
+          "allowedScopes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Scopes the client has access to",
+            "example": [
+              "scimapi.resource.update",
+              "scimapi.resource.query",
+              "scimapi.resource.delete",
+              "fenx.product.read"
+            ]
+          },
+          "allowedGrantTypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Specifies the grant types the client is allowed to use",
+            "example": [
+              "client_credentials",
+              "authorization_code"
+            ]
+          },
+          "updated": {
+            "type": "string",
+            "description": "Last updated date",
+            "format": "date-time",
+            "example": "2018-04-08T11:52:00.9273241Z"
+          },
+          "clientEmails": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Emails used for notifications about certificate expiration.",
+            "example": "Test@fenergo.com"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the data transfer object for a client."
+      },
+      "ClientApiDtoIEnumerableServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClientApiDto"
+            },
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClientApiDtoServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ClientApiDto"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClientSecretsDto": {
+        "type": "object",
+        "properties": {
+          "clientId": {
+            "type": "string",
+            "description": "The id of the client.",
+            "nullable": true
+          },
+          "secrets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SecretDto"
+            },
+            "description": "Paginated collection of client secrets.",
+            "nullable": true
+          },
+          "totalRecords": {
+            "type": "integer",
+            "description": "The total number of secrets for the client.",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the data transfer object for client secrets."
+      },
+      "ClientSecretsDtoServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ClientSecretsDto"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ObjectServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ScopesDto": {
+        "type": "object",
+        "properties": {
+          "scopes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Collection of scope names.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the data transfer object for a scope."
+      },
+      "ScopesDtoServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ScopesDto"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SecretDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The id of the client secret.",
+            "format": "int32"
+          },
+          "type": {
+            "$ref": "#/components/schemas/SecretTypeDTO"
+          },
+          "created": {
+            "type": "string",
+            "description": "The creation date of the client secret.",
+            "format": "date-time"
+          },
+          "expiration": {
+            "type": "string",
+            "description": "The expiration date of the client secret.",
+            "format": "date-time",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "The description of the client secret.",
+            "nullable": true
+          },
+          "clientId": {
+            "type": "string",
+            "description": "The id of the client.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the data transfer object for a client secret."
+      },
+      "SecretDtoServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/SecretDto"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SecretTypeDTO": {
+        "enum": [
+          "ClientSecret",
+          "Certificate"
+        ],
+        "type": "string"
+      },
+      "ServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ServiceResponseMessage": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "errorCode": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StringServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UserDto": {
+        "required": [
+          "customProperties",
+          "email",
+          "emailConfirmed",
+          "id",
+          "lastLogin",
+          "sources"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The unique identifier of the user",
+            "example": "b2e58c3e-d66f-4d02-b40e-c8e6585a72a7"
+          },
+          "email": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The email address of the user",
+            "example": "john.doe@test.com"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "The first name of the user",
+            "nullable": true,
+            "example": "John"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "The last name of the user",
+            "nullable": true,
+            "example": "Doe"
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Indicates what are the sources of the user, i.e., how the user was created and managed",
+            "example": [
+              "SSO",
+              "User Management"
+            ]
+          },
+          "emailConfirmed": {
+            "type": "boolean",
+            "description": "Indicates if the user has confirmed their email address",
+            "example": true
+          },
+          "customProperties": {
+            "type": "object",
+            "additionalProperties": { },
+            "description": "A dictionary of custom properties for the user\r\nExample: {\"stringProperty\": \"value\", \"booleanProperty\": false, \"numberProperty\": 1}"
+          },
+          "lastLogin": {
+            "type": "string",
+            "description": "A DateTime value set automatically when user was logged in last time",
+            "format": "date-time"
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "A flag that indicates if user is active or suspended in current tenant"
+          },
+          "status": {
+            "type": "string",
+            "description": "Indicates what is the status of the user. \r\nAvailable statuses: Active, Deactivated, Locked, Suspended, Unverified",
+            "nullable": true
+          },
+          "scimId": {
+            "type": "string",
+            "description": "The unique identifier of the user in the Fen-X Identity SCIM system",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the data transfer object for a user."
+      },
+      "UserDtoServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/UserDto"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UsersPaginationResponseDto": {
+        "required": [
+          "from",
+          "size",
+          "totalResults",
+          "users"
+        ],
+        "type": "object",
+        "properties": {
+          "totalResults": {
+            "type": "integer",
+            "description": "Number of users returned",
+            "format": "int32",
+            "example": 100
+          },
+          "size": {
+            "type": "integer",
+            "description": "Size value",
+            "format": "int32",
+            "example": 100
+          },
+          "from": {
+            "type": "integer",
+            "description": "From value",
+            "format": "int32",
+            "example": 0
+          },
+          "users": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserDto"
+            }
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the data transfer object for users pagination response."
+      },
+      "UsersPaginationResponseDtoServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/UsersPaginationResponseDto"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "apiKey",
+        "description": "Please insert JWT with Bearer into field",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ]
+}

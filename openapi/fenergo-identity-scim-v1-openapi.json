@@ -1,0 +1,4066 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Fenergo Nebula Identity Scim API",
+    "description": "\n## What is SCIM?\nSCIM (System for Cross-Domain Identity Management) is an industry standard specification \ndesigned to bring consistency to the management of user identities in cloud-based applications and services.\n\n### What does the Fen-X SCIM feature give us?\nA publicly exposed new RESTful API (compliant with the SCIM 2.0 specification) \nwhich will allow clients to manage the users in their Fen-X tenants. Clients can do this in two main ways:\n<ul>\n    <li> Calling the SCIM RESTfull API directly.</li>\n    <li> Provision a SCIM 2.0 connector/application in their Identity Provider.</li>\n</ul>\n\n### SCIM RFC specifications\nFor more information about SCIM and examples on how to use it, check out the following RFC specifications:\n<ul>\n    <li><a href='https://www.rfc-editor.org/rfc/rfc7642.html' target='_blank'>RFC 7642 - System for Cross-domain Identity Management: Definitions, Overview, Concepts, and Requirements</a></li>\n    <li><a href='https://www.rfc-editor.org/rfc/rfc7643.html' target='_blank'>RFC 7643 - System for Cross-domain Identity Management: Core Schema</a></li>\n    <li><a href='https://www.rfc-editor.org/rfc/rfc7644.html' target='_blank'>RFC 7644 - System for Cross-domain Identity Management: Protocol</a></li>\n<ul>\n",
+    "version": "v1"
+  },
+  "servers": [
+    {
+      "url": "/scim"
+    }
+  ],
+  "paths": {
+    "/Bulk": {
+      "post": {
+        "tags": [
+          "Bulk"
+        ],
+        "summary": "Performs multiple operations at once and returns the status of each operation.",
+        "operationId": "Bulk",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkRequestDto"
+              },
+              "examples": {
+                "bulk-create-users": {
+                  "summary": "Bulk - Create multiple users",
+                  "description": "Create multiple users at once. The 'bulkId' attribute is REQUIRED because operations are POST",
+                  "value": {
+"schemas": [ "urn:ietf:params:scim:api:messages:2.0:BulkRequest" ],
+"operations": [
+{
+"method": "POST",
+"path": "/Users",
+"bulkId": "bulkid1",
+"data": {
+"externalId": "1234",
+"schemas": [ "urn:ietf:params:scim:schemas:core:2.0:User" ],
+"userName": "johndoe@company.com",
+"emails": [
+{
+"type": "work",
+"value": "johndoe@company.com",
+"primary": true
+}
+],
+"name": {
+"familyName": "Doe",
+"givenName": "John"
+}
+}
+},
+{
+"method": "POST",
+"path": "/Users",
+"bulkId": "bulkid2",
+"data": {
+"externalId": "5678",
+"schemas": [ "urn:ietf:params:scim:schemas:core:2.0:User" ],
+"userName": "johnsmith@company.com",
+"emails": [
+{
+"type": "work",
+"value": "johnsmith@company.com",
+"primary": true
+}
+],
+"name": {
+"familyName": "Smith",
+"givenName": "John"
+}
+}
+}
+]
+}
+                },
+                "bulk-update-users": {
+                  "summary": "Bulk - Update multiple users",
+                  "description": "Update multiple users at once. The 'userName' is mandatory and it can't be changed because operations are PUT",
+                  "value": {
+"schemas": [ "urn:ietf:params:scim:api:messages:2.0:BulkRequest" ],
+"operations": [
+{
+"method": "PUT",
+"path": "/Users/efca51d8-938d-4855-b461-3166d1e6fe8e",
+"bulkId": "1234",
+"data": {
+"schemas": [ "urn:ietf:params:scim:schemas:core:2.0:User" ],
+"userName": "johndoe@company.com",
+"name": {
+"familyName": "New family name",
+"givenName": "New given name"
+},
+"emails": [
+{
+"primary": true,
+"type": "work",
+"value": "johndoe@company.com"
+},
+{
+"type": "home",
+"value": "johndoe@gmail.com"
+}
+]
+}
+},
+{
+"method": "PUT",
+"path": "/Users/7cd066bc-b706-468f-938a-f955930b693f",
+"bulkId": "5678",
+"data": {
+"schemas": [ "urn:ietf:params:scim:schemas:core:2.0:User" ],
+"userName": "johnsmith@company.com",
+"nickName": "New nickname"
+}
+}
+]
+}
+                },
+                "bulk-patch-users": {
+                  "summary": "Bulk - Patch multiple users",
+                  "description": "Patch multiple users at once",
+                  "value": {
+"schemas": [ "urn:ietf:params:scim:api:messages:2.0:BulkRequest" ],
+"operations": [
+{
+"method": "PATCH",
+"path": "/Users/efca51d8-938d-4855-b461-3166d1e6fe8e",
+"data": {
+"operations": [
+{
+"op": "replace",
+"path": "name",
+"value": {
+"givenName": "New Given Name",
+"familyName": "New Family Name"
+}
+},
+{
+"op": "add",
+"path": "title",
+"value": "New title"
+},
+{
+"op": "remove",
+"path": "nickName"
+}
+],
+"schemas": [ "urn:ietf:params:scim:api:messages:2.0:PatchOp" ]
+}
+},
+{
+"method": "PATCH",
+"path": "/Users/7cd066bc-b706-468f-938a-f955930b693f",
+"data": {
+"operations": [
+{
+"op": "add",
+"path": "nickName",
+"value": "My nickname"
+}
+],
+"schemas": [ "urn:ietf:params:scim:api:messages:2.0:PatchOp" ]
+}
+}
+]
+}
+                },
+                "bulk-delete-users": {
+                  "summary": "Bulk - Delete multiple users",
+                  "description": "Delete multiple users at once",
+                  "value": {
+"schemas": [ "urn:ietf:params:scim:api:messages:2.0:BulkRequest" ],
+"operations": [
+{
+"method": "DELETE",
+"path": "/Users/efca51d8-938d-4855-b461-3166d1e6fe8e"
+},
+{
+"method": "DELETE",
+"path": "/Users/7cd066bc-b706-468f-938a-f955930b693f"
+}
+]
+}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkResponseDto"
+                },
+                "example": {
+"schemas": [
+"urn:ietf:params:scim:api:messages:2.0:BulkResponse"
+],
+"Operations": [
+{
+"method": "{HTTP_METHOD}",
+"bulkId": "bulkId1",
+"status": {
+"code": 200
+},
+"version": "1",
+"location": "https://company.com/scim/Users/{userId}"
+},
+{
+"method": "{HTTP_METHOD}",
+"bulkId": "bulkId2",
+"status": {
+"code": 404,
+"response": {}
+}
+},
+{
+"method": "{HTTP_METHOD}",
+"bulkId": "bulkId3",
+"status": {
+"code": 400,
+"response": {}
+}
+}
+]
+}
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Client Error"
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Groups": {
+      "get": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Gets all groups. Accepts filters and sorting.",
+        "description": "<p>Check out the following sections of the SCIM RFC for more information about how to use the search parameters:</p><ul><li>Definition of the search attributes: <a href='https://www.rfc-editor.org/rfc/rfc7644.html#section-3.4.3' target='_blank'>RFC 7644 Section 3.4.3</a></li><li>The format of the 'attributes' and the 'excludedAttributes' properties: <a href='https://www.rfc-editor.org/rfc/rfc7644.html#section-3.10' target='_blank'>RFC 7644 Section 3.10</a></li><li>Supported operators for filtering: <a href='https://www.rfc-editor.org/rfc/rfc7644.html#section-3.4.2.2' target='_blank'>RFC 7644 Section 3.4.2.2</a></li></ul><p>Groups with many members could make endpoint timeout, make sure <b>members</b> attribute is added to the list of <b>excludedAttributes</b>. For groups with many members, prefer <b>/Groups/{id}</b> endpoint.</p>",
+        "operationId": "GetAllGroups",
+        "parameters": [
+          {
+            "name": "attributes",
+            "in": "query",
+            "description": "A multi-valued list of strings indicating the names of resource attributes to return in the response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "excludedAttributes",
+            "in": "query",
+            "description": "A multi-valued list of strings indicating the names of resource attributes to be removed from the default set of attributes to return",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [
+                "members"
+              ]
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "A string indicating the attribute whose value shall be used to order the returned responses",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "description": "An integer indicating the order in which the \"sortBy\" parameter is applied. Sort order: 0 'Ascending' or 1 'Descending'.",
+            "schema": {
+              "$ref": "#/components/schemas/SearchSCIMRepresentationOrders"
+            }
+          },
+          {
+            "name": "startIndex",
+            "in": "query",
+            "description": "An integer indicating the 1-based index of the first query result.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "description": "An integer indicating the desired maximum number of query results per page",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "description": "Filter expression from the SCIM 2.0 specification <a href=\"https://www.rfc-editor.org/rfc/rfc7644#section-3.4.2.2\">(RFC 7644)</a> (case in-sensitive).",
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "No filter": {
+                "value": ""
+              },
+              "DisplayName starts with 'Group'": {
+                "value": "displayName sw \"Group\""
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListGroupsResponseDto"
+                },
+                "example": {
+"schemas": [
+"urn:ietf:params:scim:api:messages:2.0:ListResponse"
+],
+"totalResults": 2,
+"itemsPerPage": 100,
+"startIndex": 1,
+"Resources": [
+{
+"id": "24f0c403-370b-4b13-b675-2f6ce0d2b2bf",
+"members": [
+{
+"value": "04c23012-4dba-4005-bd08-f063061dce12"
+}
+],
+"displayName": "Test Group with fenxgroup extension",
+"urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group": {
+"fenxAccessLayerIds": [
+"c40ac099-1cdc-440b-80c6-edff7529bd57"
+],
+"fenxTeamIds": [
+"02fc78fd-98d5-4f09-bd5d-a72259377a48",
+"adab0d3b-a00d-4fd1-9ab3-39dbeab235dc"
+]
+},
+"meta": {
+"resourceType": "Group",
+"created": "2024-03-13T16:21:12.519645",
+"lastModified": "2024-03-13T21:57:12.661613",
+"version": 3,
+"location": "https://identity.fenergonebula.com/scim/Groups/24f0c403-370b-4b13-b675-2f6ce0d2b2bf"
+},
+"externalId": "1234",
+"schemas": [
+"urn:ietf:params:scim:schemas:core:2.0:Group",
+"urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group"
+]
+},
+{
+"id": "916e5e9e-06b7-49b5-90bc-c7f206e8c858",
+"displayName": "Test Group",
+"members": [],
+"urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group": {},
+"meta": {
+"resourceType": "Group",
+"created": "2024-03-13T21:57:53.254864",
+"lastModified": "2024-03-13T21:57:53.254864",
+"version": 0,
+"location": "https://identity.fenergonebula.com/scim/Groups/916e5e9e-06b7-49b5-90bc-c7f206e8c858"
+},
+"externalId": "12345",
+"schemas": [
+"urn:ietf:params:scim:schemas:core:2.0:Group",
+"urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group"
+]
+}
+]
+}
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "400": {
+            "description": "BadRequest",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Creates a group.",
+        "description": "<p>The mandatory fields to create a new group are: </p><ul><li>A schema array (schemas)</li><li>A display name (displayName)</li></ul><p>Returns 201 if successfully created, 409 Conflict if 'displayName' already exists.</p><p>The 'id' returned by this endpoint when a group is created is the ID of the group in the SCIM API, and can be used to manage the group resource within the SCIM API.</p>",
+        "operationId": "CreateGroup",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GroupsCreateUpdateRequestDto"
+              },
+              "examples": {
+                "groups-create-group": {
+                  "summary": "Groups - Create a group",
+                  "description": "Create a new group",
+                  "value": {
+"externalId": "1234",
+"schemas": [
+"urn:ietf:params:scim:schemas:core:2.0:Group"
+],
+"displayName": "Test Group"
+}
+                },
+                "groups-create-group-with-members": {
+                  "summary": "Groups - Create a group with members",
+                  "description": "Create a new group with members",
+                  "value": {
+"externalId": "1234",
+"schemas": [
+"urn:ietf:params:scim:schemas:core:2.0:Group"
+],
+"displayName": "Test Group",
+"members": [
+{
+"value": "df00c9f4-d8f0-4d8c-b5fe-139944bc70a2"
+}
+]
+}
+                },
+                "groups-create-group-with-extension-schema": {
+                  "summary": "Groups - Create a group with extension schema",
+                  "description": "Create a new group with extension schema",
+                  "value": {
+"externalId": "1234",
+"schemas": [
+"urn:ietf:params:scim:schemas:core:2.0:Group",
+"urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group"
+],
+"displayName": "Test Group with fenxgroup extension",
+"urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group": {
+"fenxTeamIds": [
+"adab0d3b-a00d-4fd1-9ab3-39dbeab235dc",
+"02fc78fd-98d5-4f09-bd5d-a72259377a48"
+],
+"fenxAccessLayerIds": [
+"c40ac099-1cdc-440b-80c6-edff7529bd57"
+]
+}
+}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupsResponseDto"
+                },
+                "example": {
+"id": "24f0c403-370b-4b13-b675-2f6ce0d2b2bf",
+"members": [
+{
+"value": "04c23012-4dba-4005-bd08-f063061dce12"
+}
+],
+"displayName": "Test Group with fenxgroup extension",
+"urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group": {
+"fenxAccessLayerIds": [
+"c40ac099-1cdc-440b-80c6-edff7529bd57"
+],
+"fenxTeamIds": [
+"02fc78fd-98d5-4f09-bd5d-a72259377a48",
+"adab0d3b-a00d-4fd1-9ab3-39dbeab235dc"
+]
+},
+"meta": {
+"resourceType": "Group",
+"created": "2024-03-13T16:21:12.519645",
+"lastModified": "2024-03-13T21:57:12.661613",
+"version": 3,
+"location": "https://identity.fenergonebula.com/scim/Groups/24f0c403-370b-4b13-b675-2f6ce0d2b2bf"
+},
+"externalId": "1234",
+"schemas": [
+"urn:ietf:params:scim:schemas:core:2.0:Group",
+"urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group"
+]
+}
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                },
+                "example": {
+"schemas": [
+"urn:ietf:params:scim:api:messages:2.0:Error"
+],
+"status": "409",
+"scimType": "uniqueness",
+"detail": "attribute displayName must be unique"
+}
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Groups/.search": {
+      "post": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Returns groups according to the filter, sort and pagination parameters.",
+        "description": "<p>Check out the following sections of the SCIM RFC for more information about how to use the search parameters:</p><ul><li>Definition of the search attributes: <a href='https://www.rfc-editor.org/rfc/rfc7644.html#section-3.4.3' target='_blank'>RFC 7644 Section 3.4.3</a></li><li>The format of the 'attributes' and the 'excludedAttributes' properties: <a href='https://www.rfc-editor.org/rfc/rfc7644.html#section-3.10' target='_blank'>RFC 7644 Section 3.10</a></li><li>Supported operators for filtering: <a href='https://www.rfc-editor.org/rfc/rfc7644.html#section-3.4.2.2' target='_blank'>RFC 7644 Section 3.4.2.2</a></li></ul><p>Groups with many members could make endpoint timeout, make sure <b>members</b> attribute is added to the list of <b>excludedAttributes</b>. For groups with many members, prefer <b>/Groups/{id}</b> endpoint.</p><p>The supported values for the 'sortOrder' attribute are:</p><ul><li>0: Ascending order</li><li>1: Descending order</li></ul><p>Returns 200 even if there are no results for the specified filters.</p>",
+        "operationId": "SearchGroups",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GroupsSearchRequestDto"
+              },
+              "examples": {
+                "groups-search-groups": {
+                  "summary": "Groups - Search groups",
+                  "description": "Get the 'displayName', 'fenxTeamIds' attributes of the first group that have the 'displayName' attribute present, sorted by 'fenxTeamIds' in descending order",
+                  "value": {
+"attributes": [
+"urn:ietf:params:scim:schemas:core:2.0:Group:displayName",
+"urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group:fenxTeamIds"
+],
+"sortBy": "urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group:fenxTeamIds",
+"sortOrder": 1,
+"startIndex": 1,
+"count": 1,
+"filter": "displayName pr"
+}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListGroupsResponseDto"
+                },
+                "example": {
+"schemas": [
+"urn:ietf:params:scim:api:messages:2.0:ListResponse"
+],
+"totalResults": 1,
+"itemsPerPage": 1,
+"startIndex": 1,
+"Resources": [
+{
+"id": "24f0c403-370b-4b13-b675-2f6ce0d2b2bf",
+"displayName": "Test Group with fenxgroup extension",
+"urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group": {
+"fenxTeamIds": [
+"2bf709ab-8cca-4da7-81c7-492c76bd4b7d"
+]
+}
+}
+]
+}
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/Groups/{id}": {
+      "get": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Gets a group by ID.",
+        "operationId": "GetGroupById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "UUID: Universally Unique Identifier with 32 alpha-numeric characters formated as 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "attributes",
+            "in": "query",
+            "description": "A multi-valued list of strings indicating the names of resource attributes to return in the response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "excludedAttributes",
+            "in": "query",
+            "description": "A multi-valued list of strings indicating the names of resource attributes to be removed from the default set of attributes to return",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupsResponseDto"
+                },
+                "example": {
+"id": "24f0c403-370b-4b13-b675-2f6ce0d2b2bf",
+"members": [
+{
+"value": "04c23012-4dba-4005-bd08-f063061dce12"
+}
+],
+"displayName": "Test Group with fenxgroup extension",
+"urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group": {
+"fenxAccessLayerIds": [
+"c40ac099-1cdc-440b-80c6-edff7529bd57"
+],
+"fenxTeamIds": [
+"02fc78fd-98d5-4f09-bd5d-a72259377a48",
+"adab0d3b-a00d-4fd1-9ab3-39dbeab235dc"
+]
+},
+"meta": {
+"resourceType": "Group",
+"created": "2024-03-13T16:21:12.519645",
+"lastModified": "2024-03-13T21:57:12.661613",
+"version": 3,
+"location": "https://identity.fenergonebula.com/scim/Groups/24f0c403-370b-4b13-b675-2f6ce0d2b2bf"
+},
+"externalId": "1234",
+"schemas": [
+"urn:ietf:params:scim:schemas:core:2.0:Group",
+"urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group"
+]
+}
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                },
+                "example": {
+"schemas": [
+"urn:ietf:params:scim:api:messages:2.0:Error"
+],
+"status": "404",
+"scimType": "unknown",
+"detail": "resource 41cd4c12-6765-45ca-8dc3-6ce0dcbaf52f not found"
+}
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Deletes a group by ID.",
+        "description": "Returns 204 if successfully deleted, 404 if not found.",
+        "operationId": "DeleteGroup",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "UUID: Universally Unique Identifier with 32 alpha-numeric characters formated as 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                },
+                "example": {
+"schemas": [
+"urn:ietf:params:scim:api:messages:2.0:Error"
+],
+"status": "404",
+"scimType": "unknown",
+"detail": "resource 41cd4c12-6765-45ca-8dc3-6ce0dcbaf52f not found"
+}
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Updates all group details and returns the updated group details.",
+        "operationId": "UpdateGroup",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "UUID: Universally Unique Identifier with 32 alpha-numeric characters formated as 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GroupsCreateUpdateRequestDto"
+              },
+              "examples": {
+                "groups-update-group": {
+                  "summary": "Groups - Update a group",
+                  "description": "Update an existing group.",
+                  "value": {
+"schemas": [ "urn:ietf:params:scim:schemas:core:2.0:Group" ],
+"displayName": "Updated Group Display Name"
+}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupsResponseDto"
+                },
+                "example": {
+"id": "24f0c403-370b-4b13-b675-2f6ce0d2b2bf",
+"members": [
+{
+"value": "04c23012-4dba-4005-bd08-f063061dce12"
+}
+],
+"displayName": "Test Group with fenxgroup extension",
+"urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group": {
+"fenxAccessLayerIds": [
+"c40ac099-1cdc-440b-80c6-edff7529bd57"
+],
+"fenxTeamIds": [
+"02fc78fd-98d5-4f09-bd5d-a72259377a48",
+"adab0d3b-a00d-4fd1-9ab3-39dbeab235dc"
+]
+},
+"meta": {
+"resourceType": "Group",
+"created": "2024-03-13T16:21:12.519645",
+"lastModified": "2024-03-13T21:57:12.661613",
+"version": 3,
+"location": "https://identity.fenergonebula.com/scim/Groups/24f0c403-370b-4b13-b675-2f6ce0d2b2bf"
+},
+"externalId": "1234",
+"schemas": [
+"urn:ietf:params:scim:schemas:core:2.0:Group",
+"urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group"
+]
+}
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                },
+                "example": {
+"schemas": [
+"urn:ietf:params:scim:api:messages:2.0:Error"
+],
+"status": "404",
+"scimType": "unknown",
+"detail": "resource 41cd4c12-6765-45ca-8dc3-6ce0dcbaf52f not found"
+}
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                },
+                "example": {
+"schemas": [
+"urn:ietf:params:scim:api:messages:2.0:Error"
+],
+"status": "409",
+"scimType": "uniqueness",
+"detail": "attribute displayName must be unique"
+}
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Updates some group details and returns the updated group details.",
+        "description": "<p>The supported values for the 'operations.op' attribute are:</p><ul><li>add</li><li>remove</li><li>replace</li></ul><p>The endpoint may return the following successful responses if the request is accepted:</p><ul><li>A 200 response with the updated group details if a change has been made to the group</li><li>A 204 response if nothing has been updated in the group</li></ul>",
+        "operationId": "PatchGroup",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "UUID: Universally Unique Identifier with 32 alpha-numeric characters formated as 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GroupsPatchRequestDto"
+              },
+              "examples": {
+                "groups-patch-group-details": {
+                  "summary": "Groups - Patch group details",
+                  "description": "Patch an existing group details.",
+                  "value": {
+"operations": [
+{
+"op": "replace",
+"path": "displayName",
+"value": "New display name"
+},
+{
+"op": "replace",
+"path": "externalId",
+"value": "New externalId"
+}
+],
+"schemas": [ "urn:ietf:params:scim:api:messages:2.0:PatchOp" ]
+}
+                },
+                "groups-patch-group-members": {
+                  "summary": "Groups - Patch members of a group",
+                  "description": "Patch members of an existing group.",
+                  "value": {
+"operations": [
+{
+"op": "add",
+"path": "members",
+"value": [
+{
+"value": "746133cf-850e-4d67-8a34-9bf084625194"
+}
+]
+},
+{
+"op": "remove",
+"path": "members",
+"value": [
+{
+"value": "04c23012-4dba-4005-bd08-f063061dce12"
+}
+]
+},
+{
+"op": "replace",
+"path": "members",
+"value": [
+{
+"value": "ca1fe5af-7a43-4362-9390-ca7eb83bd9c8"
+},
+{
+"value": "0d2f969d-0125-4f09-9150-524f4dccc5ab"
+}
+]
+}
+],
+"schemas": [ "urn:ietf:params:scim:api:messages:2.0:PatchOp" ]
+}
+                },
+                "groups-patch-group-teams-accesslayers": {
+                  "summary": "Groups - Patch teams and access layers of a group",
+                  "description": "Patch the teams and access layers of an existing group.",
+                  "value": {
+"operations": [
+{
+"op": "replace",
+"path": "urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group:fenxTeamIds",
+"value": [ "adab0d3b-a00d-4fd1-9ab3-39dbeab235dc" ]
+},
+{
+"op": "add",
+"path": "urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group:fenxTeamIds",
+"value": "adab0d3b-a00d-4fd1-9ab3-39dbeab235dc"
+},
+{
+"op": "remove",
+"path": "urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group:fenxTeamIds",
+"value": "adab0d3b-a00d-4fd1-9ab3-39dbeab235dc"
+},
+{
+"op": "replace",
+"path": "urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group:fenxAccessLayerIds",
+"value": [ "adab0d3b-a00d-4fd1-9ab3-39dbeab235dc" ]
+},
+{
+"op": "add",
+"path": "urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group:fenxAccessLayerIds",
+"value": "adab0d3b-a00d-4fd1-9ab3-39dbeab235dc"
+},
+{
+"op": "remove",
+"path": "urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group:fenxAccessLayerIds",
+"value": "adab0d3b-a00d-4fd1-9ab3-39dbeab235dc"
+}
+],
+"schemas": [ "urn:ietf:params:scim:api:messages:2.0:PatchOp" ]
+}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupsResponseDto"
+                },
+                "example": {
+"id": "24f0c403-370b-4b13-b675-2f6ce0d2b2bf",
+"members": [
+{
+"value": "04c23012-4dba-4005-bd08-f063061dce12"
+}
+],
+"displayName": "Test Group with fenxgroup extension",
+"urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group": {
+"fenxAccessLayerIds": [
+"c40ac099-1cdc-440b-80c6-edff7529bd57"
+],
+"fenxTeamIds": [
+"02fc78fd-98d5-4f09-bd5d-a72259377a48",
+"adab0d3b-a00d-4fd1-9ab3-39dbeab235dc"
+]
+},
+"meta": {
+"resourceType": "Group",
+"created": "2024-03-13T16:21:12.519645",
+"lastModified": "2024-03-13T21:57:12.661613",
+"version": 3,
+"location": "https://identity.fenergonebula.com/scim/Groups/24f0c403-370b-4b13-b675-2f6ce0d2b2bf"
+},
+"externalId": "1234",
+"schemas": [
+"urn:ietf:params:scim:schemas:core:2.0:Group",
+"urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group"
+]
+}
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                },
+                "example": {
+"schemas": [
+"urn:ietf:params:scim:api:messages:2.0:Error"
+],
+"status": "404",
+"scimType": "unknown",
+"detail": "resource 41cd4c12-6765-45ca-8dc3-6ce0dcbaf52f not found"
+}
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                },
+                "example": {
+"schemas": [
+"urn:ietf:params:scim:api:messages:2.0:Error"
+],
+"status": "409",
+"scimType": "uniqueness",
+"detail": "attribute displayName must be unique"
+}
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ResourceTypes": {
+      "get": {
+        "tags": [
+          "ResourceTypes"
+        ],
+        "summary": "Gets all the resource types.",
+        "operationId": "GetAllResourceTypes",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceTypesListResponseDto"
+                },
+                "example": {
+"schemas": [
+"urn:ietf:params:scim:api:messages:2.0:ListResponse"
+],
+"totalResults": 1,
+"itemsPerPage": 1,
+"startIndex": 1,
+"Resources": [
+{
+"schemas": [
+"urn:ietf:params:scim:schemas:core:2.0:ResourceType"
+],
+"id": "User",
+"name": "User",
+"description": "User Schema",
+"endpoint": "/scim/Users",
+"schema": "urn:ietf:params:scim:schemas:core:2.0:User",
+"schemaExtensions": [
+{
+"schema": "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User",
+"required": false
+}
+],
+"meta": {
+"location": "https://company.com/scim/ResourceTypes/User",
+"resourceType": "ResourceType"
+}
+}
+]
+}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ResourceTypes/{id}": {
+      "get": {
+        "tags": [
+          "ResourceTypes"
+        ],
+        "summary": "Gets a resource type by ID.",
+        "operationId": "GetResourceTypeById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id of the resource type to be retrieved.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceTypesResponseDto"
+                },
+                "example": {
+"schemas": [
+"urn:ietf:params:scim:schemas:core:2.0:ResourceType"
+],
+"id": "User",
+"name": "User",
+"description": "User Schema",
+"endpoint": "/scim/Users",
+"schema": "urn:ietf:params:scim:schemas:core:2.0:User",
+"schemaExtensions": [
+{
+"schema": "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User",
+"required": false
+}
+],
+"meta": {
+"location": "https://company.com/scim/ResourceTypes/User",
+"resourceType": "ResourceType"
+}
+}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Schemas": {
+      "get": {
+        "tags": [
+          "Schemas"
+        ],
+        "summary": "Gets all the schemas.",
+        "operationId": "GetAllSchemas",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchemasListResponseDto"
+                },
+                "example": {
+"schemas": [
+"urn:ietf:params:scim:api:messages:2.0:ListResponse"
+],
+"totalResults": 1,
+"itemsPerPage": 1,
+"startIndex": 1,
+"Resources": [
+{
+"id": "urn:ietf:params:scim:schemas:core:2.0:User",
+"name": "User",
+"description": "User Schema",
+"attributes": [
+{
+"name": "name",
+"type": "complex",
+"multiValued": false,
+"description": "The components of the user's real name. Providers MAY return just the full name as a single string in the formatted sub-attribute, or they MAY return just the individual component attributes using the other sub-attributes, or they MAY return both.If both variants are returned, they SHOULD be describing the same name, with the formatted name indicating how the component attributes should be combined.",
+"required": true,
+"caseExact": false,
+"mutability": "readWrite",
+"returned": "default",
+"uniqueness": "none",
+"subAttributes": [
+{
+"name": "familyName",
+"type": "string",
+"multiValued": false,
+"description": "The family name of the User, or last name in most Western languages (e.g., 'Jensen' given the full name 'Ms. Barbara J Jensen, III').",
+"required": true,
+"caseExact": false,
+"mutability": "readWrite",
+"returned": "default",
+"uniqueness": "none"
+},
+{
+"name": "givenName",
+"type": "string",
+"multiValued": false,
+"description": "The given name of the User, or first name in most Western languages (e.g., 'Barbara' given the full name 'Ms. Barbara J Jensen, III').",
+"required": true,
+"caseExact": false,
+"mutability": "readWrite",
+"returned": "default",
+"uniqueness": "none"
+}
+]
+},
+{
+"name": "displayName",
+"type": "string",
+"multiValued": false,
+"description": "The name of the User, suitable for display to end-users.The name SHOULD be the full name of the User being described, if known.",
+"required": false,
+"caseExact": false,
+"mutability": "readWrite",
+"returned": "default",
+"uniqueness": "none"
+}
+]
+}
+]
+}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Schemas/{id}": {
+      "get": {
+        "tags": [
+          "Schemas"
+        ],
+        "summary": "Gets a schema by ID.",
+        "operationId": "GetSchemaById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id of the schema to be retrieved.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchemasResponseDto"
+                },
+                "example": {
+"id": "urn:ietf:params:scim:schemas:core:2.0:User",
+"name": "User",
+"description": "User Schema",
+"attributes": [
+{
+"name": "name",
+"type": "complex",
+"multiValued": false,
+"description": "The components of the user's real name. Providers MAY return just the full name as a single string in the formatted sub-attribute, or they MAY return just the individual component attributes using the other sub-attributes, or they MAY return both.If both variants are returned, they SHOULD be describing the same name, with the formatted name indicating how the component attributes should be combined.",
+"required": true,
+"caseExact": false,
+"mutability": "readWrite",
+"returned": "default",
+"uniqueness": "none",
+"subAttributes": [
+{
+"name": "familyName",
+"type": "string",
+"multiValued": false,
+"description": "The family name of the User, or last name in most Western languages (e.g., 'Jensen' given the full name 'Ms. Barbara J Jensen, III').",
+"required": true,
+"caseExact": false,
+"mutability": "readWrite",
+"returned": "default",
+"uniqueness": "none"
+},
+{
+"name": "givenName",
+"type": "string",
+"multiValued": false,
+"description": "The given name of the User, or first name in most Western languages (e.g., 'Barbara' given the full name 'Ms. Barbara J Jensen, III').",
+"required": true,
+"caseExact": false,
+"mutability": "readWrite",
+"returned": "default",
+"uniqueness": "none"
+}
+]
+},
+{
+"name": "displayName",
+"type": "string",
+"multiValued": false,
+"description": "The name of the User, suitable for display to end-users.The name SHOULD be the full name of the User being described, if known.",
+"required": false,
+"caseExact": false,
+"mutability": "readWrite",
+"returned": "default",
+"uniqueness": "none"
+}
+]
+}
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ServiceProviderConfig": {
+      "get": {
+        "tags": [
+          "ServiceProviderConfig"
+        ],
+        "summary": "Gets the service provider config.",
+        "operationId": "GetServiceProviderConfig",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceProviderConfigResponseDto"
+                },
+                "example": {
+"id": "83d4b220-ed43-41b6-8559-2a5c0b67eee3",
+"patch": {
+"supported": true
+},
+"bulk": {
+"supported": true,
+"maxOperations": 100,
+"maxPayloadSize": 1048576
+},
+"filter": {
+"supported": true,
+"maxResults": 200
+},
+"changePassword": {
+"supported": false
+},
+"sort": {
+"supported": false
+},
+"etag": {
+"supported": false
+},
+"authenticationSchemes": [
+{
+"name": "OAuth Bearer Token",
+"description": "Authentication scheme using the OAuth Bearer Token Standard",
+"specUri": "http://www.rfc-editor.org/info/rfc6750",
+"type": "oauthbearertoken",
+"primary": true
+}
+],
+"meta": {
+"created": "0001-01-01T00:00:00",
+"lastModified": "0001-01-01T00:00:00",
+"version": 0,
+"location": "https://company.com/scim/ServiceProviderConfig"
+},
+"schemas": [
+"urn:ietf:params:scim:schemas:core:2.0:ServiceProviderConfig"
+]
+}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Users": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Gets all users. Accepts filters and sorting.",
+        "description": "<p>Check out the following sections of the SCIM RFC for more information about how to use the search parameters:</p><ul><li>Definition of the search attributes: <a href='https://www.rfc-editor.org/rfc/rfc7644.html#section-3.4.3' target='_blank'>RFC 7644 Section 3.4.3</a></li><li>The format of the 'attributes' and the 'excludedAttributes' properties: <a href='https://www.rfc-editor.org/rfc/rfc7644.html#section-3.10' target='_blank'>RFC 7644 Section 3.10</a></li><li>Supported operators for filtering: <a href='https://www.rfc-editor.org/rfc/rfc7644.html#section-3.4.2.2' target='_blank'>RFC 7644 Section 3.4.2.2</a></li></ul><p>Groups with many members could make endpoint timeout, make sure <b>members</b> attribute is added to the list of <b>excludedAttributes</b>. For groups with many members, prefer <b>/Groups/{id}</b> endpoint.</p>",
+        "operationId": "GetAllUsers",
+        "parameters": [
+          {
+            "name": "attributes",
+            "in": "query",
+            "description": "A multi-valued list of strings indicating the names of resource attributes to return in the response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "excludedAttributes",
+            "in": "query",
+            "description": "A multi-valued list of strings indicating the names of resource attributes to be removed from the default set of attributes to return",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "A string indicating the attribute whose value shall be used to order the returned responses",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "description": "An integer indicating the order in which the \"sortBy\" parameter is applied. Sort order: 0 'Ascending' or 1 'Descending'.",
+            "schema": {
+              "$ref": "#/components/schemas/SearchSCIMRepresentationOrders"
+            }
+          },
+          {
+            "name": "startIndex",
+            "in": "query",
+            "description": "An integer indicating the 1-based index of the first query result.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "description": "An integer indicating the desired maximum number of query results per page",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "description": "Filter expression from the SCIM 2.0 specification <a href=\"https://www.rfc-editor.org/rfc/rfc7644#section-3.4.2.2\">(RFC 7644)</a> (case in-sensitive).",
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "No filter": {
+                "value": ""
+              },
+              "UserName equals 'peter'": {
+                "value": "userName Eq \"peter\""
+              },
+              "UserName starts with 'pe' and displayName attribute is present (has value)": {
+                "value": "userName sw \"pe\" and displayName pr"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListUsersResponseDto"
+                },
+                "example": {
+"schemas": [
+"urn:ietf:params:scim:api:messages:2.0:ListResponse"
+],
+"totalResults": 2,
+"itemsPerPage": 100,
+"startIndex": 1,
+"Resources": [
+{
+"id": "12345678-1234-1234-1234-123456789011",
+"name": {
+"givenName": "John",
+"familyName": "Smith"
+},
+"userName": "John.Smith",
+"x509Certificates": [],
+"phoneNumbers": [],
+"entitlements": [],
+"emails": [],
+"ims": [],
+"addresses": [],
+"photos": [],
+"roles": [],
+"groups": [],
+"meta": {
+"resourceType": "User",
+"created": "2022-02-02T12:59:59.123456",
+"lastModified": "2022-02-02T12:59:59.123456",
+"version": 0,
+"location": "https://company.com/scim/Users/12345678-1234-1234-1234-123456789011"
+},
+"schemas": [
+"urn:ietf:params:scim:schemas:core:2.0:User",
+"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User",
+"urn:ietf:params:scim:schemas:extension:custom:1.0:User"
+]
+},
+{
+"id": "12345678-1234-1234-1234-123456789012",
+"emails": [
+{
+"value": "peter.jackson@company.com",
+"type": "work"
+},
+{
+"value": "peter.jackson@personal.com",
+"primary": true,
+"type": "home"
+}
+],
+"userName": "peter.jackson",
+"name": {
+"familyName": "jackson",
+"givenName": "peter"
+},
+"x509Certificates": [],
+"phoneNumbers": [],
+"entitlements": [],
+"ims": [],
+"addresses": [],
+"photos": [],
+"roles": [],
+"groups": [],
+"meta": {
+"resourceType": "User",
+"created": "2022-02-02T22:59:59.123456",
+"lastModified": "2022-02-02T22:59:59.123456",
+"version": 0,
+"location": "https://company.com/scim/Users/12345678-1234-1234-1234-123456789012"
+},
+"schemas": [
+"urn:ietf:params:scim:schemas:core:2.0:User",
+"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User",
+"urn:ietf:params:scim:schemas:extension:custom:1.0:User"
+]
+}
+]
+}
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "400": {
+            "description": "BadRequest",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Creates a user and returns the user details along with the user's unique ID.",
+        "description": "<p>The mandatory fields to create a new user are: </p><ul><li>A primary email address (emails.primary: true)</li><li>A username (userName)</li><li>A name (name.familyName and name.givenName)</li></ul><p>The following attributes and values are not supported:</p><ul><li>Password. It is not supported to set the user password when creating a new user</li><li>Active. It is not supported to create a user with the 'active' attribute set to 'false'. If not specified, 'active' will be set to 'true'</li><li>Groups. It is not supported to add groups to the users</li><li>Roles and Entitlements. The roles and entitlements SCIM extension is not supported</li></ul><p>Returns 201 if successfully created, 409 Conflict if 'userName' already exists.</p><p>The 'id' returned by this endpoint when a user is created is the ID of the user in the SCIM API, and can be used to manage the user resource within the SCIM API. Once the user is created in Fen-X Identity, a new ID will be generated there that can't be retrieved via the SCIM API. That ID can be used for example to set up the user permissions in the Authorization domain.</p>",
+        "operationId": "CreateUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsersCreateUpdateRequestDto"
+              },
+              "examples": {
+                "users-create-user-minimal": {
+                  "summary": "Users - Create a user (minimal)",
+                  "description": "Create a new user with the minimal set of data required",
+                  "value": {
+"schemas": [
+"urn:ietf:params:scim:schemas:core:2.0:User"
+],
+"userName": "johndoe@company.com",
+"emails": [
+{
+"type": "work",
+"value": "johndoe@company.com",
+"primary": true
+}
+],
+"name": {
+"familyName": "Doe",
+"givenName": "John"
+}
+}
+                },
+                "users-create-user-full": {
+                  "summary": "Users - Create a user (full)",
+                  "description": "Create a new user with all the properties supported by the API",
+                  "value": {
+"schemas": [ "urn:ietf:params:scim:schemas:core:2.0:User" ],
+"externalId": "701984",
+"userName": "bjensen@example.com",
+"name": {
+"formatted": "Ms. Barbara J Jensen, III",
+"familyName": "Jensen",
+"givenName": "Barbara",
+"middleName": "Jane",
+"honorificPrefix": "Ms.",
+"honorificSuffix": "III"
+},
+"emails": [
+{
+"value": "bjensen@example.com",
+"type": "work",
+"primary": true
+},
+{
+"value": "babs@jensen.org",
+"type": "home"
+}
+],
+"active": true,
+"displayName": "Babs Jensen",
+"nickName": "Babs",
+"profileUrl": "https://login.example.com/bjensen",
+"userType": "Employee",
+"title": "Tour Guide",
+"preferredLanguage": "en-US",
+"locale": "en-US",
+"timezone": "America/Los_Angeles",
+"addresses": [
+{
+"type": "work",
+"streetAddress": "100 Universal City Plaza",
+"locality": "Hollywood",
+"region": "CA",
+"postalCode": "91608",
+"country": "USA",
+"formatted": "100 Universal City Plaza\nHollywood, CA 91608 USA",
+"primary": true
+},
+{
+"type": "home",
+"streetAddress": "456 Hollywood Blvd",
+"locality": "Hollywood",
+"region": "CA",
+"postalCode": "91608",
+"country": "USA",
+"formatted": "456 Hollywood Blvd\nHollywood, CA 91608 USA"
+}
+],
+"phoneNumbers": [
+{
+"value": "555-555-5555",
+"type": "work"
+},
+{
+"value": "555-555-4444",
+"type": "mobile"
+}
+],
+"ims": [
+{
+"value": "someaimhandle",
+"type": "aim"
+}
+],
+"photos": [
+{
+"value": "https://photos.example.com/profilephoto/72930000000Ccne/F",
+"type": "photo"
+},
+{
+"value": "https://photos.example.com/profilephoto/72930000000Ccne/T",
+"type": "thumbnail"
+}
+],
+"x509Certificates": [
+{
+"value": "DER-encoded X.509 certificate which MUST be base64 encoded"
+}
+]
+}
+                },
+                "users-create-enterprise-user": {
+                  "summary": "Users - Create an enterprise user",
+                  "description": "Create a new enterprise user with all the properties supported by the SCIM enterprise extension",
+                  "value": {
+"schemas": [
+"urn:ietf:params:scim:schemas:core:2.0:User",
+"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"
+],
+"userName": "johndoe@company.com",
+"emails": [
+{
+"type": "work",
+"value": "johndoe@company.com",
+"primary": true
+}
+],
+"name": {
+"familyName": "Doe",
+"givenName": "John"
+},
+"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User": {
+"employeeNumber": "701984",
+"costCenter": "4130",
+"organization": "Universal Studios",
+"division": "Theme Park",
+"department": "Tour Operations",
+"manager": {
+"value": "26118915-6090-4610-87e4-49d8ca9f808d"
+}
+}
+}
+                },
+                "users-create-with-custom-properties": {
+                  "summary": "Users - Create a user with Custom Properties",
+                  "description": "Create a new user including Custom Properties",
+                  "value": {
+"schemas": [
+"urn:ietf:params:scim:schemas:core:2.0:User",
+"urn:ietf:params:scim:schemas:extension:custom:1.0:User"
+],
+"userName": "johndoe@company.com",
+"emails": [
+{
+"type": "work",
+"value": "johndoe@company.com",
+"primary": true
+}
+],
+"name": {
+"familyName": "Doe",
+"givenName": "John"
+},
+"urn:ietf:params:scim:schemas:extension:custom:1.0:User": {
+"customProperties": "{\"propertyString\": \"StringValue\", \"propertyNumber\": 7, \"propertyBoolean\": true}"
+}
+}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsersResponseDto"
+                },
+                "example": {
+"id": "12345678-1234-1234-1234-123456789012",
+"userName": "peter.jackson",
+"name": {
+"familyName": "jackson",
+"givenName": "peter"
+},
+"emails": [
+{
+"value": "peter.jackson@company.com",
+"type": "work"
+},
+{
+"value": "peter.jackson@personal.com",
+"primary": true,
+"type": "home"
+}
+],
+"active": true,
+"x509Certificates": [],
+"ims": [],
+"phoneNumbers": [],
+"photos": [],
+"entitlements": [],
+"roles": [],
+"addresses": [],
+"groups": [],
+"meta": {
+"resourceType": "User",
+"created": "2022-02-02T22:59:59.123456",
+"lastModified": "2022-02-02T22:59:59.123456",
+"version": 0,
+"location": "https://identity.fenergonebula.com/scim/Users/12345678-1234-1234-1234-123456789012"
+},
+"schemas": [
+"urn:ietf:params:scim:schemas:core:2.0:User"
+]
+}
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Users/.search": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Returns users according to the filter, sort and pagination parameters.",
+        "description": "<p>Check out the following sections of the SCIM RFC for more information about how to use the search parameters:</p><ul><li>Definition of the search attributes: <a href='https://www.rfc-editor.org/rfc/rfc7644.html#section-3.4.3' target='_blank'>RFC 7644 Section 3.4.3</a></li><li>The format of the 'attributes' and the 'excludedAttributes' properties: <a href='https://www.rfc-editor.org/rfc/rfc7644.html#section-3.10' target='_blank'>RFC 7644 Section 3.10</a></li><li>Supported operators for filtering: <a href='https://www.rfc-editor.org/rfc/rfc7644.html#section-3.4.2.2' target='_blank'>RFC 7644 Section 3.4.2.2</a></li></ul><p>Groups with many members could make endpoint timeout, make sure <b>members</b> attribute is added to the list of <b>excludedAttributes</b>. For groups with many members, prefer <b>/Groups/{id}</b> endpoint.</p><p>The supported values for the 'sortOrder' attribute are:</p><ul><li>0: Ascending order</li><li>1: Descending order</li></ul><p>Returns 200 even if there are no results for the specified filters.</p>",
+        "operationId": "SearchUsers",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsersSearchRequestDto"
+              },
+              "examples": {
+                "users-search-users": {
+                  "summary": "Users - Search users",
+                  "description": "Get the 'userName', 'displayName' and 'employeeNumber' attributes of the first 5 users that have the 'displayName' attribute present, sorted by 'userName' in descending order",
+                  "value": {
+"attributes": [
+"urn:ietf:params:scim:schemas:core:2.0:User:userName",
+"urn:ietf:params:scim:schemas:core:2.0:User:displayName",
+"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:employeeNumber"
+],
+"sortBy": "urn:ietf:params:scim:schemas:core:2.0:User:userName",
+"sortOrder": 1,
+"startIndex": 1,
+"count": 5,
+"filter": "displayName pr"
+}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListUsersResponseDto"
+                },
+                "example": {
+"schemas": [
+"urn:ietf:params:scim:api:messages:2.0:ListResponse"
+],
+"totalResults": 2,
+"itemsPerPage": 100,
+"startIndex": 1,
+"Resources": [
+{
+"id": "12345678-1234-1234-1234-123456789011",
+"name": {
+"givenName": "John",
+"familyName": "Smith"
+},
+"userName": "John.Smith",
+"x509Certificates": [],
+"phoneNumbers": [],
+"entitlements": [],
+"emails": [],
+"ims": [],
+"addresses": [],
+"photos": [],
+"roles": [],
+"groups": [],
+"meta": {
+"resourceType": "User",
+"created": "2022-02-02T12:59:59.123456",
+"lastModified": "2022-02-02T12:59:59.123456",
+"version": 0,
+"location": "https://company.com/scim/Users/12345678-1234-1234-1234-123456789011"
+},
+"schemas": [
+"urn:ietf:params:scim:schemas:core:2.0:User",
+"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User",
+"urn:ietf:params:scim:schemas:extension:custom:1.0:User"
+]
+},
+{
+"id": "12345678-1234-1234-1234-123456789012",
+"emails": [
+{
+"value": "peter.jackson@company.com",
+"type": "work"
+},
+{
+"value": "peter.jackson@personal.com",
+"primary": true,
+"type": "home"
+}
+],
+"userName": "peter.jackson",
+"name": {
+"familyName": "jackson",
+"givenName": "peter"
+},
+"x509Certificates": [],
+"phoneNumbers": [],
+"entitlements": [],
+"ims": [],
+"addresses": [],
+"photos": [],
+"roles": [],
+"groups": [],
+"meta": {
+"resourceType": "User",
+"created": "2022-02-02T22:59:59.123456",
+"lastModified": "2022-02-02T22:59:59.123456",
+"version": 0,
+"location": "https://company.com/scim/Users/12345678-1234-1234-1234-123456789012"
+},
+"schemas": [
+"urn:ietf:params:scim:schemas:core:2.0:User",
+"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User",
+"urn:ietf:params:scim:schemas:extension:custom:1.0:User"
+]
+}
+]
+}
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/Users/{id}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Gets a user by ID.",
+        "operationId": "GetUserById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "UUID: Universally Unique Identifier with 32 alpha-numeric characters formated as 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "attributes",
+            "in": "query",
+            "description": "A multi-valued list of strings indicating the names of resource attributes to return in the response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "excludedAttributes",
+            "in": "query",
+            "description": "A multi-valued list of strings indicating the names of resource attributes to be removed from the default set of attributes to return",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsersResponseDto"
+                },
+                "example": {
+"id": "12345678-1234-1234-1234-123456789012",
+"userName": "peter.jackson",
+"name": {
+"familyName": "jackson",
+"givenName": "peter"
+},
+"emails": [
+{
+"value": "peter.jackson@company.com",
+"type": "work"
+},
+{
+"value": "peter.jackson@personal.com",
+"primary": true,
+"type": "home"
+}
+],
+"active": true,
+"x509Certificates": [],
+"ims": [],
+"phoneNumbers": [],
+"photos": [],
+"entitlements": [],
+"roles": [],
+"addresses": [],
+"groups": [],
+"meta": {
+"resourceType": "User",
+"created": "2022-02-02T22:59:59.123456",
+"lastModified": "2022-02-02T22:59:59.123456",
+"version": 0,
+"location": "https://identity.fenergonebula.com/scim/Users/12345678-1234-1234-1234-123456789012"
+},
+"schemas": [
+"urn:ietf:params:scim:schemas:core:2.0:User"
+]
+}
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Deletes a user by ID.",
+        "description": "Returns 204 if successfully deleted, 404 if not found.",
+        "operationId": "DeleteUser",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "UUID: Universally Unique Identifier with 32 alpha-numeric characters formated as 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Updates all user details and returns the updated user details.",
+        "description": "<p>The mandatory fields to update an existing user are:</p><ul><li>A primary email address (emails.primary: true)</li><li>A username (userName)</li><li>A name (name.familyName and name.givenName)</li></ul>",
+        "operationId": "UpdateUser",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "UUID: Universally Unique Identifier with 32 alpha-numeric characters formated as 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsersCreateUpdateRequestDto"
+              },
+              "examples": {
+                "users-update-user": {
+                  "summary": "Users - Update a user",
+                  "description": "Update an existing user.",
+                  "value": {
+"schemas": [ "urn:ietf:params:scim:schemas:core:2.0:User" ],
+"userName": "johndoe@company.com",
+"name": { 
+"givenName": "New Given Name",
+"familyName": "New Family Name"
+},
+"emails": [
+{
+"primary": true,
+"type": "work",
+"value": "johndoe@company.com"
+},
+{
+"type": "home",
+"value": "johndoe@gmail.com"
+}
+]
+}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsersResponseDto"
+                },
+                "example": {
+"id": "12345678-1234-1234-1234-123456789012",
+"userName": "peter.jackson",
+"name": {
+"familyName": "jackson",
+"givenName": "peter"
+},
+"emails": [
+{
+"value": "peter.jackson@company.com",
+"type": "work"
+},
+{
+"value": "peter.jackson@personal.com",
+"primary": true,
+"type": "home"
+}
+],
+"active": true,
+"x509Certificates": [],
+"ims": [],
+"phoneNumbers": [],
+"photos": [],
+"entitlements": [],
+"roles": [],
+"addresses": [],
+"groups": [],
+"meta": {
+"resourceType": "User",
+"created": "2022-02-02T22:59:59.123456",
+"lastModified": "2022-02-02T22:59:59.123456",
+"version": 0,
+"location": "https://identity.fenergonebula.com/scim/Users/12345678-1234-1234-1234-123456789012"
+},
+"schemas": [
+"urn:ietf:params:scim:schemas:core:2.0:User"
+]
+}
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Updates some user details and returns the updated user details.",
+        "description": "<p>The supported values for the 'operations.op' attribute are:</p><ul><li>add</li><li>remove</li><li>replace</li></ul><p>The endpoint may return the following successful responses if the request is accepted:</p><ul><li>A 200 response with the updated user details if a change has been made to the user</li><li>A 204 response if nothing has been updated in the user</li></ul>",
+        "operationId": "PatchUser",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "UUID: Universally Unique Identifier with 32 alpha-numeric characters formated as 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsersPatchRequestDto"
+              },
+              "examples": {
+                "users-patch-user": {
+                  "summary": "Users - Patch a user",
+                  "description": "Patch an existing user.",
+                  "value": {
+"operations": [
+{
+"op": "replace",
+"path": "name",
+"value": {
+"givenName": "New Given Name",
+"familyName": "New Family Name"
+}
+},
+{
+"op": "add",
+"path": "title",
+"value": "New title"
+},
+{
+"op": "remove",
+"path": "nickName"
+}
+],
+"schemas": [ "urn:ietf:params:scim:api:messages:2.0:PatchOp" ]
+}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsersResponseDto"
+                },
+                "example": {
+"id": "12345678-1234-1234-1234-123456789012",
+"userName": "peter.jackson",
+"name": {
+"familyName": "jackson",
+"givenName": "peter"
+},
+"emails": [
+{
+"value": "peter.jackson@company.com",
+"type": "work"
+},
+{
+"value": "peter.jackson@personal.com",
+"primary": true,
+"type": "home"
+}
+],
+"active": true,
+"x509Certificates": [],
+"ims": [],
+"phoneNumbers": [],
+"photos": [],
+"entitlements": [],
+"roles": [],
+"addresses": [],
+"groups": [],
+"meta": {
+"resourceType": "User",
+"created": "2022-02-02T22:59:59.123456",
+"lastModified": "2022-02-02T22:59:59.123456",
+"version": 0,
+"location": "https://identity.fenergonebula.com/scim/Users/12345678-1234-1234-1234-123456789012"
+},
+"schemas": [
+"urn:ietf:params:scim:schemas:core:2.0:User"
+]
+}
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BulkRequestDto": {
+        "type": "object",
+        "properties": {
+          "operations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BulkRequestOperationDto"
+            },
+            "description": "Defines operations within a bulk or patch job.",
+            "nullable": true
+          },
+          "schemas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />\r\nExamples: [ \"urn:ietf:params:scim:api:messages:2.0:BulkRequest\" ], [ \"urn:ietf:params:scim:api:messages:2.0:PatchOp\" ]",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "BulkRequestOperationDto": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "description": "The HTTP method of the current operation. Possible values are \"POST\", \"PUT\", \"PATCH\", or \"DELETE\". REQUIRED.",
+            "nullable": true,
+            "example": "POST"
+          },
+          "bulkId": {
+            "type": "string",
+            "description": "The transient identifier of a newly created resource, unique within a bulk request and created by the client. REQUIRED when \"method\" is \"POST\".",
+            "nullable": true,
+            "example": "bulkid1"
+          },
+          "version": {
+            "type": "string",
+            "description": "The current resource version.",
+            "nullable": true,
+            "example": "1"
+          },
+          "path": {
+            "type": "string",
+            "description": "The resource's relative path to the SCIM service provider's root. <br />\r\nIf \"method\" is \"POST\", the value must specify a resource type endpoint, e.g., /Users <br />\r\nFor all other \"method\" values, it must specify the path to a specific resource, e.g., /Users/2819c223-7f76-453a-919d-413861904646. <br />\r\nREQUIRED in a request.",
+            "nullable": true,
+            "example": "/Users"
+          },
+          "data": {
+            "description": "The resource data as it would appear for a single SCIM POST, PUT, or PATCH operation. <br />\r\nREQUIRED in a request when \"method\" is \"POST\", \"PUT\", or \"PATCH\".",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Defines an operation within a bulk job"
+      },
+      "BulkResponseDto": {
+        "type": "object",
+        "properties": {
+          "Operations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BulkResponseOperationDto"
+            },
+            "description": "Defines operations within a bulk job.",
+            "nullable": true
+          },
+          "schemas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />\r\nExamples: [ \"urn:ietf:params:scim:api:messages:2.0:BulkResponse\" ]",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "BulkResponseOperationDto": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "description": "The HTTP method of the current operation. Possible values are \"POST\", \"PUT\", \"PATCH\", or \"DELETE\". REQUIRED.",
+            "nullable": true,
+            "example": "POST"
+          },
+          "bulkId": {
+            "type": "string",
+            "description": "The transient identifier of a newly created resource, unique within a bulk request and created by the client. REQUIRED when \"method\" is \"POST\".",
+            "nullable": true,
+            "example": "bulkid1"
+          },
+          "version": {
+            "type": "string",
+            "description": "The current resource version.",
+            "nullable": true,
+            "example": "1"
+          },
+          "status": {
+            "$ref": "#/components/schemas/BulkResponseStatusDto"
+          },
+          "location": {
+            "type": "string",
+            "description": "The resource endpoint URL.",
+            "nullable": true,
+            "example": "bulkid1"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Defines an operation within a bulk job"
+      },
+      "BulkResponseStatusDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "The HTTP response status code for the requested operation.",
+            "format": "int32",
+            "example": 200
+          },
+          "response": {
+            "description": "The HTTP response body for the specified request operation. It may be omitted if the status code is 2XX.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "The HTTP response status code and response for the requested operation."
+      },
+      "ErrorResponseDto": {
+        "type": "object",
+        "properties": {
+          "schemas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />\r\nExample: [ \"urn:ietf:params:scim:api:messages:2.0:Error\" ]",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "The HTTP status code of the error response",
+            "nullable": true,
+            "example": "400"
+          },
+          "scimType": {
+            "type": "string",
+            "description": "The type of error",
+            "nullable": true,
+            "example": "invalidSyntax"
+          },
+          "detail": {
+            "type": "string",
+            "description": "The summary of the error",
+            "nullable": true,
+            "example": "The request is not well-formatted"
+          }
+        },
+        "additionalProperties": false
+      },
+      "FenxGroupExtensionSchema": {
+        "type": "object",
+        "properties": {
+          "fenxTeamIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of Fen-X team IDs that are linked to the group. Leave empty if no teams are linked.",
+            "nullable": true
+          },
+          "fenxAccessLayerIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of Fen-X access layer IDs that are linked to the group. Leave empty if no access layers are linked.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Extension schema to be able to link a SCIM group with Fen-X teams and/or access layers.\r\nTo be able to specify values for this property, it is required to add the following schema to the schemas list: \"urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group\""
+      },
+      "GroupMemberBaseDto": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "description": "The ID of the user that belongs to the group",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Class representing a group member"
+      },
+      "GroupMemberDto": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "description": "The ID of the user that belongs to the group",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "description": "The type of the member, usually \"User\"",
+            "nullable": true
+          },
+          "$ref": {
+            "type": "string",
+            "description": "A reference link to the user",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Class representing a group member"
+      },
+      "GroupsControllerRepresentationParameter": {
+        "type": "object",
+        "properties": {
+          "schemas": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "example": "urn:ietf:params:scim:schemas:core:2.0:Group"
+            },
+            "nullable": true
+          },
+          "externalId": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "description": "A human-readable name for the Group."
+          }
+        },
+        "additionalProperties": false
+      },
+      "GroupsCreateUpdateRequestDto": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "description": "The name of the Group",
+            "nullable": true,
+            "example": "Test Group with FenXGroup extension"
+          },
+          "urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group": {
+            "$ref": "#/components/schemas/FenxGroupExtensionSchema"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "A String that is an identifier for the group in the external system",
+            "nullable": true,
+            "example": "1234"
+          },
+          "schemas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />\r\nExample: [ \"urn:ietf:params:scim:schemas:core:2.0:Group\", \"urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group\" ]",
+            "nullable": true
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GroupMemberBaseDto"
+            },
+            "description": "The list of users that belong to the group",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GroupsPatchRequestDto": {
+        "type": "object",
+        "properties": {
+          "operations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GroupsPatchRequestOperationDto"
+            },
+            "description": "Defines operations within a bulk or patch job.",
+            "nullable": true
+          },
+          "schemas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />\r\nExamples: [ \"urn:ietf:params:scim:api:messages:2.0:BulkRequest\" ], [ \"urn:ietf:params:scim:api:messages:2.0:PatchOp\" ]",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GroupsPatchRequestOperationDto": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "type": "string",
+            "description": "Indicates the operation to perform. <br />\r\nPossible values: \"add\", \"remove\", or \"replace\"",
+            "nullable": true,
+            "example": "add"
+          },
+          "path": {
+            "type": "string",
+            "description": "Describes the attribute path that wants to be updated. <br />\r\nThe \"path\" attribute is OPTIONAL for \"add\" and \"replace\" and is REQUIRED for \"remove\" operations",
+            "nullable": true,
+            "example": "name.familyName"
+          },
+          "value": {
+            "description": "The new value for the attribute. REQUIRED for \"add\" and \"replace\" operations",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GroupsResponseDto": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "description": "The name of the Group",
+            "nullable": true,
+            "example": "Test Group with FenXGroup extension"
+          },
+          "urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group": {
+            "$ref": "#/components/schemas/FenxGroupExtensionSchema"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "A String that is an identifier for the group in the external system",
+            "nullable": true,
+            "example": "1234"
+          },
+          "schemas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />\r\nExample: [ \"urn:ietf:params:scim:schemas:core:2.0:Group\", \"urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group\" ]",
+            "nullable": true
+          },
+          "id": {
+            "type": "string",
+            "description": "The unique ID of the group",
+            "nullable": true,
+            "example": "12345678-1234-1234-1234-123456789012"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/MetaDto"
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GroupMemberDto"
+            },
+            "description": "Groups members",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GroupsSearchRequestDto": {
+        "type": "object",
+        "properties": {
+          "attributes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "A multi-valued list of strings indicating the names of resource attributes to return in the response, \r\noverriding the set of attributes that would be returned by default. <br />\r\nExample: [ \"displayName\", \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:Groups:fenxTeamIds\"]",
+            "nullable": true
+          },
+          "excludedAttributes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "A multi-valued list of strings indicating the names of resource attributes to be removed from the default set of attributes to return. <br />\r\nExample: [ \"fenxTeamIds\", \"fenxAccessLayerIds\" ]",
+            "nullable": true
+          },
+          "sortBy": {
+            "type": "string",
+            "description": "A string indicating the attribute whose value SHALL be used to order the returned responses",
+            "nullable": true,
+            "example": "displayName"
+          },
+          "sortOrder": {
+            "$ref": "#/components/schemas/SortOrders"
+          },
+          "startIndex": {
+            "type": "integer",
+            "description": "An integer indicating the 1-based index of the first query result",
+            "format": "int32",
+            "example": 1
+          },
+          "count": {
+            "type": "integer",
+            "description": "An integer indicating the desired maximum number of query results per page",
+            "format": "int32",
+            "example": 20
+          },
+          "filter": {
+            "type": "string",
+            "description": "A string indicating the filter expression that will return only the resources that matches it",
+            "nullable": true,
+            "example": "displayName pr"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ListGroupsResponseDto": {
+        "type": "object",
+        "properties": {
+          "schemas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />\r\nExample: [ \"urn:ietf:params:scim:api:messages:2.0:ListResponse\" ]",
+            "nullable": true
+          },
+          "totalResults": {
+            "type": "integer",
+            "description": "The total number of results returned by the list or query operation",
+            "format": "int32",
+            "example": 1
+          },
+          "itemsPerPage": {
+            "type": "integer",
+            "description": "The number of resources returned in a list response page",
+            "format": "int32",
+            "example": 1
+          },
+          "startIndex": {
+            "type": "integer",
+            "description": "The 1-based index of the first result in the current set of list results",
+            "format": "int32",
+            "example": 1
+          },
+          "Resources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GroupsResponseDto"
+            },
+            "description": "A list of all groups. This MAY be a subset of the full set of groups if pagination is requested",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ListUsersResponseDto": {
+        "type": "object",
+        "properties": {
+          "schemas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />\r\nExample: [ \"urn:ietf:params:scim:api:messages:2.0:ListResponse\" ]",
+            "nullable": true
+          },
+          "totalResults": {
+            "type": "integer",
+            "description": "The total number of results returned by the list or query operation",
+            "format": "int32",
+            "example": 1
+          },
+          "itemsPerPage": {
+            "type": "integer",
+            "description": "The number of resources returned in a list response page",
+            "format": "int32",
+            "example": 1
+          },
+          "startIndex": {
+            "type": "integer",
+            "description": "The 1-based index of the first result in the current set of list results",
+            "format": "int32",
+            "example": 1
+          },
+          "Resources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsersResponseDto"
+            },
+            "description": "A list of all the users. This MAY be a subset of the full set of users if pagination is requested",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "MetaDto": {
+        "type": "object",
+        "properties": {
+          "resourceType": {
+            "type": "string",
+            "description": "The name of the resource type of the resource",
+            "nullable": true,
+            "example": "User"
+          },
+          "created": {
+            "type": "string",
+            "description": "The \"DateTime\" that the resource was added to the service provider",
+            "format": "date-time",
+            "example": "2022-02-02T12:59:59.123456"
+          },
+          "lastModified": {
+            "type": "string",
+            "description": "The most recent \"DateTime\" that the details of this were updated at the service provider. <br />\r\nIf this resource has never been modified since its initial creation, the value will be the same as the value of \"created\"",
+            "format": "date-time",
+            "example": "2022-02-02T12:59:59.123456"
+          },
+          "location": {
+            "type": "string",
+            "description": "The URI of the resource being returned",
+            "nullable": true,
+            "example": "https://company.com/scim/Users/12345678-1234-1234-1234-123456789011"
+          },
+          "version": {
+            "type": "integer",
+            "description": "The version of the resource being returned",
+            "format": "int32",
+            "example": 0
+          }
+        },
+        "additionalProperties": false,
+        "description": "A complex attribute containing resource metadata, assigned by the service provider"
+      },
+      "ResourceTypesListResponseDto": {
+        "type": "object",
+        "properties": {
+          "schemas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />\r\nExample: [ \"urn:ietf:params:scim:api:messages:2.0:ListResponse\" ]",
+            "nullable": true
+          },
+          "totalResults": {
+            "type": "integer",
+            "description": "The total number of results returned by the list or query operation",
+            "format": "int32",
+            "example": 1
+          },
+          "itemsPerPage": {
+            "type": "integer",
+            "description": "The number of resources returned in a list response page",
+            "format": "int32",
+            "example": 1
+          },
+          "startIndex": {
+            "type": "integer",
+            "description": "The 1-based index of the first result in the current set of list results",
+            "format": "int32",
+            "example": 1
+          },
+          "Resources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResourceTypesResponseDto"
+            },
+            "description": "A list of all the resource types. This MAY be a subset of the full set of resources if pagination is requested",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ResourceTypesResponseDto": {
+        "type": "object",
+        "properties": {
+          "schemas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />\r\nExample: [ \"urn:ietf:params:scim:schemas:core:2.0:ResourceType\" ]",
+            "nullable": true
+          },
+          "id": {
+            "type": "string",
+            "description": "The resource type's server unique id. This is often the same value as the \"name\" attribute",
+            "nullable": true,
+            "example": "User"
+          },
+          "name": {
+            "type": "string",
+            "description": "The resource type name. This name is referenced by the \"meta.resourceType\" attribute in all resources",
+            "nullable": true,
+            "example": "User"
+          },
+          "description": {
+            "type": "string",
+            "description": "The resource type's human-readable description",
+            "nullable": true,
+            "example": "User Schema"
+          },
+          "endpoint": {
+            "type": "string",
+            "description": "The resource type's HTTP-addressable endpoint relative to the Base URL of the service provider, e.g., \"Users\"",
+            "nullable": true,
+            "example": "/scim/Users"
+          },
+          "schema": {
+            "type": "string",
+            "description": "The resource type's primary/base schema URI, e.g., \"urn:ietf:params:scim:schemas:core:2.0:User\". <br /> \r\nThis MUST be equal to the \"id\" attribute of the associated \"Schema\" resource",
+            "nullable": true,
+            "example": "urn:ietf:params:scim:schemas:core:2.0:User"
+          },
+          "schemaExtensions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResourceTypesSchemaExtensionDto"
+            },
+            "description": "A list of URIs of the resource type's schema extensions",
+            "nullable": true
+          },
+          "meta": {
+            "$ref": "#/components/schemas/MetaDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ResourceTypesSchemaExtensionDto": {
+        "type": "object",
+        "properties": {
+          "schema": {
+            "type": "string",
+            "description": "The URI of an extended schema, e.g., \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\". <br />\r\nThis MUST be equal to the \"id\" attribute of a \"Schema\" resource. REQUIRED",
+            "nullable": true,
+            "example": "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"
+          },
+          "required": {
+            "type": "boolean",
+            "description": "A Boolean value that specifies whether or not the schema is required for the resource type",
+            "example": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "SchemasAttributeDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The attribute's name",
+            "nullable": true,
+            "example": "displayName"
+          },
+          "type": {
+            "type": "string",
+            "description": "The attribute's data type",
+            "nullable": true,
+            "example": "string"
+          },
+          "multiValued": {
+            "type": "boolean",
+            "description": "A Boolean value indicating the attribute's plurality",
+            "example": false
+          },
+          "description": {
+            "type": "string",
+            "description": "The attribute's human-readable description",
+            "nullable": true,
+            "example": "The name of the User, suitable for display to end-users"
+          },
+          "required": {
+            "type": "boolean",
+            "description": "A Boolean value that specifies whether or not the attribute is required",
+            "example": false
+          },
+          "canonicalValues": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "A collection of suggested canonical values that MAY be used. <br />\r\nExample: [\"work\", \"home\", \"mobile\"]",
+            "nullable": true
+          },
+          "caseExact": {
+            "type": "boolean",
+            "description": "A Boolean value that specifies whether or not a string attribute is case sensitive",
+            "example": false
+          },
+          "mutability": {
+            "type": "string",
+            "description": "A single keyword indicating the circumstances under which the value of the attribute can be(re)defined. <br />\r\nPossible values: readOnly, readWrite, immutable, writeOnly",
+            "nullable": true,
+            "example": "readWrite"
+          },
+          "returned": {
+            "type": "string",
+            "description": "A single keyword that indicates when an attribute and associated values are returned in response to a \r\nGET request or in response to a PUT, POST, or PATCH request. <br />\r\nPossible values: always, never, default, request",
+            "nullable": true,
+            "example": "default"
+          },
+          "uniqueness": {
+            "type": "string",
+            "description": "A single keyword value that specifies how the service provider enforces uniqueness of attribute values. br/>\r\nPossible values: none, server, global",
+            "nullable": true,
+            "example": "none"
+          },
+          "subAttributes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SchemasAttributeDto"
+            },
+            "description": "When an attribute is of type \"complex\", \"subAttributes\" defines a set of sub-attributes. <br />\r\nIt has the same schema as \"attributes\".",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "A complex type that defines service provider attributes and their qualities"
+      },
+      "SchemasListResponseDto": {
+        "type": "object",
+        "properties": {
+          "schemas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />\r\nExample: [ \"urn:ietf:params:scim:api:messages:2.0:ListResponse\" ]",
+            "nullable": true
+          },
+          "totalResults": {
+            "type": "integer",
+            "description": "The total number of results returned by the list or query operation",
+            "format": "int32",
+            "example": 1
+          },
+          "itemsPerPage": {
+            "type": "integer",
+            "description": "The number of resources returned in a list response page",
+            "format": "int32",
+            "example": 1
+          },
+          "startIndex": {
+            "type": "integer",
+            "description": "The 1-based index of the first result in the current set of list results",
+            "format": "int32",
+            "example": 1
+          },
+          "Resources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SchemasResponseDto"
+            },
+            "description": "A list of all the resource types. This MAY be a subset of the full set of resources if pagination is requested",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SchemasResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique URI of the schema",
+            "nullable": true,
+            "example": "urn:ietf:params:scim:schemas:core:2.0:User"
+          },
+          "name": {
+            "type": "string",
+            "description": "The schema's human-readable name",
+            "nullable": true,
+            "example": "User"
+          },
+          "description": {
+            "type": "string",
+            "description": "The schema's human-readable description",
+            "nullable": true,
+            "example": "User Schema"
+          },
+          "attributes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SchemasAttributeDto"
+            },
+            "description": "A list of attributes that defines the schema",
+            "nullable": true
+          },
+          "meta": {
+            "$ref": "#/components/schemas/MetaDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SearchSCIMRepresentationOrders": {
+        "enum": [
+          0,
+          1
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "ServiceProviderConfigAuthenticationSchemeDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The common authentication scheme name",
+            "nullable": true,
+            "example": "OAuth Bearer Token"
+          },
+          "description": {
+            "type": "string",
+            "description": "A description of the authentication scheme",
+            "nullable": true,
+            "example": "Authentication scheme using the OAuth Bearer Token Standard"
+          },
+          "specUri": {
+            "type": "string",
+            "description": "An HTTP-addressable URL pointing to the authentication scheme's specification",
+            "nullable": true,
+            "example": "http://www.rfc-editor.org/info/rfc6750"
+          },
+          "type": {
+            "type": "string",
+            "description": "The authentication scheme. <br />\r\nPossible values: \"oauth\", \"oauth2\", \"oauthbearertoken\", \"httpbasic\", \"httpdigest\"",
+            "nullable": true,
+            "example": "oauthbearertoken"
+          },
+          "primary": {
+            "type": "boolean",
+            "description": "A Boolean value indicating the 'primary' or preferred authentication scheme",
+            "example": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "A complex type that specifies the supported authentication scheme properties"
+      },
+      "ServiceProviderConfigBulkDto": {
+        "type": "object",
+        "properties": {
+          "supported": {
+            "type": "boolean",
+            "description": "A Boolean value specifying whether or not the operation is supported",
+            "example": true
+          },
+          "maxOperations": {
+            "type": "integer",
+            "description": "An integer value specifying the maximum number of operations",
+            "format": "int32",
+            "example": 100
+          },
+          "maxPayloadSize": {
+            "type": "integer",
+            "description": "An integer value specifying the maximum payload size in bytes",
+            "format": "int32",
+            "example": 1048576
+          }
+        },
+        "additionalProperties": false,
+        "description": "A complex type that specifies bulk configuration options"
+      },
+      "ServiceProviderConfigFilterDto": {
+        "type": "object",
+        "properties": {
+          "supported": {
+            "type": "boolean",
+            "description": "A Boolean value specifying whether or not the operation is supported",
+            "example": true
+          },
+          "maxResults": {
+            "type": "integer",
+            "description": "An integer value specifying the maximum number of resources returned in a response",
+            "format": "int32",
+            "example": 200
+          }
+        },
+        "additionalProperties": false,
+        "description": "A complex type that specifies FILTER options"
+      },
+      "ServiceProviderConfigResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique ID of the service provider configuration",
+            "nullable": true,
+            "example": "83d4b220-ed43-41b6-8559-2a5c0b67eee3"
+          },
+          "patch": {
+            "$ref": "#/components/schemas/ServiceProviderConfigSupportedDto"
+          },
+          "bulk": {
+            "$ref": "#/components/schemas/ServiceProviderConfigBulkDto"
+          },
+          "filter": {
+            "$ref": "#/components/schemas/ServiceProviderConfigFilterDto"
+          },
+          "changePassword": {
+            "$ref": "#/components/schemas/ServiceProviderConfigSupportedDto"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/ServiceProviderConfigSupportedDto"
+          },
+          "etag": {
+            "$ref": "#/components/schemas/ServiceProviderConfigSupportedDto"
+          },
+          "authenticationSchemes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceProviderConfigAuthenticationSchemeDto"
+            },
+            "description": "A multi-valued complex type that specifies supported authentication scheme properties",
+            "nullable": true
+          },
+          "meta": {
+            "$ref": "#/components/schemas/MetaDto"
+          },
+          "schemas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />\r\nExample: [ \"urn:ietf:params:scim:schemas:core:2.0:ServiceProviderConfig\" ]",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ServiceProviderConfigSupportedDto": {
+        "type": "object",
+        "properties": {
+          "supported": {
+            "type": "boolean",
+            "description": "A Boolean value specifying whether or not the operation is supported",
+            "example": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "A complex type that specifies configuration options"
+      },
+      "SortOrders": {
+        "enum": [
+          0,
+          1
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "UsersAddressMultiValuedAttributeDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "A label indicating the attribute's function",
+            "nullable": true,
+            "example": "work"
+          },
+          "primary": {
+            "type": "boolean",
+            "description": "A Boolean value indicating the 'primary' or preferred attribute value for this attribute, \r\ne.g., the preferred mailing address or primary email address",
+            "example": true
+          },
+          "formatted": {
+            "type": "string",
+            "description": "The full mailing address, formatted for display or use with a mailing label. This attribute MAY contain newlines.",
+            "nullable": true,
+            "example": "100 Universal City Plaza, Hollywood, CA 91608 USA"
+          },
+          "streetAddress": {
+            "type": "string",
+            "description": "The full street address component, which may include house number, street name, P.O. box, and multi-line extended street address information. \r\nThis attribute MAY contain newlines",
+            "nullable": true,
+            "example": "100 Universal City Plaza"
+          },
+          "locality": {
+            "type": "string",
+            "description": "The city or locality component",
+            "nullable": true,
+            "example": "Hollywood"
+          },
+          "region": {
+            "type": "string",
+            "description": "The state or region component",
+            "nullable": true,
+            "example": "CA"
+          },
+          "postalCode": {
+            "type": "string",
+            "description": "The zip code or postal code component",
+            "nullable": true,
+            "example": "91608"
+          },
+          "country": {
+            "type": "string",
+            "description": "The country name component",
+            "nullable": true,
+            "example": "USA"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UsersCreateUpdateRequestDto": {
+        "type": "object",
+        "properties": {
+          "externalId": {
+            "type": "string",
+            "description": "A String that is an identifier for the user as defined by the provisioning client",
+            "nullable": true,
+            "example": "701984"
+          },
+          "userName": {
+            "type": "string",
+            "description": "Unique identifier for the User, typically used by the user to directly authenticate to the service provider. <br />\r\nEach User MUST include a non-empty userName value. This identifier MUST be unique across the service provider's entire set of Users.",
+            "nullable": true,
+            "example": "bjensen@example.com"
+          },
+          "name": {
+            "$ref": "#/components/schemas/UsersNameDto"
+          },
+          "active": {
+            "type": "boolean",
+            "description": "A Boolean value indicating the user's administrative status",
+            "example": true
+          },
+          "displayName": {
+            "type": "string",
+            "description": "The name of the User, suitable for display to end-users. The name SHOULD be the full name of the User being described, if known",
+            "nullable": true,
+            "example": "Babs Jensen"
+          },
+          "nickName": {
+            "type": "string",
+            "description": "The casual way to address the user in real life, e.g., 'Bob' or 'Bobby' instead of 'Robert'.\r\nThis attribute SHOULD NOT be used to represent a User's username (e.g., 'bjensen' or 'mpepperidge').",
+            "nullable": true,
+            "example": "Babs"
+          },
+          "profileUrl": {
+            "type": "string",
+            "description": "A fully qualified URL pointing to a page representing the User's online profile.",
+            "nullable": true
+          },
+          "userType": {
+            "type": "string",
+            "description": "Used to identify the relationship between the organization and the user. <br />\r\nTypical values used might be \"Contractor\", \"Employee\", \"Intern\", \"Temp\", \"External\", and \"Unknown\", but any value may be used",
+            "nullable": true,
+            "example": "Employee"
+          },
+          "title": {
+            "type": "string",
+            "description": "The user's title",
+            "nullable": true,
+            "example": "Tour Guide"
+          },
+          "preferredLanguage": {
+            "type": "string",
+            "description": "Indicates the user's preferred written or spoken languages and is generally used for selecting a localized user interface. <br />\r\nThe format of the value is the same as the HTTP Accept-Language header field",
+            "nullable": true,
+            "example": "en-US"
+          },
+          "locale": {
+            "type": "string",
+            "description": "Used to indicate the User's default location for purposes of localizing such items as currency, date time format, or numerical representations",
+            "nullable": true,
+            "example": "en-US"
+          },
+          "timezone": {
+            "type": "string",
+            "description": "The User's time zone, in IANA Time Zone database format",
+            "nullable": true,
+            "example": "America/Los_Angeles"
+          },
+          "emails": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsersGenericMultiValuedAttributeDto"
+            },
+            "description": "Email addresses for the User. The values SHOULD be specified according to [RFC5321]",
+            "nullable": true
+          },
+          "phoneNumbers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsersGenericMultiValuedAttributeDto"
+            },
+            "description": "Phone numbers for the user. The values SHOULD be specified according to the format defined in [RFC3966]",
+            "nullable": true
+          },
+          "ims": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsersGenericMultiValuedAttributeDto"
+            },
+            "description": "Instant messaging address for the user. <br />\r\nPossible types for this attribute: \"aim\", \"gtalk\", \"icq\", \"xmpp\", \"msn\", \"skype\", \"qq\", \"yahoo\", or \"other\"",
+            "nullable": true
+          },
+          "photos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsersGenericMultiValuedAttributeDto"
+            },
+            "description": "URLs of photos of the User. <br />\r\nPossible types for this attribute: \"photo\" and \"thumbnail\"",
+            "nullable": true
+          },
+          "addresses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsersAddressMultiValuedAttributeDto"
+            },
+            "description": "A list of physical mailing addresses for this User <br />\r\nPossible types for this attribute: \"work\", \"home\", and \"other\"",
+            "nullable": true
+          },
+          "x509Certificates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsersGenericMultiValuedAttributeDto"
+            },
+            "description": "A list of certificates issued to the User",
+            "nullable": true
+          },
+          "urn:ietf:params:scim:schemas:extension:custom:1.0:User": {
+            "$ref": "#/components/schemas/UsersCustomPropertiesExtensionSchemaDto"
+          },
+          "schemas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />\r\nExample: [ \"urn:ietf:params:scim:schemas:core:2.0:User\", \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\", \"urn:ietf:params:scim:schemas:extension:custom:1.0:User\" ]",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UsersCustomPropertiesExtensionSchemaDto": {
+        "type": "object",
+        "properties": {
+          "customProperties": {
+            "type": "string",
+            "description": "Serialized JSON object with custom properties",
+            "nullable": true,
+            "example": "{\"propertyString\": \"StringValue\", \"propertyNumber\": 7, \"propertyBoolean\": true}"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Extension schema to be able to specify custom properties for users.\r\nTo be able to specify values for this property, it is required to add the following schema to the schemas list: \"urn:ietf:params:scim:schemas:extension:custom:1.0:User\""
+      },
+      "UsersGenericMultiValuedAttributeDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "A label indicating the attribute's function",
+            "nullable": true,
+            "example": "work"
+          },
+          "primary": {
+            "type": "boolean",
+            "description": "A Boolean value indicating the 'primary' or preferred attribute value for this attribute, \r\ne.g., the preferred mailing address or primary email address",
+            "example": true
+          },
+          "value": {
+            "type": "string",
+            "description": "The value of the attribute",
+            "nullable": true,
+            "example": "bjensen@example.com"
+          },
+          "display": {
+            "type": "string",
+            "description": "A human-readable name, primarily used for display purposes",
+            "nullable": true,
+            "example": "bjensen@example.com"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UsersNameDto": {
+        "type": "object",
+        "properties": {
+          "formatted": {
+            "type": "string",
+            "description": "The full name, including all middle names, titles, and suffixes as appropriate, formatted for display",
+            "nullable": true,
+            "example": "Ms. Barbara Jane Jensen, III"
+          },
+          "familyName": {
+            "type": "string",
+            "description": "The family name of the User, or last name in most Western languages",
+            "nullable": true,
+            "example": "Jensen"
+          },
+          "givenName": {
+            "type": "string",
+            "description": "The given name of the User, or first name in most Western languages",
+            "nullable": true,
+            "example": "Barbara"
+          },
+          "middleName": {
+            "type": "string",
+            "description": "The middle name(s) of the User",
+            "nullable": true,
+            "example": "Jane"
+          },
+          "honorificPrefix": {
+            "type": "string",
+            "description": "The honorific prefix(es) of the User, or title in most Western languages",
+            "nullable": true,
+            "example": "Ms"
+          },
+          "honorificSuffix": {
+            "type": "string",
+            "description": "The honorific suffix(es) of the User, or suffix in most Western languages",
+            "nullable": true,
+            "example": "III"
+          }
+        },
+        "additionalProperties": false,
+        "description": "The components of the user's name. <br />\r\nProviders MAY return just the full name as a single string in the formatted sub-attribute, or they MAY return just the individual \r\ncomponent attributes using the other sub-attributes, or they MAY return both. If both variants are returned, they SHOULD be \r\ndescribing the same name, with the formatted name indicating how the component attributes should be combined."
+      },
+      "UsersPatchRequestDto": {
+        "type": "object",
+        "properties": {
+          "operations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsersPatchRequestOperationDto"
+            },
+            "description": "Defines operations within a bulk or patch job.",
+            "nullable": true
+          },
+          "schemas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />\r\nExamples: [ \"urn:ietf:params:scim:api:messages:2.0:BulkRequest\" ], [ \"urn:ietf:params:scim:api:messages:2.0:PatchOp\" ]",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UsersPatchRequestOperationDto": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "type": "string",
+            "description": "Indicates the operation to perform. <br />\r\nPossible values: \"add\", \"remove\", or \"replace\"",
+            "nullable": true,
+            "example": "add"
+          },
+          "path": {
+            "type": "string",
+            "description": "Describes the attribute path that wants to be updated. <br />\r\nThe \"path\" attribute is OPTIONAL for \"add\" and \"replace\" and is REQUIRED for \"remove\" operations",
+            "nullable": true,
+            "example": "name.familyName"
+          },
+          "value": {
+            "description": "The new value for the attribute. REQUIRED for \"add\" and \"replace\" operations",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UsersResponseDto": {
+        "type": "object",
+        "properties": {
+          "externalId": {
+            "type": "string",
+            "description": "A String that is an identifier for the user as defined by the provisioning client",
+            "nullable": true,
+            "example": "701984"
+          },
+          "userName": {
+            "type": "string",
+            "description": "Unique identifier for the User, typically used by the user to directly authenticate to the service provider. <br />\r\nEach User MUST include a non-empty userName value. This identifier MUST be unique across the service provider's entire set of Users.",
+            "nullable": true,
+            "example": "bjensen@example.com"
+          },
+          "name": {
+            "$ref": "#/components/schemas/UsersNameDto"
+          },
+          "active": {
+            "type": "boolean",
+            "description": "A Boolean value indicating the user's administrative status",
+            "example": true
+          },
+          "displayName": {
+            "type": "string",
+            "description": "The name of the User, suitable for display to end-users. The name SHOULD be the full name of the User being described, if known",
+            "nullable": true,
+            "example": "Babs Jensen"
+          },
+          "nickName": {
+            "type": "string",
+            "description": "The casual way to address the user in real life, e.g., 'Bob' or 'Bobby' instead of 'Robert'.\r\nThis attribute SHOULD NOT be used to represent a User's username (e.g., 'bjensen' or 'mpepperidge').",
+            "nullable": true,
+            "example": "Babs"
+          },
+          "profileUrl": {
+            "type": "string",
+            "description": "A fully qualified URL pointing to a page representing the User's online profile.",
+            "nullable": true
+          },
+          "userType": {
+            "type": "string",
+            "description": "Used to identify the relationship between the organization and the user. <br />\r\nTypical values used might be \"Contractor\", \"Employee\", \"Intern\", \"Temp\", \"External\", and \"Unknown\", but any value may be used",
+            "nullable": true,
+            "example": "Employee"
+          },
+          "title": {
+            "type": "string",
+            "description": "The user's title",
+            "nullable": true,
+            "example": "Tour Guide"
+          },
+          "preferredLanguage": {
+            "type": "string",
+            "description": "Indicates the user's preferred written or spoken languages and is generally used for selecting a localized user interface. <br />\r\nThe format of the value is the same as the HTTP Accept-Language header field",
+            "nullable": true,
+            "example": "en-US"
+          },
+          "locale": {
+            "type": "string",
+            "description": "Used to indicate the User's default location for purposes of localizing such items as currency, date time format, or numerical representations",
+            "nullable": true,
+            "example": "en-US"
+          },
+          "timezone": {
+            "type": "string",
+            "description": "The User's time zone, in IANA Time Zone database format",
+            "nullable": true,
+            "example": "America/Los_Angeles"
+          },
+          "emails": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsersGenericMultiValuedAttributeDto"
+            },
+            "description": "Email addresses for the User. The values SHOULD be specified according to [RFC5321]",
+            "nullable": true
+          },
+          "phoneNumbers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsersGenericMultiValuedAttributeDto"
+            },
+            "description": "Phone numbers for the user. The values SHOULD be specified according to the format defined in [RFC3966]",
+            "nullable": true
+          },
+          "ims": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsersGenericMultiValuedAttributeDto"
+            },
+            "description": "Instant messaging address for the user. <br />\r\nPossible types for this attribute: \"aim\", \"gtalk\", \"icq\", \"xmpp\", \"msn\", \"skype\", \"qq\", \"yahoo\", or \"other\"",
+            "nullable": true
+          },
+          "photos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsersGenericMultiValuedAttributeDto"
+            },
+            "description": "URLs of photos of the User. <br />\r\nPossible types for this attribute: \"photo\" and \"thumbnail\"",
+            "nullable": true
+          },
+          "addresses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsersAddressMultiValuedAttributeDto"
+            },
+            "description": "A list of physical mailing addresses for this User <br />\r\nPossible types for this attribute: \"work\", \"home\", and \"other\"",
+            "nullable": true
+          },
+          "x509Certificates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsersGenericMultiValuedAttributeDto"
+            },
+            "description": "A list of certificates issued to the User",
+            "nullable": true
+          },
+          "urn:ietf:params:scim:schemas:extension:custom:1.0:User": {
+            "$ref": "#/components/schemas/UsersCustomPropertiesExtensionSchemaDto"
+          },
+          "schemas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />\r\nExample: [ \"urn:ietf:params:scim:schemas:core:2.0:User\", \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\", \"urn:ietf:params:scim:schemas:extension:custom:1.0:User\" ]",
+            "nullable": true
+          },
+          "id": {
+            "type": "string",
+            "description": "The unique ID of the user",
+            "nullable": true,
+            "example": "12345678-1234-1234-1234-123456789012"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/MetaDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UsersSearchRequestDto": {
+        "type": "object",
+        "properties": {
+          "attributes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "A multi-valued list of strings indicating the names of resource attributes to return in the response, \r\noverriding the set of attributes that would be returned by default. <br />\r\nExample: [ \"userName\", \"displayName\", \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:employeeNumber\"]",
+            "nullable": true
+          },
+          "excludedAttributes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "A multi-valued list of strings indicating the names of resource attributes to be removed from the default set of attributes to return. <br />\r\nExample: [ \"nickname\", \"title\" ]",
+            "nullable": true
+          },
+          "sortBy": {
+            "type": "string",
+            "description": "A string indicating the attribute whose value SHALL be used to order the returned responses",
+            "nullable": true,
+            "example": "userName"
+          },
+          "sortOrder": {
+            "$ref": "#/components/schemas/SortOrders"
+          },
+          "startIndex": {
+            "type": "integer",
+            "description": "An integer indicating the 1-based index of the first query result",
+            "format": "int32",
+            "example": 1
+          },
+          "count": {
+            "type": "integer",
+            "description": "An integer indicating the desired maximum number of query results per page",
+            "format": "int32",
+            "example": 20
+          },
+          "filter": {
+            "type": "string",
+            "description": "A string indicating the filter expression that will return only the resources that matches it",
+            "nullable": true,
+            "example": "displayName pr"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "apiKey",
+        "description": "Please insert JWT with Bearer into field",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ]
+}

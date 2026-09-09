@@ -1,0 +1,3533 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Fenergo Nebula Business Metrics Query",
+    "description": "**Business Metrics Query API**:<br/><br/><br/> Business Metrics Query API provides endpoints in order to retrieve all related models and their versions.<br/><br/><br/> **Business Metrics Query API provides**:<br/><ul><li> </li></ul>",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "/businessmetricsquery"
+    }
+  ],
+  "paths": {
+    "/api/agent-value-story": {
+      "get": {
+        "tags": [
+          "AgentValueStory"
+        ],
+        "summary": "Get the composite agent value story for a date range",
+        "description": "Returns per-agent action counts, derived hours/cost savings, hero KPIs,\nplatform screening telemetry, journey type counts, and a monthly time-series\nfor the requested date range. Aggregates data from DigitalAgents, Redshift,\nand DynamoDB tenant assumptions in a single call.\nTier 3 fields (entityOverview, transactionAlerts) are returned as\npendingIntegration: true placeholders until stories 541085 and 541086 land.<br /><br /><b>Required permissions:</b><br />Following permissions are required: ValueStoryAccess",
+        "operationId": "GetAgentValueStory",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "The inclusive start date (ISO 8601, e.g. 2026-01-01).",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "The inclusive end date (ISO 8601, e.g. 2026-01-31).",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Returns the composite agent value story.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentValueStoryResponseDtoServiceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentValueStoryResponseDtoServiceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentValueStoryResponseDtoServiceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid date parameters (missing, unparseable, from > to, or range > 24 months).",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error or upstream failure.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/assumptions": {
+      "get": {
+        "tags": [
+          "Assumptions"
+        ],
+        "summary": "Get ROI assumptions for the current tenant",
+        "description": "Returns the tenant-specific ROI assumptions used for agent value calculations.\nFalls back to system defaults when no tenant configuration has been saved.<br /><br /><b>Required permissions:</b><br />Following permissions are required: ValueStoryAccess",
+        "operationId": "GetTenantAssumptions",
+        "parameters": [
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Returns the tenant assumptions",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetTenantAssumptionsResponseDtoServiceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetTenantAssumptionsResponseDtoServiceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetTenantAssumptionsResponseDtoServiceResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/entitymetrics/getentitycountbydaterange": {
+      "post": {
+        "tags": [
+          "EntityMetrics"
+        ],
+        "summary": "Get entity count metrics by date range.",
+        "description": "<br /><br /><b>Required permissions:</b><br />Following permissions are required: ValueStoryAccess",
+        "parameters": [
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EntityMetricsRequestDtoServiceRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EntityMetricsRequestDtoServiceRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EntityMetricsRequestDtoServiceRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetEntityCountByDateRangeResponseDtoServiceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetEntityCountByDateRangeResponseDtoServiceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetEntityCountByDateRangeResponseDtoServiceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not Found",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/entitymetrics/getrelatedpartycountbydaterange": {
+      "post": {
+        "tags": [
+          "EntityMetrics"
+        ],
+        "summary": "Get related-party count metrics by date range.",
+        "description": "<br /><br /><b>Required permissions:</b><br />Following permissions are required: ValueStoryAccess",
+        "parameters": [
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EntityMetricsRequestDtoServiceRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EntityMetricsRequestDtoServiceRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EntityMetricsRequestDtoServiceRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetRelatedPartyCountByDateRangeResponseDtoServiceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetRelatedPartyCountByDateRangeResponseDtoServiceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetRelatedPartyCountByDateRangeResponseDtoServiceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not Found",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/journeycompletedelapsedtimedaily": {
+      "get": {
+        "tags": [
+          "JourneyCompletedElapsedTimeDaily"
+        ],
+        "summary": "Get all \"journey completed time daily\" records",
+        "description": "<br /><br /><b>Required permissions:</b><br />Following permissions are required: BusinessMetricsAccess",
+        "operationId": "GetAllJourneyCompletedTimeDailyRecords",
+        "parameters": [
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetAllJourneyCompletedElapsedTimeDailiesResponseDtoIEnumerableServiceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetAllJourneyCompletedElapsedTimeDailiesResponseDtoIEnumerableServiceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetAllJourneyCompletedElapsedTimeDailiesResponseDtoIEnumerableServiceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not Found",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/journeycompletedelapsedtimedaily/getjourneycompletedtimedailyrecordsbydaterange": {
+      "post": {
+        "tags": [
+          "JourneyCompletedElapsedTimeDaily"
+        ],
+        "summary": "Get \"journey completed time daily\" records by date range and page",
+        "description": "<br /><br /><b>Required permissions:</b><br />Following permissions are required: BusinessMetricsAccess",
+        "operationId": "GetJourneyCompletedDailyRecordsByDateRange",
+        "parameters": [
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/GetJourneyCompletedElapsedTimeDailyByDateRangeRequestDtoServiceRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/GetJourneyCompletedElapsedTimeDailyByDateRangeRequestDtoServiceRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/GetJourneyCompletedElapsedTimeDailyByDateRangeRequestDtoServiceRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetJourneyCompletedElapsedTimeDailyByDateRangeResponseDtoIEnumerableServiceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetJourneyCompletedElapsedTimeDailyByDateRangeResponseDtoIEnumerableServiceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetJourneyCompletedElapsedTimeDailyByDateRangeResponseDtoIEnumerableServiceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not Found",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/journeysummary": {
+      "post": {
+        "tags": [
+          "JourneySummary"
+        ],
+        "summary": "Get Journey Summary items",
+        "parameters": [
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/JourneySummaryRequestDtoServiceRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/JourneySummaryRequestDtoServiceRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/JourneySummaryRequestDtoServiceRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server exception. Please, contact your provider.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "Internal server exception. Please, contact your provider.",
+                      "type": "Error",
+                      "errorCode": "INTERNAL_SERVER_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projectedmetrics/getjourneyestimatesbytype": {
+      "post": {
+        "tags": [
+          "ProjectedMetrics"
+        ],
+        "summary": "Get average completed journeys by type",
+        "description": "<br /><br /><b>Required permissions:</b><br />Following permissions are required: BusinessMetricsAccess",
+        "parameters": [
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "description": "The request containing journey type and month details",
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/JourneyEstimatesByTypeRequestDtoServiceRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/JourneyEstimatesByTypeRequestDtoServiceRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/JourneyEstimatesByTypeRequestDtoServiceRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/JourneyEstimatesByTypeResponseDtoIEnumerableServiceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JourneyEstimatesByTypeResponseDtoIEnumerableServiceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JourneyEstimatesByTypeResponseDtoIEnumerableServiceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not Found",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/taskdailymetrics/gettaskdailymetricsbydaterange": {
+      "post": {
+        "tags": [
+          "TaskDailyMetrics"
+        ],
+        "summary": "Get daily task metrics by date range",
+        "description": "<br /><br /><b>Required permissions:</b><br />Following permissions are required: BusinessMetricsAccess",
+        "operationId": "GetTaskDailyMetricsByDateRange",
+        "parameters": [
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/GetTaskDailyMetricsByDateRangeRequestDtoServiceRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/GetTaskDailyMetricsByDateRangeRequestDtoServiceRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/GetTaskDailyMetricsByDateRangeRequestDtoServiceRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetTaskDailyMetricsByDateRangeResponseDtoIEnumerableServiceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetTaskDailyMetricsByDateRangeResponseDtoIEnumerableServiceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetTaskDailyMetricsByDateRangeResponseDtoIEnumerableServiceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not Found",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transactionalertmetrics/gettransactionalertcountsbydaterange": {
+      "post": {
+        "tags": [
+          "TransactionAlertMetrics"
+        ],
+        "summary": "Get transaction alert counts (total, high, medium, low) by date range.",
+        "description": "<br /><br /><b>Required permissions:</b><br />Following permissions are required: ValueStoryAccess",
+        "parameters": [
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TransactionAlertMetricsRequestDtoServiceRequest"
+                  }
+                ]
+              }
+            },
+            "text/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TransactionAlertMetricsRequestDtoServiceRequest"
+                  }
+                ]
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TransactionAlertMetricsRequestDtoServiceRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetTransactionAlertCountsByDateRangeResponseDtoServiceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetTransactionAlertCountsByDateRangeResponseDtoServiceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetTransactionAlertCountsByDateRangeResponseDtoServiceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not Found",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AgentSummariesDto": {
+        "type": "object",
+        "properties": {
+          "docsClassifier": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AgentSummaryDto"
+              }
+            ],
+            "description": "Gets the document classification agent summary.",
+            "nullable": true
+          },
+          "hitsAutoResolver": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AgentSummaryDto"
+              }
+            ],
+            "description": "Gets the screening auto-resolution agent summary.",
+            "nullable": true
+          },
+          "suggestionsAcceptance": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AgentSummaryDto"
+              }
+            ],
+            "description": "Gets the AI suggestions acceptance agent summary.",
+            "nullable": true
+          },
+          "reportsGenerator": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AgentSummaryDto"
+              }
+            ],
+            "description": "Gets the AI report generation agent summary.",
+            "nullable": true
+          },
+          "sourcesRetriever": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AgentSummaryDto"
+              }
+            ],
+            "description": "Gets the data source retrieval agent summary.",
+            "nullable": true
+          },
+          "policyChecker": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AgentSummaryDto"
+              }
+            ],
+            "description": "Gets the policy check execution agent summary.",
+            "nullable": true
+          },
+          "signal": {
+            "type": "integer",
+            "description": "Gets the Kyra:Signal agent's raw action count for the requested range.\nDeliberately carries only the action count, not derived hours/cost — the client recomputes\nthose from the tenant's live `SignalMinutes` assumption via the Assumptions API, so a\nserver-computed hours/cost figure here would be the one field on the page not reactive to a\nlive Edit Assumptions drawer change.",
+            "format": "int32"
+          },
+          "signalAccuracyRate": {
+            "type": "number",
+            "description": "Gets KYRA:Signal's accuracy proxy for the requested range (AB#547423): `100 - SignalUndeterminedRate`\n— the rate of runs that reached a confident Significant/Insignificant verdict rather than\nUndetermined. Null when no Significance activity occurred this period. A sibling field to\nFenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.AgentSummariesDto.Signal, not a change to its type — see Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.AgentSummariesDto.Signal's own doc comment\nfor why that stays a plain `int`.",
+            "format": "double",
+            "nullable": true
+          },
+          "signalTrend": {
+            "type": "string",
+            "description": "Gets KYRA:Signal's accuracy trend vs the prior equivalent period (AB#547471). Same \"up\"/\"down\"/\"flat\"/null convention as Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.AgentSummaryDto.Trend.",
+            "nullable": true
+          },
+          "signalPriorPeriodCount": {
+            "type": "integer",
+            "description": "Gets KYRA:Signal's real action count for the prior equivalent period (AB#547471).",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Container for all six per-agent summaries. Fixed-shape properties (not a dictionary)\ngive the UI compile-time contracts and avoid string-keyed access."
+      },
+      "AgentSummaryDto": {
+        "type": "object",
+        "properties": {
+          "actionCount": {
+            "type": "integer",
+            "description": "Gets the raw action count for this agent over the date range.",
+            "format": "int32"
+          },
+          "hoursSaved": {
+            "type": "number",
+            "description": "Gets the hours of analyst time saved by this agent (actionCount * minutesPerAction / 60).",
+            "format": "double"
+          },
+          "costSaved": {
+            "type": "number",
+            "description": "Gets the estimated cost saved by this agent (hoursSaved * hourlyRate).",
+            "format": "double"
+          },
+          "minutesPerAction": {
+            "type": "integer",
+            "description": "Gets the per-action minutes assumption used to derive hours saved (echoed from assumptions).",
+            "format": "int32"
+          },
+          "accuracy": {
+            "type": "number",
+            "description": "Gets this agent's accuracy % for the requested range (AB#547423). Null where no accuracy\nsignal exists for this agent (Suggestions/Reports/Policy) — not a manufactured 0%.",
+            "format": "double",
+            "nullable": true
+          },
+          "avgConfidencePct": {
+            "type": "number",
+            "description": "Gets this agent's confidence score — the rounded Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.AgentSummaryDto.Accuracy value, per AB#547429's\nresolution (\"not a new metric... rounded per-agent accuracy value\"). Null when Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.AgentSummaryDto.Accuracy is null.",
+            "format": "double",
+            "nullable": true
+          },
+          "trend": {
+            "type": "string",
+            "description": "Gets this agent's accuracy trend vs the prior equivalent period (AB#547471): \"up\" | \"down\" |\n\"flat\", or null when no accuracy signal exists for this agent (same agents as Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.AgentSummaryDto.Accuracy null).",
+            "nullable": true
+          },
+          "priorPeriodCount": {
+            "type": "integer",
+            "description": "Gets this agent's real action count for the prior equivalent period (AB#547471) — replaces the previous fabricated ×0.88 placeholder.",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Per-agent action counts plus the derived hours and cost saved for the requested date range."
+      },
+      "AgentValueStoryResponseDto": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "Gets or sets the start of the requested date range (inclusive).",
+            "format": "date"
+          },
+          "to": {
+            "type": "string",
+            "description": "Gets or sets the end of the requested date range (inclusive).",
+            "format": "date"
+          },
+          "heroKpis": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HeroKpisDto"
+              }
+            ],
+            "description": "Gets or sets the aggregate hero KPIs for the date range.",
+            "nullable": true
+          },
+          "agentSummaries": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AgentSummariesDto"
+              }
+            ],
+            "description": "Gets or sets the per-agent action counts and derived savings.",
+            "nullable": true
+          },
+          "platformTelemetry": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlatformTelemetryDto"
+              }
+            ],
+            "description": "Gets or sets the platform screening and journey telemetry.",
+            "nullable": true
+          },
+          "monthlySeries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MonthlyBucketDto"
+            },
+            "description": "Gets or sets the monthly time-series of agent metrics and cumulative cost saved.",
+            "nullable": true
+          },
+          "entityOverview": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PendingIntegrationDto"
+              }
+            ],
+            "description": "Gets or sets the entity overview section. Wired to real data (Story 541085's entity/related-party\ncount queries) since Story 545286 — Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.PendingIntegrationDto.PendingIntegration is\n`false` and Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.PendingIntegrationDto.Data carries an Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.EntityOverviewDto.",
+            "nullable": true
+          },
+          "transactionAlerts": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PendingIntegrationDto"
+              }
+            ],
+            "description": "Gets or sets the transaction alerts section. Wired to real data (Story 543478's transaction-alert\ncount query) since Story 545286 — Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.PendingIntegrationDto.PendingIntegration is\n`false` and Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.PendingIntegrationDto.Data carries a Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.RiskDistributionDto.",
+            "nullable": true
+          },
+          "assumptions": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssumptionsSummaryDto"
+              }
+            ],
+            "description": "Gets or sets the assumptions used to derive all ROI figures in this response.",
+            "nullable": true
+          },
+          "executiveSummary": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ExecutiveSummaryDto"
+              }
+            ],
+            "description": "Gets or sets the Executive Summary section (narrative + payback period).",
+            "nullable": true
+          },
+          "capacity": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CapacityDto"
+              }
+            ],
+            "description": "Gets or sets the Capacity gauge section (full-contract-year baseline).",
+            "nullable": true
+          },
+          "platformTab": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlatformTabDto"
+              }
+            ],
+            "description": "Gets or sets the Platform tab content.",
+            "nullable": true
+          },
+          "agentsTab": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AgentsTabDto"
+              }
+            ],
+            "description": "Gets or sets the Agents tab content.",
+            "nullable": true
+          },
+          "operations": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PendingIntegrationDto"
+              }
+            ],
+            "description": "Gets or sets the Operations tab content. Since Story 546092, wraps Agreement by Decision\nCategory + Intervention Volume/Agreement Rate trend (Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.OperationsTabDto) once the\nDigitalAgents Trust-table fields are present; `{ pendingIntegration: true }` until then, or\nif a DigitalAgents deploy lag means only one of the two upstream fields is populated. HAI\nreview-time/override-reasons (546093) and QA Findings (546094) remain pending.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Composite response for the agent value story endpoint.\nAggregates per-agent action counts, derived ROI KPIs, platform telemetry,\nand monthly time-series data."
+      },
+      "AgentValueStoryResponseDtoServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AgentValueStoryResponseDto"
+              }
+            ],
+            "description": "Composite response for the agent value story endpoint.\nAggregates per-agent action counts, derived ROI KPIs, platform telemetry,\nand monthly time-series data.",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AgentsTabDto": {
+        "type": "object",
+        "properties": {
+          "subAgents": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AgentSummariesDto"
+              }
+            ],
+            "description": "Gets the sub-agent summaries — the same object graph as the top-level `AgentSummaries`.",
+            "nullable": true
+          },
+          "docClassificationBreakdown": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PendingIntegrationDto"
+              }
+            ],
+            "description": "Gets the doc classification breakdown, sourced from DigitalAgents' `agent-value-summary``DocsClassifiedByType` field, ordered by count descending then type ascending (ordinal,\ncase-insensitive). `{ pendingIntegration: false, data: [{ type, count }] }` once the upstream\nDigitalAgents response includes the field — `data` is an empty list, not a pending placeholder,\nwhen the requested range genuinely has no classifications. `{ pendingIntegration: true }` only\nwhen the upstream response omits the field entirely (predates DigitalAgents PR #564 in this\nenvironment) — this is distinguishable from a genuine zero because the client DTO's\n`DocsClassifiedByType` is nullable with no default.",
+            "nullable": true
+          },
+          "screeningDisposition": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ScreeningDispositionDto"
+              }
+            ],
+            "description": "Gets the screening outcome disposition (match/no-match/unresolved) for the date range.",
+            "nullable": true
+          },
+          "aiSummary": {
+            "type": "string",
+            "description": "Gets the deterministic, server-composed operational summary for the Agents tab.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Agents tab content: the shared sub-agent summary table, screening disposition breakdown,\nand the per-document-type classification breakdown."
+      },
+      "AssumptionsSummaryDto": {
+        "type": "object",
+        "properties": {
+          "hourlyRate": {
+            "type": "number",
+            "description": "Gets the analyst hourly rate used for cost derivations.",
+            "format": "double"
+          },
+          "docMinutes": {
+            "type": "integer",
+            "description": "Gets the minutes-per-action assumption for document classification.",
+            "format": "int32"
+          },
+          "autoMinutes": {
+            "type": "integer",
+            "description": "Gets the minutes-per-action assumption for screening auto-resolution.",
+            "format": "int32"
+          },
+          "signalMinutes": {
+            "type": "integer",
+            "description": "Gets the minutes-per-action assumption for AI signal/suggestion acceptance.",
+            "format": "int32"
+          },
+          "reportMinutes": {
+            "type": "integer",
+            "description": "Gets the minutes-per-action assumption for report generation.",
+            "format": "int32"
+          },
+          "sourceMinutes": {
+            "type": "integer",
+            "description": "Gets the minutes-per-action assumption for data source retrieval.",
+            "format": "int32"
+          },
+          "policyMinutes": {
+            "type": "integer",
+            "description": "Gets the minutes-per-action assumption for policy checks.",
+            "format": "int32"
+          },
+          "productiveHoursPerMonth": {
+            "type": "integer",
+            "description": "Gets the productive hours per month assumption used in the FTE equivalent calculation.",
+            "format": "int32"
+          },
+          "isUsingDefaults": {
+            "type": "boolean",
+            "description": "Gets a value indicating whether system defaults were used because no tenant-specific\nassumptions have been saved."
+          }
+        },
+        "additionalProperties": false,
+        "description": "An echo of the ROI assumptions used to derive the agent value story figures.\nIncluded in the response so the UI can render \"why\" tooltips without a second call to the assumptions endpoint."
+      },
+      "CapacityAgentActionCountsDto": {
+        "type": "object",
+        "properties": {
+          "docsClassifier": {
+            "type": "integer",
+            "description": "Gets the document classification agent's action count.",
+            "format": "int32"
+          },
+          "hitsAutoResolver": {
+            "type": "integer",
+            "description": "Gets the screening auto-resolution agent's action count.",
+            "format": "int32"
+          },
+          "suggestionsAcceptance": {
+            "type": "integer",
+            "description": "Gets the AI suggestions acceptance agent's action count.",
+            "format": "int32"
+          },
+          "reportsGenerator": {
+            "type": "integer",
+            "description": "Gets the AI report generation agent's action count.",
+            "format": "int32"
+          },
+          "sourcesRetriever": {
+            "type": "integer",
+            "description": "Gets the data source retrieval agent's action count.",
+            "format": "int32"
+          },
+          "policyChecker": {
+            "type": "integer",
+            "description": "Gets the policy check execution agent's action count.",
+            "format": "int32"
+          },
+          "extraction": {
+            "type": "integer",
+            "description": "Gets the Kyra:Docs data-field-extraction agent's action count (AB#547917). Same raw-count,\nno-server-side-derivation contract as Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.CapacityAgentActionCountsDto.Signal — hours/cost/credits stay\nclient-computed downstream; the server does not multiply this by any credit rate.",
+            "format": "int32"
+          },
+          "signal": {
+            "type": "integer",
+            "description": "Gets the Kyra:Signal agent's action count. Unlike the other six, Signal's hours/cost are\nnever derived server-side anywhere on this page (see Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.AgentSummariesDto.Signal's\ndoc comment) — this raw count exists solely so the client's Capacity gauge can compute\nSignal's contribution from the live `signalMinutes` assumption, same as the other six.",
+            "format": "int32"
+          },
+          "agentCredits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CapacityAgentCreditsDto"
+            },
+            "description": "Gets each Kyra agent's capacity-credit detail (AB#550218 D1) — one entry per agent key in\n`Domain.Models.Assumptions.CapacityMeasureCatalog`, NOT a 1:1 map with the 8 flat raw-\ncount fields above: Kyra:Docs' classification + extraction combine into a single \"kyra_docs\"\nentry here (Guardrail §7), so this list can have fewer entries than distinct measures.\n`BuildCapacity` always enumerates `CapacityMeasureCatalog.CreditMeasureMap` and populates\none entry per agent key regardless of whether the optional credit inputs (rate table, ledger,\nactivations) were supplied — an agent with no resolvable rate/data appears here with\n`IsMetered = false` and a `null` (never `0`) `CreditsConsumed`, per\nGuardrail §6's \"not metered, never 0%\" contract; the list itself is not empty in that case\n(Copilot review, AB#550218 PR #802 — corrected from an earlier, inaccurate \"empty when no\ncredit inputs supplied\" doc). Additive, never removes or repurposes the raw-count fields\nabove (Guardrail §1).",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Per-agent raw action counts over the Capacity gauge's full-contract-year window.\nDeliberately carries only action counts, not derived hours/cost — the client recomputes\nthose from the live per-agent minutes assumption, so a server-computed figure here would be\nthe one stat on the page that goes stale when the Assumptions drawer is edited."
+      },
+      "CapacityAgentCreditsDto": {
+        "type": "object",
+        "properties": {
+          "agentKey": {
+            "type": "string",
+            "description": "The canonical agent key (see `Domain.Models.Assumptions.CapacityMeasureCatalog`), e.g.\n`kyra_docs`. Same identifier space as `AgentActivations` on\n`GetTenantAssumptionsResponseDto` (RD-4) — a client can join the two by this key.",
+            "nullable": true
+          },
+          "isMetered": {
+            "type": "boolean",
+            "description": "`false` when every measure this agent owns is unmetered (Guardrail §6)."
+          },
+          "creditsConsumed": {
+            "type": "number",
+            "description": "Total credits consumed by this agent across all its measures. `null`, never `0`, when Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.CapacityAgentCreditsDto.IsMetered is `false`.",
+            "format": "double",
+            "nullable": true
+          },
+          "activationDate": {
+            "type": "string",
+            "description": "The activation date used for this agent's projection (per-agent, falling back to the tenant-level date). `null` if neither is available.",
+            "format": "date",
+            "nullable": true
+          },
+          "projectedAnnualCredits": {
+            "type": "number",
+            "description": "Burn-rate-per-day × 365 (RD-5). `null` when the agent is unmetered or has no resolvable activation date.",
+            "format": "double",
+            "nullable": true
+          },
+          "eventSubCounts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CapacityMeasureCreditDto"
+            },
+            "description": "This agent's measures, rolled up into display groups (Kyra:Docs combines two sub-events into one \"Docs\" entry here; every other agent has exactly one entry, matching its own single measure).",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "One Kyra agent's capacity-credit detail (AB#550218 D1) — credits consumed, activation-aware\nprojection, and per-event-type sub-counts. Mirrors\nFenergo.Nebula.BusinessMetrics.Domain.Models.Assumptions.CapacityAgentConsumptionResult. Kyra:Docs' classification\n+ extraction sub-events are already combined into a single \"kyra_docs\" entry's\nFenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.CapacityAgentCreditsDto.EventSubCounts (Guardrail §7) via the agent-key grouping\n`GetAgentValueStoryMapper`'s `BuildCapacity` applies, rather than appearing as two\nseparate agent entries."
+      },
+      "CapacityDto": {
+        "type": "object",
+        "properties": {
+          "annualHoursAllotment": {
+            "type": "integer",
+            "description": "Gets the tenant's annual hours allotment. `0` means unset — the UI hides the Capacity gauge.",
+            "format": "int32"
+          },
+          "hoursSavedFullYear": {
+            "type": "number",
+            "description": "Gets the total hours saved across all agents over the full contract year.",
+            "format": "double"
+          },
+          "fullYearFrom": {
+            "type": "string",
+            "description": "Gets the inclusive start date of the full-contract-year window.",
+            "format": "date"
+          },
+          "fullYearTo": {
+            "type": "string",
+            "description": "Gets the inclusive end date of the full-contract-year window (the request's `to` date).",
+            "format": "date"
+          },
+          "utilizationPercent": {
+            "type": "number",
+            "description": "Gets the utilization percentage (`HoursSavedFullYear / AnnualHoursAllotment * 100`,\nrounded to 2 decimal places). `null` when Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.CapacityDto.AnnualHoursAllotment is `0`.",
+            "format": "double",
+            "nullable": true
+          },
+          "agentBreakdown": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CapacityAgentActionCountsDto"
+              }
+            ],
+            "description": "Gets the per-agent raw action counts over the same full-contract-year window as\nFenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.CapacityDto.HoursSavedFullYear. Summing each agent's action count times the tenant's\ncurrent stored per-agent minutes assumption reconciles with Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.CapacityDto.HoursSavedFullYear.",
+            "nullable": true
+          },
+          "capacityUnitsPurchased": {
+            "type": "integer",
+            "description": "Gets the tenant's purchased annual entitlement, in capacity credits (`assumptions.AnnualVolumeCredits`,\nRD-6). Always sourced from the tenant's assumptions regardless of whether the optional credit\ninputs (rate table, ledger, activations) were supplied to `BuildCapacity` — those inputs\naffect Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.CapacityDto.CapacityUnitsConsumed/projection, not the entitlement itself. A brand-new\ntenant's default `AnnualVolumeCredits` (the Launch band floor, 2,000,000) means this is\neffectively never `0` in practice (Copilot review, AB#550218 PR #802 — corrected from an\nearlier, inaccurate \"0 when no credit inputs supplied\" doc).",
+            "format": "int64"
+          },
+          "capacityUnitsConsumed": {
+            "type": "number",
+            "description": "Gets the total capacity credits consumed (closed-period frozen ledger sum + open-period live calculation, RD-1).",
+            "format": "double"
+          },
+          "capacityUnitsRemaining": {
+            "type": "number",
+            "description": "Gets Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.CapacityDto.CapacityUnitsPurchased minus Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.CapacityDto.CapacityUnitsConsumed. Deliberately NOT clamped at zero — a negative value is the overage signal (position 7: overage never blocks, so it must remain visible, not be hidden by clamping).",
+            "format": "double"
+          },
+          "percentConsumed": {
+            "type": "number",
+            "description": "Gets Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.CapacityDto.CapacityUnitsConsumed ÷ Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.CapacityDto.CapacityUnitsPurchased × 100. `null` only when Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.CapacityDto.CapacityUnitsPurchased is `<= 0` (defensive).",
+            "format": "double",
+            "nullable": true
+          },
+          "percentProjected": {
+            "type": "number",
+            "description": "Gets the projected full-year consumption (sum of each agent's activation-aware burn-rate × 365, RD-5) as a percentage of Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.CapacityDto.CapacityUnitsPurchased. `null` under the same condition as Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.CapacityDto.PercentConsumed.",
+            "format": "double",
+            "nullable": true
+          },
+          "bandName": {
+            "type": "string",
+            "description": "Gets the name of the capacity band Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.CapacityDto.CapacityUnitsPurchased resolves to (e.g. \"Launch\"). `null` when no band-reference data was supplied.",
+            "nullable": true
+          },
+          "entitlementPeriodStart": {
+            "type": "string",
+            "description": "Gets the inclusive start date of the tenant's current commercial capacity/entitlement period (the tenant's `ActivationDate`, RD-6). `null` when the tenant has never been activated.",
+            "format": "date",
+            "nullable": true
+          },
+          "entitlementPeriodEnd": {
+            "type": "string",
+            "description": "Gets the exclusive end date of the tenant's current commercial capacity/entitlement period (Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.CapacityDto.EntitlementPeriodStart + 1 year). `null` when Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.CapacityDto.EntitlementPeriodStart is `null`.",
+            "format": "date",
+            "nullable": true
+          },
+          "overageStatus": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CapacityOverageStatusDto"
+              }
+            ],
+            "description": "Gets the consumed-vs-purchased overage/warning band (position 7 — never blocks, purely informational)."
+          }
+        },
+        "additionalProperties": false,
+        "description": "Capacity gauge section: full-contract-year (rolling 12 months back from the requested\n`to` date) baseline hours saved against the tenant's annual hours allotment."
+      },
+      "CapacityMeasureCreditDto": {
+        "type": "object",
+        "properties": {
+          "measureKey": {
+            "type": "string",
+            "description": "The metered event type this entry covers (e.g. `IDP_field_extracted_count`).",
+            "nullable": true
+          },
+          "isMetered": {
+            "type": "boolean",
+            "description": "`false` when this measure has no rate resolvable and no historical frozen consumption either (Guardrail §6 — \"not metered\", never \"0%\")."
+          },
+          "creditsConsumed": {
+            "type": "number",
+            "description": "Total credits consumed for this measure (closed-period frozen sum + open-period live calculation). `null`, never `0`, when Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.CapacityMeasureCreditDto.IsMetered is `false`.",
+            "format": "double",
+            "nullable": true
+          },
+          "rateEffectiveFrom": {
+            "type": "string",
+            "description": "The effective-from date of whichever rate version most recently priced this measure. `null` if never metered.",
+            "format": "date",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "One metered sub-event's credit contribution within a Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.CapacityAgentCreditsDto\n(AB#550218 D1). Mirrors Fenergo.Nebula.BusinessMetrics.Domain.Models.Assumptions.CapacityMeasureConsumptionResult\n1:1 — this is the granularity Kyra:Docs' classification/extraction sub-counts are surfaced at\nunderneath the single combined \"Docs\" display line (Guardrail §7)."
+      },
+      "CapacityOverageStatusDto": {
+        "enum": [
+          "Ok",
+          "Warn80",
+          "Warn90",
+          "Over100"
+        ],
+        "type": "string",
+        "description": "Wire-contract mirror of Fenergo.Nebula.BusinessMetrics.Domain.Models.Assumptions.CapacityOverageStatus (AB#550218\nposition 7). A dedicated Query.Application enum rather than exposing the Domain enum directly on\nFenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.CapacityDto — this DTO layer never re-exposes Domain types verbatim on the wire\n(see `AssumptionsSummaryDto`/`QaFindingDto`, which mirror rather than reuse their\nDomain counterparts), so the JSON contract's numeric ordinals/names stay independent of the\ninternal Domain enum's own evolution. Purely informational — overage never blocks anything."
+      },
+      "CaseThroughputDto": {
+        "type": "object",
+        "properties": {
+          "onboarding": {
+            "type": "integer",
+            "description": "Gets the number of Client Onboarding journeys completed over the date range.",
+            "format": "int32"
+          },
+          "onboardingAutonomous": {
+            "type": "integer",
+            "description": "Gets the number of Client Onboarding journeys completed autonomously (no human review).\nInvariant: `Onboarding == OnboardingAutonomous + OnboardingHumanAssisted`.",
+            "format": "int32"
+          },
+          "onboardingHumanAssisted": {
+            "type": "integer",
+            "description": "Gets the number of Client Onboarding journeys completed with human assistance.",
+            "format": "int32"
+          },
+          "periodicReview": {
+            "type": "integer",
+            "description": "Gets the number of Periodic Review journeys completed over the date range.",
+            "format": "int32"
+          },
+          "periodicReviewAutonomous": {
+            "type": "integer",
+            "description": "Gets the number of Periodic Review journeys completed autonomously (no human review).\nInvariant: `PeriodicReview == PeriodicReviewAutonomous + PeriodicReviewHumanAssisted`.",
+            "format": "int32"
+          },
+          "periodicReviewHumanAssisted": {
+            "type": "integer",
+            "description": "Gets the number of Periodic Review journeys completed with human assistance.",
+            "format": "int32"
+          },
+          "maintenance": {
+            "type": "integer",
+            "description": "Gets the number of Maintenance journeys completed over the date range.",
+            "format": "int32"
+          },
+          "maintenanceAutonomous": {
+            "type": "integer",
+            "description": "Gets the number of Maintenance journeys completed autonomously (no human review).\nInvariant: `Maintenance == MaintenanceAutonomous + MaintenanceHumanAssisted`.",
+            "format": "int32"
+          },
+          "maintenanceHumanAssisted": {
+            "type": "integer",
+            "description": "Gets the number of Maintenance journeys completed with human assistance.",
+            "format": "int32"
+          },
+          "dailyCounts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DailyJourneyCountDto"
+            },
+            "description": "Gets the daily-bucketed journey completion counts, by date and journey type.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Case throughput section of the Platform tab: journey completion counts by type over the\nrequested range, plus a daily-bucketed breakdown for trend charts."
+      },
+      "DailyJourneyCountDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "description": "Gets the calendar date this count applies to.",
+            "format": "date"
+          },
+          "journeyType": {
+            "type": "string",
+            "description": "Gets the journey type this count applies to (e.g. \"Client Onboarding\").",
+            "nullable": true
+          },
+          "count": {
+            "type": "integer",
+            "description": "Gets the number of journeys of this type completed on this date.",
+            "format": "int32"
+          },
+          "autonomousCount": {
+            "type": "integer",
+            "description": "Gets the number of journeys of this type completed autonomously (no human review) on this\ndate. Invariant: `Count == AutonomousCount + HumanAssistedCount`.",
+            "format": "int32"
+          },
+          "humanAssistedCount": {
+            "type": "integer",
+            "description": "Gets the number of journeys of this type completed with human assistance on this date.",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "A single day's completed-journey count for one journey type, used to build the\nPlatform tab's Case Throughput daily series."
+      },
+      "EntityCountByTypeDto": {
+        "type": "object",
+        "properties": {
+          "entityType": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "verifiedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "rejectedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalCurrentPeriod": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalPreviousPeriod": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "delta": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EntityMetricsRequestDto": {
+        "type": "object",
+        "properties": {
+          "startDate": {
+            "type": "string",
+            "description": "Start date in yyyy/MM/dd format.",
+            "nullable": true
+          },
+          "endDate": {
+            "type": "string",
+            "description": "End date in yyyy/MM/dd format.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request DTO for entity metrics date-range queries."
+      },
+      "EntityMetricsRequestDtoServiceRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EntityMetricsRequestDto"
+              }
+            ],
+            "description": "Request DTO for entity metrics date-range queries.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ExecutiveSummaryDto": {
+        "type": "object",
+        "properties": {
+          "headline": {
+            "type": "string",
+            "description": "Gets the short headline for the Executive Summary card.",
+            "nullable": true
+          },
+          "narrative": {
+            "type": "string",
+            "description": "Gets the deterministic narrative composed from the requested range's hero KPIs\n(top-saving agent, total hours/cost saved, FTE equivalent, risks detected, journey volume).\nNo upstream text-generation call is involved.",
+            "nullable": true
+          },
+          "paybackPeriodMonths": {
+            "type": "number",
+            "description": "Gets the payback period, in months, for the tenant's annual subscription cost.\n`null` when the tenant has not set `AnnualSubscriptionCost`, or when there is no\npositive cost saved to amortise it against.",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Executive Summary section: a deterministic, server-composed narrative and headline built\nfrom the already-computed hero KPIs, plus an optional payback-period figure."
+      },
+      "GetAllJourneyCompletedElapsedTimeDailiesResponseDto": {
+        "type": "object",
+        "properties": {
+          "tenant": {
+            "type": "string",
+            "nullable": true
+          },
+          "entityType": {
+            "type": "string",
+            "nullable": true
+          },
+          "journeyType": {
+            "type": "string",
+            "nullable": true
+          },
+          "average": {
+            "type": "number",
+            "format": "double"
+          },
+          "standardDeviation": {
+            "type": "number",
+            "format": "double"
+          },
+          "date": {
+            "type": "string",
+            "nullable": true
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "numAutocompleted": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "numSlaMet": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "numSlaEligible": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetAllJourneyCompletedElapsedTimeDailiesResponseDtoIEnumerableServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetAllJourneyCompletedElapsedTimeDailiesResponseDto"
+            },
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetEntityCountByDateRangeResponseDto": {
+        "type": "object",
+        "properties": {
+          "entityCounts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EntityCountByTypeDto"
+            },
+            "nullable": true
+          },
+          "totalCurrentPeriod": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalPreviousPeriod": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "delta": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetEntityCountByDateRangeResponseDtoServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GetEntityCountByDateRangeResponseDto"
+              }
+            ],
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetJourneyCompletedElapsedTimeDailyByDateRangeRequestDto": {
+        "type": "object",
+        "properties": {
+          "startDate": {
+            "type": "string",
+            "description": "Start Date for metrics",
+            "nullable": true,
+            "example": "2023/04/24"
+          },
+          "endDate": {
+            "type": "string",
+            "description": "End Date for metrics",
+            "nullable": true,
+            "example": "2023/05/25"
+          },
+          "numberOfRecordsToSkip": {
+            "type": "integer",
+            "description": "Number of records to skip, and not include in the response. If the value is undefined, no records will be skipped.",
+            "format": "int32",
+            "nullable": true,
+            "example": 10
+          },
+          "recordLimit": {
+            "type": "integer",
+            "description": "Maximum amount of records to include in the response. If the value is undefined all records will be returned.",
+            "format": "int32",
+            "nullable": true,
+            "example": 10
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetJourneyCompletedElapsedTimeDailyByDateRangeRequestDtoServiceRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GetJourneyCompletedElapsedTimeDailyByDateRangeRequestDto"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetJourneyCompletedElapsedTimeDailyByDateRangeResponseDto": {
+        "type": "object",
+        "properties": {
+          "tenant": {
+            "type": "string",
+            "nullable": true
+          },
+          "entityType": {
+            "type": "string",
+            "nullable": true
+          },
+          "journeyType": {
+            "type": "string",
+            "nullable": true
+          },
+          "average": {
+            "type": "number",
+            "format": "double"
+          },
+          "standardDeviation": {
+            "type": "number",
+            "format": "double"
+          },
+          "date": {
+            "type": "string",
+            "nullable": true
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "numAutocompleted": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "numSlaMet": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "numSlaEligible": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetJourneyCompletedElapsedTimeDailyByDateRangeResponseDtoIEnumerableServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetJourneyCompletedElapsedTimeDailyByDateRangeResponseDto"
+            },
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetRelatedPartyCountByDateRangeResponseDto": {
+        "type": "object",
+        "properties": {
+          "addedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "removedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "netActive": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "previousPeriodNetActive": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "delta": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetRelatedPartyCountByDateRangeResponseDtoServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GetRelatedPartyCountByDateRangeResponseDto"
+              }
+            ],
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetTaskDailyMetricsByDateRangeRequestDto": {
+        "type": "object",
+        "properties": {
+          "startDate": {
+            "type": "string",
+            "description": "Start Date for metrics",
+            "nullable": true,
+            "example": "2023/04/24"
+          },
+          "endDate": {
+            "type": "string",
+            "description": "End Date for metrics",
+            "nullable": true,
+            "example": "2023/05/25"
+          },
+          "numberOfRecordsToSkip": {
+            "type": "integer",
+            "description": "Number of records to skip, and not include in the response. If the value is undefined, no records will be skipped.",
+            "format": "int32",
+            "nullable": true,
+            "example": 10
+          },
+          "recordLimit": {
+            "type": "integer",
+            "description": "Maximum amount of records to include in the response. If the value is undefined all records will be returned.",
+            "format": "int32",
+            "nullable": true,
+            "example": 10
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetTaskDailyMetricsByDateRangeRequestDtoServiceRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GetTaskDailyMetricsByDateRangeRequestDto"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetTaskDailyMetricsByDateRangeResponseDto": {
+        "type": "object",
+        "properties": {
+          "tenant": {
+            "type": "string",
+            "nullable": true
+          },
+          "taskType": {
+            "type": "string",
+            "nullable": true
+          },
+          "taskName": {
+            "type": "string",
+            "nullable": true
+          },
+          "average": {
+            "type": "number",
+            "format": "double"
+          },
+          "date": {
+            "type": "string",
+            "nullable": true
+          },
+          "completedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "automatedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "reopenedCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetTaskDailyMetricsByDateRangeResponseDtoIEnumerableServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GetTaskDailyMetricsByDateRangeResponseDto"
+            },
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetTenantAssumptionsResponseDto": {
+        "type": "object",
+        "properties": {
+          "hourlyRate": {
+            "type": "number",
+            "format": "double"
+          },
+          "docMinutes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "screenMinutes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "autoMinutes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "reportMinutes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sourceMinutes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "policyMinutes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "productiveHoursPerMonth": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "signalMinutes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "alertHighScoreThreshold": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "alertMediumScoreThreshold": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "onboardingSlaTargetPercent": {
+            "type": "number",
+            "format": "double"
+          },
+          "periodicReviewSlaTargetPercent": {
+            "type": "number",
+            "format": "double"
+          },
+          "maintenanceSlaTargetPercent": {
+            "type": "number",
+            "format": "double"
+          },
+          "annualHoursAllotment": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "annualSubscriptionCost": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "isUsingDefaults": {
+            "type": "boolean"
+          },
+          "annualVolumeCredits": {
+            "type": "integer",
+            "description": "The tenant's total annual volume, in capacity credits, used to derive\nFenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetTenantAssumptions.GetTenantAssumptionsResponseDto.BandName/Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetTenantAssumptions.GetTenantAssumptionsResponseDto.CreditsPerEuro/Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetTenantAssumptions.GetTenantAssumptionsResponseDto.CreditsFloor below.\n`2_000_000` (the Launch band floor) when the tenant has never set this value.",
+            "format": "int64"
+          },
+          "activationDate": {
+            "type": "string",
+            "description": "The date the tenant's current commercial capacity period started. `null` when the\ntenant has never saved assumptions (AB#547917 AC6) — see `TenantAssumptions.ActivationDate`\nfor the write-time default-on-first-save convention that populates this on save.",
+            "format": "date",
+            "nullable": true
+          },
+          "bandName": {
+            "type": "string",
+            "description": "The name of the capacity band Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetTenantAssumptions.GetTenantAssumptionsResponseDto.AnnualVolumeCredits resolves to (e.g. \"Launch\",\n\"Global Reserved Capacity\") — derived at read time, never persisted on the tenant record.\n`null` only if the global band-threshold reference dataset itself is unavailable.",
+            "nullable": true
+          },
+          "creditsPerEuro": {
+            "type": "integer",
+            "description": "Same derivation source as Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetTenantAssumptions.GetTenantAssumptionsResponseDto.BandName.",
+            "format": "int32",
+            "nullable": true
+          },
+          "creditsFloor": {
+            "type": "integer",
+            "description": "Same derivation source as Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetTenantAssumptions.GetTenantAssumptionsResponseDto.BandName.",
+            "format": "int64",
+            "nullable": true
+          },
+          "annualPeriodEndDate": {
+            "type": "string",
+            "description": "The <b>exclusive</b> upper bound of the tenant's current annual capacity period — i.e. the\nstart of the <em>next</em> period, not the last day of the current one. Derived at read time\nas `ActivationDate.Value.AddYears(1)`; `null` when Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetTenantAssumptions.GetTenantAssumptionsResponseDto.ActivationDate is\nnull (AB#547917 Open Question 5 — naming/convention is cosmetic and was recorded as-is with\nthis XML doc documenting the exclusive semantics, rather than renaming the field).",
+            "format": "date",
+            "nullable": true
+          },
+          "capacityUnitsPurchased": {
+            "type": "integer",
+            "description": "Gets the tenant's purchased annual entitlement, in capacity credits — same value as Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetTenantAssumptions.GetTenantAssumptionsResponseDto.AnnualVolumeCredits, alias for naming consistency with `CapacityDto.CapacityUnitsPurchased`.",
+            "format": "int64"
+          },
+          "entitlementPeriodStart": {
+            "type": "string",
+            "description": "Gets the inclusive start date of the tenant's current entitlement period — same value as Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetTenantAssumptions.GetTenantAssumptionsResponseDto.ActivationDate, alias for naming consistency with `CapacityDto.EntitlementPeriodStart`.",
+            "format": "date",
+            "nullable": true
+          },
+          "entitlementPeriodEnd": {
+            "type": "string",
+            "description": "Gets the exclusive end date of the tenant's current entitlement period — same value as Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetTenantAssumptions.GetTenantAssumptionsResponseDto.AnnualPeriodEndDate, alias for naming consistency with `CapacityDto.EntitlementPeriodEnd`.",
+            "format": "date",
+            "nullable": true
+          },
+          "agentActivations": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Gets each agent's individual activation date (AB#550218 RD-4, revised per OQ-6), keyed by\nthe canonical agent key (see `Domain.Models.Assumptions.CapacityMeasureCatalog`).\nPopulated from a dedicated per-(tenant, agent) DynamoDB item read\n(`IAgentActivationRepository.GetAll`), NOT a field on the settings row — an agent absent\nfrom this dictionary has no individual activation yet and falls back to\nFenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetTenantAssumptions.GetTenantAssumptionsResponseDto.ActivationDate (the tenant-level activation) wherever activation-aware\nprojection is computed. Read-only here: the only writer is EH's Ops path\n(`OpsCapacityWriteHandler`, Phase E) — position 1's \"Value Story is read-only for\nentitlement\" contract.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetTenantAssumptionsResponseDtoServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GetTenantAssumptionsResponseDto"
+              }
+            ],
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetTransactionAlertCountsByDateRangeResponseDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "high": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "medium": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "low": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetTransactionAlertCountsByDateRangeResponseDtoServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GetTransactionAlertCountsByDateRangeResponseDto"
+              }
+            ],
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "HeroKpisDto": {
+        "type": "object",
+        "properties": {
+          "totalHoursSaved": {
+            "type": "number",
+            "description": "Gets the total analyst hours saved across all agents over the date range.",
+            "format": "double"
+          },
+          "totalCostSaved": {
+            "type": "number",
+            "description": "Gets the total estimated cost saved across all agents over the date range.",
+            "format": "double"
+          },
+          "fteEquivalent": {
+            "type": "number",
+            "description": "Gets the full-time employee equivalent saved.\nComputed as totalHoursSaved / (productiveHoursPerMonth * monthsInRange).",
+            "format": "double"
+          },
+          "risksDetected": {
+            "type": "integer",
+            "description": "Gets the number of confirmed positive screening matches (risksDetected).\nDerived from ScreeningMatchCount — not ScreeningDetectionsTotal,\nwhich would overstate risk by including no-match and unresolved outcomes.",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Aggregate hero KPI card displayed at the top of the agent value story dashboard."
+      },
+      "JourneyEstimatesByTypeRequestDto": {
+        "type": "object",
+        "properties": {
+          "journeyType": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "JourneyEstimatesByTypeRequestDtoServiceRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JourneyEstimatesByTypeRequestDto"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "JourneyEstimatesByTypeResponseDto": {
+        "type": "object",
+        "properties": {
+          "tenant": {
+            "type": "string",
+            "nullable": true
+          },
+          "journeyType": {
+            "type": "string",
+            "nullable": true
+          },
+          "month": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "averageCount": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "JourneyEstimatesByTypeResponseDtoIEnumerableServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JourneyEstimatesByTypeResponseDto"
+            },
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "JourneySummaryRequestDto": {
+        "type": "object",
+        "properties": {
+          "journeyIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "JourneySummaryRequestDtoServiceRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JourneySummaryRequestDto"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "JourneysByTypeDto": {
+        "type": "object",
+        "properties": {
+          "onboarding": {
+            "type": "integer",
+            "description": "Gets the count of completed \"Client Onboarding\" journeys.",
+            "format": "int32"
+          },
+          "periodicReview": {
+            "type": "integer",
+            "description": "Gets the count of completed \"Periodic Review\" journeys.",
+            "format": "int32"
+          },
+          "maintenance": {
+            "type": "integer",
+            "description": "Gets the count of completed \"Maintenance\" journeys.",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Journey counts grouped into the three canonical onboarding journey types.\nJourney types outside these three buckets are dropped by design."
+      },
+      "KpiTileDto": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "type": "string",
+            "description": "Gets the tile's eyebrow label (e.g. \"This period\").",
+            "nullable": true
+          },
+          "value": {
+            "type": "number",
+            "description": "Gets the tile's primary value. `null` when Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.KpiTileDto.PendingIntegration is `true`.",
+            "format": "double",
+            "nullable": true
+          },
+          "subLabel": {
+            "type": "string",
+            "description": "Gets the tile's sub-label (e.g. \"documents\", \"% autonomous\").",
+            "nullable": true
+          },
+          "deltaPercent": {
+            "type": "number",
+            "description": "Gets the within-range delta percent — first-vs-last-month of the monthly series.\n`null` when fewer than two monthly buckets exist, or when Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.KpiTileDto.PendingIntegration is `true`.",
+            "format": "double",
+            "nullable": true
+          },
+          "sparkline": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "double"
+            },
+            "description": "Gets the monthly sparkline points. Empty when Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.KpiTileDto.PendingIntegration is `true`.",
+            "nullable": true
+          },
+          "pendingIntegration": {
+            "type": "boolean",
+            "description": "Gets a value indicating whether this tile has no data source today. When `true`,\nFenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.KpiTileDto.Value, Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.KpiTileDto.DeltaPercent are `null` and Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.KpiTileDto.Sparkline is empty."
+          }
+        },
+        "additionalProperties": false,
+        "description": "A single tile in the Platform tab's KPI grid: eyebrow label, headline value, a within-range\ndelta, a sub-label, and a monthly sparkline. Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.KpiTileDto.Value, Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.KpiTileDto.DeltaPercent,\nand Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.KpiTileDto.Sparkline stay unset when Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.KpiTileDto.PendingIntegration is `true` —\nthe tile has no data source today (see \"Data Points Extracted\" / \"Monitoring Autonomous\")."
+      },
+      "KpiTileGridDto": {
+        "type": "object",
+        "properties": {
+          "autonomousResolution": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/KpiTileDto"
+              }
+            ],
+            "description": "Gets the Autonomous Resolution tile — journey-completion agentic %.",
+            "nullable": true
+          },
+          "dataPointsExtracted": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/KpiTileDto"
+              }
+            ],
+            "description": "Gets the Data Points Extracted tile. Pending — no data source today.",
+            "nullable": true
+          },
+          "documentsClassified": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/KpiTileDto"
+              }
+            ],
+            "description": "Gets the Documents Classified tile.",
+            "nullable": true
+          },
+          "screeningAutonomous": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/KpiTileDto"
+              }
+            ],
+            "description": "Gets the Screening Autonomous tile — resolved (match or clean) % of total detections.",
+            "nullable": true
+          },
+          "monitoringAutonomous": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/KpiTileDto"
+              }
+            ],
+            "description": "Gets the Monitoring Autonomous tile. Pending — no data source today.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "The Platform tab's 5-tile KPI grid. \"Data Points Extracted\" and \"Monitoring Autonomous\" ship\nwith Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.KpiTileDto.PendingIntegration`true` — no data source exists for either\ntoday (see plans/546091-platform-kpi-case-throughput.plan.md, Open Question 1)."
+      },
+      "MonthlyBucketDto": {
+        "type": "object",
+        "properties": {
+          "month": {
+            "type": "string",
+            "description": "Gets the month in \"yyyy-MM\" format.",
+            "nullable": true
+          },
+          "docsClassified": {
+            "type": "integer",
+            "description": "Gets the number of documents classified in this month.",
+            "format": "int32"
+          },
+          "hitsAutoResolved": {
+            "type": "integer",
+            "description": "Gets the number of screening hits auto-resolved in this month.",
+            "format": "int32"
+          },
+          "suggestionsAccepted": {
+            "type": "integer",
+            "description": "Gets the number of AI suggestions accepted in this month.",
+            "format": "int32"
+          },
+          "reportsGenerated": {
+            "type": "integer",
+            "description": "Gets the number of AI-generated reports in this month.",
+            "format": "int32"
+          },
+          "sourcesRetrieved": {
+            "type": "integer",
+            "description": "Gets the number of data sources retrieved in this month.",
+            "format": "int32"
+          },
+          "policyChecksRun": {
+            "type": "integer",
+            "description": "Gets the number of policy checks run in this month.",
+            "format": "int32"
+          },
+          "signal": {
+            "type": "integer",
+            "description": "Gets the number of Kyra:Signal checks run in this month.",
+            "format": "int32"
+          },
+          "totalHoursSaved": {
+            "type": "number",
+            "description": "Gets the total analyst hours saved across all agents in this month.",
+            "format": "double"
+          },
+          "cumulativeCostSaved": {
+            "type": "number",
+            "description": "Gets the running cumulative cost saved from the start of the range up to and including this month.",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Per-month bucket in the monthly time-series of the agent value story.\nContains per-agent action counts, total hours saved for the month, and a running\ncumulative cost saved up to and including this month."
+      },
+      "ObjectServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PendingIntegrationDto": {
+        "type": "object",
+        "properties": {
+          "pendingIntegration": {
+            "type": "boolean",
+            "description": "Gets a value indicating whether the integration for this section is pending."
+          },
+          "data": {
+            "description": "Gets the data payload. Always `null` while Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetAgentValueStory.PendingIntegrationDto.PendingIntegration is `true`.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Placeholder shape for Tier 3 fields whose upstream integrations are not yet wired.\nUsed for entityOverview (Story 541085) and transactionAlerts (Story 541086)."
+      },
+      "PlatformTabDto": {
+        "type": "object",
+        "properties": {
+          "aiSummary": {
+            "type": "string",
+            "description": "Gets the deterministic, server-composed operational summary for the Platform tab.",
+            "nullable": true
+          },
+          "kpiGrid": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/KpiTileGridDto"
+              }
+            ],
+            "description": "Gets the 5-tile KPI grid (Autonomous Resolution, Data Points Extracted, Documents Classified, Screening Autonomous, Monitoring Autonomous).",
+            "nullable": true
+          },
+          "caseThroughput": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CaseThroughputDto"
+              }
+            ],
+            "description": "Gets the case throughput breakdown, including autonomous-vs-human-assisted splits and the daily-bucketed series.",
+            "nullable": true
+          },
+          "dataCompleteness": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PendingIntegrationDto"
+              }
+            ],
+            "description": "Gets the data completeness payload — real agentic-% headline data plus a per-journey-type\nagentic-vs-human breakdown, sourced from `JourneyCompletedElapsedTimeDaily.NumAutocompleted`.\nAlways `{ pendingIntegration: false, data: DataCompletenessDto }`.",
+            "nullable": true
+          },
+          "slaCompliance": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PendingIntegrationDto"
+              }
+            ],
+            "description": "Gets the SLA compliance payload — real per-journey-type actual-vs-target compliance plus an\noverall percentage, sourced from `JourneyCompletedElapsedTimeDaily.NumSlaMet`/\n`NumSlaEligible` and the tenant's configured SLA targets. Always\n`{ pendingIntegration: false, data: SlaComplianceDto }`.",
+            "nullable": true
+          },
+          "riskDistribution": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RiskDistributionDto"
+              }
+            ],
+            "description": "Gets the transaction-alert risk distribution for the date range.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Platform tab content: an AI-composed operational summary, the 5-tile KPI grid, case\nthroughput, transaction-alert risk distribution, real data-completeness (agentic %), and\nreal SLA compliance."
+      },
+      "PlatformTelemetryDto": {
+        "type": "object",
+        "properties": {
+          "screeningDetections": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ScreeningDetectionsDto"
+              }
+            ],
+            "description": "Gets the screening detection counts.",
+            "nullable": true
+          },
+          "entitiesScreened": {
+            "type": "integer",
+            "description": "Gets the total number of entities screened.\nDerived as ScreeningMatchCount + ScreeningNoMatchCount + ScreeningUnresolvedCount.\nEvery screened entity yields exactly one of the three outcomes, so this numerically\nequals ScreeningDetectionsTotal.",
+            "format": "int32"
+          },
+          "hitRatePercent": {
+            "type": "number",
+            "description": "Gets the screening hit rate as a percentage.\nComputed as (ScreeningMatchCount / entitiesScreened * 100), rounded to 2 decimal places.\nReturns 0 when entitiesScreened is 0 to avoid divide-by-zero.",
+            "format": "double"
+          },
+          "autoResolved": {
+            "type": "integer",
+            "description": "Gets the number of screening hits auto-resolved.\nPassthrough of HitsAutoResolved from DigitalAgents.",
+            "format": "int32"
+          },
+          "journeysByType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JourneysByTypeDto"
+              }
+            ],
+            "description": "Gets the journey completion counts grouped by type.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Platform telemetry section of the agent value story: screening detection outcomes,\nentity screening counts, hit rate, auto-resolution count, and journey type breakdown."
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": { }
+      },
+      "RiskDistributionDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "description": "Gets the total number of transaction alerts raised over the date range.",
+            "format": "int32"
+          },
+          "high": {
+            "type": "integer",
+            "description": "Gets the number of alerts scoring at or above the tenant's high-score threshold.",
+            "format": "int32"
+          },
+          "medium": {
+            "type": "integer",
+            "description": "Gets the number of alerts scoring at or above the medium threshold but below the high threshold.",
+            "format": "int32"
+          },
+          "low": {
+            "type": "integer",
+            "description": "Gets the number of alerts scoring below the tenant's medium-score threshold.",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Transaction-alert risk distribution, bucketed by tenant-configured score thresholds.\nOne-to-one echo of `GetTransactionAlertCountsByDateRangeResponseDto`\n(`Fenergo.Nebula.BusinessMetrics.Query.Application.Features.GetTransactionAlertCountsByDateRange`),\nre-declared locally so the agent-value-story response surface does not cross-reference\nanother feature's response DTO directly."
+      },
+      "ScreeningDetectionsDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "description": "Gets the total number of screening detections\n(ScreeningMatchCount + ScreeningNoMatchCount + ScreeningUnresolvedCount).",
+            "format": "int32"
+          },
+          "sanctions": {
+            "type": "integer",
+            "description": "Gets the total number of screening outcomes (match + no-match + unresolved) recorded against\nthe sanctions list. Not a confirmed-matches-only count — see the class summary.",
+            "format": "int32"
+          },
+          "peps": {
+            "type": "integer",
+            "description": "Gets the total number of screening outcomes (match + no-match + unresolved) recorded against\nthe PEPs list. Not a confirmed-matches-only count — see the class summary.",
+            "format": "int32"
+          },
+          "adverseMedia": {
+            "type": "integer",
+            "description": "Gets the total number of screening outcomes (match + no-match + unresolved) recorded against\nadverse media sources. Not a confirmed-matches-only count — see the class summary.",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Screening detection totals for the platform telemetry section.\nSanctions/Peps/AdverseMedia are each the total number of screening outcomes (match + no-match +\nunresolved) recorded against that list type — NOT a confirmed-matches-only count. Whether\nSanctions + Peps + AdverseMedia sums to Total is not established: it depends on whether\nFenergo.Nebula.Screening emits the category-suffixed measures as a strict partition of Total's\nunderlying measures or as a separate/overlapping per-list-type flow (e.g. a single hit checked\nagainst multiple lists could be counted in more than one category). Do not assume either way\nwithout checking Fenergo.Nebula.Screening's emission code first.\nSanctions/Peps/AdverseMedia read 0 for all tenants until Fenergo.Nebula.Screening's\ncategory-metrics feature flag is enabled — AB#543743/AB#543745 have both shipped to master, but\nthe underlying capability rollout is a separate, tenant-by-tenant flag flip."
+      },
+      "ScreeningDispositionDto": {
+        "type": "object",
+        "properties": {
+          "match": {
+            "type": "integer",
+            "description": "Gets the number of confirmed positive screening matches.",
+            "format": "int32"
+          },
+          "noMatch": {
+            "type": "integer",
+            "description": "Gets the number of screening no-match outcomes.",
+            "format": "int32"
+          },
+          "unresolved": {
+            "type": "integer",
+            "description": "Gets the number of unresolved screening outcomes.",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Screening outcome disposition for the Agents tab — echoes the three DigitalAgents\nscreening-outcome fields (`ScreeningMatchCount`/`ScreeningNoMatchCount`/\n`ScreeningUnresolvedCount` on `AgentValueSummaryResponseDto`) already surfaced\nelsewhere in this response."
+      },
+      "ServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ServiceResponseMessage": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "errorCode": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "StringServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransactionAlertMetricsRequestDto": {
+        "type": "object",
+        "properties": {
+          "startDate": {
+            "type": "string",
+            "description": "Start date in yyyy/MM/dd format.",
+            "nullable": true
+          },
+          "endDate": {
+            "type": "string",
+            "description": "End date in yyyy/MM/dd format.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request DTO for transaction alert metrics date-range queries."
+      },
+      "TransactionAlertMetricsRequestDtoServiceRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TransactionAlertMetricsRequestDto"
+              }
+            ],
+            "description": "Request DTO for transaction alert metrics date-range queries.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "apiKey",
+        "description": "Please insert JWT with Bearer into field",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ]
+}

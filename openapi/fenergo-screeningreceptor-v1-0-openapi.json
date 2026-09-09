@@ -1,0 +1,1324 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Fenergo Nebula Screening Adapter Receptor",
+    "description": "## Purpose of the API\n\nThe purpose of the Screening Receptor API is to integrate the different Screening adapters (LN, WCO, etc) with the main Screening service, by receiving the results of the available Screening operations (Screen, Resolve Matches, Test, etc).\n\nOnce the results are sent to the Receptor by the Adapters, they will forwarded to the main Screening service for them to be processed.\n\n## Authentication\n\nThe authentication in the Receptor is driven by the optional headers that are available in the endpoints (X-TENANT-ID, X-PROVIDER-ID, X-ENCRYPTION-IV, X-AUTHENTICATION-MAC).\n\nTo authenticate the requests coming to the Receptor, two keys are used to encrypt and authenticate the request. There are a few things to take into account:\n\n<ul><li>The keys have a size of 256 bit. These keys should be encoded in base64 format and added to the Screening configuration of the provider and tenant, using the Screening Command API</li>\n\n<li>For authentication, HMAC (SHA256) is used</li><li>For encryption, AES-CBC is used</li><li>The order of the process is: Encrypt-then-MAC. This means that the request body must be encrypted first using the encryption key, and then authenticated using the authentication key</li></ul>\n\n## Compression and Content-Type\n\nThe Receptor API supports compressed and uncompressed request bodies. Users will need to provide appropriate values for the 'Compression-Algorithm' and 'Content-Type' headers depending on whether the request body is compressed or not:\n\n<ul><li>If the header 'Compression-Algorithm' is not specified in the request or its value is an empty string, the API won't try to decompress the request body. In this case, the value 'application/json' should be specified in the 'Content-Type' header</li><li>If the header 'Compression-Algorithm' is not empty, the API will decompress the request body with the algorithm specified in the header. So far, the only supported algorithm is 'gzip'. In this case, the value 'text/plain' should be specified in the 'Content-Type' header.\n\nThis online compression tool could be handy to get the compressed text from the JSON body: <a href='https://facia.dev/tools/compress-decompress/gzip-compress/' target='_blank'>Gzip compression tool</a></li></ul>\n\nThe correct order to compress the request body is:\n\n<ol><li>Set the 'gzip' value in the 'Compression-Algorithm' header</li><li>Set the 'text/plain' value in the ''Content-Type' header</li><li>Get the strongly typed response object</li><li>Serialize the strongly typed object to a JSON string</li><li>Compress the JSON string using the gzip algorithm</li><li>Convert the compressed stream to Base64 a string</li><li>If authentication is enabled, encrypt the Base64 string and set the authentication headers accordingly. Otherwise, send the Base64 string directly</li></ol>\n\n## Request payload limit\n\nThe Receptor API has a maximum request payload limit of 6MB. If the payload size is greater than that (either compressed or uncompressed), the API will throw an error.\n\n## Using Authentication and Compression together\n\nWhen both authentication and compression are used together, the order of the process is: Compress-Encrypt-MAC. This means that the request body must be compressed first, then encrypted using the encryption key, and finally authenticated using the authentication key.\n\n## Troubleshooting errors\n\nThe Receptor API performs some basic validations on the request that would give immediate feedback to the consumer of the API. For example, the consumer may get a 400 Bad Request error if some mandatory properties in the request body are missing. If the request is valid, the Receptor will return a 202 Accepted response.\n\nEven though the Receptor may return a successful response, errors could happen while processing the request in the Screening main service. In that scenario, it is possible to get the details of the errors that have occurred by using the Screening Query API. For example, the response of the 'api/batch/{id}' endpoint would include the error details if the 'Screen' results were not processed successfully.",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "/screeningreceptor"
+    }
+  ],
+  "paths": {
+    "/api/receptor": {
+      "post": {
+        "tags": [
+          "Receptor"
+        ],
+        "summary": "This method handles the results from the different screening adapters",
+        "operationId": "ReceiveResults",
+        "parameters": [
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          },
+          {
+            "name": "X-PROVIDER-ID",
+            "in": "header",
+            "description": "The ID of the provider",
+            "schema": {
+              "type": "string"
+            },
+            "example": "ProviderId"
+          },
+          {
+            "name": "X-ENCRYPTION-IV",
+            "in": "header",
+            "description": "The encryption IV key, base64 encoded",
+            "schema": {
+              "type": "string"
+            },
+            "example": "HgyUHIO81m0FcZfPS1lnUw=="
+          },
+          {
+            "name": "X-AUTHENTICATION-MAC",
+            "in": "header",
+            "description": "The authentication MAC key, base64 encoded",
+            "schema": {
+              "type": "string"
+            },
+            "example": "frr2J1pP5rUC6DLe8q1WNko7FmRqUOD8zYTQN4ABgiE="
+          },
+          {
+            "name": "Compression-Algorithm",
+            "in": "header",
+            "description": "<p>The compression algorithm (if any) that has been used to compress the body of the request.</p><p>Possible values: empty string (if body is not compressed), gzip</p>",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The response from the adapter",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ObjectAdapterResponseDto"
+              },
+              "examples": {
+                "Screen operation - Success - Entity type 'Individual'": {
+                  "value": {"response":{"batchExternalIds":[{"source":"MyProviderId","name":"FieldInProvider","value":"1234"}],"entities":[{"entityId":"76ce4f1a-8676-4d4f-be0f-ae57b99b7e27","externalIds":[{"source":"MyProviderId","entityAliasId":"PrimaryName","name":"FieldInProvider","value":"1234"}],"matchesData":[{"externalId":"1234","externalIds":[{"entityAliasId":"PrimaryName","value":"1234"}],"providerId":"MyProviderId","entityAliasIds":["PrimaryName"],"name":"Test Entity","aliases":null,"aliasesList":[{"value":"TE","type":"Acronym"}],"gender":"Male","dateOfBirth":"25/01/1950","dateOfBirthList":null,"country":null,"entityType":"Individual","matchScore":100,"providerSourceName":"MyProviderName","providerSourceUrl":"https://myprovider.com/match/{matchId}","providerSourceUrls":null,"addresses":[{"addressLine1":"Address Line 1","addressLine2":"Address Line 2","city":"City","postalCode":"28793","country":"Country","countryISO2":null,"countryISO3":null,"stateProvince":"State or Province","type":"Main address","category":null}],"citizenship":"Irish","nationality":"Irish","placeOfBirth":"Dublin","citizenshipList":null,"nationalityList":null,"placeOfBirthList":null,"countryOfResidence":"Ireland","additionalInfo":[{"title":"Last Updated","content":["7/5/2022 12:00:00 AM +01:00"]}],"sourcesInfo":[{"title":"Entity URL","content":["URL1","URL2"]}],"categories":["Pep","Sanctions"],"sources":["URL1","URL2"],"registeredCountry":null,"ids":{"Id1":"158192327","Id2":"1465465"},"idsList":null,"associations":[{"externalId":"e_tr_wco_1231231","category":"Enforcements,AdverseMedia:CORPORATE","fullName":"Test Entity","relationship":"Affiliated entity","relationshipGroup":null,"ownershipPercentage":null}],"status":null,"reason":null,"comments":null,"subsidiaryFields":null,"richTextAdditionalDetails":"<html><body><p>Some rich text details</p></body></html>","categoryDetails":null}]}]},"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Screen","status":"Success","errorDetails":null,"uploadId":null}
+                },
+                "Screen operation - Success - Entity type 'Company'": {
+                  "value": {"response":{"batchExternalIds":[{"source":"MyProviderId","name":"FieldInProvider","value":"1234"}],"entities":[{"entityId":"76ce4f1a-8676-4d4f-be0f-ae57b99b7e27","externalIds":[{"source":"MyProviderId","entityAliasId":"PrimaryName","name":"FieldInProvider","value":"1234"}],"matchesData":[{"externalId":"1234","externalIds":[{"entityAliasId":"PrimaryName","value":"1234"}],"providerId":"MyProviderId","entityAliasIds":["PrimaryName"],"name":"Test Entity","aliases":null,"aliasesList":[{"value":"TE","type":"Acronym"}],"gender":null,"dateOfBirth":null,"dateOfBirthList":null,"country":"Ireland","entityType":"Company","matchScore":100,"providerSourceName":"MyProviderName","providerSourceUrl":"https://myprovider.com/match/{matchId}","providerSourceUrls":null,"addresses":[{"addressLine1":"Address Line 1","addressLine2":"Address Line 2","city":"City","postalCode":"28793","country":"Country","countryISO2":null,"countryISO3":null,"stateProvince":"State or Province","type":"Main address","category":null}],"citizenship":null,"nationality":null,"placeOfBirth":null,"citizenshipList":null,"nationalityList":null,"placeOfBirthList":null,"countryOfResidence":null,"additionalInfo":[{"title":"Last Updated","content":["7/5/2022 12:00:00 AM +01:00"]}],"sourcesInfo":[{"title":"Entity URL","content":["URL1","URL2"]}],"categories":["Pep","Sanctions"],"sources":["URL1","URL2"],"registeredCountry":"Ireland","ids":{"Id1":"158192327","Id2":"1465465"},"idsList":null,"associations":[{"externalId":"e_tr_wco_1231231","category":"Enforcements,AdverseMedia:CORPORATE","fullName":"Test Entity","relationship":"Affiliated entity","relationshipGroup":null,"ownershipPercentage":null}],"status":null,"reason":null,"comments":null,"subsidiaryFields":null,"richTextAdditionalDetails":"<html><body><p>Some rich text details</p></body></html>","categoryDetails":null}]}]},"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Screen","status":"Success","errorDetails":null,"uploadId":null}
+                },
+                "Screen operation - Error": {
+                  "value": {"response":null,"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Screen","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"uploadId":null}
+                },
+                "ResolveMatches operation - Success": {
+                  "value": {"response":{},"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"ResolveMatches","status":"Success","errorDetails":null,"uploadId":null}
+                },
+                "ResolveMatches operation - Error": {
+                  "value": {"response":null,"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"ResolveMatches","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"uploadId":null}
+                },
+                "Test operation - Success": {
+                  "value": {"response":{},"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Test","status":"Success","errorDetails":null,"uploadId":null}
+                },
+                "Test operation - Error": {
+                  "value": {"response":null,"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Test","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"uploadId":null}
+                },
+                "OngoingScreening operation - Success": {
+                  "value": {"response":{},"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingScreening","status":"Success","errorDetails":null,"uploadId":null}
+                },
+                "OngoingScreening operation - Error": {
+                  "value": {"response":null,"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingScreening","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"uploadId":null}
+                },
+                "OngoingScreeningUpdate operation - Success": {
+                  "value": {"response":{},"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingScreeningUpdate","status":"Success","errorDetails":null,"uploadId":null}
+                },
+                "OngoingScreeningUpdate operation - Error": {
+                  "value": {"response":null,"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingScreeningUpdate","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"uploadId":null}
+                },
+                "OngoingScreeningGetResults operation - Success - Entity type 'Individual'": {
+                  "value": {"response":{"batchExternalIds":[{"source":"MyProviderId","name":"FieldInProvider","value":"1234"}],"entities":[{"entityId":null,"legalEntityId":"bb8cd902-1aa8-456e-a22d-a4fc470e8386","externalIds":[{"source":"MyProviderId","entityAliasId":"PrimaryName","name":"FieldInProvider","value":"1234"}],"matchesData":[{"externalId":"1234","externalIds":[{"entityAliasId":"PrimaryName","value":"1234"}],"providerId":"MyProviderId","entityAliasIds":["PrimaryName"],"name":"Test Entity","aliases":null,"aliasesList":[{"value":"TE","type":"Acronym"}],"gender":"Male","dateOfBirth":"25/01/1950","dateOfBirthList":null,"country":null,"entityType":"Individual","matchScore":100,"providerSourceName":"MyProviderName","providerSourceUrl":"https://myprovider.com/match/{matchId}","providerSourceUrls":null,"addresses":[{"addressLine1":"Address Line 1","addressLine2":"Address Line 2","city":"City","postalCode":"28793","country":"Country","countryISO2":null,"countryISO3":null,"stateProvince":"State or Province","type":"Main address","category":null}],"citizenship":"Irish","nationality":"Irish","placeOfBirth":"Dublin","citizenshipList":null,"nationalityList":null,"placeOfBirthList":null,"countryOfResidence":"Ireland","additionalInfo":[{"title":"Last Updated","content":["7/5/2022 12:00:00 AM +01:00"]}],"sourcesInfo":[{"title":"Entity URL","content":["URL1","URL2"]}],"categories":["Pep","Sanctions"],"sources":["URL1","URL2"],"registeredCountry":null,"ids":{"Id1":"158192327","Id2":"1465465"},"idsList":null,"associations":[{"externalId":"e_tr_wco_1231231","category":"Enforcements,AdverseMedia:CORPORATE","fullName":"Test Entity","relationship":"Affiliated entity","relationshipGroup":null,"ownershipPercentage":null}],"status":null,"reason":null,"comments":null,"subsidiaryFields":null,"richTextAdditionalDetails":"<html><body><p>Some rich text details</p></body></html>","categoryDetails":null}],"configurationSetId":null}]},"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingScreeningGetResults","status":"Success","errorDetails":null,"uploadId":null}
+                },
+                "OngoingScreeningGetResults operation - Success - Entity type 'Company'": {
+                  "value": {"response":{"batchExternalIds":[{"source":"MyProviderId","name":"FieldInProvider","value":"1234"}],"entities":[{"entityId":null,"legalEntityId":"bb8cd902-1aa8-456e-a22d-a4fc470e8386","externalIds":[{"source":"MyProviderId","entityAliasId":"PrimaryName","name":"FieldInProvider","value":"1234"}],"matchesData":[{"externalId":"1234","externalIds":[{"entityAliasId":"PrimaryName","value":"1234"}],"providerId":"MyProviderId","entityAliasIds":["PrimaryName"],"name":"Test Entity","aliases":null,"aliasesList":[{"value":"TE","type":"Acronym"}],"gender":null,"dateOfBirth":null,"dateOfBirthList":null,"country":"Ireland","entityType":"Company","matchScore":100,"providerSourceName":"MyProviderName","providerSourceUrl":"https://myprovider.com/match/{matchId}","providerSourceUrls":null,"addresses":[{"addressLine1":"Address Line 1","addressLine2":"Address Line 2","city":"City","postalCode":"28793","country":"Country","countryISO2":null,"countryISO3":null,"stateProvince":"State or Province","type":"Main address","category":null}],"citizenship":null,"nationality":null,"placeOfBirth":null,"citizenshipList":null,"nationalityList":null,"placeOfBirthList":null,"countryOfResidence":null,"additionalInfo":[{"title":"Last Updated","content":["7/5/2022 12:00:00 AM +01:00"]}],"sourcesInfo":[{"title":"Entity URL","content":["URL1","URL2"]}],"categories":["Pep","Sanctions"],"sources":["URL1","URL2"],"registeredCountry":"Ireland","ids":{"Id1":"158192327","Id2":"1465465"},"idsList":null,"associations":[{"externalId":"e_tr_wco_1231231","category":"Enforcements,AdverseMedia:CORPORATE","fullName":"Test Entity","relationship":"Affiliated entity","relationshipGroup":null,"ownershipPercentage":null}],"status":null,"reason":null,"comments":null,"subsidiaryFields":null,"richTextAdditionalDetails":"<html><body><p>Some rich text details</p></body></html>","categoryDetails":null}],"configurationSetId":null}]},"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingScreeningGetResults","status":"Success","errorDetails":null,"uploadId":null}
+                }
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "$ref": "#/components/schemas/ObjectAdapterResponseDto"
+              },
+              "examples": {
+                "Screen operation - Success - Entity type 'Individual'": {
+                  "value": {"response":{"batchExternalIds":[{"source":"MyProviderId","name":"FieldInProvider","value":"1234"}],"entities":[{"entityId":"76ce4f1a-8676-4d4f-be0f-ae57b99b7e27","externalIds":[{"source":"MyProviderId","entityAliasId":"PrimaryName","name":"FieldInProvider","value":"1234"}],"matchesData":[{"externalId":"1234","externalIds":[{"entityAliasId":"PrimaryName","value":"1234"}],"providerId":"MyProviderId","entityAliasIds":["PrimaryName"],"name":"Test Entity","aliases":null,"aliasesList":[{"value":"TE","type":"Acronym"}],"gender":"Male","dateOfBirth":"25/01/1950","dateOfBirthList":null,"country":null,"entityType":"Individual","matchScore":100,"providerSourceName":"MyProviderName","providerSourceUrl":"https://myprovider.com/match/{matchId}","providerSourceUrls":null,"addresses":[{"addressLine1":"Address Line 1","addressLine2":"Address Line 2","city":"City","postalCode":"28793","country":"Country","countryISO2":null,"countryISO3":null,"stateProvince":"State or Province","type":"Main address","category":null}],"citizenship":"Irish","nationality":"Irish","placeOfBirth":"Dublin","citizenshipList":null,"nationalityList":null,"placeOfBirthList":null,"countryOfResidence":"Ireland","additionalInfo":[{"title":"Last Updated","content":["7/5/2022 12:00:00 AM +01:00"]}],"sourcesInfo":[{"title":"Entity URL","content":["URL1","URL2"]}],"categories":["Pep","Sanctions"],"sources":["URL1","URL2"],"registeredCountry":null,"ids":{"Id1":"158192327","Id2":"1465465"},"idsList":null,"associations":[{"externalId":"e_tr_wco_1231231","category":"Enforcements,AdverseMedia:CORPORATE","fullName":"Test Entity","relationship":"Affiliated entity","relationshipGroup":null,"ownershipPercentage":null}],"status":null,"reason":null,"comments":null,"subsidiaryFields":null,"richTextAdditionalDetails":"<html><body><p>Some rich text details</p></body></html>","categoryDetails":null}]}]},"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Screen","status":"Success","errorDetails":null,"uploadId":null}
+                },
+                "Screen operation - Success - Entity type 'Company'": {
+                  "value": {"response":{"batchExternalIds":[{"source":"MyProviderId","name":"FieldInProvider","value":"1234"}],"entities":[{"entityId":"76ce4f1a-8676-4d4f-be0f-ae57b99b7e27","externalIds":[{"source":"MyProviderId","entityAliasId":"PrimaryName","name":"FieldInProvider","value":"1234"}],"matchesData":[{"externalId":"1234","externalIds":[{"entityAliasId":"PrimaryName","value":"1234"}],"providerId":"MyProviderId","entityAliasIds":["PrimaryName"],"name":"Test Entity","aliases":null,"aliasesList":[{"value":"TE","type":"Acronym"}],"gender":null,"dateOfBirth":null,"dateOfBirthList":null,"country":"Ireland","entityType":"Company","matchScore":100,"providerSourceName":"MyProviderName","providerSourceUrl":"https://myprovider.com/match/{matchId}","providerSourceUrls":null,"addresses":[{"addressLine1":"Address Line 1","addressLine2":"Address Line 2","city":"City","postalCode":"28793","country":"Country","countryISO2":null,"countryISO3":null,"stateProvince":"State or Province","type":"Main address","category":null}],"citizenship":null,"nationality":null,"placeOfBirth":null,"citizenshipList":null,"nationalityList":null,"placeOfBirthList":null,"countryOfResidence":null,"additionalInfo":[{"title":"Last Updated","content":["7/5/2022 12:00:00 AM +01:00"]}],"sourcesInfo":[{"title":"Entity URL","content":["URL1","URL2"]}],"categories":["Pep","Sanctions"],"sources":["URL1","URL2"],"registeredCountry":"Ireland","ids":{"Id1":"158192327","Id2":"1465465"},"idsList":null,"associations":[{"externalId":"e_tr_wco_1231231","category":"Enforcements,AdverseMedia:CORPORATE","fullName":"Test Entity","relationship":"Affiliated entity","relationshipGroup":null,"ownershipPercentage":null}],"status":null,"reason":null,"comments":null,"subsidiaryFields":null,"richTextAdditionalDetails":"<html><body><p>Some rich text details</p></body></html>","categoryDetails":null}]}]},"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Screen","status":"Success","errorDetails":null,"uploadId":null}
+                },
+                "Screen operation - Error": {
+                  "value": {"response":null,"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Screen","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"uploadId":null}
+                },
+                "ResolveMatches operation - Success": {
+                  "value": {"response":{},"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"ResolveMatches","status":"Success","errorDetails":null,"uploadId":null}
+                },
+                "ResolveMatches operation - Error": {
+                  "value": {"response":null,"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"ResolveMatches","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"uploadId":null}
+                },
+                "Test operation - Success": {
+                  "value": {"response":{},"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Test","status":"Success","errorDetails":null,"uploadId":null}
+                },
+                "Test operation - Error": {
+                  "value": {"response":null,"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"Test","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"uploadId":null}
+                },
+                "OngoingScreening operation - Success": {
+                  "value": {"response":{},"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingScreening","status":"Success","errorDetails":null,"uploadId":null}
+                },
+                "OngoingScreening operation - Error": {
+                  "value": {"response":null,"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingScreening","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"uploadId":null}
+                },
+                "OngoingScreeningUpdate operation - Success": {
+                  "value": {"response":{},"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingScreeningUpdate","status":"Success","errorDetails":null,"uploadId":null}
+                },
+                "OngoingScreeningUpdate operation - Error": {
+                  "value": {"response":null,"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingScreeningUpdate","status":"Error","errorDetails":{"source":"Adapter","errorCode":"","message":"The error details"},"uploadId":null}
+                },
+                "OngoingScreeningGetResults operation - Success - Entity type 'Individual'": {
+                  "value": {"response":{"batchExternalIds":[{"source":"MyProviderId","name":"FieldInProvider","value":"1234"}],"entities":[{"entityId":null,"legalEntityId":"bb8cd902-1aa8-456e-a22d-a4fc470e8386","externalIds":[{"source":"MyProviderId","entityAliasId":"PrimaryName","name":"FieldInProvider","value":"1234"}],"matchesData":[{"externalId":"1234","externalIds":[{"entityAliasId":"PrimaryName","value":"1234"}],"providerId":"MyProviderId","entityAliasIds":["PrimaryName"],"name":"Test Entity","aliases":null,"aliasesList":[{"value":"TE","type":"Acronym"}],"gender":"Male","dateOfBirth":"25/01/1950","dateOfBirthList":null,"country":null,"entityType":"Individual","matchScore":100,"providerSourceName":"MyProviderName","providerSourceUrl":"https://myprovider.com/match/{matchId}","providerSourceUrls":null,"addresses":[{"addressLine1":"Address Line 1","addressLine2":"Address Line 2","city":"City","postalCode":"28793","country":"Country","countryISO2":null,"countryISO3":null,"stateProvince":"State or Province","type":"Main address","category":null}],"citizenship":"Irish","nationality":"Irish","placeOfBirth":"Dublin","citizenshipList":null,"nationalityList":null,"placeOfBirthList":null,"countryOfResidence":"Ireland","additionalInfo":[{"title":"Last Updated","content":["7/5/2022 12:00:00 AM +01:00"]}],"sourcesInfo":[{"title":"Entity URL","content":["URL1","URL2"]}],"categories":["Pep","Sanctions"],"sources":["URL1","URL2"],"registeredCountry":null,"ids":{"Id1":"158192327","Id2":"1465465"},"idsList":null,"associations":[{"externalId":"e_tr_wco_1231231","category":"Enforcements,AdverseMedia:CORPORATE","fullName":"Test Entity","relationship":"Affiliated entity","relationshipGroup":null,"ownershipPercentage":null}],"status":null,"reason":null,"comments":null,"subsidiaryFields":null,"richTextAdditionalDetails":"<html><body><p>Some rich text details</p></body></html>","categoryDetails":null}],"configurationSetId":null}]},"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingScreeningGetResults","status":"Success","errorDetails":null,"uploadId":null}
+                },
+                "OngoingScreeningGetResults operation - Success - Entity type 'Company'": {
+                  "value": {"response":{"batchExternalIds":[{"source":"MyProviderId","name":"FieldInProvider","value":"1234"}],"entities":[{"entityId":null,"legalEntityId":"bb8cd902-1aa8-456e-a22d-a4fc470e8386","externalIds":[{"source":"MyProviderId","entityAliasId":"PrimaryName","name":"FieldInProvider","value":"1234"}],"matchesData":[{"externalId":"1234","externalIds":[{"entityAliasId":"PrimaryName","value":"1234"}],"providerId":"MyProviderId","entityAliasIds":["PrimaryName"],"name":"Test Entity","aliases":null,"aliasesList":[{"value":"TE","type":"Acronym"}],"gender":null,"dateOfBirth":null,"dateOfBirthList":null,"country":"Ireland","entityType":"Company","matchScore":100,"providerSourceName":"MyProviderName","providerSourceUrl":"https://myprovider.com/match/{matchId}","providerSourceUrls":null,"addresses":[{"addressLine1":"Address Line 1","addressLine2":"Address Line 2","city":"City","postalCode":"28793","country":"Country","countryISO2":null,"countryISO3":null,"stateProvince":"State or Province","type":"Main address","category":null}],"citizenship":null,"nationality":null,"placeOfBirth":null,"citizenshipList":null,"nationalityList":null,"placeOfBirthList":null,"countryOfResidence":null,"additionalInfo":[{"title":"Last Updated","content":["7/5/2022 12:00:00 AM +01:00"]}],"sourcesInfo":[{"title":"Entity URL","content":["URL1","URL2"]}],"categories":["Pep","Sanctions"],"sources":["URL1","URL2"],"registeredCountry":"Ireland","ids":{"Id1":"158192327","Id2":"1465465"},"idsList":null,"associations":[{"externalId":"e_tr_wco_1231231","category":"Enforcements,AdverseMedia:CORPORATE","fullName":"Test Entity","relationship":"Affiliated entity","relationshipGroup":null,"ownershipPercentage":null}],"status":null,"reason":null,"comments":null,"subsidiaryFields":null,"richTextAdditionalDetails":"<html><body><p>Some rich text details</p></body></html>","categoryDetails":null}],"configurationSetId":null}]},"id":"fd23f474-eff9-425f-a776-78e2176b36e4","tenant":"095d6a21-b5cf-4369-9491-0de90438e26c","providerId":"MyProviderId","type":"OngoingScreeningGetResults","status":"Success","errorDetails":null,"uploadId":null}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Success. Results processed successfully"
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AdapterResponseErrorDetails": {
+        "required": [
+          "source"
+        ],
+        "type": "object",
+        "properties": {
+          "source": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Property to specify where the error is coming from",
+            "example": "Adapter"
+          },
+          "errorCode": {
+            "type": "string",
+            "description": "If available, the error code",
+            "nullable": true,
+            "example": "E001"
+          },
+          "message": {
+            "type": "string",
+            "description": "The error message to understand what has failed",
+            "nullable": true,
+            "example": "The provider returned an invalid status code (500)"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Class to represent the error details of a request to a Screening adapter"
+      },
+      "AdditionalInfoDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Type of information",
+            "nullable": true,
+            "example": "Last Updated"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Content of the additional information",
+            "nullable": true,
+            "example": [
+              "7/5/2022 12:00:00 AM +01:00"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "description": "Class to represent additional information returned by the providers"
+      },
+      "AddressDto": {
+        "type": "object",
+        "properties": {
+          "addressLine1": {
+            "type": "string",
+            "description": "The first line in the address",
+            "nullable": true,
+            "example": "158, Upper O'Connell Street"
+          },
+          "addressLine2": {
+            "type": "string",
+            "description": "The second line in the address",
+            "nullable": true,
+            "example": "Dublin 1"
+          },
+          "city": {
+            "type": "string",
+            "description": "The city",
+            "nullable": true,
+            "example": "Dublin"
+          },
+          "postalCode": {
+            "type": "string",
+            "description": "The postal code",
+            "nullable": true,
+            "example": "D01YT95"
+          },
+          "country": {
+            "type": "string",
+            "description": "The country",
+            "nullable": true,
+            "example": "Ireland"
+          },
+          "countryISO2": {
+            "type": "string",
+            "description": "The country ISO2 code",
+            "nullable": true,
+            "example": "IE"
+          },
+          "countryISO3": {
+            "type": "string",
+            "description": "The country ISO3 code",
+            "nullable": true,
+            "example": "IRL"
+          },
+          "stateProvince": {
+            "type": "string",
+            "description": "The state or province",
+            "nullable": true,
+            "example": "Leinster"
+          },
+          "type": {
+            "type": "string",
+            "description": "The type of address",
+            "nullable": true,
+            "example": "Main address"
+          },
+          "category": {
+            "type": "string",
+            "description": "The category of the address (e.g. Residential, Business, Headquarters, Ownership), as\r\nreported by the underlying provider",
+            "nullable": true,
+            "example": "Residential"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Class to represent the address of an entity"
+      },
+      "AssociationDto": {
+        "type": "object",
+        "properties": {
+          "externalId": {
+            "type": "string",
+            "description": "The unique identifier of the Associated Entity outside of Fen-X (i.e. in the underlying provider).\r\nUsed to query the underlying provider for more information about the associated entity.",
+            "nullable": true,
+            "example": "e_tr_wco_2256753"
+          },
+          "category": {
+            "type": "string",
+            "description": "Category of additional information",
+            "nullable": true,
+            "example": "Enforcements,AdverseMedia:CORPORATE"
+          },
+          "fullName": {
+            "type": "string",
+            "description": "The name of the associated party",
+            "nullable": true,
+            "example": "Test Entity"
+          },
+          "relationship": {
+            "type": "string",
+            "description": "How the entity and the associated party are related i.e shareholder, director",
+            "nullable": true,
+            "example": "AFFILIATED_COMPANY"
+          },
+          "relationshipGroup": {
+            "type": "string",
+            "description": "The relationship group as reported by the underlying provider (e.g. Family, Associations)",
+            "nullable": true,
+            "example": "Family"
+          },
+          "ownershipPercentage": {
+            "type": "number",
+            "description": "The ownership percentage of the associated party, as reported by the underlying provider",
+            "format": "double",
+            "nullable": true,
+            "example": 19.74
+          }
+        },
+        "additionalProperties": false,
+        "description": "Class to represent a relationship with another entity"
+      },
+      "BatchExternalIdDto": {
+        "required": [
+          "name",
+          "source"
+        ],
+        "type": "object",
+        "properties": {
+          "source": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The source of this externalId (LN, WCO, etc)",
+            "example": "MyProviderId"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The name of the ID in the provider",
+            "example": "FieldInProvider"
+          },
+          "value": {
+            "type": "string",
+            "description": "The value of the ID",
+            "nullable": true,
+            "example": "1234"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Class to represent the batch external IDs fetched from the providers (runId, resultId, etc)"
+      },
+      "CategoryDetailDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "Pep",
+              "Sanction",
+              "Enforcement",
+              "AdverseMedia",
+              "Soe",
+              "Registration",
+              "Other"
+            ],
+            "type": "string",
+            "description": "The category this table's rows belong to",
+            "nullable": true,
+            "example": "Pep"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CategoryDetailRowDto"
+            },
+            "description": "The rows of this category's table",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "One category's worth of structured detail rows (e.g. every PEP hit for this match)"
+      },
+      "CategoryDetailFieldDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "description": "The display label for this field",
+            "nullable": true,
+            "example": "Status"
+          },
+          "value": {
+            "type": "string",
+            "description": "The value of this field",
+            "nullable": true,
+            "example": "Inactive"
+          }
+        },
+        "additionalProperties": false,
+        "description": "One labelled field within a category detail row (e.g. Label=\"Status\", Value=\"Inactive\")"
+      },
+      "CategoryDetailRowDto": {
+        "type": "object",
+        "properties": {
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CategoryDetailFieldDto"
+            },
+            "description": "The labelled fields for this row",
+            "nullable": true
+          },
+          "subRows": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/CategoryDetailFieldDto"
+              }
+            },
+            "description": "Per-row sub-table, e.g. SOE's per-country ownership breakdown. Null/empty for every\r\ncategory kind that has no such breakdown.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "One row of a category detail table - one PEP hit, one Sanction hit, etc."
+      },
+      "ExternalIdDto": {
+        "required": [
+          "name",
+          "source"
+        ],
+        "type": "object",
+        "properties": {
+          "source": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The source of this externalId (LN, WCO, etc)",
+            "example": "MyProviderId"
+          },
+          "entityAliasId": {
+            "type": "string",
+            "description": "What entity Alias this externalId is associated with. Will be null or \"PrimaryName\" for the PrimaryName external ids",
+            "nullable": true,
+            "example": "e7b8f7c2-3c4a-4b2a-9e2d-1f2a3b4c5d6e"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The name of the ID in the provider",
+            "example": "FieldInProvider"
+          },
+          "value": {
+            "type": "string",
+            "description": "The value of the ID",
+            "nullable": true,
+            "example": "1234"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Class to represent the external IDs fetched from the providers (runId, resultId, etc)"
+      },
+      "IdDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "The Type of Id of the entity",
+            "nullable": true,
+            "example": "Passport, Driving License"
+          },
+          "value": {
+            "type": "string",
+            "description": "This is the Value of the ID of the entity",
+            "nullable": true,
+            "example": "D0999971, 000012ABCD"
+          },
+          "country": {
+            "type": "string",
+            "description": "ID Issuing Country",
+            "nullable": true,
+            "example": "Ireland, USA"
+          },
+          "label": {
+            "type": "string",
+            "description": "The human-readable name of the ID scheme, as reported by the underlying provider (e.g. the name of a registry or identifier scheme)",
+            "nullable": true,
+            "example": "National Registry of Legal Entities (CNPJ)"
+          },
+          "issueDate": {
+            "type": "string",
+            "description": "Date on which Id is Issued.",
+            "nullable": true,
+            "example": "31/12/1989"
+          },
+          "expiryDate": {
+            "type": "string",
+            "description": "Date on which ID expires",
+            "nullable": true,
+            "example": "31/12/1989"
+          }
+        },
+        "additionalProperties": false
+      },
+      "MatchDataAliasDto": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "description": "The value of the alias",
+            "nullable": true,
+            "example": "TE"
+          },
+          "type": {
+            "type": "string",
+            "description": "The type of alias",
+            "nullable": true,
+            "example": "Acronym"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Class to represent the alias of an entity"
+      },
+      "MatchDataDto": {
+        "required": [
+          "providerId",
+          "providerSourceName"
+        ],
+        "type": "object",
+        "properties": {
+          "externalId": {
+            "type": "string",
+            "description": "The unique identifier of the match outside of Fen-X (i.e. in the underlying provider). \n\r\nIt will be used later on to resolve the matches on the provider side. \n\r\nIf using Alias Screening, this will be the ExternalId of the first entity in which this match appears.\r\nSo instead of using this field, ExternalIds should be used, as it contains the ExternalId for each of the aliases the match belongs to.",
+            "nullable": true,
+            "example": "1234",
+            "deprecated": true
+          },
+          "externalIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MatchDataExternalIdDto"
+            },
+            "description": "The unique identifiers of the match outside of Fen-X (i.e. in the underlying provider). \n\r\nThey will be used later on to resolve the matches on the provider side. There will be one (or more) ExternalId\r\nfor each of the entity alias ids related to this match",
+            "nullable": true
+          },
+          "providerId": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The ID of the provider that returned the match. \n\r\nMust match the ID of the provider in the Screening configuration.",
+            "example": "MyProviderId"
+          },
+          "entityAliasIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of the FenX Entity AliasIds that this match is associated with for Alias Screening feature.\r\nWhen it's associated with the primary name of the entity, one of them will be \"PrimaryName\".\r\nIf the array is null or empty, it means that the match only belongs to the PrimaryName of the entity.",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the matching entity",
+            "nullable": true,
+            "example": "Test Entity"
+          },
+          "aliases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Any aliases associated with the matching entity, formatted as a list of strings",
+            "nullable": true,
+            "example": [
+              "Alias1",
+              "Alias2"
+            ],
+            "deprecated": true
+          },
+          "aliasesList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MatchDataAliasDto"
+            },
+            "description": "Any aliases associated with the matching entity, formatted as a list of AliasDto",
+            "nullable": true
+          },
+          "gender": {
+            "enum": [
+              "Male",
+              "Female"
+            ],
+            "type": "string",
+            "description": "The Individual's gender",
+            "nullable": true,
+            "example": "Female"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "description": "The Individual's date of birth in DD/MM/YYYY format",
+            "nullable": true,
+            "example": "25/01/1950",
+            "deprecated": true
+          },
+          "dateOfBirthList": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of Individual's date of birth in DD/MM/YYYY format from different Providers",
+            "nullable": true
+          },
+          "country": {
+            "type": "string",
+            "description": "The country of the entity",
+            "nullable": true,
+            "example": "Ireland"
+          },
+          "entityType": {
+            "enum": [
+              "Individual",
+              "Company",
+              "Other"
+            ],
+            "type": "string",
+            "description": "The type of entity",
+            "nullable": true,
+            "example": "Individual"
+          },
+          "matchScore": {
+            "type": "number",
+            "description": "A confidence score generated by the screening provider to indicate how closely the result record matched the searched entity data.",
+            "format": "double",
+            "example": 100
+          },
+          "providerSourceName": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The name of the screening provider. \n\r\nShould match the provider name provided in the Screening configuration",
+            "example": "MyProviderName"
+          },
+          "providerSourceUrl": {
+            "type": "string",
+            "description": "URL of the match on the provider side. \n\r\nLeave empty if the provider doesn't have a portal where the user could go to check the match details on their side",
+            "nullable": true,
+            "example": "https://myprovider.com/match/{matchId}",
+            "deprecated": true
+          },
+          "providerSourceUrls": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProviderSourceLinkDto"
+            },
+            "description": "List of URL links to the match on the provider's side, each with an optional label. \n\r\nLeave empty if the provider doesn't have a portal where the user could go to check the match details on their side.",
+            "nullable": true
+          },
+          "addresses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AddressDto"
+            },
+            "description": "List of addresses of the individual or the company",
+            "nullable": true
+          },
+          "citizenship": {
+            "type": "string",
+            "description": "The individual's citizenship",
+            "nullable": true,
+            "example": "Irish",
+            "deprecated": true
+          },
+          "nationality": {
+            "type": "string",
+            "description": "The individual's nationality",
+            "nullable": true,
+            "example": "Irish",
+            "deprecated": true
+          },
+          "placeOfBirth": {
+            "type": "string",
+            "description": "The individual's place of birth",
+            "nullable": true,
+            "example": "Ireland",
+            "deprecated": true
+          },
+          "citizenshipList": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of Individual's citizenships",
+            "nullable": true
+          },
+          "nationalityList": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of Individual's nationalities",
+            "nullable": true
+          },
+          "placeOfBirthList": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of Individual's place of birth from different Providers",
+            "nullable": true
+          },
+          "countryOfResidence": {
+            "type": "string",
+            "description": "The individual's country of residence",
+            "nullable": true,
+            "example": "Ireland"
+          },
+          "additionalInfo": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdditionalInfoDto"
+            },
+            "description": "Dynamic list to provide additional information about the matching entity. \n\r\nThe data provided here is rendered in the \"Profile\" section in the Fen-X UI.",
+            "nullable": true,
+            "example": [
+              {
+                "Title": "Last Updated",
+                "Content": [
+                  "7/5/2022 12:00:00 AM +01:00"
+                ]
+              }
+            ]
+          },
+          "sourcesInfo": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdditionalInfoDto"
+            },
+            "description": "Dynamic list to provide details about the source of the information returned by the provider. \n\r\nThe data provided here is rendered in the \"Sources\" section in the Fen-X UI, each occurrence having its own subsection based on the \"Title\" provided. \n\r\nIf both Sources and SourcesInfo are sent, in the UI, Sources will be used and SourcesInfo will be ignored.",
+            "nullable": true,
+            "example": [
+              {
+                "Title": "Entity URL",
+                "Content": [
+                  "URL1",
+                  "URL2"
+                ]
+              }
+            ]
+          },
+          "categories": {
+            "enum": [
+              "AdverseMedia",
+              "Enforcements",
+              "Other",
+              "Pep",
+              "Sanctions"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of screening categories that the result relates to",
+            "nullable": true,
+            "example": [
+              "PEP",
+              "Sanctions"
+            ]
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Dynamic list to provide details about the source of the information returned by the provider. \n\r\nThe data provided here is rendered in the \"Sources\" section in the Fen-X UI. All occurrences are listed under a \"Sources\" subsection in the section. \n\r\nIf both Sources and SourcesInfo are sent, in the UI, Sources will be used and SourcesInfo will be ignored.",
+            "nullable": true,
+            "example": [
+              "URL1",
+              "URL2"
+            ]
+          },
+          "registeredCountry": {
+            "type": "string",
+            "description": "The country the company is registered in",
+            "nullable": true,
+            "example": "Ireland"
+          },
+          "ids": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "nullable": true
+            },
+            "description": "List of ids returned by the underlying provider",
+            "nullable": true,
+            "example": {
+              "Id1": "158192327",
+              "Id2": "1465465"
+            },
+            "deprecated": true
+          },
+          "idsList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdDetails"
+            },
+            "description": "List of Ids returned by the underlying provider",
+            "nullable": true
+          },
+          "associations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssociationDto"
+            },
+            "description": "List of entities associated to the entity being screened",
+            "nullable": true
+          },
+          "status": {
+            "enum": [
+              "Match",
+              "No Match",
+              "Unresolved"
+            ],
+            "type": "string",
+            "description": "The status of the match",
+            "nullable": true,
+            "example": "Unresolved"
+          },
+          "reason": {
+            "type": "string",
+            "description": "The reason why the match has the status specified in the property \"Status\"",
+            "nullable": true,
+            "example": ""
+          },
+          "comments": {
+            "type": "string",
+            "description": "Additional comments about the match resolution",
+            "nullable": true,
+            "example": ""
+          },
+          "subsidiaryFields": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "nullable": true
+            },
+            "description": "An optional dictionary used to add custom fields required by some adapters or providers",
+            "nullable": true
+          },
+          "richTextAdditionalDetails": {
+            "type": "string",
+            "description": "An optional property to store additional details about the match in rich text format",
+            "nullable": true
+          },
+          "categoryDetails": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CategoryDetailDto"
+            },
+            "description": "WC Data Plus structured category data (PEP, Sanction, Enforcement, Adverse Media, SOE,\r\nRegistration, Other), one entry per populated category kind that has at least one row.\r\nCan be left null/empty for every other provider that don't need to provide structured category data.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Class to represent the details of a Screening match"
+      },
+      "MatchDataExternalIdDto": {
+        "type": "object",
+        "properties": {
+          "entityAliasId": {
+            "type": "string",
+            "description": "What entity Alias this externalId is associated with. Will be \"PrimaryName\" for the PrimaryName external ids",
+            "nullable": true,
+            "example": "e7b8f7c2-3c4a-4b2a-9e2d-1f2a3b4c5d6e"
+          },
+          "value": {
+            "type": "string",
+            "description": "The value of the ID",
+            "nullable": true,
+            "example": "1234"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Class to represent a match external id"
+      },
+      "ObjectAdapterResponseDto": {
+        "required": [
+          "id",
+          "providerId",
+          "status",
+          "tenant",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Field used to uniquely identify the request. It's value is different depending on the response type:\n<ul><li>For the \"Screen\" and \"ResolveMatches\" types, it should be the Screening BatchId</li><li>For the \"Test\" type, it should be the Screening ConfigurationId</li><li>For the \"OngoingScreeningGetResults\" type, the BatchId is not available, so it should be an unique string\r\nthat hasn't been used before. For example, \"ogs-{auto-generated Guid}\"</li></ul>",
+            "example": "fd23f474-eff9-425f-a776-78e2176b36e4"
+          },
+          "tenant": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The tenant of the client",
+            "example": "095d6a21-b5cf-4369-9491-0de90438e26c"
+          },
+          "providerId": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The Screening internal ID of the provider. Must match the ID of the provider in the configuration",
+            "example": "MyProviderId"
+          },
+          "type": {
+            "minLength": 1,
+            "enum": [
+              "Screen",
+              "ResolveMatches",
+              "Test",
+              "OngoingScreening",
+              "OngoingScreeningUpdate",
+              "OngoingScreeningGetResults"
+            ],
+            "type": "string",
+            "description": "The type of the request",
+            "example": "Screen"
+          },
+          "status": {
+            "minLength": 1,
+            "enum": [
+              "Success",
+              "Error"
+            ],
+            "type": "string",
+            "description": "Property used to specify the status of the request",
+            "example": "Success"
+          },
+          "errorDetails": {
+            "$ref": "#/components/schemas/AdapterResponseErrorDetails"
+          },
+          "response": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ScreenResponseDto"
+              },
+              {
+                "$ref": "#/components/schemas/ResolveMatchesResponseDto"
+              },
+              {
+                "$ref": "#/components/schemas/TestResponseDto"
+              },
+              {
+                "$ref": "#/components/schemas/OngoingScreeningResponseDto"
+              },
+              {
+                "$ref": "#/components/schemas/OngoingScreeningUpdateResponseDto"
+              },
+              {
+                "$ref": "#/components/schemas/OngoingScreeningGetResultsResponseDto"
+              }
+            ],
+            "description": "Generic property that represents the data of the response. \n\r\nThe type to used will be determined by the type of response specified in the field \"type\". \n\r\nMust be `null` when !:UploadId is set — the receptor will download the\r\nresponse payload from S3 using the upload ID instead of reading it from this field.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Class to represent a response from a Screening adapter"
+      },
+      "OngoingScreeningGetResultsResponseDto": {
+        "type": "object",
+        "properties": {
+          "batchExternalIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BatchExternalIdDto"
+            },
+            "description": "List of Batch-level external ids (i.e. IDs that are specific to the underlying providers and are equivalent to the \"Batch\" concept in Screening)",
+            "nullable": true
+          },
+          "entities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OngoingScreeningGetResultsResponseEntityDto"
+            },
+            "description": "List of entities screened",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Response for the \"OngoingScreeningGetResults\" request type"
+      },
+      "OngoingScreeningGetResultsResponseEntityDto": {
+        "required": [
+          "legalEntityId",
+          "matchesData"
+        ],
+        "type": "object",
+        "properties": {
+          "entityId": {
+            "type": "string",
+            "description": "The Screening internal ID of the entity",
+            "nullable": true,
+            "example": "76ce4f1a-8676-4d4f-be0f-ae57b99b7e27",
+            "deprecated": true
+          },
+          "legalEntityId": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The unique ID of the entity in Fen-X",
+            "example": "bb8cd902-1aa8-456e-a22d-a4fc470e8386"
+          },
+          "externalIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExternalIdDto"
+            },
+            "description": "List of Entity-level external ids (i.e. IDs that are specific to the underlying providers and are equivalent to the \"Entity\" concept in Screening)",
+            "nullable": true
+          },
+          "matchesData": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MatchDataDto"
+            },
+            "description": "List of matches of the entity"
+          },
+          "configurationSetId": {
+            "type": "string",
+            "description": "The ID of the configuration set used for this screening. If not provided, the default configuration set of the provider will be assumed",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Class to represent the screening results of an entity"
+      },
+      "OngoingScreeningResponseDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Response for the \"OngoingScreening\" request type \n\r\nThere are no properties in this class because no additional data is required to process it."
+      },
+      "OngoingScreeningUpdateResponseDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Response for the \"OngoingScreeningUpdate\" request type \n\r\nThere are no properties in this class because no additional data is required to process it."
+      },
+      "ProviderSourceLinkDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL of the match on the provider side.",
+            "nullable": true,
+            "example": "https://myprovider.com/match/1"
+          },
+          "label": {
+            "type": "string",
+            "description": "Label for the URL link.",
+            "nullable": true,
+            "example": "View in MyProvider"
+          },
+          "entityAliasId": {
+            "type": "string",
+            "description": "What entity Alias this ProviderSourceLink is associated with.",
+            "nullable": true,
+            "example": "e7b8f7c2-3c4a-4b2a-9e2d-1f2a3b4c5d6e"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents a URL link to the match on the provider's side, with an optional label."
+      },
+      "ResolveMatchesResponseDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Response for the \"ResolveMatches\" request type \n\r\nThere are no properties in this class because no additional data is required to process it."
+      },
+      "ScreenResponseDto": {
+        "required": [
+          "entities"
+        ],
+        "type": "object",
+        "properties": {
+          "batchExternalIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BatchExternalIdDto"
+            },
+            "description": "List of Batch-level external ids (i.e. IDs that are specific to the underlying providers and are equivalent to the \"Batch\" concept in Screening)",
+            "nullable": true
+          },
+          "entities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScreenResponseEntityDto"
+            },
+            "description": "List of entities screened"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Response for the \"Screen\" request type"
+      },
+      "ScreenResponseEntityDto": {
+        "required": [
+          "entityId"
+        ],
+        "type": "object",
+        "properties": {
+          "entityId": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The Screening internal ID of the entity",
+            "example": "76ce4f1a-8676-4d4f-be0f-ae57b99b7e27"
+          },
+          "externalIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExternalIdDto"
+            },
+            "description": "List of Entity-level external ids (i.e. IDs that are specific to the underlying providers and are equivalent to the \"Entity\" concept in Screening)",
+            "nullable": true
+          },
+          "matchesData": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MatchDataDto"
+            },
+            "description": "List of matches of the entity",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Class to represent the screening results of an entity"
+      },
+      "ServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ServiceResponseMessage": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "errorCode": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TestResponseDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Response for the \"Test\" request type. \n\r\nThere are no properties in this class because no additional data is required to process it."
+      },
+      "UploadUrlRequestDto": {
+        "required": [
+          "id",
+          "providerId",
+          "tenant",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "tenant": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "providerId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UploadUrlResponseDto": {
+        "type": "object",
+        "properties": {
+          "uploadId": {
+            "type": "string",
+            "description": "Opaque token to include in the subsequent POST /api/receptor call.",
+            "nullable": true
+          },
+          "uploadUrl": {
+            "type": "string",
+            "description": "Pre-signed S3 URL to upload the response payload. Make an HTTP PUT request to this URL\r\nwith the serialized `AdapterResponseDto.Response` field as the body — not the full\r\n`AdapterResponseDto` envelope. The body must be raw UTF-8 JSON; do not compress or\r\nencrypt it. Include all headers listed in Fenergo.Nebula.Screening.AdapterCommon.Receptor.Dto.UploadUrlResponseDto.RequiredHeaders.\r\nDo not modify the URL. The upload must complete before Fenergo.Nebula.Screening.AdapterCommon.Receptor.Dto.UploadUrlResponseDto.ExpiresInSeconds elapses,\r\nafter which the URL is no longer valid.",
+            "nullable": true
+          },
+          "expiresInSeconds": {
+            "type": "integer",
+            "description": "Number of seconds until Fenergo.Nebula.Screening.AdapterCommon.Receptor.Dto.UploadUrlResponseDto.UploadUrl expires.",
+            "format": "int32"
+          },
+          "requiredHeaders": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "nullable": true
+            },
+            "description": "Headers that must be included verbatim in the PUT request to S3.\r\nThe receptor signs these into the pre-signed URL; omitting or altering\r\nany of them causes S3 to reject the upload.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UploadUrlResponseDtoServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/UploadUrlResponseDto"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "ScreenResponseDto",
+      "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ScreenResponseDto\" />",
+      "x-displayName": "The ScreenResponseDto model"
+    },
+    {
+      "name": "ResolveMatchesResponseDto",
+      "description": "<SchemaDefinition schemaRef=\"#/components/schemas/ResolveMatchesResponseDto\" />",
+      "x-displayName": "The ResolveMatchesResponseDto model"
+    },
+    {
+      "name": "TestResponseDto",
+      "description": "<SchemaDefinition schemaRef=\"#/components/schemas/TestResponseDto\" />",
+      "x-displayName": "The TestResponseDto model"
+    },
+    {
+      "name": "OngoingScreeningResponseDto",
+      "description": "<SchemaDefinition schemaRef=\"#/components/schemas/OngoingScreeningResponseDto\" />",
+      "x-displayName": "The OngoingScreeningResponseDto model"
+    },
+    {
+      "name": "OngoingScreeningUpdateResponseDto",
+      "description": "<SchemaDefinition schemaRef=\"#/components/schemas/OngoingScreeningUpdateResponseDto\" />",
+      "x-displayName": "The OngoingScreeningUpdateResponseDto model"
+    },
+    {
+      "name": "OngoingScreeningGetResultsResponseDto",
+      "description": "<SchemaDefinition schemaRef=\"#/components/schemas/OngoingScreeningGetResultsResponseDto\" />",
+      "x-displayName": "The OngoingScreeningGetResultsResponseDto model"
+    }
+  ],
+  "x-tagGroups": [
+    {
+      "name": "Endpoints",
+      "tags": [
+        "Receptor"
+      ]
+    },
+    {
+      "name": "Models",
+      "tags": [
+        "ScreenResponseDto",
+        "ResolveMatchesResponseDto",
+        "TestResponseDto",
+        "OngoingScreeningResponseDto",
+        "OngoingScreeningUpdateResponseDto",
+        "OngoingScreeningGetResultsResponseDto"
+      ]
+    }
+  ]
+}

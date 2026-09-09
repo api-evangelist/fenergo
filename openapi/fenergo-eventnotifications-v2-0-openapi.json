@@ -1,0 +1,318 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Event Notifications Polling",
+    "description": "An API to retrieve event notifications in batches and mark them complete after processing. \n\nEach tenant can have multiple feeds. By default there is an 'all' feed (i.e. /v1/all/next) that will contain all notifications and a feed per event source (i.e. /v1/entitydata/next). \n\nIt is expected there will be a single logical consumer per feed. If fan-out handling is desired, this shouldbe done on the consumer side. As is the case with messaging based systems, this is at-least once delivery with best effort ordering.",
+    "version": "2.0"
+  },
+  "servers": [
+    {
+      "url": "/eventnotifications"
+    }
+  ],
+  "paths": {
+    "/v2/{feedId}/discardAll": {
+      "put": {
+        "tags": [
+          "EventNotifications"
+        ],
+        "summary": "Discards all messages in queue for specific feed",
+        "operationId": "DiscardAll",
+        "parameters": [
+          {
+            "name": "feedId",
+            "in": "path",
+            "description": "The feed identifier. Each tenant has by default 'all' feed which contains all notifications and feed per specific event source (i.e. document, entitydata, journey, screening)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Messages discarded correctly"
+          }
+        }
+      }
+    },
+    "/v2/{feedId}/next": {
+      "get": {
+        "tags": [
+          "EventNotifications"
+        ],
+        "summary": "Get the next batch of event notifications.",
+        "description": "\nThis method will return next batch of event notifications",
+        "operationId": "GetNext",
+        "parameters": [
+          {
+            "name": "feedId",
+            "in": "path",
+            "description": "The feed identifier. Each tenant has by default 'all' feed which contains all notifications and feed per specific event source (i.e. document, entitydata, journey, screening)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fenergo.Nebula.EventNotifications.PublicApi.V2.GetNextBatchResult class represents batch result.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetNextBatchResult"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetNextBatchResult"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetNextBatchResult"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No additional batches of event notifications found."
+          }
+        }
+      }
+    },
+    "/v2/event-notification-types": {
+      "get": {
+        "tags": [
+          "EventNotifications"
+        ],
+        "summary": "List all available event notification types.",
+        "description": "\nThis method will list all available event notification types.",
+        "operationId": "ListEventNotificationTypes",
+        "parameters": [
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fenergo.Nebula.EventNotifications.Utils.Dto.ListEventNotificationTypesResponse class containing event notification types results.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListEventNotificationTypesResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListEventNotificationTypesResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListEventNotificationTypesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/{feedId}/{batchId}/complete": {
+      "post": {
+        "tags": [
+          "EventNotifications"
+        ],
+        "summary": "Marks a batch as complete.",
+        "description": "\nThis method will mark a batch of notifications as completed.",
+        "parameters": [
+          {
+            "name": "feedId",
+            "in": "path",
+            "description": "The feed identifier. Each tenant has by default 'all' feed which contains all notifications and feed per specifc event source (i.e. document, entitydata, journey, screening)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "batchId",
+            "in": "path",
+            "description": "The batch identifier. Id of batch of event notifications which will be processed and set to complete after processing.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "EventNotification": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The notification identifier. If a duplicate event notification occurs, it will have the\nsame identifier as the previous instance.",
+            "nullable": true,
+            "example": "f2a609e5-3f1d-467b-93ff-8839777c3026"
+          },
+          "eventType": {
+            "type": "string",
+            "description": "An event notification type in the format of \"source:event\". e.g. \"entitydate:created\".",
+            "nullable": true,
+            "example": "entitydata:created"
+          },
+          "when": {
+            "type": "string",
+            "description": "When the notification was raised.",
+            "format": "date-time",
+            "example": "2021-05-05T10:19:17.3157953+00:00"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "The tenant identifer associated with the notification.",
+            "nullable": true,
+            "example": "501339c8-89a4-4021-b1d9-b23ed0257fa5"
+          },
+          "causationId": {
+            "type": "string",
+            "description": "Id that caused the notification, typically the ID of the resource/event",
+            "nullable": true
+          },
+          "correlationId": {
+            "type": "string",
+            "description": "A correlation identifier if there is one",
+            "nullable": true
+          },
+          "relativeUrl": {
+            "type": "string",
+            "description": "A URL to get the resource the notification is related to.",
+            "nullable": true,
+            "example": "entitydataquery/api/entity/{id}"
+          },
+          "payload": {
+            "description": "Payload of the notification",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents an event notification."
+      },
+      "EventNotificationTypeDto": {
+        "type": "object",
+        "properties": {
+          "eventType": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "example": {
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetNextBatchResult": {
+        "type": "object",
+        "properties": {
+          "batchId": {
+            "type": "string",
+            "description": "The batch identifier.",
+            "nullable": true,
+            "example": "3e6195b4-3246-483f-83a8-f1725bd20c1c"
+          },
+          "notifications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventNotification"
+            },
+            "description": "The collection of notifications.",
+            "nullable": true
+          },
+          "moreAvailable": {
+            "type": "boolean",
+            "description": "Indicates whether there are more batches on the server. Clients can check this to decide to perform\nan immediate requests or pause until the next polling interval.",
+            "example": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents a batch of notifications"
+      },
+      "ListEventNotificationTypesResponse": {
+        "type": "object",
+        "properties": {
+          "eventTypes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventNotificationTypeDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "apiKey",
+        "description": "Please insert JWT with Bearer into field",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ]
+}

@@ -1,0 +1,403 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Rule Schedule API",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://api.fenergox.com/tm/realtime"
+        }
+    ],
+    "paths": {
+        "/api/rules/schedule": {
+            "get": {
+                "summary": "Get Rule Schedule",
+                "description": "Query the rule execution schedule.\n\nProvide **either** `date` (to list all live rules scheduled for that day)\n**or** `rule_id` (to list the next 5 upcoming execution datetimes for a specific rule).\nSupplying both or neither returns HTTP 400.",
+                "operationId": "get_rule_schedule_api_rules_schedule_get",
+                "parameters": [
+                    {
+                        "name": "date",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "description": "Date in YYYY-MM-DD format. Returns all live rules scheduled for that date.",
+                            "title": "Date"
+                        },
+                        "description": "Date in YYYY-MM-DD format. Returns all live rules scheduled for that date."
+                    },
+                    {
+                        "name": "rule_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "description": "Rule ID. Returns the next 5 upcoming execution datetimes (UTC) on which the rule is scheduled.",
+                            "title": "Rule Id"
+                        },
+                        "description": "Rule ID. Returns the next 5 upcoming execution datetimes (UTC) on which the rule is scheduled."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Scheduled rules for the given date, or scheduled dates for the given rule",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "$ref": "#/components/schemas/RuleScheduleByDateResponse"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/RuleScheduleByRuleIdResponse"
+                                        }
+                                    ]
+                                },
+                                "examples": {
+                                    "by_date": {
+                                        "summary": "Query by date",
+                                        "value": {
+                                            "date": "2023-10-15",
+                                            "total_rules_scheduled": 1,
+                                            "rules_scheduled": [
+                                                {
+                                                    "rule_id": "rule-001",
+                                                    "rule_alias": "High Risk Transaction Detection",
+                                                    "rule_description": "Monitors transactions for high-risk indicators.",
+                                                    "execution_frequency": "At 02:00",
+                                                    "last_execution_date": "2023-10-14T02:00:00Z"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "by_rule_id": {
+                                        "summary": "Query by rule ID",
+                                        "value": {
+                                            "rule_id": "rule-001",
+                                            "rule_alias": "High Risk Transaction Detection",
+                                            "rule_description": "Monitors transactions for high-risk indicators.",
+                                            "execution_frequency": "At 02:00",
+                                            "last_execution_date": "2023-10-14T02:00:00Z",
+                                            "scheduled_dates": [
+                                                "2023-10-15T02:00:00Z",
+                                                "2023-10-16T02:00:00Z",
+                                                "2023-10-17T02:00:00Z",
+                                                "2023-10-18T02:00:00Z",
+                                                "2023-10-19T02:00:00Z"
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid or conflicting parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "missing_param": {
+                                        "summary": "Neither date nor rule_id provided",
+                                        "value": {
+                                            "message": "Provide either 'date' or 'rule_id' query parameter."
+                                        }
+                                    },
+                                    "both_params": {
+                                        "summary": "Both date and rule_id provided",
+                                        "value": {
+                                            "message": "Provide either 'date' OR 'rule_id', but not both."
+                                        }
+                                    },
+                                    "invalid_date": {
+                                        "summary": "Invalid date format",
+                                        "value": {
+                                            "message": "Invalid date format. Expected YYYY-MM-DD."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Feature not available for tenant",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "example": {
+                                    "message": "Feature not available."
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Rule not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "example": {
+                                    "message": "Rule 'rule-001' not found or is not live."
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "example": {
+                                    "message": "Failed to retrieve rule schedule. Please retry the request."
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2 Client Credentials": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "RuleScheduleItem": {
+                "type": "object",
+                "properties": {
+                    "rule_id": {
+                        "type": "string",
+                        "title": "Rule Id",
+                        "description": "Unique identifier of the rule"
+                    },
+                    "rule_alias": {
+                        "type": "string",
+                        "title": "Rule Alias",
+                        "description": "Human-readable name of the rule"
+                    },
+                    "rule_description": {
+                        "type": "string",
+                        "title": "Rule Description",
+                        "description": "Description of what the rule monitors"
+                    },
+                    "execution_frequency": {
+                        "type": "string",
+                        "title": "Execution Frequency",
+                        "description": "Human-readable description of when the rule executes (e.g. 'At 02:00')"
+                    },
+                    "last_execution_date": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Last Execution Date",
+                        "description": "ISO-8601 datetime of the rule's most recent execution"
+                    }
+                },
+                "required": [
+                    "rule_id",
+                    "rule_alias",
+                    "rule_description",
+                    "execution_frequency"
+                ],
+                "title": "RuleScheduleItem"
+            },
+            "RuleScheduleByDateResponse": {
+                "type": "object",
+                "properties": {
+                    "date": {
+                        "type": "string",
+                        "title": "Date",
+                        "description": "The queried date in YYYY-MM-DD format",
+                        "examples": [
+                            "2023-10-15"
+                        ]
+                    },
+                    "total_rules_scheduled": {
+                        "type": "integer",
+                        "title": "Total Rules Scheduled",
+                        "description": "Total number of live rules scheduled to run on this date"
+                    },
+                    "rules_scheduled": {
+                        "type": "array",
+                        "title": "Rules Scheduled",
+                        "description": "List of rules scheduled to execute on the given date",
+                        "items": {
+                            "$ref": "#/components/schemas/RuleScheduleItem"
+                        }
+                    }
+                },
+                "required": [
+                    "date",
+                    "total_rules_scheduled",
+                    "rules_scheduled"
+                ],
+                "title": "RuleScheduleByDateResponse"
+            },
+            "RuleScheduleByRuleIdResponse": {
+                "type": "object",
+                "properties": {
+                    "rule_id": {
+                        "type": "string",
+                        "title": "Rule Id",
+                        "description": "Unique identifier of the rule"
+                    },
+                    "rule_alias": {
+                        "type": "string",
+                        "title": "Rule Alias",
+                        "description": "Human-readable name of the rule"
+                    },
+                    "rule_description": {
+                        "type": "string",
+                        "title": "Rule Description",
+                        "description": "Description of what the rule monitors"
+                    },
+                    "execution_frequency": {
+                        "type": "string",
+                        "title": "Execution Frequency",
+                        "description": "Human-readable description of when the rule executes (e.g. 'At 02:00')"
+                    },
+                    "last_execution_date": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Last Execution Date",
+                        "description": "ISO-8601 datetime of the rule's most recent execution"
+                    },
+                    "scheduled_dates": {
+                        "type": "array",
+                        "title": "Scheduled Dates",
+                        "description": "The next 5 upcoming execution datetimes (UTC) for this rule",
+                        "items": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    }
+                },
+                "required": [
+                    "rule_id",
+                    "rule_alias",
+                    "rule_description",
+                    "execution_frequency",
+                    "scheduled_dates"
+                ],
+                "title": "RuleScheduleByRuleIdResponse"
+            },
+            "ErrorResponse": {
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "title": "Message"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "message"
+                ],
+                "title": "ErrorResponse"
+            },
+            "HTTPValidationError": {
+                "properties": {
+                    "detail": {
+                        "items": {
+                            "$ref": "#/components/schemas/ValidationError"
+                        },
+                        "type": "array",
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "title": "HTTPValidationError"
+            },
+            "ValidationError": {
+                "properties": {
+                    "loc": {
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        },
+                        "type": "array",
+                        "title": "Location"
+                    },
+                    "msg": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Error Type"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "loc",
+                    "msg",
+                    "type"
+                ],
+                "title": "ValidationError"
+            }
+        },
+        "securitySchemes": {
+            "OAuth2 Client Credentials": {
+                "type": "oauth2",
+                "flows": {
+                    "clientCredentials": {
+                        "scopes": {},
+                        "tokenUrl": "oauth2/token"
+                    }
+                }
+            }
+        }
+    }
+}

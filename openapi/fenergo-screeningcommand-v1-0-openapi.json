@@ -1,0 +1,4534 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Fenergo Nebula Screening Command",
+    "description": "**Screening Command API**:\n\n<br> Screening Command API screens clients and their associated parties for adverse media, PEP and sanctions. Use Screening Command API to perform the screening action and Screening Query API to retrieve screening results. \n\n<br> **Screening Command API provides**:<br><ul><li> The ability to screen Individual and Company Legal Entities.<li> The ability to trigger asynchronous screening requests to different providers.<li> The ability to screen multiple entities in a single request.",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "/screeningcommand"
+    }
+  ],
+  "paths": {
+    "/api/batch": {
+      "post": {
+        "tags": [
+          "Batch"
+        ],
+        "summary": "Create a new screening batch to screen one or more entities",
+        "description": "<ul>\r\n  <li>This method creates a screening batch that triggers asynchronous requests to different screening providers.</li>\r\n  <li>This batch ID can be used in the Screening Query Api to check the status of the request and to get the screening results.</li>\r\n  <li>The method returns the batch ID created in the system.</li>\r\n  <li>For Individuals, the mandatory fields are; tenant + fullName + type OR tenant + firstName + lastName + type.</li>\r\n  <li>For Company’s, the mandatory fields are tenant + type + LEName.</li>\r\n  <li>If providers is null the batch will be created with the active providers.</li>\r\n  <li>If configuration set is null the batch will be created for the specified provider with the default configuration set.</li>\r\n  <li>Otherwise the batch will be created with the providers and configuration sets specified in the request.</li>\r\n</ul><br /><br /><b>Required permissions:</b><br />Following permissions are required: ScreeningCreate, ScreeningAccess",
+        "operationId": "CreateBatch",
+        "parameters": [
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "description": "The Create Batch request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateBatchDtoServiceRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Success. Batch created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchCreatedDtoServiceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/batch/{id}/complete": {
+      "put": {
+        "tags": [
+          "Batch"
+        ],
+        "summary": "Complete an existing screening batch",
+        "description": "<ul>\r\n  <li>This method is used to complete an existing batch</li>\r\n  <li>All providers must have status 'Search Complete' or 'Return Failed'</li>\r\n  <li>All matches must be resolved</li>\r\n</ul><br /><br /><b>Required permissions:</b><br />Following permissions are required: ScreeningEdit, ScreeningAccess",
+        "operationId": "CompleteBatch",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the existing batch to be completed",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Accepted. The request to complete the batch has been accepted"
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not found. The batch couldn't be found",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/batch/{id}/matches": {
+      "put": {
+        "tags": [
+          "Batch"
+        ],
+        "summary": "Update a list of matches in a batch",
+        "description": "\nThis method is used to update the status, reason and comments of a list of matches.<br /><br /><b>Required permissions:</b><br />Following permissions are required: ScreeningEdit, ScreeningAccess",
+        "operationId": "UpdateMatches",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the batch",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "description": "The request with the list of matches to be updated",
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateEntityMatchesDtoListServiceRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted. The request to update the list of matches has been accepted"
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/batch/{id}/entity/{entityId}/updatemateriality": {
+      "put": {
+        "tags": [
+          "Batch"
+        ],
+        "summary": "Update the materiality assessment of an Entity's related party in ongoing screening",
+        "description": "\nThis method is used to update the materiality assessment of an Entity's related party.<br /><br /><b>Required permissions:</b><br />Following permissions are required: ScreeningEdit, ScreeningAccess",
+        "operationId": "UpdateMaterialityAssessment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the ongoing screening batch",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "entityId",
+            "in": "path",
+            "description": "The ID of the entity in the batch",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "description": "The request with the related party to be updated and the set of values for the materiality assessment",
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateMaterialityAssessmentDtoServiceRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted. The request to update the materiality assessment has been accepted"
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/entity/ongoingscreening": {
+      "put": {
+        "tags": [
+          "Entity"
+        ],
+        "summary": "Enables or disables ongoing screening for a list of entities",
+        "description": "\nThis method is used to enable or disable ongoing screening for a list of entities.<br /><br /><b>Required permissions:</b><br />Following permissions are required: ScreeningEdit, ScreeningAccess",
+        "operationId": "OngoingScreening",
+        "parameters": [
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "description": "The request with the list of entities for which ongoing screening should be enabled or disabled",
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/OngoingScreeningDtoServiceRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted. The request has been accepted"
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/entity": {
+      "post": {
+        "tags": [
+          "Entity"
+        ],
+        "summary": "Creates new Screening entities in bulk",
+        "description": "This method is used to create multiple Screening entities at once in a single request.\n\n<b>Pre-requisites:</b>\n\r\nThe 'legalEntityId' supplied for each entity as part of the request should already exist in Fen-X.\n\n<b>Considerations:</b>\n\r\nEach entity in the request is managed as an independent operation. This means that some of the requests may\r\nbe successful and some of them may not. Therefore, it is important to review the properties\r\n'numberOfEntitiesCreated' and 'numberOfEntitiesFailed' in the response of the endpoint. This will give\r\na general view of the outcome of all the operations submitted. In addition, the 'status' property of the\r\nresponse will provide the status of each operation, and the 'errorMessage' property will tell the reason\r\nwhy the operation failed.\n\r\nThere is a maximum number of entities that can be submitted in a single request. If you hit that limit,\r\nplease split the entities in multiple requests and try again.<br /><br /><b>Required permissions:</b><br />Following permissions are required: ScreeningCreate, ScreeningAccess",
+        "operationId": "CreateEntities",
+        "parameters": [
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "description": "The request with the list of entities that are going to be created",
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateEntityDtoListServiceRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted. The request has been accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntitiesCreatedDtoServiceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/entity/{entityId}": {
+      "put": {
+        "tags": [
+          "Entity"
+        ],
+        "summary": "Updates an existing Screening entity with the data supplied in the request body If aliases are added or removed, \r\ntheir OGS subscription will not be updated as part of this call, it will be updated as part of the next Enable/Disable OGS for the entity.",
+        "description": "\nThis method is used to update the data of an existing Screening entity.<br /><br /><b>Required permissions:</b><br />Following permissions are required: ScreeningEdit, ScreeningAccess",
+        "operationId": "UpdateEntity",
+        "parameters": [
+          {
+            "name": "entityId",
+            "in": "path",
+            "description": "The Screening ID of the entity that is going to be updated",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "description": "The request with the new data of the entity that is going to be updated",
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateEntityDtoServiceRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted. The request has been accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/entity/ongoingscreening/generate-report": {
+      "post": {
+        "tags": [
+          "Entity"
+        ],
+        "summary": "Generate report with all entities that have ongoing screening enabled for some provider",
+        "description": "\nThis method returns a signed url that allows to download a json with all entities\r\n            that have ongoing screening enabled for some provider.\r\n\nThe signed url could return an XML file with error code \"NoSuchKey\" when called. This means that\r\n            the report is still being generated and the signed url needs to be queried again later.\r\n\nThe signed url expires a few minutes after it's generated.<br /><br /><b>Required permissions:</b><br />Following permissions are required: ScreeningAccess",
+        "operationId": "GetEntitiesSubscribedToOgs",
+        "parameters": [
+          {
+            "name": "includeSearchCriteria",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. The sign url to download the report is returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetEntitiesSubscribedToOgsResponseDtoServiceResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not Found",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scoped-entity": {
+      "post": {
+        "tags": [
+          "ScopedEntity"
+        ],
+        "summary": "Adds new scoped entities to a given Journey and Process",
+        "description": "\nThis method is used to add new scoped entities to a given Journey and Process and set whether or not they are in scope for Screening.<br /><br /><b>Required permissions:</b><br />Following permissions are required: ScreeningEdit, ScreeningAccess",
+        "operationId": "AddScopedEntities",
+        "parameters": [
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "description": "The request with the list of scoped entities to be added",
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AddScopedEntitiesToJourneyProcessDtoServiceRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted. The request has been accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddScopedEntityResponseDtoIEnumerableServiceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "ScopedEntity"
+        ],
+        "summary": "Updates the entities that are in scope for Screening",
+        "description": "\nThis method is used to update the entities that are in scope for Screening.<br /><br /><b>Required permissions:</b><br />Following permissions are required: ScreeningEdit, ScreeningAccess",
+        "operationId": "UpdateScopedEntities",
+        "parameters": [
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "description": "The list of scoped entities to be updated",
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateScopedEntityDtoListServiceRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted. The request has been accepted"
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scoping-rule-set": {
+      "post": {
+        "tags": [
+          "ScopingRuleSet"
+        ],
+        "summary": "Create scoping rule set",
+        "description": "<ul>\r\n  <li>Creates a new scoping rule set with a first draft version.</li>\r\n  <li>The new version is initialized with the provided data, a default \"Draft\" status\r\n            and the author as the only required signee.</li>\r\n</ul><br /><br /><b>Required permissions:</b><br />Following permissions are required: ScreeningConfigurationCreate",
+        "operationId": "CreateScopingRuleSet",
+        "parameters": [
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateScopingRuleSetDtoServiceRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Success. Scoping rule set created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateScopingRuleSetResponseDtoServiceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorModelListServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server exception. Please, contact your provider.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "Internal server exception. Please, contact your provider.",
+                      "type": "Error",
+                      "errorCode": "INTERNAL_SERVER_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scoping-rule-set/{scopingRuleSetId}": {
+      "post": {
+        "tags": [
+          "ScopingRuleSet"
+        ],
+        "summary": "Create scoping rule set version",
+        "description": "<ul>\r\n  <li>Creates a new version of an existing scoping rule set.</li>\r\n  <li>Assigns the next available version number.</li>\r\n  <li>The new version is initialized with the provided data, a default \"Draft\" status\r\n            and the author as the only required signee.</li>\r\n</ul><br /><br /><b>Required permissions:</b><br />Following permissions are required: ScreeningConfigurationEdit",
+        "operationId": "CreateScopingRuleSetVersion",
+        "parameters": [
+          {
+            "name": "scopingRuleSetId",
+            "in": "path",
+            "description": "Scoping rule set id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "description": "Create scoping rule set version request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateScopingRuleSetVersionDtoServiceRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Success. Scoping rule set version created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateScopingRuleSetResponseDtoServiceResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not Found. Scoping rule set with given id does not exist",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorModelListServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server exception. Please, contact your provider.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "Internal server exception. Please, contact your provider.",
+                      "type": "Error",
+                      "errorCode": "INTERNAL_SERVER_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "ScopingRuleSet"
+        ],
+        "summary": "Delete scoping rule set and all its versions",
+        "description": "\nDeletes an existing scoping rule set and all its versions.<br /><br /><b>Required permissions:</b><br />Following permissions are required: ScreeningConfigurationDelete",
+        "operationId": "DeleteScopingRuleSet",
+        "parameters": [
+          {
+            "name": "scopingRuleSetId",
+            "in": "path",
+            "description": "Scoping rule set Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Success. Scoping rule set deleted"
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not Found. Scoping rule set with given id does not exist",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorModelListServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server exception. Please, contact your provider.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "Internal server exception. Please, contact your provider.",
+                      "type": "Error",
+                      "errorCode": "INTERNAL_SERVER_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scoping-rule-set/{scopingRuleSetId}/version/{versionNumber}": {
+      "put": {
+        "tags": [
+          "ScopingRuleSet"
+        ],
+        "summary": "Update scoping rule set version",
+        "description": "\nUpdates an existing scoping rule set version. Only draft versions are allowed to be updated.<br /><br /><b>Required permissions:</b><br />Following permissions are required: ScreeningConfigurationEdit",
+        "operationId": "UpdateScopingRuleSetVersion",
+        "parameters": [
+          {
+            "name": "scopingRuleSetId",
+            "in": "path",
+            "description": "Scoping rule set id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "versionNumber",
+            "in": "path",
+            "description": "Version number to update",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "description": "Update scoping rule set version request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UpdateScopingRuleSetVersionDtoServiceRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Success. Scoping rule set version updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateScopingRuleSetResponseDtoServiceResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not Found. Scoping rule set with given id does not exist",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict saving changes in expected version",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "There are conflicts that cannot be resolved automatically, get latest and apply your changes",
+                      "type": "Error",
+                      "errorCode": "CONFLICT"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorModelListServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server exception. Please, contact your provider.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "Internal server exception. Please, contact your provider.",
+                      "type": "Error",
+                      "errorCode": "INTERNAL_SERVER_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "ScopingRuleSet"
+        ],
+        "summary": "Delete scoping rule set version",
+        "description": "<ul>\r\n  <li>Deletes the selected version of an existing scoping rule set.</li>\r\n  <li>If the version is the last one, then the version number of it will become the next available one for the model.</li>\r\n</ul><br /><br /><b>Required permissions:</b><br />Following permissions are required: ScreeningConfigurationDelete",
+        "operationId": "DeleteScopingRuleSetVersion",
+        "parameters": [
+          {
+            "name": "scopingRuleSetId",
+            "in": "path",
+            "description": "Scoping rule set Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "versionNumber",
+            "in": "path",
+            "description": "Version number to delete",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Success. Scoping rule set version deleted"
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not Found. Scoping rule set with given id does not exist",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorModelListServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server exception. Please, contact your provider.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "Internal server exception. Please, contact your provider.",
+                      "type": "Error",
+                      "errorCode": "INTERNAL_SERVER_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scoping-rule-set/{scopingRuleSetId}/version/{versionNumber}/clone": {
+      "post": {
+        "tags": [
+          "ScopingRuleSet"
+        ],
+        "summary": "Clone scoping rule set version",
+        "description": "<ul>\r\n  <li>Clones the selected version of an existing scoping rule set and creates a new model with a single version.</li>\r\n  <li>The new version contains all the data of the original selected one,\r\n            will have the default status of draft and the author as the only required signee.</li>\r\n  <li>Returns the id of the cloned data group version.</li>\r\n</ul><br /><br /><b>Required permissions:</b><br />Following permissions are required: ScreeningConfigurationCreate",
+        "operationId": "CloneScopingRuleSetVersion",
+        "parameters": [
+          {
+            "name": "scopingRuleSetId",
+            "in": "path",
+            "description": "Scoping rule set Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "versionNumber",
+            "in": "path",
+            "description": "Version number to clone",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "description": "Clone scoping rule set version request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/CloneScopingRuleSetVersionDtoServiceRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Success. Scoping rule set version cloned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloneScopingRuleSetVersionResponseDtoServiceResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not Found. Scoping rule set with given id does not exist",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorModelListServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server exception. Please, contact your provider.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "Internal server exception. Please, contact your provider.",
+                      "type": "Error",
+                      "errorCode": "INTERNAL_SERVER_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scoping-rule-set/{scopingRuleSetId}/version/{versionNumber}/submit-for-approval": {
+      "put": {
+        "tags": [
+          "ScopingRuleSet"
+        ],
+        "summary": "Submit scoping rule set version for approval",
+        "description": "\nSubmits the selected version of an existing scoping rule set for approval.<br /><br /><b>Required permissions:</b><br />Following permissions are required: ScreeningConfigurationEdit",
+        "operationId": "SubmitScopingRuleSetVersion",
+        "parameters": [
+          {
+            "name": "scopingRuleSetId",
+            "in": "path",
+            "description": "Scoping rule set Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "versionNumber",
+            "in": "path",
+            "description": "Version number to submit",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Success. Scoping rule set version submitted"
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not Found. Scoping rule set with given id does not exist",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorModelListServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server exception. Please, contact your provider.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "Internal server exception. Please, contact your provider.",
+                      "type": "Error",
+                      "errorCode": "INTERNAL_SERVER_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scoping-rule-set/{scopingRuleSetId}/version/{versionNumber}/sign": {
+      "put": {
+        "tags": [
+          "ScopingRuleSet"
+        ],
+        "summary": "Sign scoping rule set version",
+        "description": "\nSigns the selected version of an existing scoping rule set and changes the version status accordingly to the action (Approve/Reject).<br /><br /><b>Required permissions:</b><br />Following permissions are required: ScreeningConfigurationApprove",
+        "operationId": "SignScopingRuleSetVersion",
+        "parameters": [
+          {
+            "name": "scopingRuleSetId",
+            "in": "path",
+            "description": "Scoping rule set Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "versionNumber",
+            "in": "path",
+            "description": "Version number to sign",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "requestBody": {
+          "description": "Sign scoping rule set version request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ApproveActionServiceRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Success. Scoping rule set version signed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignScopingRuleSetVersionResponseDtoServiceResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not Found. Scoping rule set with given id does not exist",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorModelListServiceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server exception. Please, contact your provider.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "Internal server exception. Please, contact your provider.",
+                      "type": "Error",
+                      "errorCode": "INTERNAL_SERVER_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scoping-rule-set/{scopingRuleSetId}/version/{versionNumber}/archive": {
+      "put": {
+        "tags": [
+          "ScopingRuleSet"
+        ],
+        "summary": "Archive scoping rule set version",
+        "description": "\nArchives the selected version of an existing scoping rule set.<br /><br /><b>Required permissions:</b><br />Following permissions are required: ScreeningConfigurationArchive",
+        "operationId": "ArchiveScopingRuleSetVersion",
+        "parameters": [
+          {
+            "name": "scopingRuleSetId",
+            "in": "path",
+            "description": "Scoping rule set Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "versionNumber",
+            "in": "path",
+            "description": "Version number to archive",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "X-TENANT-ID",
+            "in": "header",
+            "description": "The UiD of the tenant representing organization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "b11f8be3-f29b-4959-8964-956d4af7c468"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Success. Scoping rule set version archived"
+          },
+          "400": {
+            "description": "Bad request. The request has missing/invalid values",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorModelListServiceResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Not Found. Scoping rule set with given id does not exist",
+                      "type": "Error",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authorized to perform this request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access to resource is forbidden.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": { },
+                  "messages": [
+                    {
+                      "message": "Access denied. Following permissions are required: Permission1, Permission2",
+                      "type": "Forbidden",
+                      "errorCode": "Error Code"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server exception. Please, contact your provider.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "Internal server exception. Please, contact your provider.",
+                      "type": "Error",
+                      "errorCode": "INTERNAL_SERVER_ERROR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringServiceResponse"
+                },
+                "example": {
+                  "data": null,
+                  "messages": [
+                    {
+                      "message": "This endpoint is obsolete and was terminated on yyyy-MM-dd",
+                      "type": "Error",
+                      "errorCode": "OBSOLETE_ENDPOINT"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AddScopedEntitiesToJourneyProcessDto": {
+        "type": "object",
+        "properties": {
+          "journeyId": {
+            "type": "string",
+            "description": "The unique Fen-X identifier for the journey that the screening relates to",
+            "format": "uuid",
+            "example": "d74e1554-a09d-44c4-9bde-48cce9caeaae"
+          },
+          "processId": {
+            "type": "string",
+            "description": "The unique Fen-X identifier for the process in the journey that the screening relates to",
+            "format": "uuid",
+            "example": "bf0ebd57-ee07-413d-b1ba-d1257487b590"
+          },
+          "scopedEntities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AddScopedEntityDto"
+            },
+            "description": "List of new scoped entities",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the AddScopedEntitiesToJourneyProcess request"
+      },
+      "AddScopedEntitiesToJourneyProcessDtoServiceRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AddScopedEntitiesToJourneyProcessDto"
+              }
+            ],
+            "description": "Represents the AddScopedEntitiesToJourneyProcess request",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AddScopedEntityDto": {
+        "type": "object",
+        "properties": {
+          "legalEntityId": {
+            "type": "string",
+            "description": "The unique ID for a Legal Entity in Fen-X",
+            "format": "uuid",
+            "example": "12be5a50-66c2-44bb-851e-afc4fc4a28c2"
+          },
+          "isInScopeByManualOverride": {
+            "type": "boolean",
+            "description": "Flag to manually determine if entity is in scope for Screening",
+            "example": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the scoped entity in the AddScopedEntitiesToJourneyProcess request"
+      },
+      "AddScopedEntityResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique ID for the scoped Entity",
+            "format": "uuid",
+            "example": "12be5a50-66c2-44bb-851e-afc4fc4a28c2"
+          },
+          "legalEntityId": {
+            "type": "string",
+            "description": "The unique ID for a Legal Entity in Fen-X",
+            "format": "uuid",
+            "example": "701fdce8-e347-4b0b-b94a-24fd1cfccfb1"
+          },
+          "isInScopeByManualOverride": {
+            "type": "boolean",
+            "description": "Flag to manually determine if entity is in scope for Screening",
+            "nullable": true
+          },
+          "isInScopeByScopingRulesRun": {
+            "type": "boolean",
+            "description": "Flag to check if scoping rules determined that the entity is in scope for Screening"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the AddScopedEntitiesToJourneyProcess response"
+      },
+      "AddScopedEntityResponseDtoIEnumerableServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AddScopedEntityResponseDto"
+            },
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AddressDto": {
+        "type": "object",
+        "properties": {
+          "addressLine1": {
+            "type": "string",
+            "description": "The first line in the address",
+            "nullable": true,
+            "example": "7107 Andell Rd"
+          },
+          "addressLine2": {
+            "type": "string",
+            "description": "The second line in the address",
+            "nullable": true,
+            "example": "Portobello"
+          },
+          "city": {
+            "type": "string",
+            "description": "The city",
+            "nullable": true,
+            "example": "Dublin"
+          },
+          "postalCode": {
+            "type": "string",
+            "description": "The postal code",
+            "nullable": true,
+            "example": "D08 YY66"
+          },
+          "country": {
+            "type": "string",
+            "description": "The country",
+            "nullable": true,
+            "example": "Ireland"
+          },
+          "countryISO2": {
+            "type": "string",
+            "description": "The country ISO2 code",
+            "nullable": true,
+            "example": "IE"
+          },
+          "countryISO3": {
+            "type": "string",
+            "description": "The country ISO3 code",
+            "nullable": true,
+            "example": "IRL"
+          },
+          "stateProvince": {
+            "type": "string",
+            "description": "The state or province",
+            "nullable": true,
+            "example": "Dublin"
+          },
+          "type": {
+            "type": "string",
+            "description": "The type",
+            "nullable": true,
+            "example": "Personal"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the address dto"
+      },
+      "ApproveAction": {
+        "type": "object",
+        "properties": {
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "decision": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Decision"
+              }
+            ]
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ApproveActionServiceRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ApproveAction"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Approver": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string",
+            "nullable": true
+          },
+          "successor": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Approver"
+              }
+            ],
+            "nullable": true
+          },
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ApproveAction"
+              }
+            ],
+            "nullable": true
+          },
+          "hasProcessedRequest": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "BatchCreatedDto": {
+        "type": "object",
+        "properties": {
+          "batchId": {
+            "type": "string",
+            "description": "The unique ID for the batch of entities to be screened. A batch can contain one or more entities.",
+            "format": "uuid",
+            "example": "12be5a50-66c2-44bb-851e-afc4fc4a28c2"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the data of a batch that has been created"
+      },
+      "BatchCreatedDtoServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BatchCreatedDto"
+              }
+            ],
+            "description": "Represents the data of a batch that has been created",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "BatchMetadataDto": {
+        "type": "object",
+        "properties": {
+          "sourceEventCorrelationId": {
+            "type": "string",
+            "nullable": true
+          },
+          "autonomyLevel": {
+            "type": "string",
+            "description": "Depending on the value, the matches will be auto-resolved using an AI Agent when they come back from the provider,\r\nand auto-close the Screening Results task. Possible values: Manual, Semi-Autonomous, Fully Autonomous",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClassificationDataDto": {
+        "type": "object",
+        "properties": {
+          "singleProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ClassificationDataSinglePropertyDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClassificationDataSinglePropertyDto": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "nullable": true
+          },
+          "label": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CloneScopingRuleSetVersionDto": {
+        "required": [
+          "jurisdiction",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Name of new scoping rule set",
+            "example": "Global Scoping Rules"
+          },
+          "jurisdiction": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Jurisdiction for the new scoping rule set",
+            "example": "Global"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request DTO representing clone scoping rule set data"
+      },
+      "CloneScopingRuleSetVersionDtoServiceRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CloneScopingRuleSetVersionDto"
+              }
+            ],
+            "description": "Request DTO representing clone scoping rule set data",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CloneScopingRuleSetVersionResponseDto": {
+        "type": "object",
+        "properties": {
+          "scopingRuleSetId": {
+            "type": "string",
+            "description": "Id of the cloned scoping rule set",
+            "format": "uuid",
+            "example": "7084669b-0813-4faa-b1d5-b7bf6d749717"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Cloned scoping rule set response data"
+      },
+      "CloneScopingRuleSetVersionResponseDtoServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CloneScopingRuleSetVersionResponseDto"
+              }
+            ],
+            "description": "Cloned scoping rule set response data",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CollectionDto": {
+        "type": "object",
+        "properties": {
+          "properties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "nullable": true
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CollectionPropertyDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PropertyDto"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "dataGroupId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "collections": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/CollectionDto"
+                },
+                "nullable": true
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "ConditionDefinitionDto": {
+        "type": "object",
+        "properties": {
+          "fieldName": {
+            "type": "string",
+            "nullable": true
+          },
+          "value": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "valueId": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "valueType": {
+            "type": "string",
+            "nullable": true
+          },
+          "dataSource": {
+            "type": "string",
+            "nullable": true
+          },
+          "operation": {
+            "type": "string",
+            "nullable": true
+          },
+          "logicalOperation": {
+            "type": "string",
+            "nullable": true
+          },
+          "operands": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConditionDefinitionDto"
+            },
+            "nullable": true
+          },
+          "valueField": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ValueField"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ConditionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "logicalOperation": {
+            "type": "string",
+            "nullable": true
+          },
+          "operands": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConditionDefinitionDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ConditionalValueDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/StringConditionalValueDto"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "valueId": {
+                "type": "string",
+                "nullable": true
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "ConditionalValueDto`1": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ConditionDto"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "value": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/T"
+                  }
+                ],
+                "nullable": true
+              },
+              "priority": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "CreateBatchDto": {
+        "required": [
+          "entities"
+        ],
+        "type": "object",
+        "properties": {
+          "entities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateBatchEntityDto"
+            },
+            "description": "The list of entities that are included in the batch screening search request"
+          },
+          "journeyId": {
+            "type": "string",
+            "description": "The unique Fen-X identifier for the journey that the screening relates to",
+            "nullable": true,
+            "example": "6b8bc209-bd61-4889-8111-a14f262b58af"
+          },
+          "processId": {
+            "type": "string",
+            "description": "The unique Fen-X identifier for the process in the journey that the screening relates to",
+            "nullable": true,
+            "example": "eda503d7-cca9-4e87-8e36-537ee864cabc"
+          },
+          "providers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateBatchProviderDto"
+            },
+            "description": "The list of providers that will be used in the batch. If this property is not set, is null or is an empty array,\r\nthen the providers used in the batch will be the ones that are active in the Screening configuration of the tenant",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the create batch request"
+      },
+      "CreateBatchDtoServiceRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreateBatchDto"
+              }
+            ],
+            "description": "Represents the create batch request",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateBatchEntityDto": {
+        "required": [
+          "searchCriteria"
+        ],
+        "type": "object",
+        "properties": {
+          "legalEntityId": {
+            "type": "string",
+            "description": "The unique ID for a Legal Entity in Fen-X",
+            "nullable": true,
+            "example": "12be5a50-66c2-44bb-851e-afc4fc4a28c2"
+          },
+          "searchCriteria": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SearchCriteriaDto"
+              }
+            ],
+            "description": "The search criteria of the entity that will be used to perform screening requests"
+          },
+          "entityAliases": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EntityAliasDto"
+            },
+            "description": "The list of aliases for the entity that will be used to perform screening request",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the entity in the create batch request"
+      },
+      "CreateBatchProviderDto": {
+        "required": [
+          "providerId"
+        ],
+        "type": "object",
+        "properties": {
+          "providerId": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The unique ID of the provider. Must match an existing provider in the Screening configuration of the tenant",
+            "example": "ProviderId"
+          },
+          "configurationSetId": {
+            "type": "string",
+            "description": "The unique ID of the configuration set within the provider specified in the \"ProviderId\" property that will be\r\nused in the batch.\r\nIf this property is not set, then the default configuration set of the provider will be used",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents a provider within the context of a create batch request"
+      },
+      "CreateEntityDto": {
+        "required": [
+          "legalEntityId",
+          "searchCriteria"
+        ],
+        "type": "object",
+        "properties": {
+          "legalEntityId": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The unique ID of a Legal Entity in Fen-X",
+            "example": "12be5a50-66c2-44bb-851e-afc4fc4a28c2"
+          },
+          "searchCriteria": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SearchCriteriaDto"
+              }
+            ],
+            "description": "The search criteria of the entity that will be used to perform screening requests"
+          },
+          "entityAliases": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EntityAliasDto"
+            },
+            "description": "The list of aliases for the entity that will be used to perform screening request",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the entity in the CreateEntities request"
+      },
+      "CreateEntityDtoListServiceRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateEntityDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateScopingRuleSetDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CreateScopingRuleSetVersionDto"
+          },
+          {
+            "required": [
+              "jurisdiction"
+            ],
+            "type": "object",
+            "properties": {
+              "jurisdiction": {
+                "minLength": 1,
+                "type": "string",
+                "description": "Scoping rule set jurisdiction",
+                "example": "Global"
+              }
+            },
+            "additionalProperties": false
+          }
+        ],
+        "description": "DTO representing scoping rule set data needed for creation"
+      },
+      "CreateScopingRuleSetDtoServiceRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreateScopingRuleSetDto"
+              }
+            ],
+            "description": "DTO representing scoping rule set data needed for creation",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateScopingRuleSetResponseDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CreateScopingRuleSetDto"
+          },
+          {
+            "required": [
+              "signees"
+            ],
+            "type": "object",
+            "properties": {
+              "scopingRuleSetId": {
+                "type": "string",
+                "description": "The UiD of scoping rule set",
+                "format": "uuid",
+                "example": "7084669b-0813-4faa-b1d5-b7bf6d749717"
+              },
+              "versionNumber": {
+                "type": "integer",
+                "description": "The version number",
+                "format": "int32",
+                "example": 1
+              },
+              "created": {
+                "type": "string",
+                "description": "The creation date of the version (Read-only)",
+                "format": "date-time",
+                "example": "2021-01-05T14:48:00.000Z"
+              },
+              "status": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/VersionStatus"
+                  }
+                ],
+                "description": "The status of the version",
+                "example": "Draft"
+              },
+              "signees": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/SigneeDto"
+                },
+                "description": "The defined list of signees for the version"
+              }
+            },
+            "additionalProperties": false
+          }
+        ],
+        "description": "DTO representing scoping rule set data"
+      },
+      "CreateScopingRuleSetResponseDtoServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreateScopingRuleSetResponseDto"
+              }
+            ],
+            "description": "DTO representing scoping rule set data",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateScopingRuleSetVersionDto": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Scoping rule set name",
+            "example": "Global Scoping Rules"
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "description": "The date that the version takes effect when published",
+            "format": "date-time",
+            "example": "2021-01-05T14:48:00.000Z"
+          },
+          "conditions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConditionDto"
+            },
+            "description": "Conditions under which the schema can be used",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "DTO representing scoping rule set data needed for version creation"
+      },
+      "CreateScopingRuleSetVersionDtoServiceRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreateScopingRuleSetVersionDto"
+              }
+            ],
+            "description": "DTO representing scoping rule set data needed for version creation",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CustomPropertyDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PropertyDto"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "customTypeId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "properties": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/PropertyDto"
+                },
+                "nullable": true
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "Decision": {
+        "enum": [
+          "Approve",
+          "Reject"
+        ],
+        "type": "string"
+      },
+      "EntitiesCreatedDto": {
+        "type": "object",
+        "properties": {
+          "totalNumberOfEntities": {
+            "type": "integer",
+            "description": "The total number of entities that were submitted",
+            "format": "int32",
+            "example": 1
+          },
+          "numberOfEntitiesCreated": {
+            "type": "integer",
+            "description": "The number of entities that were created successfully",
+            "format": "int32",
+            "example": 1
+          },
+          "numberOfEntitiesFailed": {
+            "type": "integer",
+            "description": "The number of entities that weren't created successfully",
+            "format": "int32",
+            "example": 0
+          },
+          "entities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EntityCreatedDto"
+            },
+            "description": "The details of the entities that were submitted",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the response of the CreateEntities endpoint"
+      },
+      "EntitiesCreatedDtoServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EntitiesCreatedDto"
+              }
+            ],
+            "description": "Represents the response of the CreateEntities endpoint",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EntityAliasDto": {
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The id of the entity alias, which in FenX is the id of the Alternate Names DataGroup item.",
+            "example": "12be5a50-66c2-44bb-851e-afc4fc4a28c2"
+          },
+          "aliasType": {
+            "type": "string",
+            "description": "The type of the alias",
+            "nullable": true,
+            "example": "Also Known As"
+          },
+          "fullName": {
+            "type": "string",
+            "description": "The Individual's firstname and surname. Alternatively use FirstName with LastName.",
+            "nullable": true,
+            "example": "John Doe"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "The Individual's first name. Alternatively use FullName.",
+            "nullable": true,
+            "example": "John"
+          },
+          "middleName": {
+            "type": "string",
+            "description": "The Individual's middle name",
+            "nullable": true,
+            "example": "David"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "The Individual's surname. Alternatively use FullName.",
+            "nullable": true,
+            "example": "Doe"
+          },
+          "legalEntityName": {
+            "type": "string",
+            "description": "Full Company name",
+            "nullable": true,
+            "example": "Fenergo"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Class to represent a Screening entity Alias"
+      },
+      "EntityCreatedDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique ID of the Screening entity that has been created. \r\nCould be null if no entity has been created (for example, due to an error during the create operation)",
+            "format": "uuid",
+            "nullable": true,
+            "example": "8e167417-b8b2-4225-b9e9-b482f67644ba"
+          },
+          "legalEntityId": {
+            "type": "string",
+            "description": "The unique ID of a Legal Entity in Fen-X",
+            "nullable": true,
+            "example": "12be5a50-66c2-44bb-851e-afc4fc4a28c2"
+          },
+          "searchCriteria": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SearchCriteriaDto"
+              }
+            ],
+            "description": "The search criteria of the entity that will be used to perform screening requests.\r\nIf the entity has been created successfully, this data will be the same as in the request.\r\nHowever, if the entity already exists in the system, the data of the existing entity will be\r\nreturned so users can review it",
+            "nullable": true
+          },
+          "entityAliases": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EntityAliasDto"
+            },
+            "description": "The list of aliases for the entity that will be used to perform screening request\r\nIf the entity has been created successfully, this data will be the same as in the request.\r\nHowever, if the entity already exists in the system, the data of the existing entity will be\r\nreturned so users can review it",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "The status of the operation",
+            "nullable": true,
+            "example": "Success"
+          },
+          "errorMessage": {
+            "type": "string",
+            "description": "In case of an error, the details of the error that occurred during the execution of the operation",
+            "nullable": true,
+            "example": "The entity already exists"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the data of an entity that has been created"
+      },
+      "GetEntitiesSubscribedToOgsResponseDto": {
+        "type": "object",
+        "properties": {
+          "signedUrl": {
+            "type": "string",
+            "description": "The signed url to get the results from",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the response of the GetEntitiesSubscribedToOgs endpoint"
+      },
+      "GetEntitiesSubscribedToOgsResponseDtoServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GetEntitiesSubscribedToOgsResponseDto"
+              }
+            ],
+            "description": "Represents the response of the GetEntitiesSubscribedToOgs endpoint",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "HttpValidationProblemDetails": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ProblemDetails"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "errors": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "nullable": true
+              }
+            },
+            "additionalProperties": { }
+          }
+        ]
+      },
+      "ObjectServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "OngoingScreeningDto": {
+        "required": [
+          "entities"
+        ],
+        "type": "object",
+        "properties": {
+          "enable": {
+            "type": "boolean",
+            "description": "Flag to determine if ongoing screening should be enabled or disabled",
+            "example": true
+          },
+          "entities": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The list of entities for which ongoing screening should be enabled or disabled"
+          },
+          "providers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The list of providers where ongoing screening should be enabled or disabled\r\nIf this property is not provided then ongoing screening will be enabled or disabled for all the providers configured for ongoing screening for the tenant",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the request to enable or disable ongoing screening for entities"
+      },
+      "OngoingScreeningDtoServiceRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OngoingScreeningDto"
+              }
+            ],
+            "description": "Represents the request to enable or disable ongoing screening for entities",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": { }
+      },
+      "PropertyDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PropertyType"
+              }
+            ],
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PropertyType": {
+        "enum": [
+          "Single",
+          "Custom",
+          "Collection"
+        ],
+        "type": "string"
+      },
+      "SearchCriteriaDto": {
+        "required": [
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "description": "The Individual's firstname and surname. Alternatively use FirstName with LastName.",
+            "nullable": true,
+            "example": "John Doe"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "The Individual's first name. Alternatively use FullName.",
+            "nullable": true,
+            "example": "John"
+          },
+          "middleName": {
+            "type": "string",
+            "description": "The Individual's middle name",
+            "nullable": true,
+            "example": "David"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "The Individual's surname. Alternatively use FullName.",
+            "nullable": true,
+            "example": "Doe"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "description": "The Individual's date of birth in DD/MM/YYYY format",
+            "nullable": true,
+            "example": "31/12/1990"
+          },
+          "gender": {
+            "type": "string",
+            "description": "The Individual's gender",
+            "nullable": true,
+            "example": "Male"
+          },
+          "legalEntityName": {
+            "type": "string",
+            "description": "Full Company name",
+            "nullable": true,
+            "example": "Fenergo"
+          },
+          "type": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Legal entity type i.e. Individual or Company",
+            "example": "Individual"
+          },
+          "address": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AddressDto"
+              }
+            ],
+            "description": "Address of the Individual, Company or Other",
+            "nullable": true
+          },
+          "idNumber": {
+            "type": "string",
+            "description": "The Individual's or Company's ID number",
+            "nullable": true,
+            "example": "1234"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "The Individual's or Company's phone number",
+            "nullable": true,
+            "example": "020 7946 0000"
+          },
+          "emailAddress": {
+            "type": "string",
+            "description": "The Individual's or Company's email address",
+            "nullable": true,
+            "example": "john@doe.com"
+          },
+          "nationality": {
+            "type": "string",
+            "description": "The Individual's nationality",
+            "nullable": true,
+            "example": "Irish"
+          },
+          "countryOfResidence": {
+            "type": "string",
+            "description": "The Individual's country of residence",
+            "nullable": true,
+            "example": "Ireland"
+          },
+          "placeOfBirth": {
+            "type": "string",
+            "description": "The Individual's place of birth",
+            "nullable": true,
+            "example": "Dublin"
+          },
+          "placeOfBirthISO2": {
+            "type": "string",
+            "description": "The Individual's place of birth in country ISO2 code",
+            "nullable": true,
+            "example": "IE"
+          },
+          "placeOfBirthISO3": {
+            "type": "string",
+            "description": "The Individual's place of birth in country ISO3 code",
+            "nullable": true,
+            "example": "IRL"
+          },
+          "citizenship": {
+            "type": "string",
+            "description": "The Individual's citizenship",
+            "nullable": true,
+            "example": "Ireland"
+          },
+          "citizenshipISO2": {
+            "type": "string",
+            "description": "The Individual's citizenship in country ISO2 code",
+            "nullable": true,
+            "example": "IE"
+          },
+          "citizenshipISO3": {
+            "type": "string",
+            "description": "The Individual's citizenship in country ISO3 code",
+            "nullable": true,
+            "example": "IRL"
+          },
+          "registeredCountry": {
+            "type": "string",
+            "description": "The country the Company is registered in",
+            "nullable": true,
+            "example": "Ireland"
+          },
+          "registeredCountryISO2": {
+            "type": "string",
+            "description": "The country the Company is registered in ISO2 code",
+            "nullable": true,
+            "example": "IE"
+          },
+          "registeredCountryISO3": {
+            "type": "string",
+            "description": "The country the Company is registered in ISO3 code",
+            "nullable": true,
+            "example": "IRL"
+          },
+          "subtype": {
+            "type": "string",
+            "description": "The subtype of an entity",
+            "nullable": true,
+            "example": "Vessel"
+          },
+          "uniqueId": {
+            "type": "string",
+            "description": "The unique id of an entity that is part of a subtype",
+            "nullable": true,
+            "example": "VesselId"
+          },
+          "otherInformation": {
+            "type": "string",
+            "description": "Other information about an individual or a company",
+            "nullable": true,
+            "example": "Information1|Information2|Information3"
+          },
+          "passportNumber": {
+            "type": "string",
+            "description": "Passport number of the individual",
+            "nullable": true,
+            "example": "123456789"
+          },
+          "socialSecurityNumber": {
+            "type": "string",
+            "description": "Social Security Number (SSN) of the individual",
+            "nullable": true,
+            "example": "555-50-1234"
+          },
+          "driversLicense": {
+            "type": "string",
+            "description": "Driver's License number of the individual",
+            "nullable": true,
+            "example": "SMITH580117SM9XJ"
+          },
+          "employerIdentificationNumber": {
+            "type": "string",
+            "description": "Employer Identification Number (EIN) of the company",
+            "nullable": true,
+            "example": "12-3456789"
+          }
+        },
+        "additionalProperties": false,
+        "description": "The search criteria of the entity that will be used to perform screening requests"
+      },
+      "ServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ServiceResponseMessage": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "errorCode": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SignScopingRuleSetVersionResponseDto": {
+        "type": "object",
+        "properties": {
+          "scopingRuleSetId": {
+            "type": "string",
+            "description": "The UiD of the scoping rule set",
+            "format": "uuid",
+            "example": "118313c6-91e6-4b05-a537-5a1ab906418f"
+          },
+          "versionNumber": {
+            "type": "integer",
+            "description": "The number of the version that has been signed",
+            "format": "int32",
+            "example": 2
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VersionStatus"
+              }
+            ],
+            "description": "The new version status",
+            "example": "Rejected"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Sign scoping rule set response contains the new version status"
+      },
+      "SignScopingRuleSetVersionResponseDtoServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SignScopingRuleSetVersionResponseDto"
+              }
+            ],
+            "description": "Sign scoping rule set response contains the new version status",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SigneeDto": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string",
+            "nullable": true
+          },
+          "successor": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Approver"
+              }
+            ],
+            "nullable": true
+          },
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ApproveAction"
+              }
+            ],
+            "nullable": true
+          },
+          "hasProcessedRequest": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Defines a version Signee"
+      },
+      "SinglePropertyDto": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PropertyDto"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "string",
+                "nullable": true
+              },
+              "isAggregatedValue": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "StringConditionalValueDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "logicalOperation": {
+            "type": "string",
+            "nullable": true
+          },
+          "operands": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConditionDefinitionDto"
+            },
+            "nullable": true
+          },
+          "value": {
+            "type": "string",
+            "nullable": true
+          },
+          "priority": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StringServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "T": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "UpdateEntityDto": {
+        "required": [
+          "legalEntityId",
+          "searchCriteria"
+        ],
+        "type": "object",
+        "properties": {
+          "legalEntityId": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The unique ID of a Legal Entity in Fen-X",
+            "example": "12be5a50-66c2-44bb-851e-afc4fc4a28c2"
+          },
+          "searchCriteria": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SearchCriteriaDto"
+              }
+            ],
+            "description": "The search criteria of the entity that will be used to perform screening requests"
+          },
+          "entityAliases": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EntityAliasDto"
+            },
+            "description": "The Alias information of the entity that is going to be screened. This can be empty if the entity has no aliases.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the entity in the UpdateEntity request"
+      },
+      "UpdateEntityDtoServiceRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UpdateEntityDto"
+              }
+            ],
+            "description": "Represents the entity in the UpdateEntity request",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateEntityMatchesDto": {
+        "required": [
+          "matches"
+        ],
+        "type": "object",
+        "properties": {
+          "entityId": {
+            "type": "string",
+            "description": "The unique Entity ID",
+            "format": "uuid"
+          },
+          "matches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UpdateMatchDto"
+            },
+            "description": "The list of matches"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the entity in the UpdateEntityMatches request"
+      },
+      "UpdateEntityMatchesDtoListServiceRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UpdateEntityMatchesDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateMatchDto": {
+        "required": [
+          "reason",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "matchId": {
+            "type": "string",
+            "description": "The unique ID for the match on a Legal Entity. A single entity can have no matches or more than one match.",
+            "format": "uuid",
+            "example": "7d8a7aae-e78f-4acd-8a18-e60454979809"
+          },
+          "status": {
+            "minLength": 1,
+            "type": "string",
+            "description": "The match status. This will be match/no match/unresolved",
+            "example": "Match"
+          },
+          "reason": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Connected to the match status",
+            "example": "Matched Entity"
+          },
+          "classificationData": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ClassificationDataDto"
+              }
+            ],
+            "description": "Classification Data for Matched Result. This is Dictionary to store Data specified as per policy.",
+            "nullable": true
+          },
+          "classificationDataReviewed": {
+            "type": "boolean",
+            "description": "Indicates whether the classification data for this match has been reviewed/confirmed by a user.",
+            "nullable": true
+          },
+          "comments": {
+            "type": "string",
+            "description": "Any additional comments",
+            "nullable": true,
+            "example": "Some comments"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the match in the UpdateEntityMatches request"
+      },
+      "UpdateMaterialityAssessmentDto": {
+        "required": [
+          "properties"
+        ],
+        "type": "object",
+        "properties": {
+          "relatedPartyEntityId": {
+            "type": "string",
+            "description": "The Entity ID for the related party.",
+            "format": "uuid",
+            "example": "7d8a7aae-e78f-4acd-8a18-e60454979809"
+          },
+          "properties": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PropertyDto"
+            },
+            "description": "Materiality assessment properties"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the materiality assessment of a related party"
+      },
+      "UpdateMaterialityAssessmentDtoServiceRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UpdateMaterialityAssessmentDto"
+              }
+            ],
+            "description": "Represents the materiality assessment of a related party",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateScopedEntityDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique ID for the scoped Entity",
+            "format": "uuid",
+            "example": "12be5a50-66c2-44bb-851e-afc4fc4a28c2"
+          },
+          "isInScopeByManualOverride": {
+            "type": "boolean",
+            "description": "Flag to manually determine if entity is in scope for Screening",
+            "example": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the scoped entity in the UpdateScopedEntities request"
+      },
+      "UpdateScopedEntityDtoListServiceRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UpdateScopedEntityDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateScopingRuleSetResponseDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "integer",
+            "description": "Scoping rule set aggregate version after update",
+            "format": "int32",
+            "example": 4
+          }
+        },
+        "additionalProperties": false,
+        "description": "Response DTO representing updated scoping rule set"
+      },
+      "UpdateScopingRuleSetResponseDtoServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UpdateScopingRuleSetResponseDto"
+              }
+            ],
+            "description": "Response DTO representing updated scoping rule set",
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateScopingRuleSetVersionDto": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Scoping rule set name",
+            "example": "Global Scoping Rules"
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "description": "The date that the version takes effect when published",
+            "format": "date-time",
+            "example": "2021-01-01T14:48:00.000Z"
+          },
+          "conditions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConditionDto"
+            },
+            "description": "Conditions under which the schema can be used",
+            "nullable": true
+          },
+          "version": {
+            "type": "integer",
+            "description": "Current version of scoping rule set version aggregate where the changes needs to be applied. This parameter is required\r\nto guarantee consistency and conflicts detection. If it is not provided, it will save new changes\r\non top of latest without conflicts checking",
+            "format": "int32",
+            "default": -1,
+            "example": 5
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request DTO representing set of properties which define a new version of scoping rule set"
+      },
+      "UpdateScopingRuleSetVersionDtoServiceRequest": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UpdateScopingRuleSetVersionDto"
+              }
+            ],
+            "description": "Request DTO representing set of properties which define a new version of scoping rule set",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ValidationErrorModel": {
+        "type": "object",
+        "properties": {
+          "propertyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true
+          },
+          "attemptedValue": {
+            "nullable": true
+          },
+          "errorCode": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ValidationErrorModelListServiceResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidationErrorModel"
+            },
+            "nullable": true
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServiceResponseMessage"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "example": {
+          "data": [
+            {
+              "propertyName": "data",
+              "errorMessage": "Data is required",
+              "attemptedValue": "",
+              "errorCode": "NotNullValidator"
+            }
+          ],
+          "messages": [
+            {
+              "message": "Data is required",
+              "type": "Error",
+              "errorCode": "Error Code"
+            }
+          ]
+        }
+      },
+      "ValueField": {
+        "type": "object",
+        "properties": {
+          "dataSource": {
+            "type": "string",
+            "nullable": true
+          },
+          "field": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "VersionStatus": {
+        "enum": [
+          "Draft",
+          "Pending",
+          "Rejected",
+          "Published",
+          "Archived",
+          "Deleted"
+        ],
+        "type": "string"
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "apiKey",
+        "description": "Please insert JWT with Bearer into field",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ]
+}

@@ -1,0 +1,332 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Rule Rerun API",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://api.fenergox.com/tm/realtime"
+        }
+    ],
+    "paths": {
+        "/api/rules/rerun": {
+            "post": {
+                "summary": "Rerun Rules",
+                "description": "Endpoint to rerun specific rules for a past date.",
+                "operationId": "rerun_rules_api_rules_rerun_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RerunRulesRequestPayload"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success responses - No processing needed or all rules rejected",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExecuteRulesJsonResponse",
+                                    "anyOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ExecuteRulesJsonResponse"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ErrorResponse"
+                                        }
+                                    ],
+                                    "title": "Response Rerun Rules Api Rules Rerun Post"
+                                }
+                            }
+                        }
+                    },
+                    "202": {
+                        "description": "Rules accepted for rerun",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExecuteRulesJsonResponse"
+                                }
+                            }
+                        }
+                    },
+                    "207": {
+                        "description": "Multi-status: Some rules accepted, others rejected",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExecuteRulesJsonResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Invalid date or missing required parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "missing_rule_ids": {
+                                        "summary": "rule_ids is required",
+                                        "value": {
+                                            "message": "rule_ids must be provided for rerun endpoint."
+                                        }
+                                    },
+                                    "date_too_old": {
+                                        "summary": "Date more than 30 days in past",
+                                        "value": {
+                                            "message": "Execution date cannot be more than 30 days in the past."
+                                        }
+                                    },
+                                    "current_or_future_date": {
+                                        "summary": "Current or future date not allowed",
+                                        "value": {
+                                            "message": "Execution date must be in the past (not today or future dates)."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Feature not available for tenant",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too many rule execution requests (guardrails)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "too_many_rules_per_request": {
+                                        "summary": "Exceeded per-request rule rerun limit",
+                                        "value": {
+                                            "message": "Cannot request more than 2 rules in a single request. Requested 5 rules. (Default: 20% of 10 daily limit = 2 rules per request)"
+                                        }
+                                    },
+                                    "too_many_rules": {
+                                        "summary": "Exceeded daily rule rerun limit",
+                                        "value": {
+                                            "message": "Daily rule rerun limit (10 rules) reached for 2024-01-15."
+                                        }
+                                    },
+                                    "too_many_requests": {
+                                        "summary": "Exceeded request frequency limit",
+                                        "value": {
+                                            "message": "Hourly rule execution limit (1) reached for 2024-01-15. Try again next hour."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2 Client Credentials": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "RejectedRulesResponse": {
+                "properties": {
+                    "rule_id": {
+                        "type": "string",
+                        "title": "Rule Id"
+                    },
+                    "reason": {
+                        "type": "string",
+                        "title": "Reason"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "rule_id",
+                    "reason"
+                ],
+                "title": "RejectedRulesResponse"
+            },
+            "ExecuteRulesResponseContent": {
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "execution_id": {
+                        "type": "string",
+                        "title": "Execution Id"
+                    },
+                    "accepted_rules": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Accepted Rules",
+                        "default": []
+                    },
+                    "rejected_rules": {
+                        "items": {
+                            "$ref": "#/components/schemas/RejectedRulesResponse"
+                        },
+                        "type": "array",
+                        "title": "Rejected Rules",
+                        "default": []
+                    }
+                },
+                "type": "object",
+                "title": "ExecuteRulesResponseContent"
+            },
+            "RerunRulesRequestPayload": {
+                "properties": {
+                    "execution_date": {
+                        "type": "string",
+                        "format": "date",
+                        "title": "Execution Date",
+                        "description": "Date for which to execute the rules in the format YYYY-MM-DD."
+                    },
+                    "rule_ids": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "minItems": 1,
+                        "title": "Rule Ids",
+                        "description": "List of rule IDs to rerun. Must contain at least one rule ID."
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "execution_date",
+                    "rule_ids"
+                ],
+                "additionalProperties": false,
+                "title": "RerunRulesRequestPayload"
+            },
+            "ExecuteRulesJsonResponse": {
+                "properties": {
+                    "status_code": {
+                        "type": "integer",
+                        "title": "Status Code"
+                    },
+                    "content": {
+                        "$ref": "#/components/schemas/ExecuteRulesResponseContent"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "status_code",
+                    "content"
+                ],
+                "title": "ExecuteRulesJsonResponse"
+            },
+            "ErrorResponse": {
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "title": "Message"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "message"
+                ],
+                "title": "ErrorResponse"
+            },
+            "ValidationError": {
+                "properties": {
+                    "loc": {
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        },
+                        "type": "array",
+                        "title": "Location"
+                    },
+                    "msg": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Error Type"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "loc",
+                    "msg",
+                    "type"
+                ],
+                "title": "ValidationError"
+            },
+            "HTTPValidationError": {
+                "properties": {
+                    "detail": {
+                        "items": {
+                            "$ref": "#/components/schemas/ValidationError"
+                        },
+                        "type": "array",
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "title": "HTTPValidationError"
+            }
+        },
+        "securitySchemes": {
+            "OAuth2 Client Credentials": {
+                "type": "oauth2",
+                "flows": {
+                    "clientCredentials": {
+                        "scopes": {},
+                        "tokenUrl": "oauth2/token"
+                    }
+                }
+            }
+        }
+    }
+}

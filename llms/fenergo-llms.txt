@@ -1,0 +1,108 @@
+# Fenergo (Fen-X SaaS Platform)
+
+> Fenergo is a financial-services SaaS vendor whose Fen-X platform delivers Client Lifecycle Management (CLM),
+> KYC, AML screening, client onboarding, transaction monitoring and regulatory compliance to banks and asset
+> managers. The platform is API-first and built on CQRS with event sourcing: nearly every domain ships a
+> separate Command (write) and Query (read) REST service. Fenergo publishes 145 OpenAPI 3.0/3.1 contracts
+> covering 2,381 operations across 108 CLM services, 8 Transaction Monitoring services and a SCIM 2.0 identity
+> service. Authentication is OAuth 2.0 client_credentials against a Duende IdentityServer, with mTLS available
+> and 105 published granular fenx.* scopes. Every CLM call requires an x-tenant-id header.
+
+## How to call it
+
+- POST https://identity.fenergox.com/connect/token with grant_type=client_credentials, client_id, client_secret and a space-separated `scope` (max 300 characters). The access token is a Bearer JWT valid for 900 seconds — cache and reuse it; the identity endpoint allows 100 token requests per IP per 5 minutes.
+- Send `Authorization: Bearer <token>` AND `x-tenant-id: <tenant GUID>` on every CLM call. A missing tenant header returns HTTP 400 with errorCode MissingTenantHeader.
+- Regional deployments follow https://identity.{region}.fenergox.com and https://api.{region}.fenergox.com; api.fenergox.com is the default host in the published documentation.
+- Writes go to a Command service, reads to the matching Query service. The platform is eventually consistent: a successful write is not immediately visible on the Query side. Subscribe to the matching event notification or poll.
+- There is no idempotency key. Writes are protected by optimistic concurrency instead — 151 operations return 409 "Conflict saving changes in expected version".
+- Rate limits: 200 req/s per production tenant (burst 50), plus per-domain minute/hour/day limits. On 429 read X-Rate-Limit-Remaining and X-Rate-Limit-Reset (CLM) or Retry-After (Transaction Monitoring) and back off exponentially.
+
+## Docs
+
+- [API specifications index](https://docs.fenergox.com/api-docs/fenergo-saas-api-specifications/introduction)
+- [API catalogue](https://docs.fenergox.com/developer-hub/api-overview/api-catalogue)
+- [API quick reference](https://docs.fenergox.com/developer-hub/api-overview/api-quick-reference)
+- [Getting started with APIs](https://docs.fenergox.com/api-docs/getting-started-with-apis)
+- [Tenant access and client credentials](https://docs.fenergox.com/api-docs/tenant-access)
+- [API authentication](https://docs.fenergox.com/api-docs/fenergo-saas-api-specifications/authentication)
+- [API scopes and access control (105 scopes)](https://docs.fenergox.com/developer-hub/api-and-system-security/api-scopes-and-access-control)
+- [API rate limits](https://docs.fenergox.com/developer-hub/api-and-system-security/api-rate-limits)
+- [API principles and patterns (CQRS, event sourcing)](https://docs.fenergox.com/developer-hub/api-overview/api-principles-and-patterns)
+- [API technical NFRs](https://docs.fenergox.com/developer-hub/api-overview/api-technical-nfrs)
+- [API security and best practice](https://docs.fenergox.com/developer-hub/api-and-system-security/api-security-and-best-practice)
+- [SCIM 2.0 overview](https://docs.fenergox.com/developer-hub/api-and-system-security/scim-overview)
+- [Event registry (93 event types)](https://docs.fenergox.com/developer-hub/event-notifications/event-registry)
+- [Webhook security using HMAC](https://docs.fenergox.com/developer-hub/event-notifications/webhook-security-using-hmac)
+- [Supergraph GraphQL query overview](https://docs.fenergox.com/developer-hub/data-extraction/supergraph-query-overview)
+- [API changelog](https://docs.fenergox.com/release-notes/api-changelog)
+- [Notices of change](https://docs.fenergox.com/notice-of-change)
+- [Getting Started Postman collection](https://docs.fenergox.com/assets/files/getting-started-postman-collection-d4eadd0f784fea4a7ffc15b8cf5f3ba2.json)
+
+## Specs
+
+All 145 contracts are in this repository under `openapi/`, harvested verbatim from Fenergo. The largest by
+operation count:
+
+- [Fenergo Nebula Document Management Command (2.0, 83 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-documentmanagementcommand-v2-0-openapi.json) — live at https://api.fenergox.com/documentmanagementcommand/swagger/2.0/swagger.json
+- [Fenergo Nebula Document Management Query (1.0, 75 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-documentmanagementquery-v1-0-openapi.json) — live at https://api.fenergox.com/documentmanagementquery/swagger/1.0/swagger.json
+- [Fenergo Nebula Association Query (1.0, 67 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-associationquery-v1-0-openapi.json) — live at https://api.fenergox.com/associationquery/swagger/1.0/swagger.json
+- [Fenergo Nebula Integration Core Api (1.0, 67 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-integrationcore-v1-0-openapi.json) — live at https://api.fenergox.com/integrationcore/swagger/1.0/swagger.json
+- [Fenergo Nebula Screening Command (3.0, 50 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-screeningcommand-v3-0-openapi.json) — live at https://api.fenergox.com/screeningcommand/swagger/3.0/swagger.json
+- [Fenergo Financial Analysis Command API (1.0, 46 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-financialanalysiscommand-v1-0-openapi.json) — live at https://api.fenergox.com/financialanalysiscommand/swagger/1.0/swagger.json
+- [Fenergo Nebula Journey Command (1.0, 46 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-journeycommand-v1-0-openapi.json) — live at https://api.fenergox.com/journeycommand/swagger/1.0/swagger.json
+- [Fenergo Nebula Risk Command (1.0, 43 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-riskcommand-v1-0-openapi.json) — live at https://api.fenergox.com/riskcommand/swagger/1.0/swagger.json
+- [Fenergo Nebula Document Management Command (1.0, 42 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-documentmanagementcommand-v1-0-openapi.json) — live at https://api.fenergox.com/documentmanagementcommand/swagger/1.0/swagger.json
+- [Fenergo Nebula Screening Command (2.0, 40 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-screeningcommand-v2-0-openapi.json) — live at https://api.fenergox.com/screeningcommand/swagger/2.0/swagger.json
+- [Fenergo Nebula Doc Gen Command (1.0, 39 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-docgencommand-v1-0-openapi.json) — live at https://api.fenergox.com/docgencommand/swagger/1.0/swagger.json
+- [Fenergo Nebula Data Protection Command (1.0, 37 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-dataprotectioncommand-v1-0-openapi.json) — live at https://api.fenergox.com/dataprotectioncommand/swagger/1.0/swagger.json
+- [Fenergo Nebula Policy Query (4.0, 36 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-policyquery-v4-0-openapi.json) — live at https://api.fenergox.com/policyquery/swagger/4.0/swagger.json
+- [Fenergo Nebula Policy Command (2.0, 35 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-policycommand-v2-0-openapi.json) — live at https://api.fenergox.com/policycommand/swagger/2.0/swagger.json
+- [Fenergo Nebula Reports Command (2.0, 34 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-reportscommand-v2-0-openapi.json) — live at https://api.fenergox.com/reportscommand/swagger/2.0/swagger.json
+- [Fenergo Nebula Advanced Dashboard Query (1.0.0, 33 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-advanceddashboardquery-v1-0-0-openapi.json) — live at https://api.fenergox.com/advanceddashboardquery/swagger/1.0.0/swagger.json
+- [Fenergo Nebula Digital IDV Command (1.0, 32 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-digitalidvcommand-v1-0-openapi.json) — live at https://api.fenergox.com/digitalidvcommand/swagger/1.0/swagger.json
+- [Fenergo Nebula Review Command (1.0, 31 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-reviewcommand-v1-0-openapi.json) — live at https://api.fenergox.com/reviewcommand/swagger/1.0/swagger.json
+- [Fenergo Nebula Digital IDV Command (2.0, 30 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-digitalidvcommand-v2-0-openapi.json) — live at https://api.fenergox.com/digitalidvcommand/swagger/2.0/swagger.json
+- [Fenergo Nebula External Data Command (1.0, 30 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-externaldatacommand-v1-0-openapi.json) — live at https://api.fenergox.com/externaldatacommand/swagger/1.0/swagger.json
+- [Fenergo Nebula EntityData Query (2.0, 29 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-entitydataquery-v2-0-openapi.json) — live at https://api.fenergox.com/entitydataquery/swagger/2.0/swagger.json
+- [Fenergo Nebula Policy Command (1.0, 29 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-policycommand-v1-0-openapi.json) — live at https://api.fenergox.com/policycommand/swagger/1.0/swagger.json
+- [Fenergo Nebula CreditScreening Query (1.0, 28 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-creditscreeningquery-v1-0-openapi.json) — live at https://api.fenergox.com/creditscreeningquery/swagger/1.0/swagger.json
+- [Fenergo Financial Analysis Query API (1.0, 28 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-financialanalysisquery-v1-0-openapi.json) — live at https://api.fenergox.com/financialanalysisquery/swagger/1.0/swagger.json
+- [Fenergo Nebula Screening Query (4.0, 28 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-screeningquery-v4-0-openapi.json) — live at https://api.fenergox.com/screeningquery/swagger/4.0/swagger.json
+- [Fenergo Nebula Advanced Dashboard Command (1.0, 26 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-advanceddashboardcommand-v1-0-openapi.json) — live at https://api.fenergox.com/advanceddashboardcommand/swagger/1.0/swagger.json
+- [Fenergo Nebula CreditScreening Command (1.0, 25 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-creditscreeningcommand-v1-0-openapi.json) — live at https://api.fenergox.com/creditscreeningcommand/swagger/1.0/swagger.json
+- [Fenergo Nebula Policy Query (2.0, 25 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-policyquery-v2-0-openapi.json) — live at https://api.fenergox.com/policyquery/swagger/2.0/swagger.json
+- [Fenergo Nebula Reports Query (2.0, 25 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-reportsquery-v2-0-openapi.json) — live at https://api.fenergox.com/reportsquery/swagger/2.0/swagger.json
+- [Fenergo Nebula External Data Query (1.0, 24 ops)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/openapi/fenergo-externaldataquery-v1-0-openapi.json) — live at https://api.fenergox.com/externaldataquery/swagger/1.0/swagger.json
+
+## Artifacts
+
+- [Authentication profile](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/authentication/fenergo-authentication.yml)
+- [OAuth scopes (105 documented + IdP discovery)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/scopes/fenergo-scopes.yml)
+- [API conventions, idempotency and reversibility](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/conventions/fenergo-conventions.yml)
+- [Error catalogue](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/errors/fenergo-problem-types.yml)
+- [Lifecycle, versioning and deprecation](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/lifecycle/fenergo-lifecycle.yml)
+- [API changelog](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/changelog/fenergo-changelog.yml)
+- [Standards conformance (SCIM 2.0, OIDC, mTLS, RFC 8594)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/conformance/fenergo-conformance.yml)
+- [Rate limits](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/rate-limits/fenergo-rate-limits.yml)
+- [Plans and pricing](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/plans/fenergo-plans-pricing.yml)
+- [Webhooks and event catalogue (93 events)](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/asyncapi/fenergo-event-notifications-webhooks.yml)
+- [Data model](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/data-model/fenergo-data-model.yml)
+- [Packages](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/packages/fenergo-packages.yml)
+- [Well-known probe](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/well-known/fenergo-well-known.yml)
+- [MCP candidate](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/mcp/fenergo-mcp.yml)
+- [Tool crosswalk](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/mcp/fenergo-tool-crosswalk.yml)
+- [Agent skills](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/skills/_index.yml)
+- [Domain security probe](https://raw.githubusercontent.com/api-evangelist/fenergo/refs/heads/main/security/fenergo-domain-security.yml)
+
+## Optional
+
+- [Trust & Security — ISO/IEC 27001:2022, SOC 2 Type II](https://www.fenergo.com/trust-and-security)
+- [Fenergo Trust Center](https://trust.fenergo.com/)
+- [Fenergo engineering blog](https://docs.fenergox.com/blog)
+- [Fenergo resources and newsroom](https://resources.fenergo.com/)
+- [Fenergo on GitHub](https://github.com/Fenergo)
+
+<!-- generated: 2026-09-09; method: generated; source: apis.yml + repo artifacts.
+     Fenergo publishes no /llms.txt of its own — probed on fenergo.com, www.fenergo.com,
+     docs.fenergox.com, api.fenergox.com, identity.fenergox.com and resources.fenergo.com,
+     all 404 or 403 on 2026-09-09. -->

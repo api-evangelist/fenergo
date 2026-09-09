@@ -1,0 +1,215 @@
+generated: '2026-09-09'
+method: derived
+source: openapi/ (145 harvested Fenergo OpenAPI contracts, 2,381 operations)
+docs: https://docs.fenergox.com/developer-hub/api-overview/api-principles-and-patterns
+format: fenergo-service-response
+format_note: 'Fenergo does NOT use RFC 9457 problem+json as its house error format. The CLM services wrap every
+  response — success and failure — in a ServiceResponse envelope: {"data": {...}, "messages": [{"message": "...",
+  "type": "Error", "errorCode": "..."}]}. application/problem+json appears on only 31 of 2,381 operations, all of
+  them on the newer Policy Agent service, where it is the ASP.NET Core ProblemDetails shape. The Transaction Monitoring
+  services use a third shape (HTTPValidationError / ErrorResponse). Three envelopes coexist across the estate.'
+envelope:
+  field_data: data
+  field_messages: messages
+  message_fields:
+  - message
+  - type
+  - errorCode
+  example:
+    data: {}
+    messages:
+    - message: Not Found. Entity with given id does not exist
+      type: Error
+      errorCode: Error Code
+rfc9457:
+  used: true
+  scope: partial
+  operations: 31
+  services:
+  - policyagent
+  media_type: application/problem+json
+  schema: Microsoft.AspNetCore.Mvc.ProblemDetails
+sunset_contract:
+  status: 410
+  declared_on_operations: 2258
+  description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint
+    was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include
+    additional 'sunset' and 'deprecation' headers.
+  note: Every CLM operation declares a 410 with the deprecation/sunset header contract in its own description —
+    RFC 8594 support asserted in the contract, not just in prose.
+problem_count: 14
+problems:
+- status: 500
+  title: Internal server exception. Please, contact your provider.
+  meaning: Internal server exception. Contact your provider.
+  declared_on_operations: 2326
+  media_types:
+  - application/json
+  - application/problem+json
+  - text/plain
+  - text/json
+  schemas:
+  - ObjectServiceResponse
+  - ProblemDetails
+  - ServiceResponse
+  - Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponse`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0,
+    Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]
+  remediation: Retry idempotent reads; raise with Fenergo support quoting the x-correlation-id.
+- status: 403
+  title: Access to resource is forbidden.
+  meaning: Authenticated but not authorised — the access token does not carry the fenx.* scope the endpoint requires,
+    or the tenant is not entitled to the domain.
+  declared_on_operations: 2322
+  media_types:
+  - application/json
+  - application/problem+json
+  - text/plain
+  - text/json
+  schemas:
+  - ObjectServiceResponse
+  - ProblemDetails
+  - ServiceResponse
+  - Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponse`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0,
+    Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]
+  remediation: Request a token carrying the required fenx.* scope; see scopes/fenergo-scopes.yml.
+- status: 401
+  title: User is not authorized to perform this request
+  meaning: 'The caller is not authenticated: the Authorization bearer token is missing, malformed or expired (tokens
+    live 900 seconds).'
+  declared_on_operations: 2318
+  media_types:
+  - application/json
+  - text/plain
+  - text/json
+  - application/problem+json
+  schemas:
+  - ServiceResponse
+  - Microsoft.AspNetCore.Mvc.ProblemDetails
+  - HttpValidationProblemDetails
+  remediation: Request a fresh access token from the identity token endpoint and cache it for its 900s TTL.
+- status: 410
+  title: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked
+    as deprecated and has reached the sunset date. During the deprecation period, the API will include additional
+    'sunset' and 'deprecation' headers.
+  meaning: Gone. A deprecated endpoint has passed its sunset date. During the deprecation window the API returns
+    Sunset and Deprecation headers instead.
+  declared_on_operations: 2258
+  media_types:
+  - application/json
+  schemas:
+  - StringServiceResponse
+  - ProblemDetails
+  - Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponse`1[[System.String, System.Private.CoreLib, Version=8.0.0.0,
+    Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]
+  remediation: Migrate to the successor endpoint named in the API changelog; the sunset date has passed.
+- status: 400
+  title: Bad request. The request has missing/invalid values
+  meaning: Bad request — the request has missing or invalid values. Validation failures return a ValidationErrorModelListServiceResponse
+    with a messages[] array.
+  declared_on_operations: 2212
+  media_types:
+  - application/json
+  - text/plain
+  - text/json
+  - application/problem+json
+  schemas:
+  - ServiceResponse
+  - ValidationErrorModelListServiceResponse
+  - ProblemDetails
+  - HttpValidationProblemDetails
+  remediation: Fix the payload; read messages[].message and messages[].errorCode.
+- status: 404
+  title: Resource not found
+  meaning: Resource not found for the supplied identifier within this tenant.
+  declared_on_operations: 1272
+  media_types:
+  - application/json
+  - application/problem+json
+  schemas:
+  - ObjectServiceResponse
+  - ProblemDetails
+  - Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponse`1[[System.Object, System.Private.CoreLib, Version=8.0.0.0,
+    Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]
+  - ErrorResponseDto
+  remediation: Confirm the identifier and that x-tenant-id names the tenant that owns it.
+- status: 409
+  title: Conflict saving changes in expected version
+  meaning: Conflict saving changes in expected version — optimistic-concurrency failure on an event-sourced aggregate.
+    Re-read the current version and retry.
+  declared_on_operations: 151
+  media_types:
+  - application/json
+  - application/problem+json
+  schemas:
+  - ObjectServiceResponse
+  - ErrorResponseDto
+  - HttpValidationProblemDetails
+  - ProblemDetails
+  remediation: Re-read the aggregate, re-apply the change against the current version, retry.
+- status: 413
+  title: Payload Too Large
+  meaning: Payload too large.
+  declared_on_operations: 36
+  media_types:
+  - application/json
+  schemas:
+  - ObjectServiceResponse
+  remediation: null
+- status: 422
+  title: Validation Error
+  meaning: Validation error (Transaction Monitoring services, FastAPI-style HTTPValidationError).
+  declared_on_operations: 25
+  media_types:
+  - application/json
+  schemas:
+  - HTTPValidationError
+  remediation: null
+- status: 429
+  title: Too Many Requests
+  meaning: Too many requests — the tenant or domain rate limit was exceeded. Back off exponentially and read X-Rate-Limit-Remaining
+    / X-Rate-Limit-Reset.
+  declared_on_operations: 18
+  media_types:
+  - application/json
+  schemas:
+  - ServiceResponse
+  - ProblemDetails
+  - ErrorResponse
+  remediation: Exponential backoff with jitter; implement a client-side token bucket; cache access tokens.
+- status: 412
+  title: Precondition Failed
+  meaning: Precondition failed.
+  declared_on_operations: 2
+  media_types:
+  - application/json
+  schemas:
+  - ServiceResponse
+  remediation: null
+- status: 502
+  title: Bad Gateway. Response payload too large. Use the paged endpoint instead.
+  meaning: Bad gateway — commonly a response payload too large; use the paged endpoint instead.
+  declared_on_operations: 2
+  media_types:
+  - application/json
+  schemas:
+  - StringServiceResponse
+  - ErrorResponse
+  remediation: null
+- status: 415
+  title: Unsupported media type. The request has an unsupported media type
+  meaning: Unsupported media type — Fenergo APIs exchange application/json.
+  declared_on_operations: 1
+  media_types:
+  - application/json
+  schemas:
+  - ProblemDetails
+  remediation: null
+- status: 504
+  title: Request timed out
+  meaning: Request timed out.
+  declared_on_operations: 1
+  media_types:
+  - application/json
+  schemas:
+  - ErrorResponse
+  remediation: null

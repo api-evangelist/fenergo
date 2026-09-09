@@ -1,0 +1,944 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Rule Execution API",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://api.fenergox.com/tm/realtime"
+        }
+    ],
+    "paths": {
+        "/api/rules/execute": {
+            "post": {
+                "summary": "Trigger Rule Execution",
+                "description": "Endpoint to trigger rule execution.\n\nHandles requests to execute rules for a given date and/or list of rule IDs.",
+                "operationId": "trigger_rule_execution_api_rules_execute_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ExecuteRulesRequestPayload"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success responses - No processing needed or all rules rejected",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExecuteRulesJsonResponse",
+                                    "anyOf": [
+                                        {
+                                            "$ref": "#/components/schemas/ExecuteRulesJsonResponse"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ExecuteRuleGroupsJsonResponse"
+                                        },
+                                        {
+                                            "$ref": "#/components/schemas/ErrorResponse"
+                                        }
+                                    ],
+                                    "title": "Response Trigger Rule Execution Api Rules Execute Post"
+                                },
+                                "examples": {
+                                    "no_live_rules": {
+                                        "summary": "No live rules found for tenant",
+                                        "value": {
+                                            "message": "No live rules found for tenant.",
+                                            "accepted_rules": [],
+                                            "rejected_rules": []
+                                        }
+                                    },
+                                    "no_scheduled_rules": {
+                                        "summary": "No rules scheduled for date",
+                                        "value": {
+                                            "message": "No rules scheduled to run on 2023-10-01.",
+                                            "accepted_rules": [],
+                                            "rejected_rules": []
+                                        }
+                                    },
+                                    "no_rules_accepted": {
+                                        "summary": "No rules accepted - all rejected for various reasons",
+                                        "value": {
+                                            "message": "No rules accepted for execution for the requested date: 2023-10-01.",
+                                            "accepted_rules": [],
+                                            "rejected_rules": [
+                                                {
+                                                    "rule_id": "rule-123",
+                                                    "reason": "Rule is not live and cannot be executed."
+                                                },
+                                                {
+                                                    "rule_id": "rule-456",
+                                                    "reason": "Rule is not scheduled to run on 2023-10-01."
+                                                },
+                                                {
+                                                    "rule_id": "rule-789",
+                                                    "reason": "Rule has already run for 2023-10-01. If you want to run it again, use the force flag."
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "no_rules_run": {
+                                        "summary": "No rules run for the requested date",
+                                        "value": {
+                                            "message": "No rules run for the requested date: 2023-10-01.",
+                                            "accepted_rules": [],
+                                            "rejected_rules": []
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "202": {
+                        "description": "Rules or rule groups accepted for execution",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "rules_accepted": {
+                                        "summary": "Rules accepted for execution",
+                                        "value": {
+                                            "status_code": 202,
+                                            "content": {
+                                                "message": "Rules execution request successfully submitted for: 2023-10-01.",
+                                                "execution_id": "550e8400-e29b-41d4-a716-446655440000",
+                                                "accepted_rules": [
+                                                    "rule-123",
+                                                    "rule-456"
+                                                ],
+                                                "rejected_rules": []
+                                            }
+                                        }
+                                    },
+                                    "rule_groups_accepted": {
+                                        "summary": "Rule groups accepted for execution",
+                                        "value": {
+                                            "status_code": 202,
+                                            "content": [
+                                                {
+                                                    "rule_group_id": "RG001",
+                                                    "execution_id": "550e8400-e29b-41d4-a716-446655440000",
+                                                    "accepted_rules": [
+                                                        "rule-123",
+                                                        "rule-456"
+                                                    ],
+                                                    "rejected_rules": []
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "207": {
+                        "description": "Multi-status: Some rules accepted, others rejected",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExecuteRulesJsonResponse"
+                                },
+                                "example": {
+                                    "message": "Only some rules were accepted for execution for the requested date: 2023-10-01.",
+                                    "execution_id": "550e8400-e29b-41d4-a716-446655440000",
+                                    "accepted_rules": [
+                                        "rule-123"
+                                    ],
+                                    "rejected_rules": [
+                                        {
+                                            "rule_id": "rule-456",
+                                            "reason": "Rule is not live and cannot be executed."
+                                        },
+                                        {
+                                            "rule_id": "rule-789",
+                                            "reason": "Rule is not scheduled to run on 2023-10-01."
+                                        },
+                                        {
+                                            "rule_id": "rule-101",
+                                            "reason": "Rule has already run for 2023-10-01. If you want to run it again, use the force flag."
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Feature not available for tenant",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "example": {
+                                    "message": "Feature not available."
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "example": {
+                                    "message": "Failed to trigger rule execution. Please retry sending the request."
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2 Client Credentials": []
+                    }
+                ]
+            }
+        },
+        "/api/rules/status/{execution_id}": {
+            "get": {
+                "summary": "Get Rule Execution Status",
+                "description": "Retrieve the execution status of a rule run identified by `execution_id`.\n\nReturns a single `RuleExecutionSummary` object with full per-rule breakdown, progress, alerts, and timing.",
+                "operationId": "get_rule_execution_status_api_rules_status_execution_id_get",
+                "parameters": [
+                    {
+                        "name": "execution_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Execution Id",
+                            "description": "Execution ID to retrieve status summary for."
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response with a single execution-level status summary including progress, alerts, timing, and per-rule breakdown.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RuleExecutionSummary"
+                                },
+                                "examples": {
+                                    "by_execution_id": {
+                                        "summary": "Completed run — some rules failed (partially_failed, is_complete: true)",
+                                        "value": {
+                                            "execution_id": "exec-456",
+                                            "requested_run_date": "2026-03-15",
+                                            "rule_effective_date": "2026-03-15",
+                                            "overall_status": "partially_failed",
+                                            "is_complete": true,
+                                            "total_rules": 12,
+                                            "completion_percent": 100.0,
+                                            "progress": {
+                                                "requested_rules": 0,
+                                                "started_rules": 0,
+                                                "succeeded_rules": 10,
+                                                "failed_rules": 2
+                                            },
+                                            "alerts": {
+                                                "total_alerts_received": 245,
+                                                "unique_alerts_after_deduplication": 198
+                                            },
+                                            "timing": {
+                                                "first_event_at": "2026-03-15T00:01:12",
+                                                "last_event_at": "2026-03-15T00:08:44",
+                                                "duration_seconds": 452
+                                            },
+                                            "rules": [
+                                                {
+                                                    "rule_id": "rule-001",
+                                                    "status": "succeeded",
+                                                    "rule_alias": "High Risk Transaction Rule",
+                                                    "rule_description": "Flags transactions above risk threshold.",
+                                                    "total_alerts_received": 120,
+                                                    "unique_alerts_after_deduplication": 98
+                                                },
+                                                {
+                                                    "rule_id": "rule-002",
+                                                    "status": "failed",
+                                                    "rule_alias": "Velocity Check Rule",
+                                                    "total_alerts_received": 0,
+                                                    "unique_alerts_after_deduplication": 0
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "by_execution_id_in_progress_with_failures": {
+                                        "summary": "Running with failures (in_progress_with_failures, is_complete: false)",
+                                        "value": {
+                                            "execution_id": "exec-789",
+                                            "requested_run_date": "2026-03-15",
+                                            "rule_effective_date": "2026-03-15",
+                                            "overall_status": "in_progress_with_failures",
+                                            "is_complete": false,
+                                            "total_rules": 12,
+                                            "completion_percent": 50.0,
+                                            "progress": {
+                                                "requested_rules": 0,
+                                                "started_rules": 5,
+                                                "succeeded_rules": 5,
+                                                "failed_rules": 2
+                                            },
+                                            "alerts": {
+                                                "total_alerts_received": 120,
+                                                "unique_alerts_after_deduplication": 98
+                                            },
+                                            "timing": {
+                                                "first_event_at": "2026-03-15T00:01:12",
+                                                "last_event_at": "2026-03-15T00:05:00",
+                                                "duration_seconds": 228
+                                            },
+                                            "rules": [
+                                                {
+                                                    "rule_id": "rule-001",
+                                                    "status": "succeeded",
+                                                    "rule_alias": "High Risk Transaction Rule",
+                                                    "rule_description": "Flags transactions above risk threshold.",
+                                                    "total_alerts_received": 120,
+                                                    "unique_alerts_after_deduplication": 98
+                                                },
+                                                {
+                                                    "rule_id": "rule-002",
+                                                    "status": "failed",
+                                                    "rule_alias": "Velocity Check Rule",
+                                                    "total_alerts_received": 0,
+                                                    "unique_alerts_after_deduplication": 0
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Invalid execution_id format."
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Feature not available for tenant",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "example": {
+                                    "message": "Feature not available."
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Execution not found",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Execution not found."
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Failed to retrieve execution status",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "examples": {
+                                    "retrieval_error": {
+                                        "summary": "Failed to retrieve execution status",
+                                        "value": {
+                                            "message": "Failed to retrieve execution status."
+                                        }
+                                    },
+                                    "connection_error": {
+                                        "summary": "Service temporarily unavailable",
+                                        "value": {
+                                            "message": "Service is temporarily unavailable."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "504": {
+                        "description": "Request timed out",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                },
+                                "example": {
+                                    "message": "Request timed out."
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "OAuth2 Client Credentials": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "RuleExecutionSummary": {
+                "properties": {
+                    "execution_id": {
+                        "type": "string",
+                        "title": "Execution Id",
+                        "description": "Unique identifier for this execution run."
+                    },
+                    "requested_run_date": {
+                        "type": "string",
+                        "title": "Requested Run Date",
+                        "description": "The date for which this execution was requested, in YYYY-MM-DD format."
+                    },
+                    "rule_effective_date": {
+                        "type": "string",
+                        "title": "Rule Effective Date",
+                        "description": "The effective date of the rules applied in this execution, in YYYY-MM-DD format."
+                    },
+                    "overall_status": {
+                        "$ref": "#/components/schemas/RuleExecutionOverallStatus",
+                        "description": "Aggregate status derived from per-rule outcomes. Terminal states (is_complete=true): succeeded, failed, partially_failed. Non-terminal states (is_complete=false): requested, in_progress, in_progress_with_failures."
+                    },
+                    "is_complete": {
+                        "type": "boolean",
+                        "title": "Is Complete",
+                        "description": "True when all rules have reached a terminal state (succeeded or failed)."
+                    },
+                    "total_rules": {
+                        "type": "integer",
+                        "title": "Total Rules",
+                        "description": "Total number of rules included in this execution."
+                    },
+                    "completion_percent": {
+                        "type": "number",
+                        "title": "Completion Percent",
+                        "description": "Percentage of rules that have completed, calculated as (succeeded_rules + failed_rules) / total_rules * 100."
+                    },
+                    "progress": {
+                        "$ref": "#/components/schemas/RuleExecutionProgress",
+                        "description": "Breakdown of rules by their current status."
+                    },
+                    "alerts": {
+                        "$ref": "#/components/schemas/RuleExecutionAlerts",
+                        "description": "Aggregated alert counts for the entire execution."
+                    },
+                    "timing": {
+                        "$ref": "#/components/schemas/RuleExecutionTiming",
+                        "description": "Timing metrics covering the full span of this execution."
+                    },
+                    "rules": {
+                        "items": {
+                            "$ref": "#/components/schemas/RuleExecutionRuleDetail"
+                        },
+                        "type": "array",
+                        "title": "Rules",
+                        "description": "Per-rule outcome details for all rules in this execution.",
+                        "default": []
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                    "execution_id",
+                    "requested_run_date",
+                    "rule_effective_date",
+                    "overall_status",
+                    "is_complete",
+                    "total_rules",
+                    "completion_percent",
+                    "progress",
+                    "alerts",
+                    "timing"
+                ],
+                "title": "RuleExecutionSummary",
+                "description": "Execution-level summary returned when filtering by execution_id."
+            },
+            "RuleExecutionOverallStatus": {
+                "type": "string",
+                "enum": [
+                    "requested",
+                    "in_progress",
+                    "in_progress_with_failures",
+                    "succeeded",
+                    "failed",
+                    "partially_failed"
+                ],
+                "title": "RuleExecutionOverallStatus",
+                "description": "Execution-level status derived from the aggregate of per-rule statuses.\n\nTerminal states (is_complete=true):\n  succeeded              — every rule finished successfully.\n  failed                 — every rule that ran finished with a failure.\n  partially_failed       — execution is done, but at least one rule failed and at least one succeeded.\n\nNon-terminal states (is_complete=false):\n  requested              — no rule has started yet; all are still queued.\n  in_progress            — at least one rule is running; no failures so far.\n  in_progress_with_failures — at least one rule is still running (or pending) AND at least one rule has already failed mid-flight."
+            },
+            "RuleExecutionProgress": {
+                "properties": {
+                    "requested_rules": {
+                        "type": "integer",
+                        "title": "Requested Rules",
+                        "description": "Number of rules that have been queued but not yet started."
+                    },
+                    "started_rules": {
+                        "type": "integer",
+                        "title": "Started Rules",
+                        "description": "Number of rules that have started but not yet reached a terminal state."
+                    },
+                    "succeeded_rules": {
+                        "type": "integer",
+                        "title": "Succeeded Rules",
+                        "description": "Number of rules that completed successfully."
+                    },
+                    "failed_rules": {
+                        "type": "integer",
+                        "title": "Failed Rules",
+                        "description": "Number of rules that completed with a failure."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                    "requested_rules",
+                    "started_rules",
+                    "succeeded_rules",
+                    "failed_rules"
+                ],
+                "title": "RuleExecutionProgress",
+                "description": "Rule status breakdown for an execution."
+            },
+            "RuleExecutionAlerts": {
+                "properties": {
+                    "total_alerts_received": {
+                        "anyOf": [
+                            {
+                                "type": "integer",
+                                "title": "Execution Finished"
+                            },
+                            {
+                                "type": "null",
+                                "title": "Execution In Progress"
+                            }
+                        ],
+                        "title": "Total Alerts Received",
+                        "description": "Total number of alerts received across all rules in this execution. Null when the execution is still in progress and no alert data has been indexed yet; 0 when the execution is complete but no alerts were generated."
+                    },
+                    "unique_alerts_after_deduplication": {
+                        "anyOf": [
+                            {
+                                "type": "integer",
+                                "title": "Execution Finished"
+                            },
+                            {
+                                "type": "null",
+                                "title": "Execution In Progress"
+                            }
+                        ],
+                        "title": "Unique Alerts After Deduplication",
+                        "description": "Number of unique alerts remaining after deduplication. Null when the execution is still in progress and no alert data has been indexed yet; 0 when the execution is complete but no alerts were generated."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "title": "RuleExecutionAlerts",
+                "description": "Aggregated alert counts for an execution.\n\nFields are nullable when the execution is still in progress and no alert data\nhas been indexed yet. They are 0 when the execution is complete but generated\nno alerts (failed or succeeded with no triggers)."
+            },
+            "RuleExecutionTiming": {
+                "properties": {
+                    "first_event_at": {
+                        "type": "string",
+                        "title": "First Event At",
+                        "description": "Timestamp of the first event recorded for this execution (UTC, ISO 8601)."
+                    },
+                    "last_event_at": {
+                        "type": "string",
+                        "title": "Last Event At",
+                        "description": "Timestamp of the most recent event recorded for this execution (UTC, ISO 8601)."
+                    },
+                    "duration_seconds": {
+                        "type": "integer",
+                        "title": "Duration Seconds",
+                        "description": "Elapsed time in seconds between the first and last recorded events."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                    "first_event_at",
+                    "last_event_at",
+                    "duration_seconds"
+                ],
+                "title": "RuleExecutionTiming",
+                "description": "Timing metrics for an execution."
+            },
+            "RuleExecutionRuleDetail": {
+                "properties": {
+                    "rule_id": {
+                        "type": "string",
+                        "title": "Rule Id",
+                        "description": "Unique identifier for the rule."
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/RuleExecutionStatus",
+                        "description": "Current execution status of the rule (e.g. requested, started, succeeded, failed)."
+                    },
+                    "rule_alias": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "title": "Alias provided in rule definition"
+                            },
+                            {
+                                "type": "null",
+                                "title": "Alias not provided in rule definition"
+                            }
+                        ],
+                        "title": "Rule Alias",
+                        "description": "Human-readable name or alias for the rule, if any."
+                    },
+                    "rule_description": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "title": "Description provided in rule definition"
+                            },
+                            {
+                                "type": "null",
+                                "title": "Description not provided in rule definition"
+                            }
+                        ],
+                        "title": "Rule Description",
+                        "description": "Optional free-text description of the rule."
+                    },
+                    "total_alerts_received": {
+                        "anyOf": [
+                            {
+                                "type": "integer",
+                                "title": "Execution Finished"
+                            },
+                            {
+                                "type": "null",
+                                "title": "Execution In Progress"
+                            }
+                        ],
+                        "title": "Total Alerts Received",
+                        "description": "Total alerts received for this rule. Null when the rule has not yet completed (started or requested); 0 when the rule has completed but generated no alerts."
+                    },
+                    "unique_alerts_after_deduplication": {
+                        "anyOf": [
+                            {
+                                "type": "integer",
+                                "title": "Execution Finished"
+                            },
+                            {
+                                "type": "null",
+                                "title": "Execution In Progress"
+                            }
+                        ],
+                        "title": "Unique Alerts After Deduplication",
+                        "description": "Unique alerts remaining after deduplication for this rule. Null when the rule has not yet completed (started or requested); 0 when the rule has completed but generated no alerts."
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                    "rule_id",
+                    "status"
+                ],
+                "title": "RuleExecutionRuleDetail",
+                "description": "Per-rule outcome within an execution-level summary.\n\nOmits execution_id and rule_effective_date — those are at the parent summary level."
+            },
+            "RuleExecutionStatus": {
+                "type": "string",
+                "enum": [
+                    "requested",
+                    "started",
+                    "succeeded",
+                    "failed"
+                ],
+                "title": "RuleExecutionStatus"
+            },
+            "RejectedRulesResponse": {
+                "properties": {
+                    "rule_id": {
+                        "type": "string",
+                        "title": "Rule Id"
+                    },
+                    "reason": {
+                        "type": "string",
+                        "title": "Reason"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "rule_id",
+                    "reason"
+                ],
+                "title": "RejectedRulesResponse"
+            },
+            "ExecuteRulesResponseContent": {
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "execution_id": {
+                        "type": "string",
+                        "title": "Execution Id"
+                    },
+                    "accepted_rules": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Accepted Rules",
+                        "default": []
+                    },
+                    "rejected_rules": {
+                        "items": {
+                            "$ref": "#/components/schemas/RejectedRulesResponse"
+                        },
+                        "type": "array",
+                        "title": "Rejected Rules",
+                        "default": []
+                    }
+                },
+                "type": "object",
+                "title": "ExecuteRulesResponseContent"
+            },
+            "ExecuteRulesRequestPayload": {
+                "properties": {
+                    "execution_date": {
+                        "type": "string",
+                        "format": "date",
+                        "title": "Execution Date",
+                        "description": "Date for which to execute the rules in the format YYYY-MM-DD."
+                    },
+                    "rule_ids": {
+                        "anyOf": [
+                            {
+                                "items": {
+                                    "type": "string",
+                                    "pattern": "^BR\\d+$"
+                                },
+                                "type": "array"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Rule Ids",
+                        "description": "List of rule IDs to execute. If not provided and rule_group_ids not provided, all rules will be executed. Mutually exclusive of rule_group_ids, both cannot be provided."
+                    },
+                    "rule_group_ids": {
+                        "anyOf": [
+                            {
+                                "items": {
+                                    "type": "string",
+                                    "pattern": "^RG\\d+$"
+                                },
+                                "type": "array",
+                                "minItems": 1
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Rule Group Ids",
+                        "description": "List of rule group IDs to execute. Mutually exclusive of rule_ids - both cannot be provided."
+                    },
+                    "force": {
+                        "type": "boolean",
+                        "title": "Force",
+                        "description": "Flag to force rule execution for specified date regardless of previous executions.",
+                        "default": false
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                    "execution_date"
+                ],
+                "title": "ExecuteRulesRequestPayload",
+                "description": "Request payload for the rule execution endpoint.\n\nAttributes:\n    execution_date: The date for which rules should be executed (YYYY-MM-DD).\n    rule_ids: Optional list of specific rule IDs to execute. All rules are executed if absent.\n    rule_group_ids: Optional list of rule group IDs to execute. Mutually exclusive of rule_ids.\n    force: If True, run rules even if they have previously run for this date."
+            },
+            "ExecuteRulesJsonResponse": {
+                "properties": {
+                    "status_code": {
+                        "type": "integer",
+                        "title": "Status Code"
+                    },
+                    "content": {
+                        "$ref": "#/components/schemas/ExecuteRulesResponseContent"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "status_code",
+                    "content"
+                ],
+                "title": "ExecuteRulesJsonResponse"
+            },
+            "ExecuteRuleGroupsResponseContent": {
+                "properties": {
+                    "rule_group_id": {
+                        "type": "string",
+                        "title": "Rule Group Id"
+                    },
+                    "execution_id": {
+                        "type": "string",
+                        "title": "Execution Id"
+                    },
+                    "accepted_rules": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Accepted Rules",
+                        "default": []
+                    },
+                    "rejected_rules": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Rejected Rules",
+                        "default": []
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "rule_group_id",
+                    "execution_id"
+                ],
+                "title": "ExecuteRuleGroupsResponseContent"
+            },
+            "ExecuteRuleGroupsJsonResponse": {
+                "properties": {
+                    "status_code": {
+                        "type": "integer",
+                        "title": "Status Code"
+                    },
+                    "content": {
+                        "items": {
+                            "$ref": "#/components/schemas/ExecuteRuleGroupsResponseContent"
+                        },
+                        "type": "array",
+                        "title": "Content"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "status_code",
+                    "content"
+                ],
+                "title": "ExecuteRuleGroupsJsonResponse"
+            },
+            "ErrorResponse": {
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "title": "Message"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "message"
+                ],
+                "title": "ErrorResponse"
+            },
+            "ValidationError": {
+                "properties": {
+                    "loc": {
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        },
+                        "type": "array",
+                        "title": "Location"
+                    },
+                    "msg": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Error Type"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "loc",
+                    "msg",
+                    "type"
+                ],
+                "title": "ValidationError"
+            },
+            "HTTPValidationError": {
+                "properties": {
+                    "detail": {
+                        "items": {
+                            "$ref": "#/components/schemas/ValidationError"
+                        },
+                        "type": "array",
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "title": "HTTPValidationError"
+            }
+        },
+        "securitySchemes": {
+            "OAuth2 Client Credentials": {
+                "type": "oauth2",
+                "flows": {
+                    "clientCredentials": {
+                        "scopes": {},
+                        "tokenUrl": "oauth2/token"
+                    }
+                }
+            }
+        }
+    }
+}

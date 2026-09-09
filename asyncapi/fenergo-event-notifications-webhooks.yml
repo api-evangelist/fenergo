@@ -1,0 +1,220 @@
+generated: '2026-09-09'
+method: searched
+source: https://docs.fenergox.com/developer-hub/event-notifications/event-registry
+spec_type: Webhooks
+asyncapi_published: false
+note: Fenergo publishes a substantial event surface but no AsyncAPI document for it. The event catalogue below is
+  transcribed from Fenergo's own Event Registry page; the delivery contract comes from the Webhooks and Event Notifications
+  OpenAPI specs harvested into openapi/. No AsyncAPI has been generated — the provider does not publish one.
+delivery_patterns:
+- pattern: webhooks
+  direction: push
+  description: Fenergo POSTs each notification to a client-registered endpoint.
+  management_api: openapi/fenergo-webhooks-v1-0-openapi.json
+  scope: fenx.webhooks
+  docs: https://docs.fenergox.com/developer-hub/event-notifications/webhook-api-walkthrough
+- pattern: polling
+  direction: pull
+  description: Clients poll the Event Notifications API for queued notifications.
+  api:
+  - openapi/fenergo-eventnotifications-v1-0-openapi.json
+  - openapi/fenergo-eventnotifications-v2-0-openapi.json
+  scope: fenx.eventnotifications
+  docs: https://docs.fenergox.com/developer-hub/event-notifications/polling-api-walkthrough
+- pattern: event ingress
+  direction: inbound
+  description: Clients push events INTO Fenergo (DataImport, VerifiedImport, CreateAlert, TransactionScreening).
+  api: openapi/fenergo-eventingress-v1-0-openapi.json
+  scope: fenx.eventingress
+  rate_limits: rate-limits/fenergo-rate-limits.yml
+  docs: https://docs.fenergox.com/developer-hub/event-ingress/overview
+security:
+  signature_header: x-fenx-signature
+  algorithm: HMAC-SHA256
+  format: sha256=<uppercase hex digest of HMAC-SHA256(raw body, shared secret)>
+  secret_storage: Fenergo stores only the hash of the client-supplied secret, never plaintext.
+  rotation: Clients may replace the secret at any time via the Webhook API.
+  docs: https://docs.fenergox.com/developer-hub/event-notifications/webhook-security-using-hmac
+message_schema:
+  fields:
+  - name: id
+    description: Notification identifier
+  - name: tenantId
+    description: Tenant identifier
+  - name: eventType
+    description: Source domain and event name, e.g. entitydata:created
+  - name: relativeUrl
+    description: Relative path to the resource that changed, e.g. entitydataquery/api/entity/{id}
+  - name: payload
+    description: Event-specific body; empty object for many event types
+  - name: when
+    description: ISO-8601 timestamp the notification was created
+  - name: correlationId
+    description: Correlation identifier, propagated from x-correlation-id where supplied
+  - name: causationId
+    description: Identifier of the thing that caused the notification, typically the resource id
+  serialization: Non-ASCII characters are escaped to \uXXXX.
+  example:
+    id: 1a575f9b-6567-4b6e-a77b-d1eb6cd891ca
+    tenantId: 215d5a67-d8cb-2a0c-bcf0-d051ceb18011
+    eventType: screening:searchcompleted
+    relativeUrl: screeningquery/api/batch/3a1e8b52-4489-4b64-ad14-346f2c18cdfr
+    correlationId: 11ac5835-45c2-49c4-11a9-3fee55b14433
+    causationId: a3fffa4b-f5d6-4034-a93d-082f3881be22
+    when: '2021-01-01T00:00:00+00:00'
+event_count: 93
+domain_count: 15
+domains:
+- domain: association
+  description: Related-party / association lifecycle
+  event_count: 7
+  events:
+  - association:associationcreated
+  - association:associationremoved
+  - association:associationsoftdeleted
+  - association:associationupdated
+  - association:associationverified
+  - association:unwrappingrequirementstatusmodelcreated
+  - association:unwrappingrequirementstatusmodelupdated
+- domain: batchtransaction
+  description: Transaction Monitoring batch ingestion
+  event_count: 4
+  events:
+  - batchtransaction:behaviouralriskcompleted
+  - batchtransaction:ingestionFailed
+  - batchtransaction:ingestionProcessed
+  - batchtransaction:ingestionValidation_failed
+- domain: businessrule
+  description: Business rule execution
+  event_count: 1
+  events:
+  - businessrule:executionFailed
+- domain: comments
+  description: Comments (GraphQL) activity
+  event_count: 5
+  events:
+  - comments:commentdataprotectionexecution
+  - comments:commentdeleted
+  - comments:commentposted
+  - comments:replydeleted
+  - comments:replyposted
+- domain: deals
+  description: Deals lifecycle
+  event_count: 6
+  events:
+  - deals:dealcreated
+  - deals:dealdeleted
+  - deals:dealdraftcreated
+  - deals:dealdraftdeleted
+  - deals:dealdraftupdated
+  - deals:dealverified
+- domain: digitalidv
+  description: Digital identity verification
+  event_count: 3
+  events:
+  - digitalidv:verificationcompleted
+  - digitalidv:verificationfailed
+  - digitalidv:verificationinitiated
+- domain: document
+  description: Document management and e-signature
+  event_count: 16
+  events:
+  - document:documentdatakeyupdated
+  - document:documentfileupdated
+  - document:documentlinkmodelcreated
+  - document:documentlinkmodelupdated
+  - document:documentmodelaccesslayersupdated
+  - document:documentmodelcreated
+  - document:documentmodeldeleted
+  - document:documentmodelstatusupdated
+  - document:documentmodelupdated
+  - document:documentrequirementmodelcreated
+  - document:documentrequirementmodelupdated
+  - document:esignaturedocumentrequirementmodelcreated
+  - document:esignaturedocumentrequirementmodelupdated
+  - document:esignatureprocesscompleted
+  - document:requirementidsupdated
+  - document:resetrequirementmodelcreated
+- domain: entitydata
+  description: Legal entity data create / draft / publish / migrate
+  event_count: 8
+  events:
+  - entitydata:created
+  - entitydata:dataPublished
+  - entitydata:draftcreated
+  - entitydata:draftrejected
+  - entitydata:draftupdated
+  - entitydata:draftverified
+  - entitydata:migrated
+  - entitydata:migrationupdated
+- domain: eventingress
+  description: Inbound Event Ingress outcomes
+  event_count: 2
+  events:
+  - eventingress:failed
+  - eventingress:success
+- domain: journey
+  description: Journey, stage and task lifecycle including SLA breaches
+  event_count: 15
+  events:
+  - journey:instancecancelled
+  - journey:instancecompleted
+  - journey:instancestarted
+  - journey:journeyPaused
+  - journey:journeyUnpaused
+  - journey:slaapproachingdue
+  - journey:slapastdue
+  - journey:stagePaused
+  - journey:stageUnpaused
+  - journey:taskUnpaused
+  - journey:taskcompleted
+  - journey:taskerror
+  - journey:taskreassigned
+  - journey:taskreopened
+  - journey:taskstarted
+- domain: lookup
+  description: Versioned reference-data lookups
+  event_count: 4
+  events:
+  - lookup:lookupversiondeleted
+  - lookup:lookupversionsigned
+  - lookup:lookupversionupdated
+  - lookup:versionedlookupcreated
+- domain: product
+  description: Product lifecycle
+  event_count: 12
+  events:
+  - product:created
+  - product:deleted
+  - product:draftconflictsresolved
+  - product:draftcreated
+  - product:draftdeleted
+  - product:draftoffboarded
+  - product:draftsetfordeletion
+  - product:draftupdated
+  - product:draftverified
+  - product:managedcreated
+  - product:productInstanceDeleted
+  - product:verified
+- domain: rulesession
+  description: Rule session execution
+  event_count: 1
+  events:
+  - rulesession:executionCompleted
+- domain: screening
+  description: AML / sanctions screening batches and matches
+  event_count: 8
+  events:
+  - screening:allmatchesresolved
+  - screening:batchclosed
+  - screening:ogsbatchcreated
+  - screening:providerbatchclosed
+  - screening:returnfailed
+  - screening:searchcomplete
+  - screening:searchcompleted
+  - screening:searchfailed
+- domain: transaction
+  description: Transaction ingestion
+  event_count: 1
+  events:
+  - transaction:ingestionfailed

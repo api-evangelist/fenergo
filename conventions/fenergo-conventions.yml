@@ -1,0 +1,233 @@
+generated: '2026-09-09'
+method: searched
+source: https://docs.fenergox.com/developer-hub/api-overview/api-principles-and-patterns
+docs:
+- https://docs.fenergox.com/developer-hub/api-overview/api-principles-and-patterns
+- https://docs.fenergox.com/developer-hub/api-and-system-security/api-rate-limits
+- https://docs.fenergox.com/developer-hub/event-notifications/using-the-correlation-id-header
+- https://docs.fenergox.com/api-docs/tenant-access
+architecture:
+  style: REST + JSON
+  pattern: CQRS — separate Command (write) and Query (read) services per domain
+  persistence: event sourcing over an append-only log
+  consistency: eventually consistent — a write accepted by a Command API is not immediately visible on the matching
+    Query API
+  design: Domain Driven Design; each domain owns its own service and interface
+  note: Of 145 published contracts, the majority pair as <domain>command / <domain>query. Read-after-write requires
+    polling the Query API or subscribing to the matching event notification.
+authentication:
+  style: OAuth 2.0 client_credentials bearer JWT
+  artifact: authentication/fenergo-authentication.yml
+tenancy:
+  header: x-tenant-id
+  required: true
+  declared_on_operations: 2324
+  note: Every CLM call is scoped to a tenant GUID passed in x-tenant-id. Omitting it returns HTTP 400 errorCode
+    MissingTenantHeader at the gateway.
+request_tracing:
+  header: x-correlation-id
+  declared_on_operations: 86
+  propagates_to: event notifications (correlationId) and causation chains (causationId)
+  docs: https://docs.fenergox.com/developer-hub/event-notifications/using-the-correlation-id-header
+idempotency:
+  coverage: none
+  mechanism: null
+  header: null
+  evidence: 'No idempotency key parameter, header or extension appears anywhere in the 145 harvested contracts (0
+    of 2,381 operations declare one), and the documentation portal publishes no idempotency or replay-protection
+    guidance. Fenergo does ship optimistic concurrency instead: 151 operations declare a 409 "Conflict saving changes
+    in expected version", which protects a write against a stale version but does not deduplicate a retried request.'
+  related: optimistic concurrency via expected-version 409
+  note: 'Recorded as none rather than partial: an agent retrying a POST after a timeout has no published way to
+    avoid a duplicate.'
+reversibility:
+  grade: documented
+  coverage: partial
+  note: Fenergo ships real reversal operations across several domains, but publishes no reversal WINDOW for any
+    of them — no refund period, no cancel-before deadline, no restore-within-N-days. Grade is therefore `documented`
+    (a reversal path exists) and not `verified` (a stated window). Do not infer a window; none is published.
+  reversal_operation_count: 27
+  window_stated: false
+  window_source: null
+  reversal_operations:
+  - spec: openapi/fenergo-associationcommand-v1-0-openapi.json
+    method: PUT
+    path: /api/association/{id}/journeyId/{journeyId}
+    operationId: RestoreSoftDeletedAssociation
+    summary: Restore a soft deleted Association
+  - spec: openapi/fenergo-associationcommand-v2-0-openapi.json
+    method: PUT
+    path: /api/v2/association/{id}/journeyId/{journeyId}
+    operationId: RestoreSoftDeletedAssociation
+    summary: Restore a soft deleted Association
+  - spec: openapi/fenergo-bulkloadcommand-v1-0-openapi.json
+    method: POST
+    path: /api/jobs/{id}/cancellation
+    operationId: CancelJob
+    summary: Cancel the bulk load job
+  - spec: openapi/fenergo-changemanagementcommand-v1-0-openapi.json
+    method: POST
+    path: /api/review-approval-configuration/{id}/versions/{versionNumber}/reject
+    operationId: RejectConfigurationVersion
+    summary: Reject a configuration version
+  - spec: openapi/fenergo-creditscreeningcommand-v1-0-openapi.json
+    method: PUT
+    path: /api/manual/set/{setId}/version/{versionNumber}/reject
+    operationId: UpdateManualCreditVersionScreeningStatusToRejected
+    summary: Update a Manual Credit Screening Version Status to "Rejected".
+  - spec: openapi/fenergo-dataprotectioncommand-v1-0-openapi.json
+    method: POST
+    path: /api/datadeletionprocess/unpause
+    operationId: UnpauseDataDeletionProcess
+    summary: Unpause data deletion process
+  - spec: openapi/fenergo-dataprotectioncommand-v1-0-openapi.json
+    method: POST
+    path: /api/ongoingscreening
+    operationId: CreateUnsubscribeBatch
+    summary: Creates a new Ongoing Screening Unsubscribe Batch for an Entity and Journey. This batch contains the
+      Legal Entity and it's associations that currently have Ongoing Screening Enabled.
+  - spec: openapi/fenergo-dataprotectioncommand-v1-0-openapi.json
+    method: PUT
+    path: /api/ongoingscreening/{id}
+    operationId: UpdateUnsubscribeBatchEntities
+    summary: Updates an existing Ongoing Screening Unsubscribe Batch with the relevant Legal Entities and Providers
+      which must be disabled from Ongoing Screening
+  - spec: openapi/fenergo-documentmanagementcommand-v1-0-openapi.json
+    method: POST
+    path: /api/esignature/cancel
+    operationId: CancelESignature
+    summary: Voids existing eSignature and resets document requirement status.
+  - spec: openapi/fenergo-documentmanagementcommand-v2-0-openapi.json
+    method: POST
+    path: /api/v2/documentmanagement/{id}/unarchive
+    operationId: UnarchiveDocument
+    summary: Unarchive a document
+  - spec: openapi/fenergo-documentmanagementcommand-v2-0-openapi.json
+    method: POST
+    path: /api/v2/esignature/cancel
+    operationId: CancelESignature
+    summary: Voids existing eSignature and resets document requirement status.
+  - spec: openapi/fenergo-entitydatacommand-v1-0-openapi.json
+    method: PUT
+    path: /api/entity/{entityId}/draft/{id}/reject
+    operationId: RejectEntityDraft
+    summary: Reject entity draft
+  - spec: openapi/fenergo-entitydatacommand-v2-0-openapi.json
+    method: PUT
+    path: /api/v2/entity/{entityId}/draft/{id}/reject
+    operationId: RejectEntityDraft
+    summary: Reject entity draft
+  - spec: openapi/fenergo-entitydatacommand-v3-0-openapi.json
+    method: PUT
+    path: /api/v3/entity/{entityId}/draft/{id}/reject
+    operationId: RejectEntityDraft
+    summary: Reject entity draft
+  - spec: openapi/fenergo-externaldatacommand-v1-0-openapi.json
+    method: POST
+    path: /api/ongoingmonitoring/unsubscribe
+    operationId: UnsubscribeFromOngoingMonitoring
+    summary: Unsubscribe from ongoing monitoring
+  - spec: openapi/fenergo-integrationcore-v1-0-openapi.json
+    method: POST
+    path: /api/execution/{executionId}/cancel
+    operationId: CancelExecution
+    summary: Cancels a specific in-progress or paused execution.
+  - spec: openapi/fenergo-journeycommand-v1-0-openapi.json
+    method: PUT
+    path: /api/journey-instance/{journeyInstanceId}/abort
+    operationId: AbortJourneyInstance
+    summary: Cancel journey instance
+  - spec: openapi/fenergo-journeycommand-v1-0-openapi.json
+    method: PUT
+    path: /api/journey-instance/batch/abort
+    operationId: BatchAbortJourneyInstances
+    summary: Batch cancel journey instances
+  - spec: openapi/fenergo-journeycommand-v1-0-openapi.json
+    method: PUT
+    path: /api/journey-instance/{journeyInstanceId}/task/{taskId}/unpause
+    operationId: UnpauseTask
+    summary: Unpause journey instance task
+  - spec: openapi/fenergo-journeycommand-v1-0-openapi.json
+    method: PUT
+    path: /api/journey-instance/{journeyInstanceId}/stage/{stageId}/unpause
+    operationId: UnpauseStage
+    summary: Unpause journey instance stage
+  - spec: openapi/fenergo-journeycommand-v1-0-openapi.json
+    method: PUT
+    path: /api/journey-instance/{journeyInstanceId}/unpause
+    operationId: UnpauseInstance
+    summary: Unpause journey instance
+  - spec: openapi/fenergo-policycommand-v2-0-openapi.json
+    method: PUT
+    path: /api/v2/policies/{entityPolicyId}/document-requirements/{documentRequirementId}/revert
+    operationId: RevertDocumentRequirement
+    summary: Revert a policy document requirement changes
+  - spec: openapi/fenergo-policycommand-v2-0-openapi.json
+    method: PUT
+    path: /api/v2/policies/{entityPolicyId}/e-signature-document-requirements/{eSignatureDocumentRequirementId}/revert
+    operationId: RevertESignatureDocumentRequirement
+    summary: Revert a e-signature policy document requirement changes
+  - spec: openapi/fenergo-policycommand-v2-0-openapi.json
+    method: PUT
+    path: /api/v2/policies/{entityPolicyId}/fields/{fieldId}/revert
+    operationId: RevertPolicyField
+    summary: Revert a policy field changes
+  - spec: openapi/fenergo-policycommand-v2-0-openapi.json
+    method: PUT
+    path: /api/v2/policies/{entityPolicyId}/jurisdictions/{jurisdictionId}/revert
+    operationId: RevertPolicyJurisdiction
+    summary: Revert a policy jurisdiction changes
+  - spec: openapi/fenergo-policycommand-v2-0-openapi.json
+    method: PUT
+    path: /api/v2/policies/{entityPolicyId}/revert
+    operationId: RevertPolicyWorkspace
+    summary: Revert all draft changes in a policy workspace
+  - spec: openapi/fenergo-policycommand-v2-0-openapi.json
+    method: PUT
+    path: /api/v2/policies/{entityPolicyId}/related-party-requirements/{relatedPartyRequirementId}/revert
+    operationId: RevertRelatedPartyRequirement
+    summary: Revert a related party policy requirement changes
+  soft_delete:
+    present: true
+    evidence: association:associationsoftdeleted event plus RestoreSoftDeletedAssociation (PUT /api/association/{id}/journeyId/{journeyId})
+    window: null
+  irreversible:
+  - operation: Data Protection entity deletion
+    scope: fenx.dataprotection.deleteentitydata
+    note: The Data Protection delete endpoint carries its own dedicated scope and is a GDPR erasure path; no restore
+      operation is published for it.
+dry_run_mode:
+  supported: false
+  note: No dry-run, preview or validate-only mode is declared in any harvested contract. ETL and Bulk Load publish
+    separate validation reports, but those are pipeline artefacts rather than a per-request rehearsal mode.
+pagination:
+  style: mixed
+  params_observed:
+  - paginationToken
+  - pageSize
+  - pageNumber
+  note: Pagination is not uniform across the estate. Cursor-style paginationToken appears on 19 operations and pageSize
+    on 17; most list operations return unpaged collections, and at least one service declares a 502 "Response payload
+    too large. Use the paged endpoint instead." Treat pagination as per-operation, read from the spec.
+versioning:
+  artifact: lifecycle/fenergo-lifecycle.yml
+  scheme: uri-path + per-major Swagger document
+error_envelope:
+  artifact: errors/fenergo-problem-types.yml
+  shape: '{"data": …, "messages": [{"message","type","errorCode"}]}'
+  rfc9457: partial — 31 of 2,381 operations only
+rate_limit_signalling:
+  artifact: rate-limits/fenergo-rate-limits.yml
+  headers:
+  - X-Rate-Limit-Remaining
+  - X-Rate-Limit-Reset
+  exhaustion_status: 429
+events:
+  artifact: asyncapi/fenergo-event-notifications-webhooks.yml
+  patterns:
+  - webhooks (push, HMAC-signed)
+  - polling API (pull)
+  signature_header: x-fenx-signature
+  signature_algorithm: HMAC-SHA256
+content_type: application/json throughout; XML is not offered
+serialization_note: Fenergo escapes all non-ASCII characters to \uXXXX in event payloads.

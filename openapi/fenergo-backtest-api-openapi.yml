@@ -1,0 +1,166 @@
+openapi: 3.2.0
+info:
+  title: Transaction Backtest API
+  version: 3.0.1
+servers:
+- url: https://api.fenergox.com/tm/realtime
+tags:
+- name: Backtest
+paths:
+  /backtest:
+    post:
+      summary: Handle Backtest Event Post
+      description: Handle a backtest request
+      operationId: handle_backtest_event_post_backtest_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBacktestPayload'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BTResponsePost'
+        '400':
+          description: A data validation occurred.
+        '403':
+          description: No permission to take the respective action.
+        '404':
+          description: The requested resource was not found.
+        '409':
+          description: The requested operation could not be performed due to a data conflict.
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2 Client Credentials: []
+      tags:
+      - Backtest
+components:
+  schemas:
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    BacktestVersion:
+      type: string
+      enum:
+      - V1
+      - V2
+      title: BacktestVersion
+      description: An enumeration.
+    CreateBacktestPayload:
+      properties:
+        backtest_name:
+          type: string
+          title: Backtest Name
+          description: Name of the backtest
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BacktestStatus'
+          default: to_do
+        test_date:
+          type: string
+          format: date
+          title: Test Date
+          description: Base date of transactions to replay
+        backload_days:
+          type: string
+          title: Backload Days
+          description: The number of days before <- test_date
+        replay_days:
+          type: string
+          title: Replay Days
+          description: Number of days after test_date ->
+        alias:
+          type: string
+          title: Alias
+        rule:
+          type: string
+          title: Rule
+        num_replayed_trx:
+          type: string
+          title: Num Replayed Trx
+        skip_backload:
+          type: boolean
+          title: Skip Backload
+          description: Flag to skip backload
+          default: false
+        service_version:
+          allOf:
+          - $ref: '#/components/schemas/BacktestVersion'
+          default: V1
+      type: object
+      required:
+      - test_date
+      - replay_days
+      title: CreateBacktestPayload
+      description: Defines a backtest structure and types.
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    BTResponsePost:
+      properties:
+        backtest_id:
+          type: string
+          title: Backtest Id
+        status:
+          $ref: '#/components/schemas/BacktestStatus'
+        request_datetime:
+          type: string
+          format: date-time
+          title: Request Datetime
+      type: object
+      required:
+      - backtest_id
+      - status
+      - request_datetime
+      title: BTResponsePost
+    BacktestStatus:
+      type: string
+      enum:
+      - to_do
+      - preparing
+      - in_progress
+      - cleaning_up
+      - done
+      - failed
+      title: BacktestStatus
+      description: Possible states of a backtest request
+  securitySchemes:
+    OAuth2_Client_Credentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          scopes: {}
+          tokenUrl: oauth2/token

@@ -1,0 +1,1918 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Integration Core Flow Template API
+  description: '**Integration Core API**:
+
+
+    Integration Core BFF API allows to create and access integration flows and its'' executions.'
+  version: '1.0'
+servers:
+- url: /integrationcore
+security:
+- Bearer: []
+tags:
+- name: FlowTemplate
+paths:
+  /api/flowTemplates:
+    get:
+      tags:
+      - FlowTemplate
+      summary: Get all available active flow templates (lightweight — no flow definition)
+      description: 'Required permissions:
+
+        Following permissions are required: IntegrationFlowsConfigurationAccess
+
+
+        Required permissions:
+
+        Following permissions are required: IntegrationFlowsConfigurationAccess'
+      operationId: GetAvailableTemplates
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlowTemplateLightDtoIEnumerableServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/flowTemplates/{templateKey}:
+    get:
+      tags:
+      - FlowTemplate
+      summary: Get a specific flow template by key including full flow definition
+      description: 'Required permissions:
+
+        Following permissions are required: IntegrationFlowsConfigurationAccess
+
+
+        Required permissions:
+
+        Following permissions are required: IntegrationFlowsConfigurationAccess'
+      operationId: GetTemplateByKey
+      parameters:
+      - name: templateKey
+        in: path
+        description: The unique template key
+        required: true
+        schema:
+          type: string
+      - name: version
+        in: query
+        description: Optional specific version number; defaults to latest active
+        schema:
+          type: integer
+          format: int32
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlowTemplateDtoServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/flowTemplates/{templateKey}/import:
+    post:
+      tags:
+      - FlowTemplate
+      summary: Import a flow template — creates a new draft flow configuration from the…
+      description: 'Required permissions:
+
+        Following permissions are required: IntegrationFlowsConfigurationEdit
+
+
+        Required permissions:
+
+        Following permissions are required: IntegrationFlowsConfigurationEdit'
+      operationId: ImportFlowTemplate
+      parameters:
+      - name: templateKey
+        in: path
+        description: The unique template key to import
+        required: true
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Import request details
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/ImportFlowTemplateRequestDto'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportFlowTemplateResponseDtoServiceResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/flowTemplates/managedFlows/{configurationId}/unlock:
+    put:
+      tags:
+      - FlowTemplate
+      summary: Unlocks a managed flow configuration for editing — a one-way, irreversible…
+      description: 'Required permissions:
+
+        Following permissions are required: IntegrationFlowsConfigurationEdit
+
+
+        Required permissions:
+
+        Following permissions are required: IntegrationFlowsConfigurationEdit'
+      operationId: UnlockManagedFlowForEdit
+      parameters:
+      - name: configurationId
+        in: path
+        description: The ID of the managed flow configuration to unlock
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/flowTemplates/managedFlows/{configurationId}/updateToTemplateVersion:
+    put:
+      tags:
+      - FlowTemplate
+      summary: Updates a managed flow configuration to the latest version of its source…
+      description: 'Required permissions:
+
+        Following permissions are required: IntegrationFlowsConfigurationEdit
+
+
+        Required permissions:
+
+        Following permissions are required: IntegrationFlowsConfigurationEdit'
+      operationId: UpdateManagedFlowToTemplateVersion
+      parameters:
+      - name: configurationId
+        in: path
+        description: The ID of the managed flow configuration to update
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateManagedFlowResponseServiceResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+components:
+  schemas:
+    TaskConfigBaseDto:
+      required:
+      - taskType
+      type: object
+      properties:
+        taskType:
+          allOf:
+          - $ref: '#/components/schemas/TaskType'
+          readOnly: true
+        catch:
+          allOf:
+          - $ref: '#/components/schemas/TaskCatchDto'
+        retry:
+          allOf:
+          - $ref: '#/components/schemas/TaskRetryDto'
+      additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AiInvokerConfigV1Dto:
+      allOf:
+      - $ref: '#/components/schemas/TaskConfigBaseDto'
+      - required:
+        - taskType
+        type: object
+        properties:
+          taskType:
+            allOf:
+            - $ref: '#/components/schemas/TaskType'
+            readOnly: true
+          aiModel:
+            allOf:
+            - $ref: '#/components/schemas/AiModel'
+          requestType:
+            allOf:
+            - $ref: '#/components/schemas/AiRequestType'
+          id:
+            allOf:
+            - $ref: '#/components/schemas/StraightValueDto'
+          providerId:
+            allOf:
+            - $ref: '#/components/schemas/StraightValueDto'
+          apiKey:
+            allOf:
+            - $ref: '#/components/schemas/StraightValueDto'
+          userPrompt:
+            allOf:
+            - $ref: '#/components/schemas/StraightValueDto'
+          systemPrompt:
+            allOf:
+            - $ref: '#/components/schemas/StraightValueDto'
+          entityId:
+            allOf:
+            - $ref: '#/components/schemas/StraightValueDto'
+          searchCriteria:
+            type:
+            - object
+            - 'null'
+            additionalProperties:
+              $ref: '#/components/schemas/StraightValueDto'
+        additionalProperties: false
+    FlowVariableDto:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+        value: {}
+        type:
+          allOf:
+          - $ref: '#/components/schemas/VariableType'
+      additionalProperties: false
+    VariableDefinitionType:
+      enum:
+      - Constant
+      - Single
+      - Func
+      type: string
+    FlowTemplateDependencyDto:
+      type: object
+      properties:
+        templateKey:
+          type:
+          - string
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    InlineTransformerConfigV1Dto:
+      allOf:
+      - $ref: '#/components/schemas/TaskConfigBaseDto'
+      - required:
+        - taskType
+        type: object
+        properties:
+          taskType:
+            allOf:
+            - $ref: '#/components/schemas/TaskType'
+            readOnly: true
+          operation:
+            allOf:
+            - $ref: '#/components/schemas/InlineTransformerTaskOperation'
+          saveToState:
+            type: boolean
+          statePropertyName:
+            type:
+            - string
+            - 'null'
+          leftOperand:
+            allOf:
+            - $ref: '#/components/schemas/ComplexValueDto'
+          rightOperand:
+            allOf:
+            - $ref: '#/components/schemas/ComplexValueDto'
+          withHeaders:
+            type:
+            - boolean
+            - 'null'
+        additionalProperties: false
+    FlowTemplateDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        templateKey:
+          type:
+          - string
+          - 'null'
+        name:
+          type:
+          - string
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+        category:
+          allOf:
+          - $ref: '#/components/schemas/TemplateCategory'
+        featureFlagName:
+          type:
+          - string
+          - 'null'
+        versionNumber:
+          type: integer
+          format: int32
+        status:
+          allOf:
+          - $ref: '#/components/schemas/TemplateStatus'
+        flowDefinition:
+          allOf:
+          - $ref: '#/components/schemas/FlowTemplateFlowDefinitionDto'
+        schemas:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/FlowTemplateSchemaSnapshotDto'
+        mappings:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/FlowTemplateMappingSnapshotDto'
+        dependentFlows:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/FlowTemplateDependencyDto'
+        dependentSchemas:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/ResourceTemplateDependencyDto'
+        dependentMappings:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/ResourceTemplateDependencyDto'
+      additionalProperties: false
+    TemplateCategory:
+      enum:
+      - ConfigurationTemplates
+      - DesignPatterns
+      - ScreeningProviderDemo
+      - AiTemplates
+      type: string
+    SuperGraphQueryFlagsDto:
+      type: object
+      properties:
+        includeStages:
+          type: boolean
+        includeEntity:
+          type: boolean
+        includeEntityDrafts:
+          type: boolean
+        includeRelatedParties:
+          type: boolean
+        includeProductDrafts:
+          type: boolean
+        includeProductAssociations:
+          type: boolean
+        includeJourneys:
+          type: boolean
+      additionalProperties: false
+    RouterConfigV1Dto:
+      allOf:
+      - $ref: '#/components/schemas/TaskConfigBaseDto'
+      - required:
+        - taskType
+        type: object
+        properties:
+          taskType:
+            allOf:
+            - $ref: '#/components/schemas/TaskType'
+            readOnly: true
+          routes:
+            type:
+            - array
+            - 'null'
+            items:
+              $ref: '#/components/schemas/RouteDto'
+        additionalProperties: false
+    TaskCatchDto:
+      type: object
+      properties:
+        routes:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/TaskCatchRouteDto'
+        default:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    StraightValue:
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/StraightValueType'
+        value:
+          type:
+          - string
+          - 'null'
+        variables:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/Variable'
+      additionalProperties: false
+    EventIngressConfigV1Dto:
+      allOf:
+      - $ref: '#/components/schemas/TaskConfigBaseDto'
+      - required:
+        - eventSubtype
+        - eventType
+        - payload
+        - runMode
+        - source
+        - taskType
+        type: object
+        properties:
+          taskType:
+            allOf:
+            - $ref: '#/components/schemas/TaskType'
+            readOnly: true
+          eventType:
+            minLength: 1
+            type: string
+          eventSubtype:
+            minLength: 1
+            type: string
+          source:
+            minLength: 1
+            type: string
+          payload:
+            allOf:
+            - $ref: '#/components/schemas/ComplexValueDto'
+          runMode:
+            allOf:
+            - $ref: '#/components/schemas/EventIngressRunMode'
+          priority:
+            allOf:
+            - $ref: '#/components/schemas/StraightValue'
+        additionalProperties: false
+    VariableDefinitionFuncType:
+      enum:
+      - JsonPath
+      - Pattern
+      type: string
+    Variable:
+      type: object
+      properties:
+        definitionType:
+          allOf:
+          - $ref: '#/components/schemas/VariableDefinitionType'
+        constantVariable:
+          allOf:
+          - $ref: '#/components/schemas/ConstantVariable'
+        singleVariable:
+          allOf:
+          - $ref: '#/components/schemas/SingleVariable'
+        funcVariable:
+          allOf:
+          - $ref: '#/components/schemas/FuncVariable'
+      additionalProperties: false
+    ComplexValueDto:
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/ComplexValueType'
+        variable:
+          allOf:
+          - $ref: '#/components/schemas/VariableDto'
+        json: {}
+        variables:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/VariableDto'
+      additionalProperties: false
+    StorageTaskTTL:
+      enum:
+      - OneWeek
+      - OneMonth
+      type: string
+    UpdateManagedFlowResponse:
+      type: object
+      properties:
+        updated:
+          type: boolean
+      additionalProperties: false
+    VariableType:
+      enum:
+      - Text
+      - Number
+      - Json
+      - Guid
+      - Request
+      - Secret
+      - TaskError
+      type: string
+    ObjectInitiatorDto:
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/SourceType'
+        config: {}
+      additionalProperties: false
+    FileSource:
+      enum:
+      - PersistedStorage
+      - FenergoDocument
+      type: string
+    ParallelTaskConfigV1Dto:
+      allOf:
+      - $ref: '#/components/schemas/TaskConfigBaseDto'
+      - required:
+        - taskType
+        type: object
+        properties:
+          taskType:
+            allOf:
+            - $ref: '#/components/schemas/TaskType'
+            readOnly: true
+          branches:
+            type:
+            - array
+            - 'null'
+            items:
+              $ref: '#/components/schemas/ParallelBranchConfigV1Dto'
+        additionalProperties: false
+    InlineTransformerTaskOperation:
+      enum:
+      - JsonMerge
+      - JsonFormat
+      - ArrayMerge
+      - ArrayAppend
+      - Compress
+      - Uncompress
+      - ParseCsv
+      type: string
+    TemplateStatus:
+      enum:
+      - Active
+      - Deprecated
+      type: string
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    TaskRetryDto:
+      type: object
+      properties:
+        rules:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/TaskRetryRuleDto'
+        default:
+          allOf:
+          - $ref: '#/components/schemas/TaskRetryDefinitionDto'
+      additionalProperties: false
+    ConditionDto:
+      required:
+      - leftValue
+      - name
+      - operatorType
+      - rightValue
+      type: object
+      properties:
+        name:
+          minLength: 1
+          type: string
+        leftValue:
+          allOf:
+          - $ref: '#/components/schemas/StraightValueDto'
+        rightValue:
+          allOf:
+          - $ref: '#/components/schemas/StraightValueDto'
+        operatorType:
+          allOf:
+          - $ref: '#/components/schemas/ConditionOperator'
+      additionalProperties: false
+    AiRequestType:
+      enum:
+      - ExternalDataSearchAndCollect
+      - ExternalDataSearchCustomPrompt
+      - ExternalDataSearchGetSummary
+      - ExternalDataGetSchema
+      type: string
+    TaskRetryRuleDto:
+      type: object
+      properties:
+        condition:
+          allOf:
+          - $ref: '#/components/schemas/ConditionDto'
+        definition:
+          allOf:
+          - $ref: '#/components/schemas/TaskRetryDefinitionDto'
+      additionalProperties: false
+    StorageTaskSensitivity:
+      enum:
+      - Sensitive
+      - NotSensitive
+      type: string
+    DependentImportResultDto:
+      type: object
+      properties:
+        templateKey:
+          type:
+          - string
+          - 'null'
+        configurationId:
+          type: string
+          format: uuid
+        flowKey:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ConditionOperator:
+      enum:
+      - Equals
+      - GreaterThan
+      - LowerThan
+      - GreaterThanOrEquals
+      - LowerThanOrEquals
+      - IsNull
+      - StringContains
+      - NotEquals
+      - IsNotNull
+      - StringNotContains
+      - IsTrue
+      - IsFalse
+      type: string
+    VariableCategory:
+      enum:
+      - Global
+      - Flow
+      - Execution
+      - Task
+      type: string
+    FlowInvokerConfigV1Dto:
+      allOf:
+      - $ref: '#/components/schemas/TaskConfigBaseDto'
+      - required:
+        - taskType
+        type: object
+        properties:
+          taskType:
+            allOf:
+            - $ref: '#/components/schemas/TaskType'
+            readOnly: true
+          runMode:
+            allOf:
+            - $ref: '#/components/schemas/FlowInvokerRunMode'
+          flowKey:
+            type:
+            - string
+            - 'null'
+          flowRequest:
+            allOf:
+            - $ref: '#/components/schemas/ComplexValueDto'
+          mapToRequestBody:
+            type: boolean
+          callbackTimeout:
+            type:
+            - string
+            - 'null'
+        additionalProperties: false
+    SuperGraphConfigV1Dto:
+      allOf:
+      - $ref: '#/components/schemas/TaskConfigBaseDto'
+      - required:
+        - taskType
+        type: object
+        properties:
+          taskType:
+            allOf:
+            - $ref: '#/components/schemas/TaskType'
+            readOnly: true
+          queryFlags:
+            allOf:
+            - $ref: '#/components/schemas/SuperGraphQueryFlagsDto'
+          queryBy:
+            allOf:
+            - $ref: '#/components/schemas/SuperGraphQueryBy'
+          queryByValue:
+            allOf:
+            - $ref: '#/components/schemas/StraightValueDto'
+        additionalProperties: false
+    ForEachTaskConfigV1Dto:
+      allOf:
+      - $ref: '#/components/schemas/TaskConfigBaseDto'
+      - required:
+        - taskType
+        type: object
+        properties:
+          taskType:
+            allOf:
+            - $ref: '#/components/schemas/TaskType'
+            readOnly: true
+          itemsToProcess:
+            allOf:
+            - $ref: '#/components/schemas/ComplexValueDto'
+          processInput:
+            allOf:
+            - $ref: '#/components/schemas/ComplexValueDto'
+          iterationTasks:
+            allOf:
+            - $ref: '#/components/schemas/ForEachTasksConfigV1Dto'
+        additionalProperties: false
+    StraightValueType:
+      enum:
+      - Pattern
+      type: string
+    FormDataPartDto:
+      required:
+      - name
+      - partType
+      type: object
+      properties:
+        name:
+          minLength: 1
+          type: string
+        partType:
+          allOf:
+          - $ref: '#/components/schemas/FormDataPartType'
+        value:
+          allOf:
+          - $ref: '#/components/schemas/StraightValueDto'
+        fileSource:
+          allOf:
+          - $ref: '#/components/schemas/FileSource'
+        storageKey:
+          allOf:
+          - $ref: '#/components/schemas/StraightValueDto'
+        documentUrl:
+          allOf:
+          - $ref: '#/components/schemas/StraightValueDto'
+        partContentType:
+          type:
+          - string
+          - 'null'
+        filename:
+          allOf:
+          - $ref: '#/components/schemas/StraightValueDto'
+      additionalProperties: false
+    FlowInvokerRunMode:
+      enum:
+      - FireAndForget
+      - Async
+      type: string
+    SingleVariable:
+      type: object
+      properties:
+        category:
+          allOf:
+          - $ref: '#/components/schemas/VariableCategory'
+        taskName:
+          type:
+          - string
+          - 'null'
+        propertyName:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    TaskRetryDefinitionDto:
+      type: object
+      properties:
+        maxAttempts:
+          type: integer
+          format: int32
+        intervalSeconds:
+          type: integer
+          format: int32
+        backoffRate:
+          type: number
+          format: float
+        maxDelaySeconds:
+          type: integer
+          format: int32
+      additionalProperties: false
+    FlowTemplateLightDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/FlowTemplateLightDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    StorageConfigV1Dto:
+      allOf:
+      - $ref: '#/components/schemas/TaskConfigBaseDto'
+      - required:
+        - taskType
+        type: object
+        properties:
+          taskType:
+            allOf:
+            - $ref: '#/components/schemas/TaskType'
+            readOnly: true
+          operation:
+            allOf:
+            - $ref: '#/components/schemas/StorageTaskOperation'
+          key:
+            allOf:
+            - $ref: '#/components/schemas/StraightValueDto'
+          prefix:
+            allOf:
+            - $ref: '#/components/schemas/StraightValueDto'
+          value:
+            allOf:
+            - $ref: '#/components/schemas/ComplexValueDto'
+          ttl:
+            allOf:
+            - $ref: '#/components/schemas/StorageTaskTTL'
+          sensitivity:
+            allOf:
+            - $ref: '#/components/schemas/StorageTaskSensitivity'
+          partialRead:
+            type:
+            - boolean
+            - 'null'
+          withHeaders:
+            type:
+            - boolean
+            - 'null'
+          batchSize:
+            allOf:
+            - $ref: '#/components/schemas/StraightValueDto'
+          startBytePosition:
+            allOf:
+            - $ref: '#/components/schemas/StraightValueDto'
+        additionalProperties: false
+    SingleVariableDto:
+      type: object
+      properties:
+        category:
+          allOf:
+          - $ref: '#/components/schemas/VariableCategory'
+        taskName:
+          type:
+          - string
+          - 'null'
+        propertyName:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    FlowTemplateMappingSnapshotDto:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    FlowTemplateLightDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        templateKey:
+          type:
+          - string
+          - 'null'
+        name:
+          type:
+          - string
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+        category:
+          allOf:
+          - $ref: '#/components/schemas/TemplateCategory'
+        featureFlagName:
+          type:
+          - string
+          - 'null'
+        versionNumber:
+          type: integer
+          format: int32
+        status:
+          allOf:
+          - $ref: '#/components/schemas/TemplateStatus'
+        hasDependentFlows:
+          type: boolean
+        hasDependentSchemas:
+          type: boolean
+        hasDependentMappings:
+          type: boolean
+        isManagedOob:
+          type: boolean
+        majorVersion:
+          type: integer
+          format: int32
+        minorVersion:
+          type: integer
+          format: int32
+        fixVersion:
+          type: integer
+          format: int32
+      additionalProperties: false
+    FlowTemplateFlowDefinitionDto:
+      type: object
+      properties:
+        startTaskKey:
+          type:
+          - string
+          - 'null'
+        initiator:
+          allOf:
+          - $ref: '#/components/schemas/ObjectInitiatorDto'
+        flowVariables:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/FlowVariableDto'
+        tasks:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/TaskConfigBaseDtoIntegrationTaskDto'
+      additionalProperties: false
+    ResourceTemplateDependencyDto:
+      type: object
+      properties:
+        description:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    MapperConfigV1Dto:
+      allOf:
+      - $ref: '#/components/schemas/TaskConfigBaseDto'
+      - required:
+        - taskType
+        type: object
+        properties:
+          taskType:
+            allOf:
+            - $ref: '#/components/schemas/TaskType'
+            readOnly: true
+          mappingId:
+            type:
+            - string
+            - 'null'
+          input:
+            allOf:
+            - $ref: '#/components/schemas/ComplexValueDto'
+        additionalProperties: false
+    FormDataPartType:
+      enum:
+      - Text
+      - File
+      type: string
+    ContentType:
+      enum:
+      - None
+      - Json
+      - Xml
+      - Text
+      - FormUrlEncoded
+      - FormData
+      - BinaryFile
+      type: string
+    TransformerConfigV1Dto:
+      allOf:
+      - $ref: '#/components/schemas/TaskConfigBaseDto'
+      - required:
+        - taskType
+        type: object
+        properties:
+          taskType:
+            allOf:
+            - $ref: '#/components/schemas/TaskType'
+            readOnly: true
+          input:
+            allOf:
+            - $ref: '#/components/schemas/ComplexValueDto'
+          originalMapMethod:
+            type:
+            - string
+            - 'null'
+          transpiledMapMethod:
+            type:
+            - string
+            - 'null'
+          includeLookups:
+            type: boolean
+          inputSchemaId:
+            type:
+            - string
+            - 'null'
+          outputSchemaId:
+            type:
+            - string
+            - 'null'
+          includedSchemas:
+            type:
+            - array
+            - 'null'
+            items:
+              type: string
+          libraries:
+            type:
+            - array
+            - 'null'
+            items:
+              type: string
+        additionalProperties: false
+    ImportFlowTemplateResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ImportFlowTemplateResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    FuncVariable:
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/VariableDefinitionFuncType'
+        jsonPath:
+          type:
+          - string
+          - 'null'
+        variable:
+          allOf:
+          - $ref: '#/components/schemas/SingleVariable'
+      additionalProperties: false
+    FlowTemplateDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/FlowTemplateDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    FuncVariableDto:
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/VariableDefinitionFuncType'
+        jsonPath:
+          type:
+          - string
+          - 'null'
+        variable:
+          allOf:
+          - $ref: '#/components/schemas/SingleVariableDto'
+      additionalProperties: false
+    AiModel:
+      enum:
+      - GPT5
+      - GPT4o
+      - O3
+      - NovaPremier
+      type: string
+    StorageTaskOperation:
+      enum:
+      - QueryByKey
+      - QueryByPrefix
+      - PutRecord
+      - DeleteRecord
+      type: string
+    TaskCatchRouteDto:
+      type: object
+      properties:
+        condition:
+          allOf:
+          - $ref: '#/components/schemas/ConditionDto'
+        next:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    SuperGraphQueryBy:
+      enum:
+      - JourneyId
+      - EntityId
+      type: string
+    UpdateManagedFlowResponseServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UpdateManagedFlowResponse'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    InternalApiEndpoint:
+      enum:
+      - GetJourneyInstanceById
+      - CreateEntity
+      - UpdateEntityDraft
+      - LegalEntityIdentifierSearch
+      - LegalEntityAdvancedSearch
+      - CreateEntityDraft
+      - ReopenTask
+      - GetSignificanceResult
+      - GetInternalEntityIdByExDataSubscriptionId
+      - GetDocumentSignedUrl
+      - GetDataSources
+      type: string
+    FlowTemplateSchemaSnapshotDto:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    InternalApiConfigV1Dto:
+      allOf:
+      - $ref: '#/components/schemas/TaskConfigBaseDto'
+      - required:
+        - endpoint
+        - taskType
+        type: object
+        properties:
+          taskType:
+            allOf:
+            - $ref: '#/components/schemas/TaskType'
+            readOnly: true
+          endpoint:
+            allOf:
+            - $ref: '#/components/schemas/InternalApiEndpoint'
+          request:
+            allOf:
+            - $ref: '#/components/schemas/ComplexValueDto'
+        additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ImportFlowTemplateRequestDto:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+        flowKey:
+          type:
+          - string
+          - 'null'
+        notes:
+          type:
+          - string
+          - 'null'
+        flowOverrides:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: string
+        schemaOverrides:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: string
+        mappingOverrides:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: string
+      additionalProperties: false
+    VariableDto:
+      type: object
+      properties:
+        definitionType:
+          allOf:
+          - $ref: '#/components/schemas/VariableDefinitionType'
+        constantVariable:
+          allOf:
+          - $ref: '#/components/schemas/ConstantVariableDto'
+        singleVariable:
+          allOf:
+          - $ref: '#/components/schemas/SingleVariableDto'
+        funcVariable:
+          allOf:
+          - $ref: '#/components/schemas/FuncVariableDto'
+      additionalProperties: false
+    ConstantVariableDto:
+      type: object
+      properties:
+        value:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    StraightValueDto:
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/StraightValueType'
+        value:
+          type:
+          - string
+          - 'null'
+        variables:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/VariableDto'
+      additionalProperties: false
+    SourceType:
+      enum:
+      - Unknown
+      - Journey
+      - ExternalData
+      - Api
+      - Policy
+      - Scheduler
+      type: string
+    ConstantVariable:
+      type: object
+      properties:
+        value:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ImportFlowTemplateResponseDto:
+      type: object
+      properties:
+        configurationId:
+          type: string
+          format: uuid
+        dependentImports:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/DependentImportResultDto'
+      additionalProperties: false
+    ForEachTasksConfigV1Dto:
+      type: object
+      properties:
+        tasks:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/TaskConfigBaseDtoIntegrationTaskDto'
+        startTaskKey:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    HttpInvokerConfigV2Dto:
+      allOf:
+      - $ref: '#/components/schemas/TaskConfigBaseDto'
+      - required:
+        - taskType
+        type: object
+        properties:
+          taskType:
+            allOf:
+            - $ref: '#/components/schemas/TaskType'
+            readOnly: true
+          url:
+            allOf:
+            - $ref: '#/components/schemas/StraightValueDto'
+          method:
+            type:
+            - string
+            - 'null'
+          contentType:
+            allOf:
+            - $ref: '#/components/schemas/ContentType'
+          customContentType:
+            type:
+            - string
+            - 'null'
+          headers:
+            type:
+            - object
+            - 'null'
+            additionalProperties:
+              $ref: '#/components/schemas/StraightValueDto'
+          queryParams:
+            type:
+            - object
+            - 'null'
+            additionalProperties:
+              $ref: '#/components/schemas/StraightValueDto'
+          body:
+            allOf:
+            - $ref: '#/components/schemas/ComplexValueDto'
+          formValues:
+            type:
+            - object
+            - 'null'
+            additionalProperties:
+              $ref: '#/components/schemas/StraightValueDto'
+          formParts:
+            type:
+            - array
+            - 'null'
+            items:
+              $ref: '#/components/schemas/FormDataPartDto'
+          timeout:
+            type:
+            - string
+            - 'null'
+          isCallback:
+            type: boolean
+          callbackTimeout:
+            type:
+            - string
+            - 'null'
+          largeResponse:
+            type: boolean
+          storageKey:
+            allOf:
+            - $ref: '#/components/schemas/StraightValue'
+          storageTTL:
+            allOf:
+            - $ref: '#/components/schemas/StorageTaskTTL'
+          storageSensitivity:
+            allOf:
+            - $ref: '#/components/schemas/StorageTaskSensitivity'
+          sendStorageFile:
+            type: boolean
+          requestStorageKey:
+            allOf:
+            - $ref: '#/components/schemas/StraightValue'
+          fileSource:
+            allOf:
+            - $ref: '#/components/schemas/FileSource'
+          requestDocumentUrl:
+            allOf:
+            - $ref: '#/components/schemas/StraightValue'
+        additionalProperties: false
+    WaitConfigV1Dto:
+      allOf:
+      - $ref: '#/components/schemas/TaskConfigBaseDto'
+      - required:
+        - taskType
+        type: object
+        properties:
+          taskType:
+            allOf:
+            - $ref: '#/components/schemas/TaskType'
+            readOnly: true
+          secondsToWait:
+            allOf:
+            - $ref: '#/components/schemas/StraightValueDto'
+          callbackTimeout:
+            type:
+            - string
+            - 'null'
+        additionalProperties: false
+    EventIngressRunMode:
+      enum:
+      - FireAndForget
+      - Sync
+      - Async
+      type: string
+    ParallelBranchConfigV1Dto:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+        input:
+          allOf:
+          - $ref: '#/components/schemas/ComplexValueDto'
+        tasks:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/TaskConfigBaseDtoIntegrationTaskDto'
+        startTaskKey:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    EndConfigV1Dto:
+      allOf:
+      - $ref: '#/components/schemas/TaskConfigBaseDto'
+      - required:
+        - taskType
+        type: object
+        properties:
+          taskType:
+            allOf:
+            - $ref: '#/components/schemas/TaskType'
+            readOnly: true
+          flowOutput:
+            allOf:
+            - $ref: '#/components/schemas/ComplexValueDto'
+        additionalProperties: false
+    TaskConfigBaseDtoIntegrationTaskDto:
+      required:
+      - key
+      - name
+      type: object
+      properties:
+        name:
+          minLength: 1
+          type: string
+        key:
+          minLength: 1
+          type: string
+        next:
+          type:
+          - string
+          - 'null'
+        config:
+          oneOf:
+          - $ref: '#/components/schemas/AiInvokerConfigV1Dto'
+          - $ref: '#/components/schemas/EndConfigV1Dto'
+          - $ref: '#/components/schemas/EventIngressConfigV1Dto'
+          - $ref: '#/components/schemas/FlowInvokerConfigV1Dto'
+          - $ref: '#/components/schemas/ForEachTaskConfigV1Dto'
+          - $ref: '#/components/schemas/HttpInvokerConfigV2Dto'
+          - $ref: '#/components/schemas/InlineTransformerConfigV1Dto'
+          - $ref: '#/components/schemas/InternalApiConfigV1Dto'
+          - $ref: '#/components/schemas/MapperConfigV1Dto'
+          - $ref: '#/components/schemas/ParallelTaskConfigV1Dto'
+          - $ref: '#/components/schemas/ReportTaskConfigV1Dto'
+          - $ref: '#/components/schemas/RouterConfigV1Dto'
+          - $ref: '#/components/schemas/StorageConfigV1Dto'
+          - $ref: '#/components/schemas/SuperGraphConfigV1Dto'
+          - $ref: '#/components/schemas/TransformerConfigV1Dto'
+          - $ref: '#/components/schemas/WaitConfigV1Dto'
+      additionalProperties: false
+    ReportTaskConfigV1Dto:
+      allOf:
+      - $ref: '#/components/schemas/TaskConfigBaseDto'
+      - required:
+        - taskType
+        type: object
+        properties:
+          taskType:
+            allOf:
+            - $ref: '#/components/schemas/TaskType'
+            readOnly: true
+          reportQueryId:
+            type: string
+            format: uuid
+          queryParameters:
+            type:
+            - object
+            - 'null'
+            additionalProperties:
+              $ref: '#/components/schemas/StraightValueDto'
+          reportFileName:
+            allOf:
+            - $ref: '#/components/schemas/StraightValueDto'
+          reportTTL:
+            allOf:
+            - $ref: '#/components/schemas/StorageTaskTTL'
+          reportSensitivity:
+            allOf:
+            - $ref: '#/components/schemas/StorageTaskSensitivity'
+        additionalProperties: false
+    TaskType:
+      enum:
+      - SuperGraphV1
+      - TransformerV1
+      - EventIngressV1
+      - RouterV1
+      - MapperV1
+      - HttpInvokerV2
+      - WaitV1
+      - EndV1
+      - InternalApiV1
+      - FlowInvokerV1
+      - StorageV1
+      - InlineTransformerV1
+      - ParallelTaskV1
+      - ForEachTaskV1
+      - ReportTaskV1
+      - AiInvokerV1
+      type: string
+    RouteDto:
+      required:
+      - condition
+      - next
+      type: object
+      properties:
+        condition:
+          allOf:
+          - $ref: '#/components/schemas/ConditionDto'
+        next:
+          minLength: 1
+          type: string
+      additionalProperties: false
+    ComplexValueType:
+      enum:
+      - Variable
+      - Json
+      type: string
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

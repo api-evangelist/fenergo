@@ -1,0 +1,305 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Query Change Management API
+  description: Query API to get the change management data to show in the UI.
+  version: '1.0'
+servers:
+- url: /changemanagementquery
+security:
+- Bearer: []
+tags:
+- name: Change Management
+paths:
+  /api/change-management/task/{taskId}:
+    get:
+      tags:
+      - Change Management
+      summary: Gets all Conflicts by TaskId
+      description: This method returns all conflicts in a Task
+      operationId: GetConflictsByTaskId
+      parameters:
+      - name: taskId
+        in: path
+        description: The Id of the Task
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Conflict models returned successfully
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ConflictsDtoIEnumerableServiceResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictsDtoIEnumerableServiceResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ConflictsDtoIEnumerableServiceResponse'
+        '400':
+          description: Invalid request
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: An exception occurred while processing the request
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+components:
+  schemas:
+    ConflictsDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        entityId:
+          type: string
+          format: uuid
+        taskId:
+          type: string
+          format: uuid
+        entityConflicts:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/EntityConflictDto'
+        managedRelationshipConflicts:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ManagedRelationshipConflictDto'
+        conflictingDomains:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ChangeDomain'
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ConflictsDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConflictsDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    PropertyType:
+      enum:
+      - Single
+      - Custom
+      - Collection
+      type: string
+    DataColumnDto:
+      type: object
+      properties:
+        dataKey:
+          type:
+          - string
+          - 'null'
+        friendlyName:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    PropertyDto:
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        discriminator:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ManagedRelationshipConflictDto:
+      type: object
+      properties:
+        entityId:
+          type: string
+          format: uuid
+        agentName:
+          type:
+          - string
+          - 'null'
+        dataConflicts:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/EntityConflictDto'
+      additionalProperties: false
+    ChangeDomain:
+      enum:
+      - Related Parties
+      - Managed Relationship
+      - Accounts
+      - Primary Entity Data
+      type: string
+    EntityConflictDto:
+      type: object
+      properties:
+        existingValue:
+          allOf:
+          - $ref: '#/components/schemas/PropertyDto'
+        newValue:
+          allOf:
+          - $ref: '#/components/schemas/PropertyDto'
+        chosenValue:
+          type:
+          - string
+          - 'null'
+        dataKey:
+          type:
+          - string
+          - 'null'
+        friendlyName:
+          type:
+          - string
+          - 'null'
+        category:
+          type:
+          - string
+          - 'null'
+        isMaterialData:
+          type: boolean
+        dataColumns:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/DataColumnDto'
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

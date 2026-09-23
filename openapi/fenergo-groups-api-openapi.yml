@@ -1,0 +1,1017 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Identity Scim Groups API
+  description: '## What is SCIM?'
+  version: v1
+servers:
+- url: /scim
+security:
+- Bearer: []
+tags:
+- name: Groups
+paths:
+  /Groups:
+    get:
+      tags:
+      - Groups
+      summary: Gets all groups. Accepts filters and sorting
+      description: 'Check out the following sections of the SCIM RFC for more information about how to use the search parameters:
+
+
+        Definition of the search attributes: RFC 7644 Section 3.4.3
+
+
+        The format of the ''attributes'' and the ''excludedAttributes'' properties: RFC 7644 Section 3.10
+
+
+        Supported operators for filtering: RFC 7644 Section 3.4.2.2
+
+
+        Groups with many members could make endpoint timeout, make sure members attribute is added to the list of excludedAttributes. For groups with many members, prefer /Groups/{id} endpoint.'
+      operationId: GetAllGroups
+      parameters:
+      - name: attributes
+        in: query
+        description: A multi-valued list of strings indicating the names of resource attributes to return in the response
+        schema:
+          type: array
+          items:
+            type: string
+      - name: excludedAttributes
+        in: query
+        description: A multi-valued list of strings indicating the names of resource attributes to be removed from the default set of attributes to return
+        schema:
+          type: array
+          items:
+            type: string
+          default:
+          - members
+      - name: sortBy
+        in: query
+        description: A string indicating the attribute whose value shall be used to order the returned responses
+        schema:
+          type: string
+      - name: sortOrder
+        in: query
+        description: 'An integer indicating the order in which the "sortBy" parameter is applied. Sort order: 0 ''Ascending'' or 1 ''Descending''.'
+        schema:
+          $ref: '#/components/schemas/SearchSCIMRepresentationOrders'
+      - name: startIndex
+        in: query
+        description: An integer indicating the 1-based index of the first query result.
+        schema:
+          type: integer
+          format: int32
+      - name: count
+        in: query
+        description: An integer indicating the desired maximum number of query results per page
+        schema:
+          type: integer
+          format: int32
+      - name: filter
+        in: query
+        description: Filter expression from the SCIM 2.0 specification <a href="https://www.rfc-editor.org/rfc/rfc7644#section-3.4.2.2">(RFC 7644)</a> (case in-sensitive).
+        schema:
+          type: string
+        examples:
+          No filter:
+            value: ''
+          DisplayName starts with 'Group':
+            value: displayName sw "Group"
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListGroupsResponseDto'
+              example:
+                schemas:
+                - urn:ietf:params:scim:api:messages:2.0:ListResponse
+                totalResults: 2
+                itemsPerPage: 100
+                startIndex: 1
+                Resources:
+                - id: 24f0c403-370b-4b13-b675-2f6ce0d2b2bf
+                  members:
+                  - value: 04c23012-4dba-4005-bd08-f063061dce12
+                  displayName: Test Group with fenxgroup extension
+                  urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group:
+                    fenxAccessLayerIds:
+                    - c40ac099-1cdc-440b-80c6-edff7529bd57
+                    fenxTeamIds:
+                    - 02fc78fd-98d5-4f09-bd5d-a72259377a48
+                    - adab0d3b-a00d-4fd1-9ab3-39dbeab235dc
+                  meta:
+                    resourceType: Group
+                    created: '2024-03-13T16:21:12.519645'
+                    lastModified: '2024-03-13T21:57:12.661613'
+                    version: 3
+                    location: https://identity.fenergonebula.com/scim/Groups/24f0c403-370b-4b13-b675-2f6ce0d2b2bf
+                  externalId: '1234'
+                  schemas:
+                  - urn:ietf:params:scim:schemas:core:2.0:Group
+                  - urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group
+                - id: 916e5e9e-06b7-49b5-90bc-c7f206e8c858
+                  displayName: Test Group
+                  members: []
+                  urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group: {}
+                  meta:
+                    resourceType: Group
+                    created: '2024-03-13T21:57:53.254864'
+                    lastModified: '2024-03-13T21:57:53.254864'
+                    version: 0
+                    location: https://identity.fenergonebula.com/scim/Groups/916e5e9e-06b7-49b5-90bc-c7f206e8c858
+                  externalId: '12345'
+                  schemas:
+                  - urn:ietf:params:scim:schemas:core:2.0:Group
+                  - urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group
+        '401':
+          description: Unauthorized
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+    post:
+      tags:
+      - Groups
+      summary: Creates a group
+      description: 'The mandatory fields to create a new group are:
+
+
+        A schema array (schemas)
+
+
+        A display name (displayName)
+
+
+        Returns 201 if successfully created, 409 Conflict if ''displayName'' already exists.
+
+
+        The ''id'' returned by this endpoint when a group is created is the ID of the group in the SCIM API, and can be used to manage the group resource within the SCIM API.'
+      operationId: CreateGroup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupsCreateUpdateRequestDto'
+            examples:
+              groups-create-group:
+                summary: Groups - Create a group
+                description: Create a new group
+                value:
+                  externalId: '1234'
+                  schemas:
+                  - urn:ietf:params:scim:schemas:core:2.0:Group
+                  displayName: Test Group
+              groups-create-group-with-members:
+                summary: Groups - Create a group with members
+                description: Create a new group with members
+                value:
+                  externalId: '1234'
+                  schemas:
+                  - urn:ietf:params:scim:schemas:core:2.0:Group
+                  displayName: Test Group
+                  members:
+                  - value: df00c9f4-d8f0-4d8c-b5fe-139944bc70a2
+              groups-create-group-with-extension-schema:
+                summary: Groups - Create a group with extension schema
+                description: Create a new group with extension schema
+                value:
+                  externalId: '1234'
+                  schemas:
+                  - urn:ietf:params:scim:schemas:core:2.0:Group
+                  - urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group
+                  displayName: Test Group with fenxgroup extension
+                  urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group:
+                    fenxTeamIds:
+                    - adab0d3b-a00d-4fd1-9ab3-39dbeab235dc
+                    - 02fc78fd-98d5-4f09-bd5d-a72259377a48
+                    fenxAccessLayerIds:
+                    - c40ac099-1cdc-440b-80c6-edff7529bd57
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupsResponseDto'
+              example:
+                id: 24f0c403-370b-4b13-b675-2f6ce0d2b2bf
+                members:
+                - value: 04c23012-4dba-4005-bd08-f063061dce12
+                displayName: Test Group with fenxgroup extension
+                urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group:
+                  fenxAccessLayerIds:
+                  - c40ac099-1cdc-440b-80c6-edff7529bd57
+                  fenxTeamIds:
+                  - 02fc78fd-98d5-4f09-bd5d-a72259377a48
+                  - adab0d3b-a00d-4fd1-9ab3-39dbeab235dc
+                meta:
+                  resourceType: Group
+                  created: '2024-03-13T16:21:12.519645'
+                  lastModified: '2024-03-13T21:57:12.661613'
+                  version: 3
+                  location: https://identity.fenergonebula.com/scim/Groups/24f0c403-370b-4b13-b675-2f6ce0d2b2bf
+                externalId: '1234'
+                schemas:
+                - urn:ietf:params:scim:schemas:core:2.0:Group
+                - urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '401':
+          description: Unauthorized
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+              example:
+                schemas:
+                - urn:ietf:params:scim:api:messages:2.0:Error
+                status: '409'
+                scimType: uniqueness
+                detail: attribute displayName must be unique
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+  /Groups/.search:
+    post:
+      tags:
+      - Groups
+      summary: Returns groups according to the filter, sort and pagination parameters
+      description: 'Check out the following sections of the SCIM RFC for more information about how to use the search parameters:
+
+
+        Definition of the search attributes: RFC 7644 Section 3.4.3
+
+
+        The format of the ''attributes'' and the ''excludedAttributes'' properties: RFC 7644 Section 3.10
+
+
+        Supported operators for filtering: RFC 7644 Section 3.4.2.2
+
+
+        Groups with many members could make endpoint timeout, make sure members attribute is added to the list of excludedAttributes. For groups with many members, prefer /Groups/{id} endpoint.
+
+
+        The supported values for the ''sortOrder'' attribute are:
+
+
+        0: Ascending order
+
+
+        1: Descending order
+
+
+        Returns 200 even if there are no results for the specified filters.'
+      operationId: SearchGroups
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupsSearchRequestDto'
+            examples:
+              groups-search-groups:
+                summary: Groups - Search groups
+                description: Get the 'displayName', 'fenxTeamIds' attributes of the first group that have the 'displayName' attribute present, sorted by 'fenxTeamIds' in descending order
+                value:
+                  attributes:
+                  - urn:ietf:params:scim:schemas:core:2.0:Group:displayName
+                  - urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group:fenxTeamIds
+                  sortBy: urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group:fenxTeamIds
+                  sortOrder: 1
+                  startIndex: 1
+                  count: 1
+                  filter: displayName pr
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListGroupsResponseDto'
+              example:
+                schemas:
+                - urn:ietf:params:scim:api:messages:2.0:ListResponse
+                totalResults: 1
+                itemsPerPage: 1
+                startIndex: 1
+                Resources:
+                - id: 24f0c403-370b-4b13-b675-2f6ce0d2b2bf
+                  displayName: Test Group with fenxgroup extension
+                  urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group:
+                    fenxTeamIds:
+                    - 2bf709ab-8cca-4da7-81c7-492c76bd4b7d
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '401':
+          description: Unauthorized
+  /Groups/{id}:
+    get:
+      tags:
+      - Groups
+      summary: Gets a group by ID
+      operationId: GetGroupById
+      parameters:
+      - name: id
+        in: path
+        description: 'UUID: Universally Unique Identifier with 32 alpha-numeric characters formated as ''xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx''.'
+        required: true
+        schema:
+          type: string
+      - name: attributes
+        in: query
+        description: A multi-valued list of strings indicating the names of resource attributes to return in the response
+        schema:
+          type: array
+          items:
+            type: string
+      - name: excludedAttributes
+        in: query
+        description: A multi-valued list of strings indicating the names of resource attributes to be removed from the default set of attributes to return
+        schema:
+          type: array
+          items:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupsResponseDto'
+              example:
+                id: 24f0c403-370b-4b13-b675-2f6ce0d2b2bf
+                members:
+                - value: 04c23012-4dba-4005-bd08-f063061dce12
+                displayName: Test Group with fenxgroup extension
+                urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group:
+                  fenxAccessLayerIds:
+                  - c40ac099-1cdc-440b-80c6-edff7529bd57
+                  fenxTeamIds:
+                  - 02fc78fd-98d5-4f09-bd5d-a72259377a48
+                  - adab0d3b-a00d-4fd1-9ab3-39dbeab235dc
+                meta:
+                  resourceType: Group
+                  created: '2024-03-13T16:21:12.519645'
+                  lastModified: '2024-03-13T21:57:12.661613'
+                  version: 3
+                  location: https://identity.fenergonebula.com/scim/Groups/24f0c403-370b-4b13-b675-2f6ce0d2b2bf
+                externalId: '1234'
+                schemas:
+                - urn:ietf:params:scim:schemas:core:2.0:Group
+                - urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+              example:
+                schemas:
+                - urn:ietf:params:scim:api:messages:2.0:Error
+                status: '404'
+                scimType: unknown
+                detail: resource 41cd4c12-6765-45ca-8dc3-6ce0dcbaf52f not found
+    delete:
+      tags:
+      - Groups
+      summary: Deletes a group by ID
+      description: Returns 204 if successfully deleted, 404 if not found.
+      operationId: DeleteGroup
+      parameters:
+      - name: id
+        in: path
+        description: 'UUID: Universally Unique Identifier with 32 alpha-numeric characters formated as ''xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx''.'
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+              example:
+                schemas:
+                - urn:ietf:params:scim:api:messages:2.0:Error
+                status: '404'
+                scimType: unknown
+                detail: resource 41cd4c12-6765-45ca-8dc3-6ce0dcbaf52f not found
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+    put:
+      tags:
+      - Groups
+      summary: Updates all group details and returns the updated group details
+      operationId: UpdateGroup
+      parameters:
+      - name: id
+        in: path
+        description: 'UUID: Universally Unique Identifier with 32 alpha-numeric characters formated as ''xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx''.'
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupsCreateUpdateRequestDto'
+            examples:
+              groups-update-group:
+                summary: Groups - Update a group
+                description: Update an existing group.
+                value:
+                  schemas:
+                  - urn:ietf:params:scim:schemas:core:2.0:Group
+                  displayName: Updated Group Display Name
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupsResponseDto'
+              example:
+                id: 24f0c403-370b-4b13-b675-2f6ce0d2b2bf
+                members:
+                - value: 04c23012-4dba-4005-bd08-f063061dce12
+                displayName: Test Group with fenxgroup extension
+                urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group:
+                  fenxAccessLayerIds:
+                  - c40ac099-1cdc-440b-80c6-edff7529bd57
+                  fenxTeamIds:
+                  - 02fc78fd-98d5-4f09-bd5d-a72259377a48
+                  - adab0d3b-a00d-4fd1-9ab3-39dbeab235dc
+                meta:
+                  resourceType: Group
+                  created: '2024-03-13T16:21:12.519645'
+                  lastModified: '2024-03-13T21:57:12.661613'
+                  version: 3
+                  location: https://identity.fenergonebula.com/scim/Groups/24f0c403-370b-4b13-b675-2f6ce0d2b2bf
+                externalId: '1234'
+                schemas:
+                - urn:ietf:params:scim:schemas:core:2.0:Group
+                - urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+              example:
+                schemas:
+                - urn:ietf:params:scim:api:messages:2.0:Error
+                status: '404'
+                scimType: unknown
+                detail: resource 41cd4c12-6765-45ca-8dc3-6ce0dcbaf52f not found
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+              example:
+                schemas:
+                - urn:ietf:params:scim:api:messages:2.0:Error
+                status: '409'
+                scimType: uniqueness
+                detail: attribute displayName must be unique
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+    patch:
+      tags:
+      - Groups
+      summary: Updates some group details and returns the updated group details
+      description: 'The supported values for the ''operations.op'' attribute are:
+
+
+        add
+
+
+        remove
+
+
+        replace
+
+
+        The endpoint may return the following successful responses if the request is accepted:
+
+
+        A 200 response with the updated group details if a change has been made to the group
+
+
+        A 204 response if nothing has been updated in the group'
+      operationId: PatchGroup
+      parameters:
+      - name: id
+        in: path
+        description: 'UUID: Universally Unique Identifier with 32 alpha-numeric characters formated as ''xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx''.'
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupsPatchRequestDto'
+            examples:
+              groups-patch-group-details:
+                summary: Groups - Patch group details
+                description: Patch an existing group details.
+                value:
+                  operations:
+                  - op: replace
+                    path: displayName
+                    value: New display name
+                  - op: replace
+                    path: externalId
+                    value: New externalId
+                  schemas:
+                  - urn:ietf:params:scim:api:messages:2.0:PatchOp
+              groups-patch-group-members:
+                summary: Groups - Patch members of a group
+                description: Patch members of an existing group.
+                value:
+                  operations:
+                  - op: add
+                    path: members
+                    value:
+                    - value: 746133cf-850e-4d67-8a34-9bf084625194
+                  - op: remove
+                    path: members
+                    value:
+                    - value: 04c23012-4dba-4005-bd08-f063061dce12
+                  - op: replace
+                    path: members
+                    value:
+                    - value: ca1fe5af-7a43-4362-9390-ca7eb83bd9c8
+                    - value: 0d2f969d-0125-4f09-9150-524f4dccc5ab
+                  schemas:
+                  - urn:ietf:params:scim:api:messages:2.0:PatchOp
+              groups-patch-group-teams-accesslayers:
+                summary: Groups - Patch teams and access layers of a group
+                description: Patch the teams and access layers of an existing group.
+                value:
+                  operations:
+                  - op: replace
+                    path: urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group:fenxTeamIds
+                    value:
+                    - adab0d3b-a00d-4fd1-9ab3-39dbeab235dc
+                  - op: add
+                    path: urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group:fenxTeamIds
+                    value: adab0d3b-a00d-4fd1-9ab3-39dbeab235dc
+                  - op: remove
+                    path: urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group:fenxTeamIds
+                    value: adab0d3b-a00d-4fd1-9ab3-39dbeab235dc
+                  - op: replace
+                    path: urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group:fenxAccessLayerIds
+                    value:
+                    - adab0d3b-a00d-4fd1-9ab3-39dbeab235dc
+                  - op: add
+                    path: urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group:fenxAccessLayerIds
+                    value: adab0d3b-a00d-4fd1-9ab3-39dbeab235dc
+                  - op: remove
+                    path: urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group:fenxAccessLayerIds
+                    value: adab0d3b-a00d-4fd1-9ab3-39dbeab235dc
+                  schemas:
+                  - urn:ietf:params:scim:api:messages:2.0:PatchOp
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupsResponseDto'
+              example:
+                id: 24f0c403-370b-4b13-b675-2f6ce0d2b2bf
+                members:
+                - value: 04c23012-4dba-4005-bd08-f063061dce12
+                displayName: Test Group with fenxgroup extension
+                urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group:
+                  fenxAccessLayerIds:
+                  - c40ac099-1cdc-440b-80c6-edff7529bd57
+                  fenxTeamIds:
+                  - 02fc78fd-98d5-4f09-bd5d-a72259377a48
+                  - adab0d3b-a00d-4fd1-9ab3-39dbeab235dc
+                meta:
+                  resourceType: Group
+                  created: '2024-03-13T16:21:12.519645'
+                  lastModified: '2024-03-13T21:57:12.661613'
+                  version: 3
+                  location: https://identity.fenergonebula.com/scim/Groups/24f0c403-370b-4b13-b675-2f6ce0d2b2bf
+                externalId: '1234'
+                schemas:
+                - urn:ietf:params:scim:schemas:core:2.0:Group
+                - urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+              example:
+                schemas:
+                - urn:ietf:params:scim:api:messages:2.0:Error
+                status: '404'
+                scimType: unknown
+                detail: resource 41cd4c12-6765-45ca-8dc3-6ce0dcbaf52f not found
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+              example:
+                schemas:
+                - urn:ietf:params:scim:api:messages:2.0:Error
+                status: '409'
+                scimType: uniqueness
+                detail: attribute displayName must be unique
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+components:
+  schemas:
+    FenxGroupExtensionSchema:
+      type: object
+      properties:
+        fenxTeamIds:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of Fen-X team IDs that are linked to the group. Leave empty if no teams are linked.
+        fenxAccessLayerIds:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of Fen-X access layer IDs that are linked to the group. Leave empty if no access layers are linked.
+      additionalProperties: false
+      description: 'Extension schema to be able to link a SCIM group with Fen-X teams and/or access layers.
+
+        To be able to specify values for this property, it is required to add the following schema to the schemas list: "urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group"'
+    SearchSCIMRepresentationOrders:
+      enum:
+      - 0
+      - 1
+      type: integer
+      format: int32
+    SortOrders:
+      enum:
+      - 0
+      - 1
+      type: integer
+      format: int32
+    GroupsPatchRequestOperationDto:
+      type: object
+      properties:
+        op:
+          type:
+          - string
+          - 'null'
+          description: 'Indicates the operation to perform. <br />
+
+            Possible values: "add", "remove", or "replace"'
+          example: add
+        path:
+          type:
+          - string
+          - 'null'
+          description: 'Describes the attribute path that wants to be updated. <br />
+
+            The "path" attribute is OPTIONAL for "add" and "replace" and is REQUIRED for "remove" operations'
+          example: name.familyName
+        value:
+          description: The new value for the attribute. REQUIRED for "add" and "replace" operations
+      additionalProperties: false
+    ErrorResponseDto:
+      type: object
+      properties:
+        schemas:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />
+
+            Example: [ "urn:ietf:params:scim:api:messages:2.0:Error" ]'
+        status:
+          type:
+          - string
+          - 'null'
+          description: The HTTP status code of the error response
+          example: '400'
+        scimType:
+          type:
+          - string
+          - 'null'
+          description: The type of error
+          example: invalidSyntax
+        detail:
+          type:
+          - string
+          - 'null'
+          description: The summary of the error
+          example: The request is not well-formatted
+      additionalProperties: false
+    GroupMemberBaseDto:
+      type: object
+      properties:
+        value:
+          type:
+          - string
+          - 'null'
+          description: The ID of the user that belongs to the group
+      additionalProperties: false
+      description: Class representing a group member
+    MetaDto:
+      type: object
+      properties:
+        resourceType:
+          type:
+          - string
+          - 'null'
+          description: The name of the resource type of the resource
+          example: User
+        created:
+          type: string
+          description: The "DateTime" that the resource was added to the service provider
+          format: date-time
+          example: '2022-02-02T12:59:59.123456'
+        lastModified:
+          type: string
+          description: 'The most recent "DateTime" that the details of this were updated at the service provider. <br />
+
+            If this resource has never been modified since its initial creation, the value will be the same as the value of "created"'
+          format: date-time
+          example: '2022-02-02T12:59:59.123456'
+        location:
+          type:
+          - string
+          - 'null'
+          description: The URI of the resource being returned
+          example: https://company.com/scim/Users/12345678-1234-1234-1234-123456789011
+        version:
+          type: integer
+          description: The version of the resource being returned
+          format: int32
+          example: 0
+      additionalProperties: false
+      description: A complex attribute containing resource metadata, assigned by the service provider
+    GroupsResponseDto:
+      type: object
+      properties:
+        displayName:
+          type:
+          - string
+          - 'null'
+          description: The name of the Group
+          example: Test Group with FenXGroup extension
+        urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group:
+          $ref: '#/components/schemas/FenxGroupExtensionSchema'
+        externalId:
+          type:
+          - string
+          - 'null'
+          description: A String that is an identifier for the group in the external system
+          example: '1234'
+        schemas:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />
+
+            Example: [ "urn:ietf:params:scim:schemas:core:2.0:Group", "urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group" ]'
+        id:
+          type:
+          - string
+          - 'null'
+          description: The unique ID of the group
+          example: 12345678-1234-1234-1234-123456789012
+        meta:
+          $ref: '#/components/schemas/MetaDto'
+        members:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/GroupMemberDto'
+          description: Groups members
+      additionalProperties: false
+    GroupsPatchRequestDto:
+      type: object
+      properties:
+        operations:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/GroupsPatchRequestOperationDto'
+          description: Defines operations within a bulk or patch job.
+        schemas:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />
+
+            Examples: [ "urn:ietf:params:scim:api:messages:2.0:BulkRequest" ], [ "urn:ietf:params:scim:api:messages:2.0:PatchOp" ]'
+      additionalProperties: false
+    ListGroupsResponseDto:
+      type: object
+      properties:
+        schemas:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />
+
+            Example: [ "urn:ietf:params:scim:api:messages:2.0:ListResponse" ]'
+        totalResults:
+          type: integer
+          description: The total number of results returned by the list or query operation
+          format: int32
+          example: 1
+        itemsPerPage:
+          type: integer
+          description: The number of resources returned in a list response page
+          format: int32
+          example: 1
+        startIndex:
+          type: integer
+          description: The 1-based index of the first result in the current set of list results
+          format: int32
+          example: 1
+        Resources:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/GroupsResponseDto'
+          description: A list of all groups. This MAY be a subset of the full set of groups if pagination is requested
+      additionalProperties: false
+    GroupMemberDto:
+      type: object
+      properties:
+        value:
+          type:
+          - string
+          - 'null'
+          description: The ID of the user that belongs to the group
+        type:
+          type:
+          - string
+          - 'null'
+          description: The type of the member, usually "User"
+        $ref:
+          type:
+          - string
+          - 'null'
+          description: A reference link to the user
+      additionalProperties: false
+      description: Class representing a group member
+    GroupsCreateUpdateRequestDto:
+      type: object
+      properties:
+        displayName:
+          type:
+          - string
+          - 'null'
+          description: The name of the Group
+          example: Test Group with FenXGroup extension
+        urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group:
+          $ref: '#/components/schemas/FenxGroupExtensionSchema'
+        externalId:
+          type:
+          - string
+          - 'null'
+          description: A String that is an identifier for the group in the external system
+          example: '1234'
+        schemas:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />
+
+            Example: [ "urn:ietf:params:scim:schemas:core:2.0:Group", "urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group" ]'
+        members:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/GroupMemberBaseDto'
+          description: The list of users that belong to the group
+      additionalProperties: false
+    GroupsSearchRequestDto:
+      type: object
+      properties:
+        attributes:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: "A multi-valued list of strings indicating the names of resource attributes to return in the response, \noverriding the set of attributes that would be returned by default. <br />\nExample: [ \"displayName\", \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:Groups:fenxTeamIds\"]"
+        excludedAttributes:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'A multi-valued list of strings indicating the names of resource attributes to be removed from the default set of attributes to return. <br />
+
+            Example: [ "fenxTeamIds", "fenxAccessLayerIds" ]'
+        sortBy:
+          type:
+          - string
+          - 'null'
+          description: A string indicating the attribute whose value SHALL be used to order the returned responses
+          example: displayName
+        sortOrder:
+          $ref: '#/components/schemas/SortOrders'
+        startIndex:
+          type: integer
+          description: An integer indicating the 1-based index of the first query result
+          format: int32
+          example: 1
+        count:
+          type: integer
+          description: An integer indicating the desired maximum number of query results per page
+          format: int32
+          example: 20
+        filter:
+          type:
+          - string
+          - 'null'
+          description: A string indicating the filter expression that will return only the resources that matches it
+          example: displayName pr
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

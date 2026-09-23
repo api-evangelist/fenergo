@@ -1,0 +1,733 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Policy Query Get Requirement Set Version…
+  description: Policy Query API is part of FenX eco-system to query for Requirement Sets, Requirements, Data Groups and Data Group Fields Instances. All the operations require valid access token obtained from Identity service.
+  version: '2.0'
+servers:
+- url: /policyquery
+security:
+- Bearer: []
+tags:
+- name: GetRequirementSetVersionLightById
+paths:
+  /api/v2/requirement-set/{setId}/version/{versionNumber}/light:
+    get:
+      tags:
+      - GetRequirementSetVersionLightById
+      summary: Get light requirement set by id and version
+      description: 'Returns light requirement set for a given id and version number.
+
+
+        Required permissions:
+
+        Following permissions are required: PolicyConfigurationAccess'
+      operationId: GetRequirementSetVersionLightById
+      parameters:
+      - name: setId
+        in: path
+        description: Requirement set id
+        required: true
+        schema:
+          type: string
+      - name: versionNumber
+        in: path
+        description: Requirement set version number
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: excludeRequirements
+        in: query
+        description: Flag indicating if query should return light requirements of version
+        schema:
+          type: boolean
+          default: false
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. Requirement set is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementSetVersionLightDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found. Requirement set with given id/version does not exist
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+components:
+  schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+          description: The message
+          example: Success
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
+      additionalProperties: false
+      description: The message associated to the service response
+    RequirementSetVersionLightDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/RequirementSetVersionLightDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    OwnershipValidationDataDto:
+      type: object
+      properties:
+        isMandatory:
+          allOf:
+          - $ref: '#/components/schemas/BasicRuleDto2'
+          description: Request DTO representing basic validation rule metadata
+        partyCount:
+          allOf:
+          - $ref: '#/components/schemas/ValueLimitRuleDto2'
+          description: Request DTO representing value limit rule metadata
+        addAllParties:
+          allOf:
+          - $ref: '#/components/schemas/BasicRuleDto2'
+          description: Request DTO representing basic validation rule metadata
+        idvIsMandatory:
+          allOf:
+          - $ref: '#/components/schemas/BasicRuleDto2'
+          description: Request DTO representing basic validation rule metadata
+        idvPartyCount:
+          allOf:
+          - $ref: '#/components/schemas/ValueLimitRuleDto2'
+          description: Request DTO representing value limit rule metadata
+        idvAllParties:
+          allOf:
+          - $ref: '#/components/schemas/BasicRuleDto2'
+          description: Request DTO representing basic validation rule metadata
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    ValueField:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          description: Value of DataSource used to filter field values
+        field:
+          type:
+          - string
+          - 'null'
+          description: Field value used to validate conditional value
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data:
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    ConditionDefinitionDto:
+      type: object
+      properties:
+        fieldName:
+          type:
+          - string
+          - 'null'
+          description: Name of the field to evaluate
+          example: EntityType
+        value:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of values
+        valueId:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of value ids
+        valueType:
+          type:
+          - string
+          - 'null'
+          description: Type of the value
+          example: text
+        dataSource:
+          type:
+          - string
+          - 'null'
+          description: Data source from which field is retrieved. If empty then Entity Data properties will be used.
+          example: entityDataMetadata
+        operation:
+          type:
+          - string
+          - 'null'
+          description: Logical operation to be performed to match the values
+          example: equal
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+          description: Logical operation to be performed on the operands collection
+          example: AND
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto'
+          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
+        valueField:
+          allOf:
+          - $ref: '#/components/schemas/ValueField'
+          description: Field value used for conditional limit validation
+      additionalProperties: false
+      description: Represents condition
+    Approver:
+      type: object
+      properties:
+        subject:
+          type:
+          - string
+          - 'null'
+        successor:
+          allOf:
+          - $ref: '#/components/schemas/Approver'
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
+      additionalProperties: false
+    Signee:
+      type: object
+      properties:
+        subject:
+          type:
+          - string
+          - 'null'
+        successor:
+          allOf:
+          - $ref: '#/components/schemas/Approver'
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
+      additionalProperties: false
+    Decision:
+      enum:
+      - Approve
+      - Reject
+      type: string
+    ConditionDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the condition
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        name:
+          type:
+          - string
+          - 'null'
+          description: The name of the condition
+          example: Company-type only
+        description:
+          type:
+          - string
+          - 'null'
+          description: The description of the condition
+          example: Applicable only when EntityType=Company
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
+          example: AND
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto'
+          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
+      additionalProperties: false
+      description: Represents condition root
+    RequirementSetVersionLightDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The UiD of the requirement set version
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        setId:
+          type: string
+          description: The UiD of the requirement set that the version belongs to
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        requirementSetStatus:
+          type:
+          - string
+          - 'null'
+          description: Requirement set status
+          example: Active
+        name:
+          type:
+          - string
+          - 'null'
+          description: Requirement set name
+          example: Fenergo Comprehensive Standard Policy Requirements
+        jurisdiction:
+          type:
+          - string
+          - 'null'
+          description: Requirement set jurisdiction
+          example: Global
+        defaultDataProtectionJurisdiction:
+          type:
+          - string
+          - 'null'
+          description: Default jurisdiction for data protection
+          example: Global
+        requirements:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RequirementLightDto'
+          description: List of requirements
+        conditions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDto'
+          description: Conditions under which the requirement set can be applied
+        versionNumber:
+          type: integer
+          description: The versions number
+          format: int32
+          example: 1
+        effectiveFrom:
+          type: string
+          description: The date that the version takes effect when published
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        effectiveUntil:
+          type:
+          - string
+          - 'null'
+          description: The calculated date that the version ceases being active
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+          description: The status of the version
+          example: Published
+        created:
+          type: string
+          description: The creation date of the version
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        isActive:
+          type: boolean
+          description: 'The calculated flag to annotate whether this is the model''s latest version
+
+            at the time of the query (not necessarily published)'
+          example: true
+        version:
+          type: integer
+          description: Version number for given Aggregate (concurrency check)
+          format: int32
+          example: 1
+        notes:
+          type:
+          - string
+          - 'null'
+          description: 'Optional description of changes made that will be visible to all users who can access the version. It''s assumed
+
+            that version notes won''t contain ''personal identifiable information''. Please note that having many versions with
+
+            very long notes could hurt API performance in the long term.'
+          example: Example Notes
+        publicationDate:
+          type:
+          - string
+          - 'null'
+          description: The date that the version got published
+          format: date-time
+          readOnly: true
+          example: '2021-01-01T14:48:00.000Z'
+        signees:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/Signee'
+          description: The defined list of signees for the version
+      additionalProperties: false
+    OwnershipValidationRuleDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The UiD of the ownership validation rule
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        setId:
+          type: string
+          description: The UiD of the requirement set
+          format: uuid
+          example: 012cfe3a-7bfa-41e7-8269-d49b3b38dff3
+        ownershipValidationData:
+          allOf:
+          - $ref: '#/components/schemas/OwnershipValidationDataDto'
+          description: Ownership Validation Data - set of validation rules specific to ownership requirement
+      additionalProperties: false
+    ValueLimitRuleDto2:
+      type: object
+      properties:
+        active:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        message:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+        minValue:
+          type:
+          - integer
+          - 'null'
+          description: Minimum value
+          format: int32
+          example: 1
+        maxValue:
+          type:
+          - integer
+          - 'null'
+          description: Maximum value
+          format: int32
+          example: 10
+      additionalProperties: false
+      description: Request DTO representing value limit rule metadata
+    VersionStatus:
+      enum:
+      - Draft
+      - Pending
+      - Rejected
+      - Published
+      - Archived
+      - Deleted
+      type: string
+    RequirementLightDto:
+      type: object
+      properties:
+        rootVersionId:
+          type: string
+          description: The UiD of the root requirement set version
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        versionNumber:
+          type: integer
+          description: Requirement set version number
+          format: int32
+          example: 1
+        id:
+          type: string
+          description: The UiD of the requirement
+          format: uuid
+          example: 84ec28e2-d786-417b-850f-96321dd849dd
+        RequirementSetId:
+          type: string
+          description: The UiD of the current requirement set version
+          format: uuid
+          example: c060f297-70a2-4d4c-9360-9b5b39060ff0
+        tenant:
+          type:
+          - string
+          - 'null'
+          description: The UiD of the tenant
+          example: c345f3e9-c9f7-40ac-9eaa-654c2d2de1d1
+        category:
+          type:
+          - string
+          - 'null'
+          description: Requirement business category
+          example: Basic Details
+        entityType:
+          type:
+          - string
+          - 'null'
+          description: Requirement entity type
+          example: Individual
+        name:
+          type:
+          - string
+          - 'null'
+          description: Requirement name
+          example: First Name
+        targetEntity:
+          type:
+          - string
+          - 'null'
+          description: Requirement target entity
+          example: Client
+        type:
+          type:
+          - string
+          - 'null'
+          description: Requirement type
+          example: Data
+        dataFieldPropertyName:
+          type:
+          - string
+          - 'null'
+          description: Data Field Property Name
+        dataFieldPropertyType:
+          type:
+          - string
+          - 'null'
+          description: Data Field Property Type
+        dataFieldPropertyTypeId:
+          type:
+          - string
+          - 'null'
+          description: Data Field Property Type Id
+          format: uuid
+        isMandatory:
+          type: boolean
+          description: Is requirement mandatory
+          example: false
+        order:
+          type:
+          - number
+          - 'null'
+          description: Order
+          format: double
+          example: 1
+        documentDescription:
+          type:
+          - string
+          - 'null'
+          description: Document Description
+          example: Driver License
+        documentDataKey:
+          type:
+          - string
+          - 'null'
+          description: Document Data Key
+        relatedPartyEntityTypes:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Types of Related Party Entity e.g. ["Individual"]
+        jurisdiction:
+          type:
+          - string
+          - 'null'
+          description: Requirement jurisdiction
+          example: Global
+        ownershipValidationRule:
+          allOf:
+          - $ref: '#/components/schemas/OwnershipValidationRuleDto'
+          description: Ownership Validation Rule
+        ownershipDataKey:
+          type:
+          - string
+          - 'null'
+          description: Ownership Data Key
+          example: DataKey
+        partyTypes:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Party Types e.g. ["Director"]
+        idvName:
+          type:
+          - string
+          - 'null'
+          description: Idv Name
+          example: IdentityRequirement
+        uboThreshold:
+          type:
+          - number
+          - 'null'
+          description: UBO Threshold
+          format: double
+          example: 0.6
+      additionalProperties: false
+      description: Request light DTO representing requirement metadata
+    BasicRuleDto2:
+      type: object
+      properties:
+        active:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        message:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+      additionalProperties: false
+      description: Request DTO representing basic validation rule metadata
+    ApproveAction:
+      type: object
+      properties:
+        comment:
+          type:
+          - string
+          - 'null'
+        decision:
+          allOf:
+          - $ref: '#/components/schemas/Decision'
+        created:
+          type: string
+          format: date-time
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

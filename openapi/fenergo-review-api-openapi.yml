@@ -1,0 +1,1179 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Review API
+  version: '1.0'
+  description: 'Operations tagged Review across 2 of this provider''s published API definitions: fenergo-reviewcommand-v1-0-openapi.json, fenergo-reviewquery-v1-0-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- url: /reviewcommand
+- url: /reviewquery
+security:
+- Bearer: []
+tags:
+- name: Review
+paths:
+  /api/review:
+    post:
+      tags:
+      - Review
+      summary: Creates a Review
+      description: 'This method creates a Review and stores the data related to the Review.
+
+
+        The method returns an object containing some basic information as the result to the user,
+
+        and type. The returned Id can be used in the query api to get the Review.
+
+
+        Required permissions:
+
+        Following permissions are required: ScheduledReviewEdit'
+      operationId: CreateReview
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: The create Review request
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/ReviewDtoServiceRequest'
+      responses:
+        '202':
+          description: An instance of the Fenergo.Nebula.Review.Command.Application.Dto.ReviewDto class with some metadata that represent the Review created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /reviewcommand
+  /api/review/{id}:
+    put:
+      tags:
+      - Review
+      summary: Update Review
+      description: 'Updates an existing review.
+
+
+        Required permissions:
+
+        Following permissions are required: ScheduledReviewEdit'
+      operationId: UpdateReview
+      parameters:
+      - name: id
+        in: path
+        description: Review id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Update review request. Must contain review properties
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/UpdateReviewDtoServiceRequest'
+      responses:
+        '202':
+          description: Success. Review updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found. Review with given id does not exist
+                  type: Error
+                  errorCode: Error Code
+        '409':
+          description: Conflict saving changes in expected version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: There are conflicts that cannot be resolved automatically, get latest and apply your changes
+                  type: Error
+                  errorCode: CONFLICT
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    patch:
+      tags:
+      - Review
+      summary: Update part of an existing Review
+      description: 'Updates part of an existing Review.
+
+
+        For any updatable field that is not sent or is sent as null, the field will keep its current value.
+
+
+        To avoid inconsistencies because of Entity Rules that determine certain Review properties, currently only the LaunchDate property can be updated with the following additional caveats:
+
+
+        After an update of the LaunchDate, the Offset property that is determined by Entity Rules may not correctly reflect the difference between the new LaunchDate and CalculatedDate.
+
+
+        Current Review Status must be ''Pending'' to update the LaunchDate.
+
+
+        To avoid the Review never being launched, the LaunchDate can only be updated to a date later than the current date in UTC time.
+
+
+        As Entity Rules are evaluated at the completion of every journey, if the LaunchDate has been updated to a different date than the rules determined LaunchDate, it is possible that the updated date will be overwritten when the rules are evaluated.
+
+
+        For any successful update of the LaunchDate, the Time component will be removed.
+
+
+        Required permissions:
+
+        Following permissions are required: ScheduledReviewEdit'
+      operationId: PatchReview
+      parameters:
+      - name: id
+        in: path
+        description: Review id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Patch Review request. Data with which to update the Review
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/PatchReviewDtoServiceRequest'
+      responses:
+        '202':
+          description: Success. Review updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error
+        '403':
+          description: Forbidden. The feature is not enabled.
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found. Review with given id does not exist
+                  type: Error
+                  errorCode: Error Code
+        '409':
+          description: Conflict saving changes in expected version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: There are conflicts that cannot be resolved automatically, get latest and apply your changes
+                  type: Error
+                  errorCode: CONFLICT
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    delete:
+      tags:
+      - Review
+      summary: Delete Review
+      description: 'Deletes an existing Review.
+
+
+        Required permissions:
+
+        Following permissions are required: ScheduledReviewDelete'
+      operationId: DeleteReview
+      parameters:
+      - name: id
+        in: path
+        description: Review id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '202':
+          description: Success. Entity Rule version deleted
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found. Entity Rule with given id does not exist
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /reviewcommand
+  /api/review/trigger:
+    post:
+      tags:
+      - Review
+      summary: Triggers Review Journeys that are scheduled to be launched Today
+      description: 'Launches Review Journeys for the requested Tenant
+
+
+        Required permissions:
+
+        Following permissions are required: ReviewJourneySchedulingApprove'
+      operationId: TriggerReviewScheduler
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '202':
+          description: Success. Scheduler has been triggered succesfully
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /reviewcommand
+  /api/review/{reviewId}:
+    get:
+      tags:
+      - Review
+      summary: Get review by id
+      description: 'Returns review for a given id.
+
+
+        Required permissions:
+
+        Following permissions are required: ScheduledReviewAccess'
+      operationId: GetReviewById
+      parameters:
+      - name: reviewId
+        in: path
+        description: Review id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. Review is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewDtoServiceResponse_2'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found. Review with given id does not exist
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /reviewquery
+  /api/review/{entityId}/pending-reviews:
+    get:
+      tags:
+      - Review
+      summary: Get pending reviews for entity
+      description: 'Returns all pending reviews for entity
+
+
+        Required permissions:
+
+        At least one of the following permissions is required: ScheduledReviewAccess, JourneyAccess'
+      operationId: GetPendingReviewsForEntity
+      parameters:
+      - name: entityId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. Pending entity reviews is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewDtoIEnumerableServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '400':
+          description: Bad request. The request has missing/invalid values
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /reviewquery
+  /api/review/{journeyInstanceId}/reviews:
+    get:
+      tags:
+      - Review
+      summary: Gets the review models for a given journey id
+      description: 'Returns the review models associated with the specified review journey.
+
+
+        Required permissions:
+
+        At least one of the following permissions is required: JourneyAccess, ScheduledReviewAccess'
+      operationId: GetReviewsByJourneyId
+      parameters:
+      - name: journeyInstanceId
+        in: path
+        description: The unique identifier of the review journey
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. The review model is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewDtoIEnumerableServiceResponse'
+        '400':
+          description: Bad request. The request contains missing or invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found. A review journey with the specified ID does not exist
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /reviewquery
+components:
+  schemas:
+    ReviewDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        ruleId:
+          type: string
+          format: uuid
+        reviewType:
+          type:
+          - string
+          - 'null'
+        typeId:
+          type: string
+          format: uuid
+        entityId:
+          type: string
+          format: uuid
+        deferredDocumentRequirements:
+          allOf:
+          - $ref: '#/components/schemas/DeferredDocumentRequirements'
+        calculatedDate:
+          type: string
+          format: date-time
+        offset:
+          type: integer
+          format: int32
+        launchDate:
+          type: string
+          format: date-time
+        status:
+          type:
+          - string
+          - 'null'
+        journeyType:
+          type:
+          - string
+          - 'null'
+        origin:
+          allOf:
+          - $ref: '#/components/schemas/ReviewOrigin'
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    UpdateReviewDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UpdateReviewDto'
+      additionalProperties: false
+    PatchReviewDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/PatchReviewDto'
+      additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ReviewDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ReviewDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    UpdateReviewDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        ruleId:
+          type: string
+          format: uuid
+        entityId:
+          type: string
+          format: uuid
+        deferredDocumentRequirements:
+          allOf:
+          - $ref: '#/components/schemas/DeferredDocumentRequirements'
+        status:
+          type:
+          - string
+          - 'null'
+        launchDate:
+          type: string
+          format: date-time
+        calculatedDate:
+          type: string
+          format: date-time
+        offset:
+          type: integer
+          format: int32
+      additionalProperties: false
+    DeferredDocumentRequirementsReviewProperties:
+      required:
+      - documentRequirements
+      - jurisdictions
+      - policyCategories
+      type: object
+      properties:
+        documentRequirements:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/DeferredDocumentRequirementsReviewPropertiesDocRequirement'
+        policyCategories:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        jurisdictions:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    PatchReviewDto:
+      type: object
+      properties:
+        launchDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+      additionalProperties: false
+    ReviewDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ReviewDto'
+      additionalProperties: false
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    ReviewOrigin:
+      enum:
+      - System
+      - JourneyScheduler
+      - ETL
+      type: string
+    DeferredDocumentRequirements:
+      type: object
+      properties:
+        client:
+          allOf:
+          - $ref: '#/components/schemas/DeferredDocumentRequirementsReviewProperties'
+        relatedParties:
+          allOf:
+          - $ref: '#/components/schemas/DeferredDocumentRequirementsReviewProperties'
+      additionalProperties: false
+    DeferredDocumentRequirementsReviewPropertiesJourney:
+      type: object
+      properties:
+        journeyId:
+          type: string
+          format: uuid
+        journeyName:
+          type:
+          - string
+          - 'null'
+        journeyType:
+          type:
+          - string
+          - 'null'
+        entityId:
+          type: string
+          format: uuid
+        entityName:
+          type:
+          - string
+          - 'null'
+        completedDate:
+          type: string
+          format: date-time
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    DeferredDocumentRequirementsReviewPropertiesDocRequirement:
+      type: object
+      properties:
+        documentDataKey:
+          type:
+          - string
+          - 'null'
+        requirementName:
+          type:
+          - string
+          - 'null'
+        deferUntil:
+          type: string
+          format: date-time
+        documentDeferralComment:
+          type:
+          - string
+          - 'null'
+        journeys:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/DeferredDocumentRequirementsReviewPropertiesJourney'
+      additionalProperties: false
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ReviewDto_2:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The Review Object Id
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        ruleId:
+          type: string
+          description: The Metadata Id
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        reviewType:
+          type:
+          - string
+          - 'null'
+          description: Type of the review
+          example: Product
+        typeId:
+          type: string
+          description: The id of the object in scope for the review
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        entityId:
+          type: string
+          description: The Id of the Entity
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        deferredDocumentRequirements:
+          allOf:
+          - $ref: '#/components/schemas/DeferredDocumentRequirements'
+          description: The Deferred Document Requirements of the review object
+        calculatedDate:
+          type: string
+          description: DateTime the Review was calculated
+          format: date-time
+        offset:
+          type: integer
+          description: Number of Days to offset calculated date
+          format: int32
+          example: 30
+        launchDate:
+          type: string
+          description: DateTime of the launched review
+          format: date-time
+        status:
+          type:
+          - string
+          - 'null'
+          description: The Review Object Status
+          example: Completed
+        created:
+          type: string
+          description: The date the review was created
+          format: date-time
+        journeyType:
+          type:
+          - string
+          - 'null'
+          description: Type of a journey
+        origin:
+          allOf:
+          - $ref: '#/components/schemas/ReviewOrigin'
+          description: The Origin of the Review
+          example: System
+      additionalProperties: false
+      description: "A Review object. \nContains all properties needed to fill the metadata of the review object."
+    ReviewDtoServiceResponse_2:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ReviewDto_2'
+          description: "A Review object. \nContains all properties needed to fill the metadata of the review object."
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ReviewDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ReviewDto_2'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header
+x-refined-from:
+- fenergo-reviewcommand-v1-0-openapi.json
+- fenergo-reviewquery-v1-0-openapi.json

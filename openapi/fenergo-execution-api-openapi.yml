@@ -1,0 +1,2260 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Integration Core Execution API
+  description: '**Integration Core API**:
+
+
+    Integration Core BFF API allows to create and access integration flows and its'' executions.'
+  version: '1.0'
+servers:
+- url: /integrationcore
+security:
+- Bearer: []
+tags:
+- name: Execution
+paths:
+  /api/execution/{executionId}:
+    get:
+      tags:
+      - Execution
+      summary: Gets a specific execution by its ID
+      description: 'Required permissions:
+
+        Following permissions are required: IntegrationFlowsFlowExecutionRead
+
+
+        Required permissions:
+
+        Following permissions are required: IntegrationFlowsFlowExecutionRead'
+      operationId: GetExecution
+      parameters:
+      - name: executionId
+        in: path
+        description: The ID of the execution.
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecutionDtoServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/execution/flow/{flowId}:
+    post:
+      tags:
+      - Execution
+      summary: Start execution
+      description: 'Required permissions:
+
+        Following permissions are required: IntegrationFlowsFlowApiTrigger
+
+
+        Required permissions:
+
+        Following permissions are required: IntegrationFlowsFlowApiTrigger'
+      operationId: StartExecution
+      parameters:
+      - name: flowId
+        in: path
+        description: Either the ID or the Flow Key of the flow configuration.
+        required: true
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Request.
+        content:
+          application/json:
+            schema: {}
+      responses:
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StartExecutionResponseDtoServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/execution/test/flow/{flowId}:
+    post:
+      tags:
+      - Execution
+      summary: Start test execution
+      description: 'Required permissions:
+
+        Following permissions are required: IntegrationFlowsFlowApiTrigger
+
+
+        Required permissions:
+
+        Following permissions are required: IntegrationFlowsFlowApiTrigger'
+      operationId: StartTestExecution
+      parameters:
+      - name: flowId
+        in: path
+        description: Either the ID or the Flow Key of the flow configuration.
+        required: true
+        schema:
+          type: string
+      - name: mapToRequestBody
+        in: query
+        description: Map Input to Request.Body or full Request
+        schema:
+          type: boolean
+          default: true
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Request.
+        content:
+          application/json:
+            schema: {}
+      responses:
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StartExecutionResponseDtoServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/execution/debug/flow/{flowId}/version/{versionNumber}:
+    post:
+      tags:
+      - Execution
+      summary: Start Execution in Debug mode
+      description: 'Required permissions:
+
+        Following permissions are required: IntegrationFlowsTestExecution
+
+
+        Required permissions:
+
+        Following permissions are required: IntegrationFlowsTestExecution'
+      operationId: DebugExecution
+      parameters:
+      - name: flowId
+        in: path
+        description: Either the ID or the Flow Key of the flow configuration.
+        required: true
+        schema:
+          type: string
+      - name: versionNumber
+        in: path
+        description: The flow version number.
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: mapToRequestBody
+        in: query
+        description: Map Input to Request.Body or full Request
+        schema:
+          type: boolean
+          default: false
+      - name: newExecutionAttempt
+        in: query
+        description: Create New Attempt in existing Execution
+        schema:
+          type: boolean
+          default: false
+      - name: sourceExecutionId
+        in: query
+        description: The source/base Execution Id
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Request.
+        content:
+          application/json:
+            schema: {}
+      responses:
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StartExecutionResponseDtoServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/execution/debug/transformer:
+    post:
+      tags:
+      - Execution
+      summary: Test Transformer task
+      description: 'Required permissions:
+
+        Following permissions are required: IntegrationFlowsTestTransformerTask
+
+
+        Required permissions:
+
+        Following permissions are required: IntegrationFlowsTestTransformerTask'
+      operationId: DebugTransformerTask
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Transformer task request
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/DebugTransformerTaskRequestDto'
+      responses:
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DebugTransformerTaskResponseDtoServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/execution/callback/{asyncId}:
+    post:
+      tags:
+      - Execution
+      summary: Callback the flow execution
+      description: 'Required permissions:
+
+        Following permissions are required: IntegrationFlowsFlowTaskRetry
+
+
+        Required permissions:
+
+        Following permissions are required: IntegrationFlowsFlowTaskRetry'
+      operationId: CallbackExecution
+      parameters:
+      - name: asyncId
+        in: path
+        description: Flow Execution Async Id
+        required: true
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Request.
+        content:
+          application/json:
+            schema: {}
+      responses:
+        '202':
+          description: Accepted
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/execution/{executionId}/retry:
+    post:
+      tags:
+      - Execution
+      summary: Retries specific execution
+      description: 'Required permissions:
+
+        At least one of the following permissions is required: IntegrationFlowsFlowTaskRetry, IntegrationFlowsFlowExecutionRetry
+
+
+        Required permissions:
+
+        At least one of the following permissions is required: IntegrationFlowsFlowTaskRetry, IntegrationFlowsFlowExecutionRetry'
+      operationId: RetryExecution
+      parameters:
+      - name: executionId
+        in: path
+        description: The Id of the Execution to retry.
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '202':
+          description: Accepted
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/execution/{executionId}/cancel:
+    post:
+      tags:
+      - Execution
+      summary: Cancels a specific in-progress or paused execution
+      description: 'Required permissions:
+
+        At least one of the following permissions is required: IntegrationFlowsFlowTaskRetry, IntegrationFlowsFlowExecutionRetry
+
+
+        Required permissions:
+
+        At least one of the following permissions is required: IntegrationFlowsFlowTaskRetry, IntegrationFlowsFlowExecutionRetry'
+      operationId: CancelExecution
+      parameters:
+      - name: executionId
+        in: path
+        description: The Id of the Execution to cancel.
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancelExecutionResponseDtoServiceResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/execution/source/{sourceId}:
+    get:
+      tags:
+      - Execution
+      summary: Gets all executions for a specific source ID
+      description: 'Required permissions:
+
+        Following permissions are required: IntegrationFlowsFlowExecutionRead
+
+
+        Required permissions:
+
+        Following permissions are required: IntegrationFlowsFlowExecutionRead'
+      operationId: GetExecutionsBySource
+      parameters:
+      - name: sourceId
+        in: path
+        description: The source ID.
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecutionDtoIEnumerableServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/execution/{executionId}/attempt/{attemptId}/step-logs/{stepLogId}/data:
+    get:
+      tags:
+      - Execution
+      summary: Gets step log data for step log
+      description: 'Required permissions:
+
+        Following permissions are required: IntegrationFlowsFlowExecutionDetailsRead
+
+
+        Required permissions:
+
+        Following permissions are required: IntegrationFlowsFlowExecutionDetailsRead'
+      operationId: GetStepData
+      parameters:
+      - name: executionId
+        in: path
+        description: The ID of the execution.
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: attemptId
+        in: path
+        description: The ID of the execution attempt.
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: stepLogId
+        in: path
+        description: The ID of the step log
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StepDataDtoServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/execution/{executionId}/attempt/{attemptId}/step-logs/{stepLogId}/signedurl:
+    get:
+      tags:
+      - Execution
+      summary: Gets a signed URL for step log data
+      description: 'Required permissions:
+
+        Following permissions are required: IntegrationFlowsFlowExecutionDetailsRead
+
+
+        Required permissions:
+
+        Following permissions are required: IntegrationFlowsFlowExecutionDetailsRead'
+      operationId: GetStepDataSignedUrl
+      parameters:
+      - name: executionId
+        in: path
+        description: The ID of the execution.
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: attemptId
+        in: path
+        description: The ID of the execution attempt.
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: stepLogId
+        in: path
+        description: The ID of the step log
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/execution/{executionId}/attempt/{attemptId}/step-logs:
+    get:
+      tags:
+      - Execution
+      summary: Gets all step logs for an execution attempt
+      description: 'Required permissions:
+
+        Following permissions are required: IntegrationFlowsFlowExecutionRead
+
+
+        Required permissions:
+
+        Following permissions are required: IntegrationFlowsFlowExecutionRead'
+      operationId: GetStepLogsFromExecutionAttempt
+      parameters:
+      - name: executionId
+        in: path
+        description: The ID of the execution.
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: attemptId
+        in: path
+        description: The ID of the execution attempt.
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetStepLogsResponseServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/execution/{executionId}/step-logs/latest:
+    get:
+      tags:
+      - Execution
+      summary: Gets all step logs for latest execution attempt
+      description: 'Required permissions:
+
+        Following permissions are required: IntegrationFlowsFlowExecutionRead
+
+
+        Required permissions:
+
+        Following permissions are required: IntegrationFlowsFlowExecutionRead'
+      operationId: GetStepLogsFromLatestExecutionAttempt
+      parameters:
+      - name: executionId
+        in: path
+        description: The ID of the execution.
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecutionStepLogDtoIEnumerableServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/execution/search:
+    post:
+      tags:
+      - Execution
+      summary: Gets all executions for specific filters. All parameters are optional
+      description: 'Required permissions:
+
+        Following permissions are required: IntegrationFlowsFlowExecutionRead
+
+
+        Required permissions:
+
+        Following permissions are required: IntegrationFlowsFlowExecutionRead'
+      operationId: searchExecutionsByFilters
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: The request containing properties to filter the data.
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/SearchExecutionsByFilterRequest'
+      responses:
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecutionFilteredDtoPaginatedResponseServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/execution/limits:
+    get:
+      tags:
+      - Execution
+      summary: Gets executions current limits
+      description: 'Required permissions:
+
+        Following permissions are required: IntegrationFlowsFlowExecutionRead
+
+
+        Required permissions:
+
+        Following permissions are required: IntegrationFlowsFlowExecutionRead'
+      operationId: GetExecutionsLimits
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplexityBucketLimitsDtoIEnumerableServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/execution/metrics:
+    get:
+      tags:
+      - Execution
+      summary: Retrieves CloudWatch metric data for the specified parameters
+      description: 'Required permissions:
+
+        Following permissions are required: IntegrationFlowsFlowExecutionRead
+
+
+        Required permissions:
+
+        Following permissions are required: IntegrationFlowsFlowExecutionRead'
+      operationId: GetMetrics
+      parameters:
+      - name: MetricBucketName
+        in: query
+        schema:
+          allOf:
+          - $ref: '#/components/schemas/MetricBucketName'
+      - name: StartDate
+        in: query
+        schema:
+          type: string
+          format: date-time
+      - name: EndDate
+        in: query
+        schema:
+          type: string
+          format: date-time
+      - name: Statistic
+        in: query
+        schema:
+          allOf:
+          - $ref: '#/components/schemas/MetricStatistic'
+      - name: Period
+        in: query
+        schema:
+          allOf:
+          - $ref: '#/components/schemas/MetricPeriod'
+      - name: MetricName
+        in: query
+        schema:
+          allOf:
+          - $ref: '#/components/schemas/MetricName'
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsResultDtoServiceResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+components:
+  schemas:
+    MetricName:
+      enum:
+      - ConsumedComplexity
+      - ThrottledRequests
+      type: string
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    StepDataDto:
+      type: object
+      properties:
+        parameters: {}
+        state: {}
+        output: {}
+      additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ExecutionDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ExecutionDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ExecutionFilteredDtoPaginatedResponse:
+      type: object
+      properties:
+        items:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ExecutionFilteredDto'
+        nextToken:
+          type:
+          - string
+          - 'null'
+        hasNextPage:
+          type: boolean
+      additionalProperties: false
+    ExecutionDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        initiatorType:
+          allOf:
+          - $ref: '#/components/schemas/SourceType'
+        sourceId:
+          type: string
+          format: uuid
+        parentExecutionId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        dateCreated:
+          type: string
+          format: date-time
+        dateStarted:
+          type: string
+          format: date-time
+        dateCompleted:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        executionStatus:
+          allOf:
+          - $ref: '#/components/schemas/AttemptStatus'
+        attempts:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AttemptDto'
+        initialRequest: {}
+        correlationId:
+          type:
+          - string
+          - 'null'
+        flow:
+          allOf:
+          - $ref: '#/components/schemas/Flow'
+        scheduleKey:
+          type:
+          - string
+          - 'null'
+        isDebugMode:
+          type: boolean
+      additionalProperties: false
+    ExecutionStepResult:
+      enum:
+      - Success
+      - Failed
+      - InProgress
+      type: string
+    Flow:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+        flowKey:
+          type:
+          - string
+          - 'null'
+        id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          format: int32
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ExecutionStepLogDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ExecutionStepLogDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CancelExecutionResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CancelExecutionResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    SourceType:
+      enum:
+      - Unknown
+      - Journey
+      - ExternalData
+      - Api
+      - Policy
+      - Scheduler
+      type: string
+    Pager:
+      required:
+      - first
+      type: object
+      properties:
+        first:
+          type: integer
+          format: int32
+        after:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ExecutionStepLogDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        executionId:
+          type: string
+          format: uuid
+        attemptId:
+          type: string
+          format: uuid
+        configurationId:
+          type: string
+          format: uuid
+        result:
+          allOf:
+          - $ref: '#/components/schemas/ExecutionStepResult'
+        stepName:
+          type:
+          - string
+          - 'null'
+        stepType:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        order:
+          type: integer
+          format: int32
+        isStart:
+          type: boolean
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        parentStepLogId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        instanceId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        subflowIdentifier:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    GetStepLogsResponseServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetStepLogsResponse'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ExecutionFilteredDtoPaginatedResponseServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ExecutionFilteredDtoPaginatedResponse'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ExecutionError:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        code:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    StartExecutionResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/StartExecutionResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CancelExecutionResponseDto:
+      type: object
+      properties:
+        executionId:
+          type: string
+          format: uuid
+        status:
+          allOf:
+          - $ref: '#/components/schemas/AttemptStatus'
+        isSuccess:
+          type: boolean
+      additionalProperties: false
+    MetricsResultDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/MetricsResultDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    MetricDataPointDto:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        value:
+          type: number
+          format: double
+      additionalProperties: false
+    SearchExecutionsByFilterRequest:
+      type: object
+      properties:
+        startDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        endDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        configurationId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        configurationVersion:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        scheduleKey:
+          type:
+          - string
+          - 'null'
+        pager:
+          allOf:
+          - $ref: '#/components/schemas/Pager'
+      additionalProperties: false
+    ComplexityBucketRuleLimitDto:
+      type: object
+      properties:
+        timeWindow:
+          type: string
+          format: date-span
+        currentQuota:
+          type: integer
+          format: int32
+        remainingQuota:
+          type: integer
+          format: int32
+        limitQuota:
+          type: integer
+          format: int32
+        expirySeconds:
+          type: integer
+          format: int32
+      additionalProperties: false
+    TransformLambdaResponseError:
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/TransformerErrorType'
+        code:
+          type:
+          - string
+          - 'null'
+        message:
+          type:
+          - string
+          - 'null'
+        stack:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    DebugTransformerTaskRequestDto:
+      type: object
+      properties:
+        input:
+          type:
+          - string
+          - 'null'
+        transpiledCode:
+          type:
+          - string
+          - 'null'
+        includeLookups:
+          type: boolean
+        libraries:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        useDraftLibraries:
+          type: boolean
+      additionalProperties: false
+    ComplexityBucketLimitsDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ComplexityBucketLimitsDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AttemptDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          allOf:
+          - $ref: '#/components/schemas/AttemptStatus'
+        configurationVersion:
+          type: integer
+          format: int32
+        dateStarted:
+          type: string
+          format: date-time
+        dateCompleted:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        error:
+          allOf:
+          - $ref: '#/components/schemas/ExecutionError'
+      additionalProperties: false
+    MetricStatistic:
+      enum:
+      - Sum
+      - Min
+      - Max
+      - Average
+      type: string
+    ExecutionDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ExecutionDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    TransformerErrorType:
+      enum:
+      - Unhandled
+      - Custom
+      type: string
+    StepDataDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/StepDataDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    StartExecutionResponseDto:
+      type: object
+      properties:
+        sourceId:
+          type: string
+          format: uuid
+      additionalProperties: false
+    MetricsResultDto:
+      type: object
+      properties:
+        pointsTotalCount:
+          type: integer
+          format: int32
+        results:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/MetricDataPointDto'
+      additionalProperties: false
+    MetricBucketName:
+      enum:
+      - DebugTransformerTask
+      - FlowsExecutions
+      - FlowsExecutionTime
+      - FlowsTransitions
+      type: string
+    GetStepLogsResponse:
+      type: object
+      properties:
+        stepLogs:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ExecutionStepLogDto'
+      additionalProperties: false
+    DebugTransformerTaskResponseDto:
+      type: object
+      properties:
+        isSuccess:
+          type: boolean
+        isTimeOut:
+          type: boolean
+        output: {}
+        logs:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        errorDetails:
+          allOf:
+          - $ref: '#/components/schemas/TransformLambdaResponseError'
+      additionalProperties: false
+    ExecutionFilteredDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        dateCreated:
+          type: string
+          format: date-time
+        dateStarted:
+          type: string
+          format: date-time
+        dateCompleted:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        attemptsCount:
+          type: integer
+          format: int32
+        initiatorType:
+          allOf:
+          - $ref: '#/components/schemas/SourceType'
+        sourceId:
+          type: string
+          format: uuid
+        executionStatus:
+          allOf:
+          - $ref: '#/components/schemas/AttemptStatus'
+        flow:
+          allOf:
+          - $ref: '#/components/schemas/Flow'
+        isDebugMode:
+          type: boolean
+      additionalProperties: false
+    AttemptStatus:
+      enum:
+      - InProgress
+      - Success
+      - Failed
+      - Paused
+      type: string
+    DebugTransformerTaskResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/DebugTransformerTaskResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    MetricPeriod:
+      enum:
+      - OneMinute
+      - FiveMinutes
+      - FifteenMinutes
+      - ThirtyMinutes
+      - OneHour
+      type: string
+    ComplexityBucketLimitsDto:
+      type: object
+      properties:
+        bucketName:
+          type:
+          - string
+          - 'null'
+        limits:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ComplexityBucketRuleLimitDto'
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

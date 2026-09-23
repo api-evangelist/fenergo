@@ -1,0 +1,315 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Policy Query Get Requirenment Sets By IDS…
+  description: Policy Query API is part of FenX eco-system to query for Requirement Sets, Requirements, Data Groups and Data Group Fields Instances. All the operations require valid access token obtained from Identity service.
+  version: '2.0'
+servers:
+- url: /policyquery
+security:
+- Bearer: []
+tags:
+- name: GetRequirenmentSetsByIdsLight
+paths:
+  /api/v2/requirement-set/light:
+    post:
+      tags:
+      - GetRequirenmentSetsByIdsLight
+      summary: Gets light version of requirement sets based on entity requirements
+      description: 'Required permissions:
+
+        Following permissions are required: PolicySearch'
+      operationId: GetRequirenmentSetsByIdsLight
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: List of entity requirements with offboarded jurisdictions included
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/GetRequirementSetsByIdsLightRequestDtoServiceRequest'
+              description: Service request data
+      responses:
+        '200':
+          description: Success. List of light requirement sets data is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementSetLightDtoListServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found. Requirement sets with given ids don't not exist
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+components:
+  schemas:
+    AssociatedVersionedJurisdictionDto:
+      type: object
+      properties:
+        jurisdiction:
+          type:
+          - string
+          - 'null'
+          description: Jurisdiction of the requirement
+          example: Global
+        versionId:
+          type:
+          - string
+          - 'null'
+          description: Jurisdiction of the requirement
+          format: uuid
+          example: 894e1443-dd7a-4b9d-b253-430c2de80524
+        isOffboarded:
+          type: boolean
+          description: Flag to determine if previously inherited jurisdiction is now offboarded
+      additionalProperties: false
+    GetRequirementSetsByIdsLightRequestDto:
+      type: object
+      properties:
+        inScopeJurisdictions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/VersionedJurisdictionDto'
+          description: Entitys data jurisdictions
+        offboardedJurisdictions:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of Entitys offboarded jursidictions
+        associatedJurisdictionsFromParents:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AssociatedVersionedJurisdictionDto'
+          description: List of entity jursidictions associated from parents
+      additionalProperties: false
+      description: Request DTO representing light requirenment sets
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+          description: The message
+          example: Success
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
+      additionalProperties: false
+      description: The message associated to the service response
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    RequirementSetLightDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The UiD of the requirement set
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        name:
+          type:
+          - string
+          - 'null'
+          description: Requirement set name
+          example: Fenergo Comprehensive Standard Policy Requirements
+        status:
+          type:
+          - string
+          - 'null'
+          description: The status of requirement set
+          example: In Scope
+        versionNumber:
+          type: integer
+          description: The version number
+          format: int32
+          example: 1
+        jurisdiction:
+          type:
+          - string
+          - 'null'
+          description: Jurisdiction of the requirement set
+          example: Global
+        jurisdictionContext:
+          type:
+          - string
+          - 'null'
+          description: The jurisdiction context of requirement set
+          example: Inherent
+      additionalProperties: false
+      description: Response DTO representing light version of jurisdiction set
+    VersionedJurisdictionDto:
+      type: object
+      properties:
+        jurisdiction:
+          type:
+          - string
+          - 'null'
+          description: Jurisdiction of the requirement
+          example: Global
+        versionId:
+          type:
+          - string
+          - 'null'
+          description: Jurisdiction of the requirement
+          format: uuid
+          example: 894e1443-dd7a-4b9d-b253-430c2de80524
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data:
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    RequirementSetLightDtoListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RequirementSetLightDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    GetRequirementSetsByIdsLightRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetRequirementSetsByIdsLightRequestDto'
+          description: Request DTO representing light requirenment sets
+      additionalProperties: false
+      description: Service request data
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

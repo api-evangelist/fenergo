@@ -1,0 +1,354 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Ongoing Monitoring API
+  version: '1.0'
+  description: 'Operations tagged OngoingMonitoring across 2 of this provider''s published API definitions: fenergo-externaldatacommand-v1-0-openapi.json, fenergo-externaldataquery-v1-0-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- url: /externaldatacommand
+- url: /externaldataquery
+security:
+- Bearer: []
+tags:
+- name: OngoingMonitoring
+paths:
+  /api/ongoingmonitoring/unsubscribe:
+    post:
+      tags:
+      - OngoingMonitoring
+      summary: Unsubscribe from ongoing monitoring
+      description: 'This method will unsubscribe from ongoing monitoring.
+
+        The unsubscribe works on the combination of SubscriptionId and EntityId.
+
+        SubscriptionId is the unique identifier of the subscription, generated when ongoing monitoring was subscribed for an entity.
+
+        External Data Provider has to support ongoing monitoring and Entity has to be subscribed before it can be unsubscribed.
+
+
+        Required permissions:
+
+        Following permissions are required: ExternalDataAccess
+
+
+        Required permissions:
+
+        Following permissions are required: ExternalDataAccess'
+      operationId: UnsubscribeFromOngoingMonitoring
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: The unsubscription request, containing SubscriptionId and EntityId
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/UnsubscriptionRequestDtoServiceRequest'
+              description: Service request data
+      responses:
+        '202':
+          description: Success. Unsubscribe request created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /externaldatacommand
+  /api/ongoingmonitoring/subscriptions/entity/{entityId}:
+    get:
+      tags:
+      - OngoingMonitoring
+      summary: Get all ongoing monitoring subscriptions for an entity
+      description: 'This method returns all ongoing monitoring subscriptions for given entity.
+
+
+        Required permissions:
+
+        Following permissions are required: ExternalDataAccess
+
+
+        Required permissions:
+
+        Following permissions are required: ExternalDataAccess'
+      operationId: GetSubscriptionsByEntityId
+      parameters:
+      - name: entityId
+        in: path
+        description: The entity id to get the subscriptions for
+        required: true
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. Subscriptions retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OngoingMonitoringSubscriptionDtoICollectionServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /externaldataquery
+components:
+  schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+          description: The message
+          example: Success
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
+      additionalProperties: false
+      description: The message associated to the service response
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data:
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    UnsubscriptionRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UnsubscriptionRequestDto'
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
+    UnsubscriptionRequestDto:
+      required:
+      - entityId
+      - subscriptionId
+      type: object
+      properties:
+        entityId:
+          minLength: 1
+          type: string
+          description: The Entity Id
+        subscriptionId:
+          minLength: 1
+          type: string
+          description: The Subscription Id
+      additionalProperties: false
+      description: Request DTO to unsubscribe from ongoing monitoring
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    OngoingMonitoringSubscriptionDto:
+      type: object
+      properties:
+        subscriptionId:
+          type:
+          - string
+          - 'null'
+          description: Ongoing Monitoring Subscription Id
+          example: Requested
+        status:
+          type:
+          - string
+          - 'null'
+          description: Ongoing Monitoring Subscription Status
+          example: Requested
+        entityId:
+          type:
+          - string
+          - 'null'
+          description: Entity Id
+          example: Requested
+        providerId:
+          type:
+          - string
+          - 'null'
+          description: Provider Id
+          example: Requested
+      additionalProperties: false
+      description: Contains information about the ongoing monitoring subscription
+    OngoingMonitoringSubscriptionDtoICollectionServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/OngoingMonitoringSubscriptionDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header
+x-refined-from:
+- fenergo-externaldatacommand-v1-0-openapi.json
+- fenergo-externaldataquery-v1-0-openapi.json

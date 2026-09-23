@@ -1,0 +1,908 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Schedule API
+  version: '2.0'
+  description: 'Operations tagged Schedule across 2 of this provider''s published API definitions: fenergo-reportscommand-v2-0-openapi.json, fenergo-reportsquery-v2-0-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- url: /reportscommand
+- url: /reportsquery
+security:
+- Bearer: []
+tags:
+- name: Schedule
+paths:
+  /api/v2/Schedule:
+    post:
+      tags:
+      - Schedule
+      summary: Create a new report schedule
+      description: 'Creates a new report schedule linked to a saved query
+
+
+        Returns the unique ID of the created schedule
+
+
+        Required permissions:
+
+        Following permissions are required: ReportingEdit'
+      operationId: CreateSchedule
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Create schedule request
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CreateScheduleDtoServiceRequest'
+      responses:
+        '201':
+          description: Created. Schedule created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedScheduleDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: NotFound. The referenced query was not found
+                  type: Error
+                  errorCode: Error Code
+        '409':
+          description: Conflict saving changes in expected version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: There are conflicts that cannot be resolved automatically, get latest and apply your changes
+                  type: Error
+                  errorCode: CONFLICT
+        '500':
+          description: Internal Server Error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    get:
+      tags:
+      - Schedule
+      summary: Get all Schedules
+      description: 'This method returns all schedules for the current tenant
+
+
+        Required permissions:
+
+        Following permissions are required: ReportingAccess'
+      operationId: GetAllSchedules
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. The list of Schedules is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAllSchedulesItemDtoIEnumerableServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /reportscommand
+  /api/v2/Schedule/{id}:
+    put:
+      tags:
+      - Schedule
+      summary: Update an existing report schedule
+      description: 'Updates the configuration of an existing report schedule
+
+
+        Required permissions:
+
+        Following permissions are required: ReportingEdit'
+      operationId: UpdateSchedule
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the schedule to update
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Update schedule request
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/UpdateScheduleDtoServiceRequest'
+      responses:
+        '204':
+          description: NoContent. Schedule updated successfully
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: NotFound. The schedule or referenced query was not found
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal Server Error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    delete:
+      tags:
+      - Schedule
+      summary: Delete an existing report schedule
+      description: 'Permanently deletes a report schedule
+
+
+        Required permissions:
+
+        Following permissions are required: ReportingDelete'
+      operationId: DeleteSchedule
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the schedule to delete
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '204':
+          description: NoContent. Schedule deleted successfully
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: NotFound. The schedule was not found
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal Server Error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    get:
+      tags:
+      - Schedule
+      summary: Get Schedule by Id
+      description: 'This method returns the schedule for the given Id
+
+
+        Required permissions:
+
+        Following permissions are required: ReportingAccess'
+      operationId: GetScheduleById
+      parameters:
+      - name: id
+        in: path
+        description: ''
+        required: true
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. The Schedule is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetScheduleByIdDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not found. No schedule exists for the given Id
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal Server Error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /reportscommand
+components:
+  schemas:
+    ScheduleStatus:
+      enum:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      type: integer
+      description: 0 = Active, 1 = Paused, 2 = Suspended, 3 = Completed, 4 = Deleted
+      format: int32
+      x-enumNames:
+      - Active
+      - Paused
+      - Suspended
+      - Completed
+      - Deleted
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    CreateScheduleDto:
+      allOf:
+      - $ref: '#/components/schemas/ScheduleBaseDto'
+      - type: object
+        additionalProperties: false
+      description: Payload for creating a new report schedule
+    UpdateScheduleDto:
+      allOf:
+      - $ref: '#/components/schemas/ScheduleBaseDto'
+      - required:
+        - id
+        - status
+        type: object
+        properties:
+          id:
+            type: string
+            description: The ID of the schedule to update
+            format: uuid
+          status:
+            allOf:
+            - $ref: '#/components/schemas/ScheduleStatus'
+            description: 0 = Active, 1 = Paused, 2 = Suspended, 3 = Completed, 4 = Deleted
+            x-enumNames:
+            - Active
+            - Paused
+            - Suspended
+            - Completed
+            - Deleted
+        additionalProperties: false
+      description: Payload for updating an existing report schedule
+    ScheduleFormat:
+      enum:
+      - 0
+      - 1
+      - 2
+      type: integer
+      description: 0 = Pdf, 1 = Xlsx, 2 = Csv
+      format: int32
+      x-enumNames:
+      - Pdf
+      - Xlsx
+      - Csv
+    CreatedScheduleDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreatedScheduleDto'
+          description: Response returned after a schedule is successfully created
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    UpdateScheduleDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UpdateScheduleDto'
+          description: Payload for updating an existing report schedule
+      additionalProperties: false
+    CreateScheduleDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateScheduleDto'
+          description: Payload for creating a new report schedule
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ScheduleBaseDto:
+      required:
+      - format
+      - frequency
+      - name
+      - queryId
+      - recipients
+      - timeOfDay
+      - timezone
+      type: object
+      properties:
+        name:
+          minLength: 1
+          type: string
+          description: Human-readable name for the schedule
+        queryId:
+          type: string
+          description: ID of the saved query to run on this schedule
+          format: uuid
+        frequency:
+          allOf:
+          - $ref: '#/components/schemas/ScheduleFrequency'
+          description: 0 = OneTime, 1 = Daily, 2 = Weekly, 3 = Monthly
+          x-enumNames:
+          - OneTime
+          - Daily
+          - Weekly
+          - Monthly
+        daysOfWeek:
+          type:
+          - array
+          - 'null'
+          items:
+            type: integer
+            format: int32
+          description: Days of week for Weekly frequency (0=Sun..6=Sat). Min 1 required for Weekly.
+        dayOfMonth:
+          type:
+          - integer
+          - 'null'
+          description: Day of month for Monthly frequency (1..28)
+          format: int32
+        timeOfDay:
+          minLength: 1
+          type: string
+          description: Time of day to run in HH:mm format (e.g. "08:00")
+        timezone:
+          minLength: 1
+          type: string
+          description: IANA timezone identifier (e.g. "Europe/London")
+        format:
+          allOf:
+          - $ref: '#/components/schemas/ScheduleFormat'
+          description: 0 = Pdf, 1 = Xlsx, 2 = Csv
+          x-enumNames:
+          - Pdf
+          - Xlsx
+          - Csv
+        recipients:
+          type: array
+          items:
+            type: string
+          description: Email addresses to deliver the report to (max 20)
+        oneTimeRunAtUtc:
+          type:
+          - string
+          - 'null'
+          description: 'For OneTime frequency: the exact UTC datetime to run. Must be at least 1 hour in the future.'
+          format: date-time
+        parameters:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: string
+          description: Fixed parameter values to inject into the SQL query at execution time (name → value)
+      additionalProperties: false
+      description: Shared schedule payload properties used by both create and update commands.
+    ScheduleFrequency:
+      enum:
+      - 0
+      - 1
+      - 2
+      - 3
+      type: integer
+      description: 0 = OneTime, 1 = Daily, 2 = Weekly, 3 = Monthly
+      format: int32
+      x-enumNames:
+      - OneTime
+      - Daily
+      - Weekly
+      - Monthly
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    CreatedScheduleDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+      additionalProperties: false
+      description: Response returned after a schedule is successfully created
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ScheduleStatus_2:
+      enum:
+      - Active
+      - Paused
+      - Suspended
+      - Completed
+      - Deleted
+      type: string
+    GetAllSchedulesItemDto:
+      allOf:
+      - $ref: '#/components/schemas/ScheduleQueryDto'
+      - type: object
+        additionalProperties: false
+      description: Schedule item returned in a list
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ScheduleFormat_2:
+      enum:
+      - Pdf
+      - Xlsx
+      - Csv
+      type: string
+    GetScheduleByIdDto:
+      allOf:
+      - $ref: '#/components/schemas/ScheduleQueryDto'
+      - type: object
+        additionalProperties: false
+      description: Schedule detail returned by GetScheduleById
+    GetAllSchedulesItemDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/GetAllSchedulesItemDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ScheduleQueryDto:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+          description: Unique schedule identifier
+        name:
+          type:
+          - string
+          - 'null'
+          description: Human-readable schedule name
+        queryId:
+          type:
+          - string
+          - 'null'
+          description: ID of the query being scheduled
+        frequency:
+          allOf:
+          - $ref: '#/components/schemas/ScheduleFrequency_2'
+          description: Schedule frequency
+        daysOfWeek:
+          type:
+          - array
+          - 'null'
+          items:
+            type: integer
+            format: int32
+          description: Days of week for Weekly frequency
+        dayOfMonth:
+          type:
+          - integer
+          - 'null'
+          description: Day of month for Monthly frequency
+          format: int32
+        timeOfDay:
+          type:
+          - string
+          - 'null'
+          description: Time of day in HH:mm format
+        timezone:
+          type:
+          - string
+          - 'null'
+          description: IANA timezone identifier
+        format:
+          allOf:
+          - $ref: '#/components/schemas/ScheduleFormat_2'
+          description: Output format
+        recipients:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Recipient email addresses
+        oneTimeRunAtUtc:
+          type:
+          - string
+          - 'null'
+          description: 'For OneTime: the exact UTC run datetime'
+          format: date-time
+        nextRunUtc:
+          type: string
+          description: Next scheduled UTC run time
+          format: date-time
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ScheduleStatus_2'
+          description: Current schedule status
+        createdBy:
+          type:
+          - string
+          - 'null'
+          description: User who created the schedule
+        createdAtUtc:
+          type: string
+          description: UTC creation time
+          format: date-time
+        lastRunUtc:
+          type:
+          - string
+          - 'null'
+          description: UTC time of last execution
+          format: date-time
+        lastRunStatus:
+          type:
+          - string
+          - 'null'
+          description: Status of the last execution
+        lastFailureReason:
+          type:
+          - string
+          - 'null'
+          description: Reason code from the most recent failed run (e.g. REPORT_EXECUTION_FAILED, QUERY_DELETED). Null if the last run succeeded.
+        lastFailureMessage:
+          type:
+          - string
+          - 'null'
+          description: Sanitised detail from the most recent failed run (e.g. Athena error text). Null if the last run succeeded.
+        parameters:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: string
+          description: Fixed parameter values injected into the SQL query at execution time (name → value)
+      additionalProperties: false
+      description: Shared base properties for schedule query DTOs
+    GetScheduleByIdDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetScheduleByIdDto'
+          description: Schedule detail returned by GetScheduleById
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ScheduleFrequency_2:
+      enum:
+      - OneTime
+      - Daily
+      - Weekly
+      - Monthly
+      type: string
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header
+x-refined-from:
+- fenergo-reportscommand-v2-0-openapi.json
+- fenergo-reportsquery-v2-0-openapi.json

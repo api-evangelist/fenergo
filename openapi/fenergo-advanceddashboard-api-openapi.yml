@@ -1,0 +1,379 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Audit Query Advanced Dashboard API
+  description: The Audit Query API enables the retrieval of audit event data related to various activities within the system.
+  version: '3.0'
+servers:
+- url: /auditquery
+security:
+- Bearer: []
+tags:
+- name: AdvancedDashboard
+paths:
+  /api/v3/advanced-dashboard/configuration:
+    post:
+      tags:
+      - AdvancedDashboard
+      summary: Retrieve advanced dashboard configuration audit events
+      description: 'This method accepts an Advanced Dashboard configuration version ID and returns relevant Audit Events related to the configuration
+
+
+        Required permissions:
+
+        Following permissions are required: AuditAccessAndSearch'
+      operationId: GetAdvancedDashboardConfigurationAuditEvents
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Advanced Dashboard Configuration Audit Event Summaries Request
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/GetAdvancedDashboardAuditEventsRequestDtoServiceRequest'
+      responses:
+        '200':
+          description: Success. The list of summarized audit events is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAdvancedDashboardAuditEventsResultDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '413':
+          description: Payload Too Large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: The amount of data requested is too large. Please request smaller data set.
+                  type: Error
+                  errorCode: PAYLOAD_TOO_LARGE
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+components:
+  schemas:
+    GetAdvancedDashboardAuditEventsRequestDto:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+          description: The configuration version id that you want to include as part of the query
+        pager:
+          allOf:
+          - $ref: '#/components/schemas/PagerDto'
+          description: A pager object to specify pagination parameters
+          example:
+            size: 10
+            from: 0
+            sortBy: date
+            sortOrder: Descending
+        filters:
+          allOf:
+          - $ref: '#/components/schemas/AdvancedDashboardFiltersDto'
+          description: 'Request DTO to specify optional query filters
+
+            '
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    AdvancedDashboardAuditResultDto:
+      type: object
+      properties:
+        configurationVersionId:
+          type:
+          - string
+          - 'null'
+          description: User id for which the change took place.
+        changedBy:
+          type:
+          - string
+          - 'null'
+          description: User id who made the change.
+        updatedOn:
+          type: string
+          description: Date when this event happened.
+          format: date-time
+        eventName:
+          type:
+          - string
+          - 'null'
+          description: Event name that was performed (e.g. Dashboard Configuration Version Created).
+        policyFieldUpdates:
+          allOf:
+          - $ref: '#/components/schemas/PolicyFieldUpdatesDto'
+          description: Policy field updates including added and removed fields.
+        viewUpdates:
+          allOf:
+          - $ref: '#/components/schemas/ViewUpdatesDto'
+          description: View updates including added and removed fields.
+      additionalProperties: false
+    GetAdvancedDashboardAuditEventsResultDto:
+      type: object
+      properties:
+        items:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AdvancedDashboardAuditResultDto'
+          description: Items for the current page.
+        totalItems:
+          type: integer
+          description: Total count of items.
+          format: int64
+          example: 1
+      additionalProperties: false
+    ViewUpdatesDto:
+      type: object
+      properties:
+        viewName:
+          type:
+          - string
+          - 'null'
+          description: Name of the view.
+        viewFieldsAdded:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Array of view field items added to the index.
+        viewFieldsRemoved:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Array of view field items removed from the index.
+      additionalProperties: false
+    GetAdvancedDashboardAuditEventsResultDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetAdvancedDashboardAuditEventsResultDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    SortOrder:
+      enum:
+      - Ascending
+      - Descending
+      type: string
+    PagerDto:
+      type: object
+      properties:
+        size:
+          type: integer
+          format: int32
+          exclusiveMinimum: 0
+        from:
+          minimum: 0
+          type: integer
+          format: int32
+        sortBy:
+          type:
+          - string
+          - 'null'
+        sortOrder:
+          allOf:
+          - $ref: '#/components/schemas/SortOrder'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    PolicyFieldUpdatesDto:
+      type: object
+      properties:
+        policyFieldsAdded:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Array of policy field items added to the index.
+        policyFieldsRemoved:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Array of policy field items removed from the index.
+      additionalProperties: false
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    GetAdvancedDashboardAuditEventsRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetAdvancedDashboardAuditEventsRequestDto'
+      additionalProperties: false
+    AdvancedDashboardFiltersDto:
+      type: object
+      properties:
+        eventType:
+          enum:
+          - DashboardConfigurationVersionCreated
+          - DashboardConfigurationVersionUpdated
+          - DashboardConfigurationVersionPolicyFieldsUpdated
+          - DashboardConfigurationVersionViewAdded
+          - DashboardConfigurationVersionViewUpdated
+          - DashboardConfigurationVersionViewDeleted
+          - DashboardConfigurationVersionSubmitted
+          - DashboardConfigurationVersionPublished
+          - DashboardConfigurationVersionFailed
+          - DashboardConfigurationVersionDeleted
+          type:
+          - string
+          - 'null'
+          description: EventType for the configuration version associated with the event
+          example: DashboardConfigurationVersionPublished
+        from:
+          type:
+          - string
+          - 'null'
+          description: Date from
+          format: date-time
+          example: '2022-08-10'
+        to:
+          type:
+          - string
+          - 'null'
+          description: Date to (must be greater than from date)
+          format: date-time
+          example: '2022-08-11'
+      additionalProperties: false
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

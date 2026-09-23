@@ -1,0 +1,393 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula External Data Command Publish API
+  description: '**External Data Command API**:
+
+
+    External Data Command API allows to import information about clients, their associated parties, documents from external providers.'
+  version: '1.0'
+servers:
+- url: /externaldatacommand
+security:
+- Bearer: []
+tags:
+- name: Publish
+paths:
+  /api/publish:
+    post:
+      tags:
+      - Publish
+      summary: Publish data to downstream system
+      description: 'Required permissions:
+
+        Following permissions are required: ExternalDataApprove
+
+
+        Required permissions:
+
+        Following permissions are required: ExternalDataApprove'
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Request
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/PublishOrchestratorDtoServiceRequest'
+              description: Service request data
+      responses:
+        '202':
+          description: Success.
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+      operationId: postApiPublish
+      x-operation-id-source: derived
+components:
+  schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+          description: The message
+          example: Success
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
+      additionalProperties: false
+      description: The message associated to the service response
+    ExternalDataOutreach:
+      type: object
+      properties:
+        approvedVerifiedAssociationIdsRemoval:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+            format: uuid
+          description: 'IDs of verified associations approved for removal by the reviewer; they will be deleted
+
+            via RemoveVerifiedAssociation during import.'
+        approvedUnverifiedAssociationIdsRemoval:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+            format: uuid
+          description: 'IDs of unverified associations approved for removal by the reviewer; they will be deleted
+
+            via RemoveUnverifiedAssociation during import.'
+        approvedNewAssociations:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ApprovedNewAssociation'
+          description: 'Approved (parentId, associationType) pairs for non-snapshot associations proposed by Outreach.
+
+            Only non-snapshot associations matching both ParentId and AssociationType in this list will be
+
+            created during import; all others are silently skipped.'
+      additionalProperties: false
+      description: Association-level approval decisions within an outreach review publish (AB#545441).
+    OutreachApprovals:
+      type: object
+      properties:
+        amendmentApprovals:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/OutreachAmendmentApproval'
+          description: 'Per-entity, per-field amendment approvals. Only the listed fields are written to
+
+            entity drafts; fields absent from the list are left unchanged.'
+        associations:
+          allOf:
+          - $ref: '#/components/schemas/ExternalDataOutreach'
+          description: Association-level approval decisions (removals and new associations).
+      additionalProperties: false
+      description: 'Outreach-review approval decisions carried with a publish message (AB#545441).
+
+        Null when the publish was not triggered from an outreach review context.'
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    ApprovedNewAssociation:
+      type: object
+      properties:
+        parentId:
+          type: string
+          format: uuid
+        associationType:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+      description: 'Identifies a specific non-snapshot association proposed by Outreach that the reviewer has
+
+        approved for creation. Both ParentId and AssociationType must match for the
+
+        association to be created during import.'
+    JurisdictionDto:
+      type: object
+      properties:
+        jurisdiction:
+          type:
+          - string
+          - 'null'
+          description: Name of the Jurisdiction
+          example: Global
+        jurisdictionVersion:
+          type:
+          - string
+          - 'null'
+          description: Version of the Jurisdiction
+          format: uuid
+          example: 8fd3739b-555c-49d8-9ab4-eb442480d852
+      additionalProperties: false
+    PublishOrchestratorDto:
+      required:
+      - draftId
+      - entityId
+      - externalDataProviderId
+      - externalId
+      - importId
+      - journeyId
+      - searchId
+      type: object
+      properties:
+        tenant:
+          type:
+          - string
+          - 'null'
+          description: Id of the Tenant
+          example: 20a58964-c4aa-4dcf-980d-fa0e6f2b51d2
+        journeyId:
+          type: string
+          description: Id of the Journey (Needed to update EntityDraft for the root legal entity)
+          example: c0c7b87d-1fc3-4127-b87d-c5b76a13d159
+        searchId:
+          type: string
+          description: Id of the Search Request
+          example: 495669fb-e3c5-4538-8457-4dcbcb720578
+        externalId:
+          type: string
+          description: ExternalId of the root Legal Entity
+          example: PL610188202
+        importId:
+          type: string
+          description: Id of the External Data Import
+          example: 86fa2093-f161-4231-b1f5-8d6fd6049f96
+        entityId:
+          type: string
+          description: EntityId of the root Legal Entity
+          example: c9476631-df14-4c26-8feb-9bde7091a4a1
+        externalDataProviderId:
+          type: string
+          description: Id of the External Data Provider
+          example: f47b539d-ffb8-4cf2-bf68-1af79e3b0040
+        draftId:
+          type: string
+          description: DraftId of the root Legal Entity
+          example: 8fd3739b-555c-49d8-9ab4-eb442480d852
+        jurisdictions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/JurisdictionDto'
+          description: List of drafts jurisdictions
+        ongoingMonitoring:
+          type: boolean
+          description: If subscribe to ongoing monitoring
+        ongoingMonitoringData:
+          type:
+          - object
+          - 'null'
+          additionalProperties: {}
+          description: Ongoing Monitoring Subscription Data
+        relatedPartiesBusinessCategory:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of categories for related parties
+        taskId:
+          type:
+          - string
+          - 'null'
+          description: Id of the journey task that triggered this import
+        providerName:
+          type:
+          - string
+          - 'null'
+          description: 'Display name of the external data provider, resolved at enqueue time and recorded as the
+
+            acting user on downstream writes so the audit trail attributes imported data to its source
+
+            (AB#544623). Empty for in-flight messages enqueued before this field existed, in which case
+
+            the orchestrator falls back to the provider name from the global configuration.'
+        outreachApprovals:
+          allOf:
+          - $ref: '#/components/schemas/OutreachApprovals'
+          description: 'Outreach-review approval decisions; null when this publish was not triggered from an
+
+            outreach review context (AB#545441).'
+      additionalProperties: false
+      description: Class to represent the publish external data process
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data:
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    PublishOrchestratorDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/PublishOrchestratorDto'
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
+    OutreachAmendmentApproval:
+      type: object
+      properties:
+        entityId:
+          type: string
+          format: uuid
+        approvedFieldKeys:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

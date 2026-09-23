@@ -1,0 +1,268 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula External Data Command Data & Docs Related…
+  description: '**External Data Command API**:
+
+
+    External Data Command API allows to import information about clients, their associated parties, documents from external providers.'
+  version: '1.0'
+servers:
+- url: /externaldatacommand
+security:
+- Bearer: []
+tags:
+- name: Data & Docs Related Parties
+paths:
+  /api/datadocs/saveDataDocsRelatedParties:
+    post:
+      tags:
+      - Data & Docs Related Parties
+      summary: Save Data&Doc Related Parties
+      description: 'This method will save Data&Doc Related Parties.
+
+
+        The method will return the status.
+
+
+        Required permissions:
+
+        Following permissions are required: ExternalDataAccess
+
+
+        Required permissions:
+
+        Following permissions are required: ExternalDataAccess'
+      operationId: SaveDataDocsRelatedParties
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Save Data&Doc Related Parties
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/DataDocsRelatedPartiesHeaderDtoServiceRequest'
+              description: Service request data
+      responses:
+        '202':
+          description: Success. Save Data & Docs request created
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+components:
+  schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+          description: The message
+          example: Success
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
+      additionalProperties: false
+      description: The message associated to the service response
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    RelatedPartyGroupLightDto:
+      type: object
+      properties:
+        groupId:
+          type: string
+          description: The unique identifier of the related party group.
+          format: uuid
+        selectedForImport:
+          type: boolean
+          description: Indicates whether this record is selected for import or rejected
+        selectedForImportId:
+          type:
+          - string
+          - 'null'
+          description: Id of related party selected for import from PotentialDuplicates or Parties
+        sourceProviderId:
+          type:
+          - string
+          - 'null'
+          description: Source Provider Id selected by user from source column.
+        isDuplicated:
+          type: boolean
+          description: think if this flag is needed - used to indicate if record is selected from 'Potential Duplicates' list
+        status:
+          type:
+          - string
+          - 'null'
+          description: The status of the related party record (e.g., "ReviewRequired").
+      additionalProperties: false
+      description: Represents a single related party group.
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data:
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    DataDocsRelatedPartiesDetailsLightDto:
+      type: object
+      properties:
+        groups:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RelatedPartyGroupLightDto'
+          description: A collection of related party groups.
+      additionalProperties: false
+    DataDocsRelatedPartiesHeaderDto:
+      required:
+      - journeyId
+      - taskId
+      type: object
+      properties:
+        taskId:
+          minLength: 1
+          type: string
+          description: ID of the journey task
+          example: 300e2046-f78c-49d2-b326-afba28dc301c
+        fields:
+          allOf:
+          - $ref: '#/components/schemas/DataDocsRelatedPartiesDetailsLightDto'
+          description: List of Fields, currently only aggregated fields supported
+        journeyId:
+          minLength: 1
+          type: string
+          description: ID of the journey
+          format: uuid
+          example: 300e2046-f78c-49d2-b326-afba28dc301c
+      additionalProperties: false
+      description: Class to represent deduplication statuses for all Associations
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    DataDocsRelatedPartiesHeaderDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/DataDocsRelatedPartiesHeaderDto'
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

@@ -1,0 +1,1779 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Risk Model API
+  version: '1.0'
+  description: 'Operations tagged RiskModel across 2 of this provider''s published API definitions: fenergo-riskcommand-v1-0-openapi.json, fenergo-riskquery-v1-0-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- url: /riskcommand
+- url: /riskquery
+security:
+- Bearer: []
+tags:
+- name: RiskModel
+paths:
+  /api/risk-model:
+    post:
+      tags:
+      - RiskModel
+      summary: Create a new RiskModel
+      description: 'This method will create a new RiskModel with a first draft version.
+
+
+        The new version will initialize with the DTO data and have the default status of Draft
+
+        and the Author as the only required Signee.
+
+
+        Required permissions:
+
+        Following permissions are required: RiskConfigurationEdit'
+      operationId: CreateRiskModel
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: ServiceRequest with the RiskModelDto to create
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/RiskModelDtoServiceRequest'
+          text/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/RiskModelDtoServiceRequest'
+          application/*+json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/RiskModelDtoServiceRequest'
+      responses:
+        '202':
+          description: RiskModel created successfully
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/RiskModelDtoServiceResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiskModelDtoServiceResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/RiskModelDtoServiceResponse'
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: An exception occurred while processing the command
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    get:
+      tags:
+      - RiskModel
+      summary: Get all Risk Models
+      description: 'This method returns all risk models for the given tenant.
+
+
+        Required permissions:
+
+        At least one of the following permissions is required: RiskConfigurationAccess, RiskCalculatorAccess'
+      operationId: GetAllRiskModels
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/RiskModelDtoIEnumerableServiceResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiskModelDtoIEnumerableServiceResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/RiskModelDtoIEnumerableServiceResponse'
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /riskcommand
+  /api/risk-model/{id}:
+    post:
+      tags:
+      - RiskModel
+      summary: Create a new Version for an existing RiskModel
+      description: 'This method will create a new RiskModel version.
+
+
+        The new version will initialize with the DTO data. It will be assigned the next available version number,
+
+        the default status of Draft and the Author as the only required Signee.
+
+
+        Required permissions:
+
+        Following permissions are required: RiskConfigurationEdit'
+      operationId: CreateRiskModelVersion
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the existing model
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: ServiceRequest with the new version data
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/RiskModelDtoServiceRequest'
+          text/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/RiskModelDtoServiceRequest'
+          application/*+json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/RiskModelDtoServiceRequest'
+      responses:
+        '202':
+          description: RiskModel version created successfully
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/RiskModelDtoServiceResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiskModelDtoServiceResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/RiskModelDtoServiceResponse'
+        '400':
+          description: Model Id is invalid
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: An exception occurred while processing the command
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    put:
+      tags:
+      - RiskModel
+      summary: Update an existing Version of a RiskModel
+      description: 'This method will update an existing RiskModel version.
+
+
+        Only Draft and Rejected versions are allowed to be updated.
+
+
+        Required permissions:
+
+        Following permissions are required: RiskConfigurationEdit'
+      operationId: UpdateRiskModelVersion
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the existing model
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: ServiceRequest with the updated version data
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/RiskModelDtoServiceRequest'
+          text/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/RiskModelDtoServiceRequest'
+          application/*+json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/RiskModelDtoServiceRequest'
+      responses:
+        '202':
+          description: RiskModel version updated successfully
+        '400':
+          description: Model Id is invalid
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: An exception occurred while processing the command
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    delete:
+      tags:
+      - RiskModel
+      summary: Delete an existing RiskModel
+      description: 'This method will delete an existing RiskModel as well as all its versions.
+
+
+        Required permissions:
+
+        Following permissions are required: RiskConfigurationDelete'
+      operationId: DeleteRiskModel
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the existing model to delete
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '202':
+          description: RiskModel deleted successfully
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: An exception occurred while processing the command
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    get:
+      tags:
+      - RiskModel
+      summary: Get the active version of an existing Risk model
+      description: 'This method returns the active, currently in effect, published version for a given risk model.
+
+
+        Required permissions:
+
+        Following permissions are required: RiskConfigurationAccess'
+      operationId: GetRiskModelById
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the existing model
+        required: true
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/RiskModelVersionDtoServiceResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiskModelVersionDtoServiceResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/RiskModelVersionDtoServiceResponse'
+        '400':
+          description: Model Id is invalid
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: No active version was found
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: An exception occurred while processing the command
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /riskcommand
+  /api/risk-model/{id}/version/{versionNumber}/clone:
+    post:
+      tags:
+      - RiskModel
+      summary: Clone an existing Version of a RiskModel to a new model
+      description: 'This method will clone the selected version of an existing RiskModel
+
+        and create a new model with a single version.
+
+
+        The new version will contain all the data of the original selected one,
+
+        will have the default status of Draft and the Author as the only required Signee.
+
+
+        Required permissions:
+
+        Following permissions are required: RiskConfigurationEdit'
+      operationId: CloneRiskModelVersion
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the existing model
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: versionNumber
+        in: path
+        description: The version number of the version to clone
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '202':
+          description: RiskModel cloned successfully
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/RiskModelDtoServiceResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiskModelDtoServiceResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/RiskModelDtoServiceResponse'
+        '400':
+          description: The Tenant header is missing
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: An exception occurred while processing the command
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /riskcommand
+  /api/risk-model/{id}/version/{versionNumber}/sign:
+    put:
+      tags:
+      - RiskModel
+      summary: Sign an existing Version of a RiskModel
+      description: 'This method will Sign the selected version of an existing RiskModel.
+
+        The Status of the version will change according to the action sent (Approve/Reject).
+
+
+        Required permissions:
+
+        Following permissions are required: RiskConfigurationApprove'
+      operationId: SignRiskModelVersion
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the existing model
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: versionNumber
+        in: path
+        description: The version number of the version to sign
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: ServiceRequest with the Fenergo.Nebula.Versioning.Models.ApproveAction signing data
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/ApproveActionServiceRequest'
+          text/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/ApproveActionServiceRequest'
+          application/*+json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/ApproveActionServiceRequest'
+      responses:
+        '202':
+          description: RiskModel version signed successfully
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ModelVersionSignResponseServiceResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelVersionSignResponseServiceResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ModelVersionSignResponseServiceResponse'
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: An exception occurred while processing the command
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /riskcommand
+  /api/risk-model/{id}/version/{versionNumber}/archive:
+    put:
+      tags:
+      - RiskModel
+      summary: Archive an existing Version of a RiskModel
+      description: 'This method will Archive the selected version of an existing RiskModel.
+
+
+        Required permissions:
+
+        Following permissions are required: RiskConfigurationArchive'
+      operationId: ArchiveRiskModelVersion
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the existing model
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: versionNumber
+        in: path
+        description: The version number of the version to archive
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: ServiceRequest with the Fenergo.Nebula.Risk.Command.Application.Dto.RiskModelDto to archive
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/RiskModelDtoServiceRequest'
+          text/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/RiskModelDtoServiceRequest'
+          application/*+json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/RiskModelDtoServiceRequest'
+      responses:
+        '202':
+          description: RiskModel version archived successfully
+        '400':
+          description: Model Id is invalid
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: An exception occurred while processing the command
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /riskcommand
+  /api/risk-model/{id}/version/{versionNumber}/submit:
+    put:
+      tags:
+      - RiskModel
+      summary: Submit an existing Version of a RiskModel for Approval
+      description: 'This method will submit the selected version of an existing RiskModel
+
+        for Approval.
+
+
+        Required permissions:
+
+        Following permissions are required: RiskConfigurationEdit'
+      operationId: SubmitRiskModelVersion
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the existing model
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: versionNumber
+        in: path
+        description: The version number of the version to submit
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: ServiceRequest with the Fenergo.Nebula.Risk.Command.Application.Dto.RiskModelDto to submit
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/RiskModelDtoServiceRequest'
+          text/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/RiskModelDtoServiceRequest'
+          application/*+json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/RiskModelDtoServiceRequest'
+      responses:
+        '202':
+          description: RiskModel version submitted successfully
+        '400':
+          description: Model Id is invalid
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: An exception occurred while processing the command
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /riskcommand
+  /api/risk-model/{id}/version/{versionNumber}:
+    delete:
+      tags:
+      - RiskModel
+      summary: Delete an existing Version of a RiskModel
+      description: 'This method will Delete the selected version of an existing RiskModel.
+
+        If the version is the last one, then the version number of it will become the next available one for the model.
+
+        Otherwise, the version number will be flagged as Deleted and become unavailable.
+
+
+        Required permissions:
+
+        Following permissions are required: RiskConfigurationEdit'
+      operationId: DeleteRiskModelVersion
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the existing model
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: versionNumber
+        in: path
+        description: The version number of the version to submit
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '202':
+          description: RiskModel version deleted successfully
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: An exception occurred while processing the command
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    get:
+      tags:
+      - RiskModel
+      summary: Get the specified version of an existing Risk model
+      description: 'This method returns the, specified by number, version for a given risk model.
+
+
+        Required permissions:
+
+        At least one of the following permissions is required: RiskConfigurationAccess, RiskCalculatorAccess'
+      operationId: GetRiskModelByVersionNumber
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the existing model
+        required: true
+        schema:
+          type: string
+      - name: versionNumber
+        in: path
+        description: The version number to retrieve
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/RiskModelVersionDtoServiceResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiskModelVersionDtoServiceResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/RiskModelVersionDtoServiceResponse'
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Model Id is invalid
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: An exception occurred while processing the command
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /riskcommand
+components:
+  schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    RiskModelDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/RiskModelDto'
+          description: RiskModel version wrapper
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    RiskFactorDto:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+          description: Display name of the factor
+          example: Product Type
+        weight:
+          type:
+          - number
+          - 'null'
+          description: The risk calculation weight of the factor
+          format: double
+          example: 0.8
+        riskLevelCalculationAlgorithm:
+          type:
+          - string
+          - 'null'
+          description: The risk calculation algorithm when multiple input values present
+          example: sum
+        isMandatory:
+          type: boolean
+          description: Whether it is mandatory to provide a value for this factor
+          example: true
+      additionalProperties: false
+      description: A risk model factor
+    RiskModelDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/RiskModelDto'
+          description: RiskModel version wrapper
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ModelVersionSignResponseServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ModelVersionSignResponse'
+          description: Contains the new version Status, after a version sign operation
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ModelVersionSignResponse:
+      type: object
+      properties:
+        parentModelId:
+          type: string
+          description: The Id of the model the version belongs to
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        versionNumber:
+          type: integer
+          description: The number of the version that has been signed
+          format: int32
+          example: 3
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+          description: The new version status
+          example: Published
+      additionalProperties: false
+      description: Contains the new version Status, after a version sign operation
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    Approver:
+      type: object
+      properties:
+        subject:
+          type:
+          - string
+          - 'null'
+        successor:
+          allOf:
+          - $ref: '#/components/schemas/Approver'
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
+      additionalProperties: false
+    RiskModelDto:
+      required:
+      - riskModelVersion
+      type: object
+      properties:
+        id:
+          type: string
+          description: The UiD of the risk model
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        riskModelVersion:
+          allOf:
+          - $ref: '#/components/schemas/RiskModelVersionDto'
+          description: The version of the model
+      additionalProperties: false
+      description: RiskModel version wrapper
+    RiskFactorGroupDto:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+          description: Display name of the group
+          example: Product Risk
+        weight:
+          type:
+          - number
+          - 'null'
+          description: The risk calculation weight of the factor group
+          format: double
+          example: 0.3
+        riskLevelCalculationAlgorithm:
+          type:
+          - string
+          - 'null'
+          description: The risk calculation algorithm when multiple factors are present
+          example: max
+        riskFactors:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RiskFactorDto'
+          description: The list of factors that belong to the group
+        childRiskFactorGroups:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RiskFactorGroupDto'
+          description: The list of child factor groups
+        thresholds:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RiskFactorGroupThresholdDto'
+          description: The list of thresholds specific to this risk factor group
+      additionalProperties: false
+      description: A group of risk model factors
+    RiskModelVersionDto:
+      required:
+      - effectiveFrom
+      - name
+      - versionNumber
+      type: object
+      properties:
+        parentRiskModelId:
+          type: string
+          description: The UiD of the model that the version belongs to
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        name:
+          minLength: 1
+          type: string
+          description: Display name of the model
+          example: Global Risk Model
+        riskFactorGroups:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RiskFactorGroupDto'
+          description: The list of risk factor groups that belong to this version
+        versionNumber:
+          maximum: 2147483647
+          minimum: 1
+          type: integer
+          description: The number of the model version
+          format: int32
+          example: 1
+        effectiveFrom:
+          type: string
+          description: The date that the version takes effect when published
+          format: date-time
+        created:
+          type: string
+          description: The creation date of the version
+          format: date-time
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+          description: The status of the version
+          example: Draft
+        signees:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/Signee'
+          description: The defined list of signees for the version
+        notes:
+          maxLength: 2000
+          type:
+          - string
+          - 'null'
+          description: Optional description of changes made that will be visible to all users who can access the version. It's assumed that version notes won't contain 'personal identifiable information'. Please note that having many versions with very long notes could hurt API performance in the long term.
+          example: Example Notes
+      additionalProperties: false
+      description: A RiskModel version
+    Signee:
+      type: object
+      properties:
+        subject:
+          type:
+          - string
+          - 'null'
+        successor:
+          allOf:
+          - $ref: '#/components/schemas/Approver'
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
+      additionalProperties: false
+    Decision:
+      enum:
+      - Approve
+      - Reject
+      type: string
+    RiskFactorGroupThresholdDto:
+      required:
+      - maximumValue
+      - minimumValue
+      - name
+      type: object
+      properties:
+        name:
+          minLength: 1
+          type: string
+          description: Display name of the threshold
+          example: Low
+        minimumValue:
+          type: number
+          description: Minimum value of the threshold range
+          format: double
+          example: -10
+        maximumValue:
+          type: number
+          description: Maximum value of the threshold range
+          format: double
+          example: 1.999
+        nextReviewPeriod:
+          type:
+          - integer
+          - 'null'
+          description: The period in months for the next review of the client
+          format: int32
+          example: 1
+        thresholdColor:
+          type:
+          - string
+          - 'null'
+          description: 'Optional UI color assigned to this threshold range for visualization purposes.
+
+            Must be a valid hex value in the form #RRGGBB.'
+          example: '#FF0000'
+      additionalProperties: false
+      description: A range of values that define a threshold
+    ApproveActionServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+      additionalProperties: false
+    VersionStatus:
+      enum:
+      - Draft
+      - Pending
+      - Rejected
+      - Published
+      - Archived
+      - Deleted
+      type: string
+    ApproveAction:
+      type: object
+      properties:
+        comment:
+          type:
+          - string
+          - 'null'
+        decision:
+          allOf:
+          - $ref: '#/components/schemas/Decision'
+        created:
+          type: string
+          format: date-time
+      additionalProperties: false
+    Threshold:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+        minimumValue:
+          type:
+          - number
+          - 'null'
+          format: double
+        maximumValue:
+          type:
+          - number
+          - 'null'
+          format: double
+        nextReviewPeriod:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        thresholdColor:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    RiskFactorGroup:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+        riskLevelCalculationAlgorithm:
+          type:
+          - string
+          - 'null'
+        weight:
+          type:
+          - number
+          - 'null'
+          format: double
+        riskFactors:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RiskFactor'
+        childRiskFactorGroups:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RiskFactorGroup'
+        thresholds:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/Threshold'
+      additionalProperties: false
+    RiskModelVersionDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/RiskModelVersionDto_2'
+          description: RiskModel version data
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    RiskFactorInputValue:
+      type: object
+      properties:
+        value:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        weight:
+          type:
+          - number
+          - 'null'
+          format: double
+          readOnly: true
+      additionalProperties: false
+    RiskFactor:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+        weight:
+          type:
+          - number
+          - 'null'
+          format: double
+        overrideScore:
+          type:
+          - number
+          - 'null'
+          format: double
+        isMandatory:
+          type: boolean
+        selectedRiskLevel:
+          type:
+          - number
+          - 'null'
+          format: double
+          readOnly: true
+        selectedRiskValue:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        riskLevelCalculationAlgorithm:
+          type:
+          - string
+          - 'null'
+        inputValues:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RiskFactorInputValue'
+      additionalProperties: false
+    RiskModelDto_2:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The UiD of the risk model
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        versions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RiskModelVersionDto_2'
+          description: A list of the model versions metadata and calculated properties
+      additionalProperties: false
+      description: RiskModel with all version metadata
+    RiskModelDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RiskModelDto_2'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    RiskModelVersionDto_2:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The UiD of the version
+          format: uuid
+          example: baee4b61-7ebb-48b2-a44b-18ce814b703b
+        parentRiskModelId:
+          type: string
+          description: The UiD of the risk model that the version belongs to
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        versionNumber:
+          type: integer
+          description: The versions number
+          format: int32
+          example: 2
+        effectiveFrom:
+          type: string
+          description: The date that the version takes effect when published
+          format: date-time
+        effectiveUntil:
+          type:
+          - string
+          - 'null'
+          description: The calculated date that the version ceases being active
+          format: date-time
+        publicationDate:
+          type:
+          - string
+          - 'null'
+          description: The date that the version got published
+          format: date-time
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+          description: The status of the version
+          example: Rejected
+        name:
+          type:
+          - string
+          - 'null'
+          description: Display name of the model
+          example: Global Risk Model
+        created:
+          type: string
+          description: The creation date of the version
+          format: date-time
+        riskFactorGroups:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RiskFactorGroup'
+          description: The list of risk factor groups that belong to the version
+        isActive:
+          type: boolean
+          description: 'The calculated flag to annotate whether this is the model''s active version
+
+            at the time of the query'
+          example: false
+        signees:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/Signee'
+          description: The defined list of signees for the version
+        notes:
+          type:
+          - string
+          - 'null'
+          description: Optional description of changes made that will be visible to all users who can access the version. It's assumed that version notes won't contain 'personal identifiable information'. Please note that having many versions with very long notes could hurt API performance in the long term.
+          example: Example Notes
+      additionalProperties: false
+      description: RiskModel version data
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header
+x-refined-from:
+- fenergo-riskcommand-v1-0-openapi.json
+- fenergo-riskquery-v1-0-openapi.json

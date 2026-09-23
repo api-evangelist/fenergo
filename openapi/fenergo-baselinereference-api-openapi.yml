@@ -1,0 +1,259 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula ConfigBaseline Command Baseline Reference API
+  description: '**ConfigBaseline Command API**:
+
+
+    ConfigBaseline Command API is part of FenX eco-system to manage configuration baseline.
+
+
+    **ConfigBaseline Command API provides**:
+
+
+    The ability to create Baselines Reference.'
+  version: 1.7.2
+servers:
+- url: /configbaselinecommand
+security:
+- Bearer: []
+tags:
+- name: BaselineReference
+paths:
+  /api/baselines-reference:
+    post:
+      tags:
+      - BaselineReference
+      summary: Create baselines reference for journey instance
+      description: 'Creates a new baselines reference for journey instance.
+
+
+        Required permissions:
+
+        Following permissions are required: ConfigBaselineEdit'
+      operationId: CreateBaselinesReference
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Create baselines reference request
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CreateBaselinesReferenceDtoServiceRequest'
+      responses:
+        '202':
+          description: Success. Baselines reference created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaselinesReferenceCreatedDtoServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Resource not found. There are no baselines that can be used in a Baselines Reference.
+                  type: Error
+                  errorCode: Error Code
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+components:
+  schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    CreateBaselinesReferenceDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateBaselinesReferenceDto'
+          description: Request DTO representing baselines reference to create
+      additionalProperties: false
+    BaselinesReferenceCreatedDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/BaselinesReferenceCreatedDto'
+          description: Response DTO representing information about created baselines reference
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    BaselinesReferenceCreatedDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Baselines reference identifier
+          format: uuid
+          example: ef1a9f87-e951-40d8-900a-cde68eef33b2
+      additionalProperties: false
+      description: Response DTO representing information about created baselines reference
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CreateBaselinesReferenceDto:
+      required:
+      - journeyInstanceId
+      type: object
+      properties:
+        journeyInstanceId:
+          minLength: 1
+          type: string
+          description: Journey instance identifier
+          format: uuid
+          example: 26197110-20ab-406f-b780-33ebb5a9da11
+        entityId:
+          type:
+          - string
+          - 'null'
+          description: Entity identifier
+          format: uuid
+          example: 26197110-20ab-406f-b780-33ebb5a9da11
+      additionalProperties: false
+      description: Request DTO representing baselines reference to create
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

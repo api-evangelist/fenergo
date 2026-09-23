@@ -1,0 +1,321 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Audit Query AssociationAudit v3 API
+  description: The Audit Query API enables the retrieval of audit event data related to various activities within the system.
+  version: '3.0'
+servers:
+- url: /auditquery
+security:
+- Bearer: []
+tags:
+- name: AssociationAudit v3
+paths:
+  /api/v3/auditevent/association/{direction}/related-parties:
+    post:
+      tags:
+      - AssociationAudit v3
+      summary: Retrieve related parties associated with a given entity, grouped by related…
+      description: 'This method accepts an entity ID and a direction (Inbound or Outbound) and returns a paginated list of related parties
+
+        with their association audit event history.
+
+
+        Each related party includes a list of associations, each with its audit events sorted by most recent first.
+
+
+        Required permissions:
+
+        Following permissions are required: AuditAccessAndSearch'
+      operationId: GetAssociationRelatedParties
+      parameters:
+      - name: direction
+        in: path
+        description: The association direction — Inbound or Outbound.
+        required: true
+        schema:
+          allOf:
+          - $ref: '#/components/schemas/AssociationDirection'
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: The request containing the entity ID and paging options.
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/GetRelatedPartiesRequestDtoServiceRequest'
+      responses:
+        '200':
+          description: Success. The list of related party summaries is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetRelatedPartiesResponseDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '500':
+          description: Internal server error.
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+components:
+  schemas:
+    RelatedPartySummaryDto:
+      type: object
+      properties:
+        relatedPartyEntityId:
+          type:
+          - string
+          - 'null'
+        associationCount:
+          type: integer
+          format: int32
+        lastUpdated:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        allAssociationsDeleted:
+          type: boolean
+        associations:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AssociationSummaryDto'
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    AssociationDirection:
+      enum:
+      - Inbound
+      - Outbound
+      type: string
+    AssociationSummaryDto:
+      type: object
+      properties:
+        associationId:
+          type:
+          - string
+          - 'null'
+        relationshipType:
+          type:
+          - string
+          - 'null'
+        eventCount:
+          type: integer
+          format: int32
+        lastUpdated:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        isSoftDeleted:
+          type: boolean
+      additionalProperties: false
+    GetRelatedPartiesRequestDto:
+      type: object
+      properties:
+        entityId:
+          type:
+          - string
+          - 'null'
+        relatedPartyIds:
+          maxItems: 500
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        searchTerm:
+          maxLength: 200
+          type:
+          - string
+          - 'null'
+        pager:
+          allOf:
+          - $ref: '#/components/schemas/PagerDto'
+      additionalProperties: false
+    SortOrder:
+      enum:
+      - Ascending
+      - Descending
+      type: string
+    PagerDto:
+      type: object
+      properties:
+        size:
+          type: integer
+          format: int32
+          exclusiveMinimum: 0
+        from:
+          minimum: 0
+          type: integer
+          format: int32
+        sortBy:
+          type:
+          - string
+          - 'null'
+        sortOrder:
+          allOf:
+          - $ref: '#/components/schemas/SortOrder'
+      additionalProperties: false
+    GetRelatedPartiesRequestDtoServiceRequest:
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetRelatedPartiesRequestDto'
+      additionalProperties: false
+    GetRelatedPartiesResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetRelatedPartiesResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    GetRelatedPartiesResponseDto:
+      type: object
+      properties:
+        items:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RelatedPartySummaryDto'
+        totalItems:
+          type: integer
+          format: int64
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

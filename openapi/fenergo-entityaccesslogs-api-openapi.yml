@@ -1,0 +1,373 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Audit Query Entity Access Logs API
+  description: The Audit Query API enables the retrieval of audit event data related to various activities within the system.
+  version: '2.0'
+servers:
+- url: /auditquery
+security:
+- Bearer: []
+tags:
+- name: EntityAccessLogs
+paths:
+  /api/v2/auditevent/queryside/entityEvents:
+    post:
+      tags:
+      - EntityAccessLogs
+      summary: Get Entity Access Logs in a paged manner
+      description: 'This method accepts the Entity ID and filters, allowing for the retrieval of all Entity Access logs.
+
+
+        The Entity Access Logs display a list of users who have accessed the specified Entity ID.
+
+
+        The filters are optional and enable you to search for Entity Access logs by a specific user and/or within a specified date range.
+
+
+        Required permissions:
+
+        Following permissions are required: AuditAccessAndSearch'
+      operationId: GetEntityQuerySideAuditEvents
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/GetEntityQuerySideAuditEventsRequestDtoServiceRequest'
+      responses:
+        '200':
+          description: Success. The list of audit events is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetEntityQuerySideAuditEventsResponseDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+components:
+  schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    GetEntityQuerySideAuditEventsFiltersRequestDto:
+      type: object
+      properties:
+        userId:
+          type:
+          - string
+          - 'null'
+          description: UiD of the user associated with the event
+          example: 9f14cdfb-845e-4ec6-803b-17f6b7477b36
+        from:
+          type:
+          - string
+          - 'null'
+          description: Date from
+          format: date-time
+          example: '2022-08-10T00:00:00+00:00'
+        to:
+          type:
+          - string
+          - 'null'
+          description: Date to (must be greater than from date)
+          format: date-time
+          example: '2022-08-11T00:00:00+00:00'
+      additionalProperties: false
+      description: Request DTO to specify optional query filters
+    GetEntityQuerySideAuditEventsRequestDtoServiceRequest:
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetEntityQuerySideAuditEventsRequestDto'
+          description: The request object that is used to specify the Entity ID and filters for retrieving all Entity Access logs.
+      additionalProperties: false
+    PaginationTokenPagerDto:
+      type: object
+      properties:
+        pageSize:
+          maximum: 100
+          minimum: 1
+          type: integer
+          description: Size of the page (result set)
+          format: int32
+          example: 10
+        sortOrder:
+          allOf:
+          - $ref: '#/components/schemas/SortOrder'
+          description: Sort Order (Ascending or Descending)
+          example: Descending
+        paginationToken:
+          type:
+          - string
+          - 'null'
+          description: 'Position token for the search results to start
+
+            (leave empty to start from the 1st item)'
+          example: ''
+      additionalProperties: false
+      description: Options for setting up the results page
+    GetEntityQuerySideAuditEventsRequestDto:
+      type: object
+      properties:
+        entityId:
+          type: string
+          description: ID of the entity
+          format: uuid
+          example: 9f14cdfb-845e-4ec6-803b-17f6b7477b36
+        filters:
+          allOf:
+          - $ref: '#/components/schemas/GetEntityQuerySideAuditEventsFiltersRequestDto'
+          description: Filters to the request (optional)
+        pager:
+          allOf:
+          - $ref: '#/components/schemas/PaginationTokenPagerDto'
+          description: Options for setting up the results page
+      additionalProperties: false
+      description: The request object that is used to specify the Entity ID and filters for retrieving all Entity Access logs.
+    QuerySideAuditEventDto:
+      type: object
+      properties:
+        eventId:
+          type:
+          - string
+          - 'null'
+          description: Unique identifier for this event
+        resourceId:
+          type:
+          - string
+          - 'null'
+          description: Id used if this audit event is related to one specific resource
+        resourceType:
+          type:
+          - string
+          - 'null'
+          description: Resource type if this audit event is related to one specific resource
+        entityReferenceId:
+          type:
+          - string
+          - 'null'
+          description: Entity Id if this audit event is related to one Entity
+        propertyName:
+          type:
+          - string
+          - 'null'
+          description: Pii Property Name that has been revealed
+        journeyReferenceId:
+          type:
+          - string
+          - 'null'
+          description: Journey Id if this audit event is related to one Journey
+        eventType:
+          type:
+          - string
+          - 'null'
+          description: Event Type
+        version:
+          type: integer
+          description: Version of resource if versioning is being used
+          format: int64
+        date:
+          type: string
+          description: Date when this event happened
+          format: date-time
+        userId:
+          type:
+          - string
+          - 'null'
+          description: User id who performed this event
+        userName:
+          type:
+          - string
+          - 'null'
+          description: User id who performed this event
+        clientId:
+          type:
+          - string
+          - 'null'
+          description: Client id which identifies the source of this event
+        service:
+          type:
+          - string
+          - 'null'
+          description: Service where this event was created
+        correlationId:
+          type:
+          - string
+          - 'null'
+          description: Correlation Id
+      additionalProperties: false
+    SortOrder:
+      enum:
+      - Ascending
+      - Descending
+      type: string
+    GetEntityQuerySideAuditEventsResponseDto:
+      type: object
+      properties:
+        items:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/QuerySideAuditEventDto'
+        paginationToken:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    GetEntityQuerySideAuditEventsResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetEntityQuerySideAuditEventsResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

@@ -1,0 +1,371 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Product Query Product Access Layer API
+  description: Product Query API is part of FenX eco-system to manage Product Data. All the operations require valid access token obtained from Identity service.
+  version: '1.0'
+servers:
+- url: /productquery
+security:
+- Bearer: []
+tags:
+- name: ProductAccessLayer
+paths:
+  /api/product-access-layer/evaluate:
+    post:
+      tags:
+      - ProductAccessLayer
+      summary: Evaluate which Product access layers would be assigned for a given set of…
+      description: 'Used by the Manage Products screen to warn users they would lose access to a product record
+
+        before they save their changes. Evaluates Dynamic Configuration rules against the supplied product
+
+        properties and returns the Geographic and BusinessRelated access layers that would be written to
+
+        the product on save, along with a `ShouldApplyResultToProduct` flag indicating whether any
+
+        rules matched. When `ShouldApplyResultToProduct` is `false`, no access layers are
+
+        policy-enforced and the product is open-access.
+
+
+        Required permissions:
+
+        Following permissions are required: ProductAccessAndSearch'
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Product properties to evaluate
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/EvaluateProductDynamicConfigurationRequestDtoServiceRequest'
+      responses:
+        '200':
+          description: Success. Evaluated access layers are returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluateProductDynamicConfigurationResponseDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+      operationId: postApiProductAccessLayerEvaluate
+      x-operation-id-source: derived
+components:
+  schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    EvaluateProductDynamicConditionsResponseDto:
+      type: object
+      properties:
+        geographicForProduct:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/EvaluateProductDynamicConditionItemResponseDto'
+          description: Access layers assignable to the product with type Geographic.
+        businessRelatedForProduct:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/EvaluateProductDynamicConditionItemResponseDto'
+          description: Access layers assignable to the product with type BusinessRelated.
+      additionalProperties: false
+      description: The evaluated product access layers that would be assigned after dynamic configuration rule evaluation.
+    PropertyType:
+      enum:
+      - Single
+      - Custom
+      - Collection
+      type: string
+    EvaluateProductDynamicConfigurationResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/EvaluateProductDynamicConfigurationResponseDto'
+          description: 'Response DTO for the evaluate-product dynamic configuration endpoint.
+
+            Contains the access layers that would be assigned to the product given the supplied field values,
+
+            and a flag indicating whether any dynamic configuration rules matched.'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    PropertyDto:
+      required:
+      - discriminator
+      - type
+      type: object
+      properties:
+        discriminator:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        type:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        isValid:
+          type:
+          - boolean
+          - 'null'
+      additionalProperties: false
+      discriminator:
+        propertyName: discriminator
+        mapping:
+          Collection: '#/components/schemas/CollectionPropertyDto'
+          Custom: '#/components/schemas/CustomPropertyDto'
+          Single: '#/components/schemas/SinglePropertyDto'
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    EvaluateProductDynamicConditionItemResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the dynamic configuration rule that matched.
+          format: uuid
+        accessLayerId:
+          type: string
+          description: The ID of the access layer that would be assigned.
+          format: uuid
+        dataKey:
+          type:
+          - string
+          - 'null'
+          description: The data key of the access layer (e.g. "EMEA", "Canada").
+      additionalProperties: false
+      description: A single evaluated dynamic configuration condition result, representing one access layer candidate.
+    EvaluateProductDynamicConfigurationRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/EvaluateProductDynamicConfigurationRequestDto'
+          description: 'Request DTO for evaluating which Product access layers would be assigned based on a set of product properties.
+
+            Used by the Manage Products screen to warn users they would lose access to a product before they save.'
+      additionalProperties: false
+    EvaluateProductDynamicConfigurationResponseDto:
+      type: object
+      properties:
+        evaluatedProductAccessLayers:
+          allOf:
+          - $ref: '#/components/schemas/EvaluateProductDynamicConditionsResponseDto'
+          description: The Geographic and BusinessRelated access layers that would be written to the product on save.
+        shouldApplyResultToProduct:
+          type: boolean
+          description: 'When `false`, no dynamic configuration rules matched the supplied field values and the product
+
+            is effectively open-access — access layers will not be enforced by policy.'
+      additionalProperties: false
+      description: 'Response DTO for the evaluate-product dynamic configuration endpoint.
+
+        Contains the access layers that would be assigned to the product given the supplied field values,
+
+        and a flag indicating whether any dynamic configuration rules matched.'
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    EvaluateProductDynamicConfigurationRequestDto:
+      type: object
+      properties:
+        executionId:
+          type:
+          - string
+          - 'null'
+          description: Correlation ID for this evaluation. If not provided, a new GUID will be generated.
+        productDraftId:
+          type:
+          - string
+          - 'null'
+          description: The draft ID of the product being edited. Optional — used for logging and correlation.
+          format: uuid
+        journeyInstanceId:
+          type:
+          - string
+          - 'null'
+          description: Journey instance ID. Pass null for field-change preview evaluations outside of a journey context.
+          format: uuid
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+          description: 'The current product field values to evaluate against Dynamic Configuration rules.
+
+            Keys are field data keys; values are the property values.
+
+            If null, treated as an empty dictionary (no conditions will match).'
+        lifecycleStatus:
+          enum:
+          - Onboarding
+          - In Review
+          - Onboarded
+          - Offboarded
+          - Offboarding
+          - For Deletion
+          type:
+          - string
+          - 'null'
+          description: 'The lifecycle status of the product being evaluated (e.g. "Onboarding", "InReview", "Offboarding").
+
+            When provided, it is forwarded to the Authorization Lambda as part of the CurrentProductMetadata
+
+            data source so that lifecycle-status-based DAL rules can be evaluated.'
+        isAgency:
+          type:
+          - string
+          - 'null'
+          description: 'Indicates whether the product belongs to an agency tenant ("true" / "false").
+
+            When provided, it is forwarded to the Authorization Lambda as part of the CurrentProductMetadata
+
+            data source so that agency-based DAL rules can be evaluated.'
+      additionalProperties: false
+      description: 'Request DTO for evaluating which Product access layers would be assigned based on a set of product properties.
+
+        Used by the Manage Products screen to warn users they would lose access to a product before they save.'
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

@@ -1,0 +1,2522 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Lookup Link API
+  version: '1.0'
+  description: 'Operations tagged LookupLink across 2 of this provider''s published API definitions: fenergo-lookupcommand-v1-0-openapi.json, fenergo-lookupquery-v1-0-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- url: /lookupcommand
+- url: /lookupquery
+security:
+- Bearer: []
+tags:
+- name: LookupLink
+paths:
+  /api/lookuplink:
+    post:
+      tags:
+      - LookupLink
+      summary: Creates a parent child relationship between two lookups
+      description: 'Required permissions:
+
+        Following permissions are required: ReferenceDataEditorEdit'
+      operationId: CreateLookupLink
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CreateLinkVersionDtoServiceRequest'
+          text/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CreateLinkVersionDtoServiceRequest'
+          application/*+json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CreateLinkVersionDtoServiceRequest'
+      responses:
+        '202':
+          description: Accepted for processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupLinkVersionDtoServiceResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    get:
+      tags:
+      - LookupLink
+      summary: Get all lookups and their parent child relationship
+      description: 'This method returns all Linked Lookups for the client tenant
+
+
+        Required permissions:
+
+        Following permissions are required: LookupAccess'
+      operationId: GetAllLinkLookups
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. The list of Linked Lookup is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupLinkDtoIEnumerableServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+      deprecated: true
+    servers:
+    - url: /lookupcommand
+  /api/lookuplink/{id}:
+    post:
+      tags:
+      - LookupLink
+      summary: Create a new version for an existing Linked lookup
+      description: 'This method creates a new Lookup Link version.
+
+
+        The new version initializes with the DTO data. It is assigned the next available version number,
+
+        the default status of Draft and the Author as the only required Signee.
+
+
+        Required permissions:
+
+        Following permissions are required: ReferenceDataEditorEdit'
+      operationId: CreateLookupLinkVersion
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the existing Linked Lookup
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: ServiceRequest with the new version data
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/LookupLinkVersionDtoServiceRequest'
+          text/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/LookupLinkVersionDtoServiceRequest'
+          application/*+json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/LookupLinkVersionDtoServiceRequest'
+      responses:
+        '202':
+          description: Accepted for processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupLinkVersionDtoServiceResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Lookup Link with given ID does not exists
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    delete:
+      tags:
+      - LookupLink
+      summary: Delete Lookup Link and all it's versions
+      description: 'This method deletes an existing Linked Lookup as well as all its versions.
+
+
+        Required permissions:
+
+        Following permissions are required: ReferenceDataEditorDelete'
+      operationId: DeleteLookupLink
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the existing Linked Lookup
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '202':
+          description: Accepted for processing
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Lookup Link with given ID does not exists
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    get:
+      tags:
+      - LookupLink
+      summary: Get the current active version of an existing Link Lookup along with its…
+      description: 'This method returns the active, currently in effect, published version for a given Linked Lookup
+
+
+        Required permissions:
+
+        Following permissions are required: LookupAccess'
+      operationId: GetLinkLookupById
+      parameters:
+      - name: id
+        in: path
+        description: The id of the Linked Lookup to retrieve
+        required: true
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. Linked Lookup is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupLinkVersionDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found. Linked Lookup with given id does not exist
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /lookupcommand
+  /api/lookuplink/{id}/version/{versionNumber}:
+    put:
+      tags:
+      - LookupLink
+      summary: Update an existing Version of a Linked lookup
+      description: 'This method updates an existing Linked Lookup version.
+
+
+        Only Draft and Rejected versions are allowed to be updated.
+
+
+        Required permissions:
+
+        Following permissions are required: ReferenceDataEditorEdit'
+      operationId: UpdateLookupLinkVersion
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the existing Linked Lookup
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: versionNumber
+        in: path
+        description: Number of version to update
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: ServiceRequest with the updated version data
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/UpdateLinkVersionDtoServiceRequest'
+          text/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/UpdateLinkVersionDtoServiceRequest'
+          application/*+json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/UpdateLinkVersionDtoServiceRequest'
+      responses:
+        '202':
+          description: Accepted for processing
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Lookup Link with given ID does not exists
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    delete:
+      tags:
+      - LookupLink
+      summary: Delete an existing Version of a Linked Lookup
+      description: 'This method deletes the selected version of an existing Linked Lookup.
+
+        If the version is the last one, then the version number of it will become the next available one for the model.
+
+        Otherwise, the version number is flagged as Deleted and becomes unavailable.
+
+
+        Required permissions:
+
+        Following permissions are required: ReferenceDataEditorDelete'
+      operationId: DeleteLookupLinkVersion
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: versionNumber
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '202':
+          description: Accepted for processing
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Lookup Link with given ID does not exists
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    get:
+      tags:
+      - LookupLink
+      summary: Get the specified version of an existing Linked Lookup
+      description: 'This method returns the, specified by number, version for a given Linked Lookup
+
+
+        Required permissions:
+
+        Following permissions are required: LookupAccess'
+      operationId: GetLinkLookupVersionById
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the existing Linked Lookup
+        required: true
+        schema:
+          type: string
+      - name: versionNumber
+        in: path
+        description: The version number to retrieve
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. Linked Lookup is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupLinkVersionDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found. Linked Lookup with given id/version does not exist
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /lookupcommand
+  /api/lookuplink/{id}/version/{versionNumber}/submit:
+    put:
+      tags:
+      - LookupLink
+      summary: Submit an existing Version of a Linked Lookup for Approval
+      description: 'This method submits the selected version of an existing Linked Lookup for Approval.
+
+
+        Required permissions:
+
+        Following permissions are required: ReferenceDataEditorApprove'
+      operationId: SubmitLookupLinkVersion
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the existing Linked Lookup
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: versionNumber
+        in: path
+        description: The version number of the version to submit
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '202':
+          description: Accepted for processing
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Lookup Link with given ID does not exists
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /lookupcommand
+  /api/lookuplink/{id}/version/{versionNumber}/sign:
+    put:
+      tags:
+      - LookupLink
+      summary: Sign an existing Version of a Linked Link
+      description: 'This method signs the selected version of an existing Linked Lookup.
+
+        The Status of the version changes according to the action sent (Approve/Reject).
+
+
+        Required permissions:
+
+        Following permissions are required: ReferenceDataEditorApprove'
+      operationId: SignLookupLinkVersion
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the existing Linked Link
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: versionNumber
+        in: path
+        description: The version number of the version to sign
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: ServiceRequest with the Fenergo.Nebula.Versioning.Models.ApproveAction signing data
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/ApproveActionServiceRequest'
+          text/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/ApproveActionServiceRequest'
+          application/*+json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/ApproveActionServiceRequest'
+      responses:
+        '202':
+          description: Accepted for processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LinkVersionSignResponseServiceResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Lookup Link with given ID does not exists
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /lookupcommand
+  /api/lookuplink/{id}/version/{versionNumber}/archive:
+    put:
+      tags:
+      - LookupLink
+      summary: Archive an existing Version of a Linked Lookup
+      description: 'This method archives the selected version of an existing Linked Lookup.
+
+
+        Required permissions:
+
+        Following permissions are required: ReferenceDataEditorArchive'
+      operationId: ArchiveLookupLinkVersion
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the existing Linked Lookup
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: versionNumber
+        in: path
+        description: The version number of the version to archive
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '202':
+          description: Accepted for processing
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Lookup Link with given ID does not exists
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /lookupcommand
+  /api/lookuplink/{linkLookupId}/version/{versionNumber}/file:
+    put:
+      tags:
+      - LookupLink
+      summary: Import a CSV to update an existing Draft Version of a LinkLookup
+      description: 'This method updates an existing LinkLookup Draft version using data from a CSV file as the source of truth.
+
+
+        Only Draft versions are allowed to be updated using this method.
+
+
+        Required permissions:
+
+        Following permissions are required: ReferenceDataEditorEdit'
+      operationId: ImportLinkLookupCsvFile
+      parameters:
+      - name: linkLookupId
+        in: path
+        description: The Id of the existing model
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: versionNumber
+        in: path
+        description: ''
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - Data.File
+              type: object
+              properties:
+                Data.File:
+                  type: string
+                  description: CSV File for linklookup data.
+                  format: binary
+            encoding:
+              Data.File:
+                style: form
+      responses:
+        '202':
+          description: Accepted for processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupLinkVersionDtoServiceResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Lookup with given ID does not exist
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    get:
+      tags:
+      - LookupLink
+      summary: Retrieves a specific lookup version as a CSV file
+      description: 'Required permissions:
+
+        Following permissions are required: LookupAccess'
+      operationId: GetLinkLookupVersionFile
+      parameters:
+      - name: linkLookupId
+        in: path
+        description: The Id of the existing Linked Lookup
+        required: true
+        schema:
+          type: string
+      - name: versionNumber
+        in: path
+        description: The version number to retrieve
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Returns the CSV file stream of the version of a lookup.
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: The request is invalid or the 'LookupVersion' is null.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: No Lookup version was found with the provided details.
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /lookupcommand
+  /api/lookuplink/active:
+    get:
+      tags:
+      - LookupLink
+      summary: Gets all Link Lookups active version for the client tenant
+      description: 'This method returns all Lookups with only the active for a given tenant
+
+
+        Required permissions:
+
+        Following permissions are required: LookupAccess'
+      operationId: GetAllActiveLinkLookups
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. The list of Linked Lookup is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupLinkDtoIEnumerableServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /lookupquery
+  /api/lookuplink/lite:
+    get:
+      tags:
+      - LookupLink
+      summary: Gets all Link Lookups (lite)
+      description: 'This method returns all Link Lookups for given tenant.
+
+        This is lite endpoint and will not return the definitions of the values and signees.
+
+
+        Required permissions:
+
+        Following permissions are required: LookupAccess'
+      operationId: GetAllLinkLookupsLite
+      parameters:
+      - name: includeNotes
+        in: query
+        schema:
+          type: boolean
+          default: false
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. The list of Link Lookups is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupLinkLiteDtoIEnumerableServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /lookupquery
+  /api/lookuplink/versions:
+    post:
+      tags:
+      - LookupLink
+      summary: Gets a list of versions
+      description: 'This endpoint returns a list of link lookup versions from a received list of lookup ids paired with version numbers
+
+
+        Required permissions:
+
+        Following permissions are required: LookupAccess'
+      operationId: GetLinkLookupsByIdsAndVersion
+      parameters:
+      - name: getActiveVersionIfNotFound
+        in: query
+        schema:
+          type: boolean
+          default: false
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: List of lookup links to find
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/LinkLookupsByIdsAndVersionsRequestServiceRequest'
+      responses:
+        '200':
+          description: Success. A list of Link Lookups is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupLinkVersionDtoIEnumerableServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /lookupquery
+  /api/lookuplink/lookup/{lookupid}:
+    get:
+      tags:
+      - LookupLink
+      summary: Get all Linked Lookup version of a existing Lookup
+      description: This method returns a list of Linked Lookup version , associated to a lookup
+      operationId: GetLinkLookupByLookup
+      parameters:
+      - name: lookupid
+        in: path
+        description: The id of the Lookup
+        required: true
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. The list of Linked Lookups is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LookupLinkVersionIEnumerableServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found. Lookup with given id/version does not exist
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal Server Error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /lookupquery
+components:
+  schemas:
+    LinkVersionSignResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The Id of the model the version belongs to
+          format: uuid
+        versionNumber:
+          type: integer
+          description: The number of the version that has been signed
+          format: int32
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+          description: The new version status
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    UpdateLinkVersionDtoServiceRequest:
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UpdateLinkVersionDto'
+          description: Set of properties which define new version of Link Lookup
+      additionalProperties: false
+    LookupLinkVersionDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/LookupLinkVersionDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    LinkLookupPropertyDto:
+      type: object
+      properties:
+        childValues:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+      additionalProperties: false
+    CreateLinkVersionDtoServiceRequest:
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateLinkVersionDto'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    Approver:
+      type: object
+      properties:
+        subject:
+          type:
+          - string
+          - 'null'
+        successor:
+          allOf:
+          - $ref: '#/components/schemas/Approver'
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
+      additionalProperties: false
+    Signee:
+      type: object
+      properties:
+        subject:
+          type:
+          - string
+          - 'null'
+        successor:
+          allOf:
+          - $ref: '#/components/schemas/Approver'
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
+      additionalProperties: false
+    LookupLinkVersionDto:
+      required:
+      - name
+      - properties
+      type: object
+      properties:
+        lookupLinkId:
+          type: string
+          description: The Id of the Lookup Link the version belongs to
+          format: uuid
+        name:
+          minLength: 1
+          type: string
+          description: Lookup Link Name
+        parentLookupId:
+          type: string
+          description: Parent Lookup Id Linked
+          format: uuid
+        parentLookupVersion:
+          type: integer
+          description: Parent Lookup Version Linked
+          format: int32
+        childLookupId:
+          type: string
+          description: Child Lookup Id Linked
+          format: uuid
+        childLookupVersion:
+          type: integer
+          description: Child Lookup Version Linked
+          format: int32
+        versionNumber:
+          type: integer
+          description: The number of the Link version
+          format: int32
+        notes:
+          maxLength: 400
+          type:
+          - string
+          - 'null'
+          description: Optional description of the references and details of changes made that will be visible to all users who can access the version. It's assumed that version notes won't contain 'personal identifiable information'. Please note that having many versions with very long notes could hurt API performance in the long term.
+          example: Example Notes
+        properties:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/LinkLookupPropertyDto'
+          description: Linked Values Properties
+        effectiveFrom:
+          type: string
+          description: The date that the version takes effect when published
+          format: date-time
+        created:
+          type: string
+          description: The creation date of the version (Read-only)
+          format: date-time
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+          description: The status of the version
+        signees:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/Signee'
+          description: The defined list of signees for the version
+      additionalProperties: false
+    Decision:
+      enum:
+      - Approve
+      - Reject
+      type: string
+    CreateLinkVersionDto:
+      required:
+      - childLookupId
+      - childLookupVersion
+      - name
+      - parentLookupId
+      - parentLookupVersion
+      - properties
+      type: object
+      properties:
+        name:
+          minLength: 1
+          type: string
+          description: Lookup Link Name
+        parentLookupId:
+          minLength: 1
+          type: string
+          description: Parent Lookup Id Linked
+          format: uuid
+        parentLookupVersion:
+          type: integer
+          description: Parent Lookup Version Linked
+          format: int32
+        childLookupId:
+          minLength: 1
+          type: string
+          description: Child Lookup Id Linked
+          format: uuid
+        childLookupVersion:
+          type: integer
+          description: Child Lookup Version Linked
+          format: int32
+        properties:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/LinkLookupPropertyDto'
+          description: Linked Values Properties
+        effectiveFrom:
+          type: string
+          description: The date that the version takes effect when published
+          format: date-time
+        notes:
+          maxLength: 400
+          type:
+          - string
+          - 'null'
+          description: Optional description of the references and details of changes made that will be visible to all users who can access the version. It's assumed that version notes won't contain 'personal identifiable information'. Please note that having many versions with very long notes could hurt API performance in the long term.
+          example: Example Notes
+      additionalProperties: false
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ApproveActionServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+      additionalProperties: false
+    UpdateLinkVersionDto:
+      required:
+      - lookupLinkId
+      - name
+      - properties
+      type: object
+      properties:
+        lookupLinkId:
+          minLength: 1
+          type: string
+          description: The UiD of the Lookup Link that the version belongs to
+          format: uuid
+        name:
+          minLength: 1
+          type: string
+          description: Display name of the Lookup Link
+        parentLookupId:
+          type: string
+          description: Parent Lookup Id Linked
+          format: uuid
+        parentLookupVersion:
+          type: integer
+          description: Parent Lookup Version Linked
+          format: int32
+        childLookupId:
+          type: string
+          description: Child Lookup Id Linked
+          format: uuid
+        childLookupVersion:
+          type: integer
+          description: Child Lookup Version Linked
+          format: int32
+        properties:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/LinkLookupPropertyDto'
+          description: List of linked values for lookups
+        versionNumber:
+          type: integer
+          description: The versions number
+          format: int32
+        notes:
+          maxLength: 400
+          type:
+          - string
+          - 'null'
+          description: Optional description of the references and details of changes made that will be visible to all users who can access the version. It's assumed that version notes won't contain 'personal identifiable information'. Please note that having many versions with very long notes could hurt API performance in the long term.
+          example: Example Notes
+        effectiveFrom:
+          type: string
+          description: The date that the version takes effect when published
+          format: date-time
+        signees:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/Signee'
+          description: The defined list of signees for the version
+      additionalProperties: false
+      description: Set of properties which define new version of Link Lookup
+    VersionStatus:
+      enum:
+      - Draft
+      - Pending
+      - Rejected
+      - Published
+      - Archived
+      - Deleted
+      type: string
+    LookupLinkVersionDtoServiceRequest:
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/LookupLinkVersionDto'
+      additionalProperties: false
+    LinkVersionSignResponseServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/LinkVersionSignResponse'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    ApproveAction:
+      type: object
+      properties:
+        comment:
+          type:
+          - string
+          - 'null'
+        decision:
+          allOf:
+          - $ref: '#/components/schemas/Decision'
+        created:
+          type: string
+          format: date-time
+      additionalProperties: false
+    LookupLinkVersionIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/LookupLinkVersion'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ProblemDetails:
+      type: object
+      properties:
+        type:
+          type:
+          - string
+          - 'null'
+        title:
+          type:
+          - string
+          - 'null'
+        status:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        detail:
+          type:
+          - string
+          - 'null'
+        instance:
+          type:
+          - string
+          - 'null'
+      additionalProperties: {}
+    LinkLookupProperty:
+      type: object
+      properties:
+        childValues:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+      additionalProperties: false
+    IApprover:
+      type: object
+      properties:
+        subject:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
+      additionalProperties: false
+    LookupLinkDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Lookup Link Id
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        versions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/LookupLinkVersionDto_2'
+          description: List of available lookup links versions
+      additionalProperties: false
+    LookupLinkLiteDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/LookupLinkLiteDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    LinkLookupsByIdsAndVersionsRequest:
+      type: object
+      properties:
+        linkLookups:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: integer
+            format: int32
+          description: The dictionary that contains link lookup IDs and version numbers to find
+          example:
+            6b6de3e3-48b1-46a1-adb0-701653a61c2c: 1
+            6b6de3e3-48b2-46a1-adb0-701653a61c2c: 2
+            6b6de3e3-48b3-46a1-adb0-701653a61c2c: 3
+      additionalProperties: false
+      description: Object for querying Link Lookup data
+    LookupLinkVersion:
+      type: object
+      properties:
+        versionNumber:
+          type: integer
+          format: int32
+        effectiveFrom:
+          type: string
+          format: date-time
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+        nextApprover:
+          allOf:
+          - $ref: '#/components/schemas/IApprover'
+          readOnly: true
+        created:
+          type: string
+          format: date-time
+        notes:
+          type:
+          - string
+          - 'null'
+        id:
+          type: string
+          format: uuid
+        lookupLinkId:
+          type: string
+          format: uuid
+        name:
+          type:
+          - string
+          - 'null'
+        parentLookupId:
+          type: string
+          format: uuid
+        parentLookupVersion:
+          type: integer
+          format: int32
+        childLookupId:
+          type: string
+          format: uuid
+        childLookupVersion:
+          type: integer
+          format: int32
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/LinkLookupProperty'
+        signees:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/Signee'
+        approvers:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/IApprover'
+          readOnly: true
+      additionalProperties: false
+    LookupLinkVersionDto_2:
+      type: object
+      properties:
+        versionNumber:
+          type: integer
+          description: The versions number
+          format: int32
+          example: 1
+        effectiveFrom:
+          type: string
+          description: The date that the version takes effect when published
+          format: date-time
+          example: '2021-12-12T15:55:00.000Z'
+        effectiveUntil:
+          type:
+          - string
+          - 'null'
+          description: The calculated date that the version ceases being active
+          format: date-time
+          example: '2021-12-12T15:55:00.000Z'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+          description: The status of the version
+          example: Draft
+        isActive:
+          type: boolean
+          description: 'The calculated flag to annotate whether this is the model''s active version
+
+            at the time of the query'
+          example: true
+        id:
+          type: string
+          description: The UiD of the version
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        lookupLinkId:
+          type: string
+          description: The UiD of the Lookup Link that the version belongs to
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5152
+        name:
+          type:
+          - string
+          - 'null'
+          description: Display name of the Lookup Link
+          example: Lookup1
+        parentLookupId:
+          type: string
+          description: Parent Lookup Id Linked
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5153
+        parentLookupVersion:
+          type: integer
+          description: Parent Lookup Version Linked
+          format: int32
+          example: 1
+        childLookupId:
+          type: string
+          description: Child Lookup Id Linked
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5154
+        childLookupVersion:
+          type: integer
+          description: Child Lookup Version Linked
+          format: int32
+          example: 1
+        publicationDate:
+          type:
+          - string
+          - 'null'
+          description: The date that the version got published
+          format: date-time
+          example: '2021-12-12T15:55:00.000Z'
+        notes:
+          type:
+          - string
+          - 'null'
+          description: Optional description of the references and details of changes made that will be visible to all users who can access the version. It's assumed that version notes won't contain 'personal identifiable information'. Please note that having many versions with very long notes could hurt API performance in the long term.
+          example: Example Notes
+        created:
+          type: string
+          description: The creation date of the version
+          format: date-time
+          example: '2021-12-12T15:55:00.000Z'
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/LinkLookupPropertyDto'
+          description: Dictionary of linked values parents to children
+        propertiesOrder:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of ordered parent lookup values
+        childValuesOrder:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of ordered child lookup values
+        signees:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/Signee'
+          description: The defined list of signees for the version
+      additionalProperties: false
+    LookupLinkVersionDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/LookupLinkVersionDto_2'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    LookupLinkVersionBaseDto:
+      type: object
+      properties:
+        versionNumber:
+          type: integer
+          description: The versions number
+          format: int32
+          example: 1
+        effectiveFrom:
+          type: string
+          description: The date that the version takes effect when published
+          format: date-time
+          example: '2021-12-12T15:55:00.000Z'
+        effectiveUntil:
+          type:
+          - string
+          - 'null'
+          description: The calculated date that the version ceases being active
+          format: date-time
+          example: '2021-12-12T15:55:00.000Z'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+          description: The status of the version
+          example: Draft
+        isActive:
+          type: boolean
+          description: 'The calculated flag to annotate whether this is the model''s active version
+
+            at the time of the query'
+          example: true
+        id:
+          type: string
+          description: The UiD of the version
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        lookupLinkId:
+          type: string
+          description: The UiD of the Lookup Link that the version belongs to
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5152
+        name:
+          type:
+          - string
+          - 'null'
+          description: Display name of the Lookup Link
+          example: Lookup1
+        parentLookupId:
+          type: string
+          description: Parent Lookup Id Linked
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5153
+        parentLookupVersion:
+          type: integer
+          description: Parent Lookup Version Linked
+          format: int32
+          example: 1
+        childLookupId:
+          type: string
+          description: Child Lookup Id Linked
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5154
+        childLookupVersion:
+          type: integer
+          description: Child Lookup Version Linked
+          format: int32
+          example: 1
+        publicationDate:
+          type:
+          - string
+          - 'null'
+          description: The date that the version got published
+          format: date-time
+          example: '2021-12-12T15:55:00.000Z'
+        notes:
+          type:
+          - string
+          - 'null'
+          description: Optional description of the references and details of changes made that will be visible to all users who can access the version. It's assumed that version notes won't contain 'personal identifiable information'. Please note that having many versions with very long notes could hurt API performance in the long term.
+          example: Example Notes
+        created:
+          type: string
+          description: The creation date of the version
+          format: date-time
+          example: '2021-12-12T15:55:00.000Z'
+      additionalProperties: false
+    LookupLinkLiteDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Lookup Link Id
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        versions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/LookupLinkVersionBaseDto'
+          description: List of available lookup links versions with basic details
+      additionalProperties: false
+    LinkLookupsByIdsAndVersionsRequestServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/LinkLookupsByIdsAndVersionsRequest'
+          description: Object for querying Link Lookup data
+      additionalProperties: false
+    LookupLinkDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/LookupLinkDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header
+x-refined-from:
+- fenergo-lookupcommand-v1-0-openapi.json
+- fenergo-lookupquery-v1-0-openapi.json

@@ -1,0 +1,2094 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Allocation API
+  version: '1.0'
+  description: 'Operations tagged Allocation across 2 of this provider''s published API definitions: fenergo-financialanalysiscommand-v1-0-openapi.json, fenergo-financialanalysisquery-v1-0-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- url: /financialanalysiscommand
+- url: /financialanalysisquery
+security:
+- Bearer: []
+tags:
+- name: Allocation
+paths:
+  /api/allocation:
+    post:
+      tags:
+      - Allocation
+      summary: Create a new Capacity to Service Set
+      description: 'Creates a new Capacity to Service Set for the Journey.
+
+
+        Required permissions:
+
+        Following permissions are required: FinancialAnalysisEdit'
+      operationId: CreateAllocationSet
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Create Capacity to Service Set request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AllocationSetDtoServiceRequest'
+      responses:
+        '202':
+          description: Success. Capacity to Service Set created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllocationSetDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /financialanalysiscommand
+  /api/allocation/{setId}/version:
+    post:
+      tags:
+      - Allocation
+      summary: Create a new Capacity to Service Version and Capacity to Service Schema
+      description: 'This method creates a new Capacity to Service Version based on the previous completed version.
+
+
+        It also generates the Capacity to Service Schema based on the input and save it to s3.
+
+
+        Required permissions:
+
+        Following permissions are required: FinancialAnalysisEdit'
+      operationId: CreateAllocationVersion
+      parameters:
+      - name: setId
+        in: path
+        description: Capacity to Service Set Id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: ServiceRequest with the schema snapshot data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AllocationSchemaRequestDtoServiceRequest'
+      responses:
+        '202':
+          description: Accepted for processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllocationVersionDtoServiceResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Capacity to Service Set with given ID does not exists
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /financialanalysiscommand
+  /api/allocation/{setId}/{id}:
+    put:
+      tags:
+      - Allocation
+      summary: Update a Capacity to Service Version
+      description: 'This method updates an existing Capacity to Service Version.
+
+
+        Only Capacity to Service Version with draft status can be updated.
+
+
+        Only Capacity to Service Version that satisfies non-mandatory validation rules can be updated.
+
+
+        Required permissions:
+
+        Following permissions are required: FinancialAnalysisEdit'
+      operationId: UpdateAllocationVersion
+      parameters:
+      - name: setId
+        in: path
+        description: Capacity to Service Set Id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: id
+        in: path
+        description: Capacity to Service Version Id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Capacity to Service Version data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AllocationVersionDtoServiceRequest'
+      responses:
+        '202':
+          description: Accepted for processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllocationVersionDtoServiceResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Capacity to Service with given ID does not exists
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /financialanalysiscommand
+  /api/allocation/{setId}/{id}/status:
+    put:
+      tags:
+      - Allocation
+      summary: Update a Capacity to Service Version status
+      description: 'This method updates an existing Capacity to Service Version status.
+
+
+        Only Capacity to Service Version with draft status can be updated.
+
+
+        Only Capacity to Service Version that satisfies validation rules can be completed.
+
+
+        Required permissions:
+
+        Following permissions are required: FinancialAnalysisEdit'
+      operationId: UpdateAllocationStatus
+      parameters:
+      - name: setId
+        in: path
+        description: Capacity to Service Set Id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: id
+        in: path
+        description: Capacity to Service Version Id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: 'Status body: Draft, Completed, Rejected, Verified'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatusDtoServiceRequest'
+      responses:
+        '202':
+          description: Accepted for processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusDtoServiceResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Capacity to Service Set with given ID does not exists
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /financialanalysiscommand
+  /api/allocation/{setId}/{id}/schema:
+    put:
+      tags:
+      - Allocation
+      summary: Update a Capacity to Service Schema
+      description: 'This method generates Capacity to Service Schema based on the input and policy configuration.
+
+
+        It updates or creates Capacity to Service Schema associated to the Set and Version Id in s3.
+
+
+        Required permissions:
+
+        Following permissions are required: FinancialAnalysisEdit'
+      operationId: UpdateAllocationSchema
+      parameters:
+      - name: setId
+        in: path
+        description: Capacity to Service Set Id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: id
+        in: path
+        description: Capacity to Service Version Id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Update Capacity to Service Schema request Fenergo.Nebula.FinancialAnalysis.Command.Application.Dto.RetrieveSchemaDto
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AllocationSchemaRequestDtoServiceRequest'
+      responses:
+        '202':
+          description: Success. Capacity to Service Schema updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllocationSchemaDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /financialanalysiscommand
+  /api/allocation/set/journey/{journeyId}/task/{taskId}:
+    get:
+      tags:
+      - Allocation
+      summary: Get Capacity to Service Set with latest Version by Journey, Task Id
+      description: 'This method returns Capacity to Service Set with latest Version in the scope of journey, task
+
+
+        Required permissions:
+
+        Following permissions are required: FinancialAnalysisAccess'
+      operationId: GetAllocationSetByJourneyTaskId
+      parameters:
+      - name: journeyId
+        in: path
+        description: Journey Id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: taskId
+        in: path
+        description: Task Id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. Capacity to Service Set is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllocationSetDtoServiceResponse_2'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found. Capacity to Service Set with given ids do not exist
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /financialanalysisquery
+  /api/allocation/set/{setId}:
+    get:
+      tags:
+      - Allocation
+      summary: Get a Capacity to Service Set of specified Id with all Version data
+      description: 'This method returns the Capacity to Service Set of specified Id with all Capacity to Service Versions.
+
+
+        Required permissions:
+
+        Following permissions are required: FinancialAnalysisAccess'
+      operationId: GetAllocationSetById
+      parameters:
+      - name: setId
+        in: path
+        description: The Id of the Capacity to Service Set
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. A Capacity to Service Set is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllocationVersionsLiteDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found. Capacity to Service Set with given id does not exist
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /financialanalysisquery
+  /api/allocation/{id}:
+    get:
+      tags:
+      - Allocation
+      summary: Get a Capacity to Service Version of specified Id
+      description: 'This method returns the Capacity to Service Version of specified Id.
+
+
+        Required permissions:
+
+        Following permissions are required: FinancialAnalysisAccess'
+      operationId: GetAllocationVersionById
+      parameters:
+      - name: id
+        in: path
+        description: The id of the Capacity to Service Version to retrieve
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. A Capacity to Service Version Dto is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllocationVersionDtoServiceResponse_2'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found. Capacity to Service Version with given id does not exist
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /financialanalysisquery
+  /api/allocation/set/{setId}/version/{versionId}/schema:
+    get:
+      tags:
+      - Allocation
+      summary: Get a Capacity to Service Schema by Set, Version Id
+      description: 'This method returns the Capacity to Service Schema of specified Capacity to Service Set and Version Id.
+
+
+        Required permissions:
+
+        Following permissions are required: FinancialAnalysisAccess'
+      operationId: GetAllocationSchema
+      parameters:
+      - name: setId
+        in: path
+        description: The Id of the Capacity to Service Set
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: versionId
+        in: path
+        description: The id of the Capacity to Service Version
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. A Capacity to Service Schema Dto is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllocationSchemaDtoServiceResponse_2'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found. Capacity to Service Set or Version with given Id does not exist
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /financialanalysisquery
+components:
+  schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    PeriodReferenceDto:
+      type: object
+      properties:
+        periodName:
+          type:
+          - string
+          - 'null'
+          description: Period unique name
+          example: FY2022
+        value:
+          type:
+          - string
+          - 'null'
+          description: Financial Item Value
+          example: '15500'
+      additionalProperties: false
+      description: Value of a financial item for a specific period
+    FinancialAnalysisRecordDto:
+      type: object
+      properties:
+        entityId:
+          type:
+          - string
+          - 'null'
+          description: Entity Id
+        entitiesList:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/JointEntityDto'
+          description: List of entities that joint financial analysis set belongs to
+        financialAnalysisSetId:
+          type:
+          - string
+          - 'null'
+          description: Financial Analysis Set Id that the Financial Item Data belongs to
+        financialAnalysisVersionId:
+          type:
+          - string
+          - 'null'
+          description: Financial Analysis Version Id that the Financial Item Data belongs to
+        financialGroupId:
+          type:
+          - string
+          - 'null'
+          description: Financial Group Id that the Financial Item Data belongs to
+        financialItemId:
+          type:
+          - string
+          - 'null'
+          description: Financial Group Item Id
+        periodReferences:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/PeriodReferenceDto'
+          description: Period references for the target financial item
+      additionalProperties: false
+      description: Financial Analysis Data to be used to derive the values for the total row of Allocation Group
+    PeriodDto:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+          description: Unique name of a period
+          example: FY2022
+        startDate:
+          type: string
+          description: Period Starting Date Time
+          format: date-time
+          example: '2020-01-01T00:00:00'
+        endDate:
+          type: string
+          description: Period End Date Time
+          format: date-time
+          example: '2021-12-31T23:59:59'
+      additionalProperties: false
+      description: Financial Analysis Period
+    StatusDto:
+      type: object
+      properties:
+        status:
+          type:
+          - string
+          - 'null'
+          description: Status of Financial Analysis Version
+          example: Draft
+      additionalProperties: false
+    AllocationVersionDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/AllocationVersionDto'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AllocationSchemaDto:
+      type: object
+      properties:
+        allocationGroupSchemas:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AllocationGroupSchema'
+          description: Allocation schemas that contain allocations grid information
+      additionalProperties: false
+      description: Model that contains information to build capacity to service schema
+    AllocationItemDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Allocation Item GUiD
+          format: uuid
+          example: 88009731-77df-4e72-98e7-0d314b7a5151
+        sourceEntityId:
+          type:
+          - string
+          - 'null'
+          description: Source Entity Id
+          example: 2db6a893-8e1c-4b0c-b1f9-4b84d86fcf45
+        sourceEntityType:
+          type:
+          - string
+          - 'null'
+          description: Source Entity Type
+          example: Individual
+        sourceEntityList:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/JointEntityDto'
+          description: Source Entity List
+        relatedPartyId:
+          type:
+          - string
+          - 'null'
+          description: Related Party Id
+          example: 960cf8e0-d238-4969-934f-596f7f1c5b66
+        relatedPartyType:
+          type:
+          - string
+          - 'null'
+          description: Related Party Type
+          example: Individual
+        relatedPartyList:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/JointEntityDto'
+          description: Related Party List
+        allocationType:
+          type:
+          - string
+          - 'null'
+          description: Allocation Type
+          example: addfrom
+        periodReferences:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/PeriodReferenceDto'
+          description: Value of the Allocation Item per period
+      additionalProperties: false
+      description: Financial Item
+    AllocationSetDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Capacity to Service Set GUiD
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        journeyId:
+          type: string
+          description: Journey Id which Capacity to Service belongs
+          format: uuid
+          example: 950c8f8f-a367-4f0e-a6ea-23cc3c104cc4
+        taskId:
+          type: string
+          description: Task Id which Capacity to Service belongs
+          format: uuid
+          example: 2c3c8433-efc3-493b-9b14-70b7681c7342
+        status:
+          type:
+          - string
+          - 'null'
+          description: Capacity to Service Set Status
+          example: Draft
+      additionalProperties: false
+      description: Capacity to Service Set representation
+    AllocationVersionDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Capacity to Service Version GUiD
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        setId:
+          type: string
+          description: Capacity to Service Set GUiD
+          format: uuid
+          example: a4309731-77df-4e72-98e7-0d314b7a5151
+        description:
+          type:
+          - string
+          - 'null'
+          description: Capacity to Service description
+          example: Home loan application
+        status:
+          type:
+          - string
+          - 'null'
+          description: Capacity to Service Status
+          example: Draft
+        allocationGroups:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AllocationGroupDto'
+          description: List of Allocations Added from/Lessened to Legal Entity
+        lastUpdatedDateTime:
+          type: string
+          description: Last time it was updated (Read-only)
+          format: date-time
+          example: '2022-12-12T15:55:00.000Z'
+        createdDateTime:
+          type: string
+          description: Date time it was created (Read-only)
+          format: date-time
+          example: '2020-12-12T15:55:00.000Z'
+        isAllocationsDisabledByUser:
+          type: boolean
+          description: Indicates whether the Allocations Grid is disabled by user in UI
+      additionalProperties: false
+      description: Capacity to Service Version representation
+    PropertyType:
+      enum:
+      - Single
+      - Custom
+      - Collection
+      type: string
+    PropertyDto:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/PropertyType'
+        discriminator:
+          $ref: '#/components/schemas/PropertyType'
+        isValid:
+          type:
+          - boolean
+          - 'null'
+      additionalProperties: false
+    AllocationValidationDataDto:
+      type: object
+      properties:
+        onlyIndividualsCanAllocate:
+          $ref: '#/components/schemas/BasicRuleDto'
+        totalAllocationLimit:
+          $ref: '#/components/schemas/ValueLimitRuleDto'
+      additionalProperties: false
+      description: Request DTO representing business validation data metadata
+    AllocationGroupDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Allocation Group Id
+          format: uuid
+          example: 45a0ed7a-aad9-4252-951c-b62020e8ef54
+        name:
+          type:
+          - string
+          - 'null'
+          description: Allocation Group Name
+          example: KFC Engadine
+        type:
+          type:
+          - string
+          - 'null'
+          description: Association Type
+          example: Shareholder
+        allocationItems:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AllocationItemDto'
+          description: List of Allocation Items
+        calculationSummaries:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/CalculationSummaryDto'
+          description: List of calculation of summary periods value
+        periods:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/PeriodDto'
+          description: List of periods captured in this Allocation Group
+        financialAnalysisRecords:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/FinancialAnalysisRecordDto'
+          description: Financial Analysis data to derive initial values for CTS total row per entry
+      additionalProperties: false
+      description: Financial Group
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AllocationSchemaDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/AllocationSchemaDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    StatusDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/StatusDto'
+      additionalProperties: false
+    AllocationSetDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/AllocationSetDto'
+      additionalProperties: false
+    StatusDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/StatusDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AllocationSetDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/AllocationSetDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AllocationSchemaRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/AllocationSchemaRequestDto'
+      additionalProperties: false
+    StandardValidationDataDto:
+      type: object
+      properties:
+        isMandatory:
+          $ref: '#/components/schemas/BasicRuleDto'
+        onlyInteger:
+          $ref: '#/components/schemas/BasicRuleDto'
+        noNegative:
+          $ref: '#/components/schemas/BasicRuleDto'
+        onlyDecimal:
+          $ref: '#/components/schemas/BasicRuleDto'
+        numberLimit:
+          $ref: '#/components/schemas/ValueLimitRuleDto'
+      additionalProperties: false
+      description: Request DTO representing validation data metadata
+    AllocationVersionDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/AllocationVersionDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AllocationEntityTypeConfigurationDataDto:
+      type: object
+      properties:
+        entityType:
+          type:
+          - string
+          - 'null'
+          description: Entity Type of the configuration.
+        surplusDeficitDataGroupId:
+          type:
+          - string
+          - 'null'
+          description: The Id of the data group used to derive a CTS total row initial figure.
+        surplusDeficitFinancialItem:
+          type:
+          - string
+          - 'null'
+          description: The name of the financial item used to derive a CTS total row initial figure.
+        identifiersDataGroupId:
+          type:
+          - string
+          - 'null'
+          description: The Id of the data group which will be use to identify statements.
+        identifiersFinancialItem:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: The financial items which will match with other entities.
+        detailsDataGroupId:
+          type:
+          - string
+          - 'null'
+          description: The Id of the data group used to show financial details.
+        detailsFinancialItem:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: The names of the financial items used to show financial details.
+      additionalProperties: false
+    BasicRuleDto:
+      type: object
+      properties:
+        active:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        message:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+      additionalProperties: false
+      description: Request DTO representing basic validation rule metadata
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    CalculationSummaryDto:
+      type: object
+      properties:
+        periodName:
+          type:
+          - string
+          - 'null'
+          description: Calculated period id
+        value:
+          type:
+          - string
+          - 'null'
+          description: Calculated value
+      additionalProperties: false
+      description: Summary of a financial group by period
+    ValueLimitRuleDto:
+      type: object
+      properties:
+        active:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        message:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+        minValue:
+          type:
+          - integer
+          - 'null'
+          description: Minimum value
+          format: int32
+          example: 1
+        maxValue:
+          type:
+          - integer
+          - 'null'
+          description: Maximum value
+          format: int32
+          example: 10
+      additionalProperties: false
+      description: Request DTO representing value limit rule metadata
+    AllocationGroupSchema:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+          description: The UiD of Allocation Group Schema
+          format: uuid
+          example: a36f544d-37af-4370-9438-460482ef09e1
+        name:
+          type:
+          - string
+          - 'null'
+          description: Allocation Group Schema Name
+          example: Parent Entity (Condition Name)
+        order:
+          type:
+          - number
+          - 'null'
+          description: Order
+          format: double
+          example: 1
+        periodSchemas:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/PeriodSchema'
+          description: Period schemas that contain periods information
+        validationData:
+          $ref: '#/components/schemas/StandardValidationDataDto'
+        allocationValidationData:
+          $ref: '#/components/schemas/AllocationValidationDataDto'
+        businessCategory:
+          type:
+          - string
+          - 'null'
+          description: Capacity to Service business category
+        totalRowDataGroupId:
+          type:
+          - string
+          - 'null'
+          description: The Id of the data group used to derive a CTS total row initial figure
+        totalRowFinancialItem:
+          type:
+          - string
+          - 'null'
+          description: The name of the financial item used to derive a CTS total row initial figure
+        financialAnalysisType:
+          type:
+          - string
+          - 'null'
+          description: The financial analysis type that the Allocations are applicable to
+        allocationContext:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Entity types that the configuration is applicable to
+        allocationEntityTypeConfigurations:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AllocationEntityTypeConfigurationDataDto'
+          description: It holds the configuration of the entity types
+      additionalProperties: false
+      description: Model that contains fields related to financial analysis and are mapped from policy requirement dto
+    AllocationSchemaRequestDto:
+      type: object
+      properties:
+        entityType:
+          type:
+          - string
+          - 'null'
+          description: Type of entity
+          example: Individual
+        targetEntity:
+          type:
+          - string
+          - 'null'
+          description: Target entity
+          example: Client
+        categories:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of requirement category e.g. ["Basic Details", "Enrich Details"]
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+          description: Entity data properties used for condition evaluation
+      additionalProperties: false
+    PeriodSchema:
+      type: object
+      properties:
+        configurationId:
+          type:
+          - string
+          - 'null'
+          description: Financial period configuration Id
+          example: 30475116-518b-4c8d-b7ae-e5453104682a
+        configurationVersion:
+          type:
+          - integer
+          - 'null'
+          description: Financial period configuration version number
+          format: int32
+        orderFromCurrentPeriod:
+          type: integer
+          description: Year difference from current period, 0 represents current period
+          format: int32
+          example: 1
+        name:
+          type:
+          - string
+          - 'null'
+          description: Name of the period
+          example: FY2022
+        startDate:
+          type: string
+          description: Start time of the period
+          format: date-time
+        endDate:
+          type: string
+          description: End time of the period
+          format: date-time
+        readOnly:
+          type: boolean
+          description: Indicates whether the period column is read-only or not
+      additionalProperties: false
+      description: Model that contains information to build period schema
+    JointEntityDto:
+      type: object
+      properties:
+        entityId:
+          type: string
+          description: Entity Id which financial analysis Set belongs
+          format: uuid
+          example: 54953531-77df-4e72-98e7-0d314b7a5151
+        entityType:
+          type:
+          - string
+          - 'null'
+          description: Entity Type
+          example: Company
+      additionalProperties: false
+      description: Entity of Financial Analysis
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    FinancialAnalysisRecordDto_2:
+      type: object
+      properties:
+        entityId:
+          type:
+          - string
+          - 'null'
+          description: Entity Id
+          example: 2db6a893-8e1c-4b0c-b1f9-4b84d86fcf45
+        entitiesList:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/JointEntityDto_2'
+          description: List of entities that joint financial analysis set belongs to
+        financialAnalysisSetId:
+          type:
+          - string
+          - 'null'
+          description: Financial Analysis Set Id that the Financial Item Data belongs to
+        financialAnalysisVersionId:
+          type:
+          - string
+          - 'null'
+          description: Financial Analysis Version Id that the Financial Item Data belongs to
+        financialGroupId:
+          type:
+          - string
+          - 'null'
+          description: Financial Group Id that the Financial Item Data belongs to
+        financialItemId:
+          type:
+          - string
+          - 'null'
+          description: Financial Group Item Id
+        periodReferences:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/PeriodReferenceDto'
+          description: Values of the Financial Item per period
+      additionalProperties: false
+      description: Financial Analysis Data to be used to derive initial values for the total row of Allocation Group
+    AllocationSetDto_2:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Capacity to Service Set GUiD
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        journeyId:
+          type: string
+          description: Journey Id which Capacity to Service belongs
+          format: uuid
+          example: 950c8f8f-a367-4f0e-a6ea-23cc3c104cc4
+        taskId:
+          type: string
+          description: Task Id which Capacity to Service belongs
+          format: uuid
+          example: 2c3c8433-efc3-493b-9b14-70b7681c7342
+        status:
+          type:
+          - string
+          - 'null'
+          description: Capacity to Service Set Status
+          example: Draft
+        allocationVersions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AllocationVersionDto_2'
+          description: List of Capacity to Service Versions
+      additionalProperties: false
+      description: Capacity to Service Set representation
+    AllocationVersionDto_2:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Capacity to Service Version GUiD
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        setId:
+          type: string
+          description: Capacity to Service Set GUiD
+          format: uuid
+          example: a4309731-77df-4e72-98e7-0d314b7a5151
+        description:
+          type:
+          - string
+          - 'null'
+          description: Capacity to Service description
+          example: Home loan application
+        status:
+          type:
+          - string
+          - 'null'
+          description: Capacity to Service Status
+          example: Draft
+        allocationGroups:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AllocationGroupDto'
+          description: List of Allocations Added from/Lessened to Legal Entity
+        createdDateTime:
+          type: string
+          description: Date time it was created (Read-only)
+          format: date-time
+          example: '2020-12-12T15:55:00.000Z'
+        lastUpdatedDateTime:
+          type: string
+          description: Last time it was updated (Read-only)
+          format: date-time
+          example: '2022-12-12T15:55:00.000Z'
+        versionNumber:
+          type: integer
+          description: Capacity to Service Version
+          format: int32
+          example: 1
+        isAllocationsDisabledByUser:
+          type: boolean
+          description: Indicates whether the Allocations Grid is disabled by user in UI
+      additionalProperties: false
+      description: Capacity to Service Version representation
+    AllocationValidationDataDto_2:
+      type: object
+      properties:
+        onlyIndividualsCanAllocate:
+          allOf:
+          - $ref: '#/components/schemas/BasicRuleDto'
+          description: Allocation Rule - does not allow individuals to receive allocation from non-individuals
+        totalAllocationLimit:
+          allOf:
+          - $ref: '#/components/schemas/ValueLimitRuleDto'
+          description: Allocation Rule - does not allow total allocation outside the range
+      additionalProperties: false
+      description: Request DTO representing business validation data metadata
+    AllocationSchemaDtoServiceResponse_2:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/AllocationSchemaDto'
+          description: Model that contains information to build capacity to service schema
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AllocationSetDtoServiceResponse_2:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/AllocationSetDto_2'
+          description: Capacity to Service Set representation
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AllocationVersionLiteDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Capacity to Service GUiD
+          format: uuid
+          example: 55509731-77df-4e72-98e7-0d314b7a5151
+        allocationSetId:
+          type: string
+          description: Capacity to Service GUiD
+          format: uuid
+          example: 1239731-77df-4e72-98e7-0d314b7a5151
+        description:
+          type:
+          - string
+          - 'null'
+          description: Capacity to Service description
+          example: Home loan application
+        status:
+          type:
+          - string
+          - 'null'
+          description: Capacity to Service Status
+          example: Draft
+        createdDateTime:
+          type: string
+          description: Date time it was created (Read-only)
+          format: date-time
+          example: '2020-12-12T15:55:00.000Z'
+        lastUpdatedTime:
+          type: string
+          description: Last time it was updated (Read-only)
+          format: date-time
+          example: '2022-12-12T15:55:00.000Z'
+        versionNumber:
+          type: integer
+          description: Capacity to Service Version
+          format: int32
+          example: 1
+        isAllocationsDisabledByUser:
+          type: boolean
+          description: Indicates whether the Allocations Grid is disabled by user in UI
+      additionalProperties: false
+      description: FinancialAnalysisVersions representation
+    StandardValidationDataDto_2:
+      type: object
+      properties:
+        isMandatory:
+          allOf:
+          - $ref: '#/components/schemas/BasicRuleDto'
+          description: Mandatory Rule - does not allow empty value
+        onlyInteger:
+          allOf:
+          - $ref: '#/components/schemas/BasicRuleDto'
+          description: Validation rule that allows only integers
+        noNegative:
+          allOf:
+          - $ref: '#/components/schemas/BasicRuleDto'
+          description: Validation rule that does not allow negative numbers
+        onlyDecimal:
+          allOf:
+          - $ref: '#/components/schemas/BasicRuleDto'
+          description: Validation rule that allows numbers up to two decimal places
+        numberLimit:
+          allOf:
+          - $ref: '#/components/schemas/ValueLimitRuleDto'
+          description: Validation rule that allows to set number range
+      additionalProperties: false
+      description: Request DTO representing validation data metadata
+    AllocationVersionsLiteDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/AllocationVersionsLiteDto'
+          description: Capacity to Service Set representation
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AllocationGroupSchema_2:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+          description: The UiD of Allocation Group Schema
+          format: uuid
+          example: a36f544d-37af-4370-9438-460482ef09e1
+        name:
+          type:
+          - string
+          - 'null'
+          description: Allocation Group Schema Name
+          example: Parent Entity (Condition Name)
+        order:
+          type:
+          - number
+          - 'null'
+          description: Order
+          format: double
+          example: 1
+        periodSchemas:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/PeriodSchema'
+          description: Period schemas that contain periods information
+        validationData:
+          allOf:
+          - $ref: '#/components/schemas/StandardValidationDataDto_2'
+          description: Validation Rule
+        allocationValidationData:
+          allOf:
+          - $ref: '#/components/schemas/AllocationValidationDataDto_2'
+          description: Validation Rule
+        businessCategory:
+          type:
+          - string
+          - 'null'
+          description: Capacity to Service business category
+        totalRowDataGroupId:
+          type:
+          - string
+          - 'null'
+          description: The Id of the data group used to derive a CTS total row initial figure
+        totalRowFinancialItem:
+          type:
+          - string
+          - 'null'
+          description: The name of the financial item used to derive a CTS total row initial figure
+        financialAnalysisType:
+          type:
+          - string
+          - 'null'
+          description: The financial analysis type that the Allocations are applicable to
+        allocationContext:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Entity types that the configuration is applicable to
+        allocationEntityTypeConfigurations:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AllocationEntityTypeConfigurationDataDto'
+          description: It holds the configuration of the entity types
+      additionalProperties: false
+      description: Model that contains fields related to financial analysis and are mapped from policy requirement dto
+    AllocationVersionsLiteDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Capacity to Service Set GUiD
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        journeyId:
+          type: string
+          description: Journey Id which Capacity to Service belongs
+          format: uuid
+          example: 950c8f8f-a367-4f0e-a6ea-23cc3c104cc4
+        taskId:
+          type: string
+          description: Task Id which Capacity to Service belongs
+          format: uuid
+          example: 2c3c8433-efc3-493b-9b14-70b7681c7342
+        status:
+          type:
+          - string
+          - 'null'
+          description: Capacity to Service Set Status
+          example: Draft
+        allocationVersions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AllocationVersionLiteDto'
+          description: List of Capacity to Service Versions
+      additionalProperties: false
+      description: Capacity to Service Set representation
+    JointEntityDto_2:
+      type: object
+      properties:
+        entityId:
+          type: string
+          format: uuid
+        entityType:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    AllocationVersionDtoServiceResponse_2:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/AllocationVersionDto_2'
+          description: Capacity to Service Version representation
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header
+x-refined-from:
+- fenergo-financialanalysiscommand-v1-0-openapi.json
+- fenergo-financialanalysisquery-v1-0-openapi.json

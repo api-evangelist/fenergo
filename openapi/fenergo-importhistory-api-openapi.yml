@@ -1,0 +1,367 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Configuration Exchange Query Import History…
+  description: '**Configuration Exchange Query API provides**:
+
+
+    Import Session Models retrieval
+
+
+    Import Session Models retrieval
+
+
+    Import history summary retrieval'
+  version: '1.0'
+servers:
+- url: /configexchangequery
+security:
+- Bearer: []
+tags:
+- name: ImportHistory
+paths:
+  /api/import-history/getLatestBySourceIds:
+    post:
+      tags:
+      - ImportHistory
+      summary: Get data about the last imports of multiple source tenant configurations
+      description: 'Returns information about latest imports of the requested source tenant configurations.
+
+
+        Required permissions:
+
+        Following permissions are required: ConfigurationExchangeAccess'
+      operationId: GetLatestImportedConfigsBySourceIds
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: ServiceRequest with the Fenergo.Nebula.ConfigExchange.Query.Application.Dto.LatestImportedConfigVersions.LatestImportedConfigRequestDto containing identifiers of the source tenant configs
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LatestImportedConfigRequestDtoServiceRequest'
+      responses:
+        '200':
+          description: Success. LatestImportedConfig record is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LatestImportedConfigResponseDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not found. There is no data for the specific configuration.
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+components:
+  schemas:
+    LatestImportedConfigRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/LatestImportedConfigRequestDto'
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    LatestImportedConfigResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/LatestImportedConfigResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    LatestImportedConfigResponseDto:
+      type: object
+      properties:
+        latestVersions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/LatestImportedConfigVersionDto'
+        latestNonVersionedConfigs:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/LatestImportedNonVersionedConfigDto'
+      additionalProperties: false
+    LatestImportedNonVersionedConfigDto:
+      type: object
+      properties:
+        configType:
+          type:
+          - string
+          - 'null'
+          description: Configuration type
+          example: Lookup
+        sourceTenantId:
+          type:
+          - string
+          - 'null'
+          description: Source tenant identifier.
+          example: 3840b7a7-7326-4fb1-78b7-1d691b83676b
+        sourceEnvironmentId:
+          type:
+          - string
+          - 'null'
+          description: Source configuration environment identifier.
+          format: uuid
+          example: 2920b7a7-7336-4fb1-82b7-1d691b8367fa
+        targetConfigId:
+          type:
+          - string
+          - 'null'
+          description: Target configuration identifier.
+          example: 4c0c0e58-cff6-41b6-9aa6-08e308592643
+        sourceConfigId:
+          type:
+          - string
+          - 'null'
+          description: Source configuration identifier.
+          example: 211f3023-00ef-4736-9c5f-e0c13e07fab4
+        sourceEquivalentIdentifierSnapshot:
+          type:
+          - string
+          - 'null'
+          description: Source-side equivalent identifier snapshot stored when the import succeeded.
+          example: Original Team Name
+        importedOn:
+          type: string
+          description: Import date.
+          format: date-time
+          example: '2023-05-30'
+      additionalProperties: false
+    ConfigIdentifierDto:
+      type: object
+      properties:
+        configId:
+          type: string
+          description: Configuration identifier.
+          format: uuid
+          example: 89f8a8c1-c721-4b25-aeb7-67f2e4ffa249
+        configType:
+          type:
+          - string
+          - 'null'
+          description: Configuration type.
+          example: lookup
+      additionalProperties: false
+      description: Data to identify a source tenant configuration
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    LatestImportedConfigRequestDto:
+      type: object
+      properties:
+        sourceTenantId:
+          type: string
+          description: Source tenant identifier.
+          format: uuid
+          example: 3840b7a7-7326-4fb1-78b7-1d691b83676b
+        sourceConfigIdentifiers:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConfigIdentifierDto'
+          description: Source config identifiers.
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    LatestImportedConfigVersionDto:
+      type: object
+      properties:
+        configType:
+          type:
+          - string
+          - 'null'
+          description: Configuration type
+          example: Lookup
+        sourceTenantId:
+          type:
+          - string
+          - 'null'
+          description: Source tenant identifier.
+          example: 3840b7a7-7326-4fb1-78b7-1d691b83676b
+        sourceEnvironmentId:
+          type:
+          - string
+          - 'null'
+          description: Source configuration environment identifier.
+          format: uuid
+          example: 2920b7a7-7336-4fb1-82b7-1d691b8367fa
+        targetConfigId:
+          type:
+          - string
+          - 'null'
+          description: Target configuration identifier.
+          example: 4c0c0e58-cff6-41b6-9aa6-08e308592643
+        sourceConfigId:
+          type:
+          - string
+          - 'null'
+          description: Source configuration identifier.
+          example: 211f3023-00ef-4736-9c5f-e0c13e07fab4
+        sourceEquivalentIdentifierSnapshot:
+          type:
+          - string
+          - 'null'
+          description: 'Source-side equivalence identifier captured by the UI at the time
+
+            of the prior successful import (sent as
+
+            `ImportItem.EquivalentIdentifierSnapshot` on the close-phase
+
+            command). This is the value the UI equivalence finder will compare
+
+            against the target configuration''s `equivalentIdentifier` on
+
+            subsequent imports, and is intentionally distinct from the display
+
+            name — for some config types they coincide (e.g. Teams,
+
+            Risk threshold model active name), for others they diverge
+
+            (e.g. ComponentLibrary where the identifier is the configType
+
+            constant, IntegrationFlowsLibraries where it is the libraryKey).
+
+            May be `null` for backfilled rows or events from older UI
+
+            clients that did not send the field.'
+          example: componentLibrary
+        sourceVersionNumber:
+          type: integer
+          description: Source configuration version number.
+          format: int32
+          example: 15
+        targetVersionNumber:
+          type: integer
+          description: Target configuration version number.
+          format: int32
+          example: 10
+        importedOn:
+          type: string
+          description: Import date.
+          format: date-time
+          example: '2023-05-30'
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

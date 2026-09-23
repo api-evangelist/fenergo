@@ -1,0 +1,123 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Event Ingress Business Processes API
+  description: '## Purpose of the API
+
+
+    The purpose of the Event Ingress API is to is to provide an endpoint for third party applications to send events to, which will allow Fen-X to process entity related events.
+
+
+    Processing of an event will trigger the correspondent journey depending on the event type and sub type received.'
+  version: '1.0'
+servers:
+- url: /eventingress
+security:
+- Bearer: []
+tags:
+- name: Business Processes
+paths:
+  /v1/business-process-types:
+    get:
+      tags:
+      - Business Processes
+      summary: List all available business process types
+      description: This method will return a list of available business process types.
+      operationId: ListBusinessProcessTypes
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. The list of business process types is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessProcessTypeDtoListServiceResponse'
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+components:
+  schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    BusinessProcessTypeDtoListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/BusinessProcessTypeDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    BusinessProcessTypeDto:
+      type: object
+      properties:
+        key:
+          type:
+          - string
+          - 'null'
+          description: The business process type's key e.g. "createentity"
+          example: createentity
+        displayName:
+          type:
+          - string
+          - 'null'
+          description: The business process type's display name e.g. "Create Entity"
+          example: Create Entity
+      additionalProperties: false
+      description: Represents the model for supported business process types.
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

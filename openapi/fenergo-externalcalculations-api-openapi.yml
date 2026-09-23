@@ -1,0 +1,191 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Deals Query External Calculations API
+  description: '**Deals Query API**:
+
+
+    Deals Query API provides endpoints in order to retrieve all related models and their versions.'
+  version: '1.0'
+servers:
+- url: /dealsquery
+security:
+- Bearer: []
+tags:
+- name: ExternalCalculations
+paths:
+  /api/deals/external-calculations/calculate-property-value:
+    post:
+      tags:
+      - ExternalCalculations
+      summary: Get calculated value for property
+      description: This method calculates property value.
+      operationId: GetCalculatedPropertyValue
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Request for external property value
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CalculatedPropertyValueRequestDtoServiceRequest'
+      responses:
+        '200':
+          description: Success. Response is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalculatedPropertyValueResponseDtoServiceResponse'
+        '400':
+          description: Bad RequestedData. The RequestedData has missing/invalid values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+components:
+  schemas:
+    CalculatedPropertyValueRequestDto:
+      type: object
+      properties:
+        propertyName:
+          type: string
+        calculationProperties:
+          type: object
+          additionalProperties:
+            type: string
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CalculatedPropertyValueResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CalculatedPropertyValueResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CalculatedPropertyValueRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CalculatedPropertyValueRequestDto'
+      additionalProperties: false
+    CalculatedPropertyValueResponseDto:
+      type: object
+      properties:
+        calculatedValue:
+          type: string
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

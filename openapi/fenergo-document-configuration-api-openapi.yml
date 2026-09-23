@@ -1,0 +1,227 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Document Management Query Document…
+  description: Query API to get the documents information to show in the UI.
+  version: '1.0'
+servers:
+- url: /documentmanagementquery
+security:
+- Bearer: []
+tags:
+- name: Document Configuration
+paths:
+  /api/configuration:
+    get:
+      tags:
+      - Document Configuration
+      summary: Get configuration
+      description: Returns configuration.
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. The configuration options
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetDocumentConfigurationResponseDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+      operationId: getApiConfiguration
+      x-operation-id-source: derived
+components:
+  schemas:
+    GetDocumentConfigurationResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetDocumentConfigurationResponseDto'
+          description: Request DTO representing current status of document configuration for waive comment
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    GetDocumentConfigurationResponseDto:
+      type: object
+      properties:
+        isWaiveCommentMandatory:
+          type: boolean
+          description: Flag indicating if inheritance is enabled or disabled
+        isDeferCommentMandatory:
+          type: boolean
+          description: Flag indicating if inheritance is enabled or disabled for defer comment
+        additionalDocumentMetadataColumnsDataKeys:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Array of data keys for additional document metadata columns that can be configured and displayed
+        expiryDateDataKeys:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of data keys for expiry date fields in document metadata
+        restrictedDocumentFileTypes:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of restricted document file type extensions that are blocked from upload
+        maximumFileSizeMb:
+          type:
+          - integer
+          - 'null'
+          description: Maximum allowed file size in megabytes. Null means no limit.
+          format: int32
+      additionalProperties: false
+      description: Request DTO representing current status of document configuration for waive comment
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

@@ -1,0 +1,326 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Association Query Association Business…
+  description: '**Association Query API**:
+
+
+    Association Query API provides endpoints in order to retrieve entity associations.
+
+
+    **Association Query API provides**:
+
+
+    Entity Association retrieval
+
+
+    Unwrapping Requirement Status Model Management'
+  version: '1.0'
+servers:
+- url: /associationquery
+security:
+- Bearer: []
+tags:
+- name: AssociationBusinessProcess
+paths:
+  /api/association-business-process/{businessProcessId}:
+    get:
+      tags:
+      - AssociationBusinessProcess
+      summary: Get a measure-completeness business process
+      description: 'Poll this endpoint after starting an asynchronous measure-completeness calculation. While the
+
+        calculation is running the status is "InProgress"; it becomes "Done" with the computed requirement
+
+        statuses in `items`, or "Error" with the reason in `messages`.
+
+
+        Required permissions:
+
+        At least one of the following permissions is required: AssociationEdit, AssociationEditAndPartialDelete, AssociationEditOnly, AssociationEditAndLinkOnly, AssociationAccess'
+      operationId: GetMeasureCompletenessBusinessProcess
+      parameters:
+      - name: businessProcessId
+        in: path
+        description: The identifier returned by the initiate call.
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Business process retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeasureCompletenessBusinessProcessDtoServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found. Business process with given id does not exist
+                  type: Error
+                  errorCode: Error Code
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+components:
+  schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    MeasureCompletenessBusinessProcessPayloadDto:
+      type: object
+      properties:
+        statusModelId:
+          type: string
+          description: The Id of the unwrapping requirement status model, empty when it was resolved during the calculation
+          format: uuid
+          example: fa8cb45d-ac78-4c4e-b701-ffcc2c9e79cf
+        journeyId:
+          type: string
+          description: The Id of the Journey
+          format: uuid
+          example: 7a15bd4a-20f7-497f-b16a-a75d52c8fe01
+        taskId:
+          type: string
+          description: The Id of the Task
+          format: uuid
+          example: e205ea02-72c6-4aa6-9a10-804a3c78ccaf
+        entityId:
+          type: string
+          description: The Id of the Entity
+          format: uuid
+          example: 58e4b43a-a082-49a6-bf79-0cf8df2313c6
+        entityDraftId:
+          type: string
+          description: The Id of the Entity Draft
+          format: uuid
+          example: 24511767-4586-4b69-af43-c405ec6b154a
+        productDraftId:
+          type:
+          - string
+          - 'null'
+          description: The Id of the Product Draft, when the calculation was for a product
+          format: uuid
+          example: null
+      additionalProperties: false
+      description: Response DTO representing the payload of a measure-completeness business process
+    BusinessProcessMessageDto:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        messageType:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    MeasureCompletenessBusinessProcessItemDto:
+      type: object
+      properties:
+        requirementId:
+          type: string
+          description: The Id of the Requirement
+          format: uuid
+          example: 8d9e92eb-d18e-4d4d-8971-7781ccc31c80
+        requirementName:
+          type:
+          - string
+          - 'null'
+          description: The name of the Requirement
+          example: Add 2 Directors
+        idvName:
+          type:
+          - string
+          - 'null'
+          description: The name of the Idv Requirement
+          example: Add 2 Directors
+        status:
+          type:
+          - string
+          - 'null'
+          description: The status of the Requirement. This is the requirement's own status, not the business process status.
+          example: Completed
+        ownershipAndControlDataKey:
+          type:
+          - string
+          - 'null'
+          description: The OwnershipAndControl DataKey
+          example: addTwoDirectors
+        completedDate:
+          type:
+          - string
+          - 'null'
+          description: The date at which the requirement was set to Complete
+          format: date-time
+        minimumPartyCount:
+          type:
+          - integer
+          - 'null'
+          description: The Minimum Party Count needed to validate the Requirement
+          format: int32
+          example: 2
+        addAllParties:
+          type:
+          - boolean
+          - 'null'
+          description: Whether all Related Parties meeting the criteria are to be added
+          example: false
+      additionalProperties: false
+      description: Response DTO representing one computed requirement status of a measure-completeness business process
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    MeasureCompletenessBusinessProcessDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/MeasureCompletenessBusinessProcessDto'
+          description: 'Response DTO representing a measure-completeness business process. Poll this until
+
+            `Status` is "Done" or "Error"; while it is "InProgress" the calculation is still running.'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    MeasureCompletenessBusinessProcessDto:
+      type: object
+      properties:
+        businessProcessId:
+          type: string
+          format: uuid
+        status:
+          type:
+          - string
+          - 'null'
+        payload:
+          allOf:
+          - $ref: '#/components/schemas/MeasureCompletenessBusinessProcessPayloadDto'
+          description: Response DTO representing the payload of a measure-completeness business process
+        created:
+          type: string
+          format: date-time
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/BusinessProcessMessageDto'
+        items:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/MeasureCompletenessBusinessProcessItemDto'
+      additionalProperties: false
+      description: 'Response DTO representing a measure-completeness business process. Poll this until
+
+        `Status` is "Done" or "Error"; while it is "InProgress" the calculation is still running.'
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

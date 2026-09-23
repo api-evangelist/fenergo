@@ -1,0 +1,432 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Dashboards Query (PENDING DEPRECATION) User…
+  description: '!!! IMPORTANT NOTICE:
+
+    This API is pending deprecation and will be removed on 28.02.2026. For more information visit: https://docs.fenergox.com/notice-of-change/2025/07/22/legacy-dashboards-deprecation
+
+
+    Dashboards Query API is part of FenX eco-system to manage Dashboards. All the operations require valid access token obtained from Identity service.'
+  version: 1.0.0
+servers:
+- url: /dashboardsquery
+security:
+- Bearer: []
+tags:
+- name: UserJourneyDashboard
+paths:
+  /api/user-journey-dashboard/{userId}:
+    get:
+      tags:
+      - UserJourneyDashboard
+      summary: Get journeys with tasks assigned to the specified user
+      description: 'Required permissions:
+
+        Following permissions are required: TaskDashboardAccess'
+      operationId: GetUserJourneyDashboard
+      parameters:
+      - name: userId
+        in: path
+        description: ''
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '413':
+          description: Payload Too Large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: The amount of data requested is too large. Please request smaller data set.
+                  type: Error
+                  errorCode: PAYLOAD_TOO_LARGE
+        '200':
+          description: Success. Journey dashboard for specified criteria is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserJourneyDashboardDtoServiceResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+components:
+  schemas:
+    UserJourneyDashboardDto:
+      type: object
+      properties:
+        journeys:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UserJourneySummaryDto'
+      additionalProperties: false
+    JourneyMilestoneDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type:
+          - string
+          - 'null'
+        order:
+          type: integer
+          format: int32
+        status:
+          type:
+          - string
+          - 'null'
+        stages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/MilestoneStageDto'
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+          description: The message
+          example: Success
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
+      additionalProperties: false
+      description: The message associated to the service response
+    JourneyTaskDto:
+      type: object
+      properties:
+        taskId:
+          type: string
+          format: uuid
+        taskName:
+          type:
+          - string
+          - 'null'
+        assignedTeamId:
+          type:
+          - string
+          - 'null'
+        assignedTeam:
+          type:
+          - string
+          - 'null'
+        taskStatus:
+          type:
+          - string
+          - 'null'
+        journeyId:
+          type:
+          - string
+          - 'null'
+        daysOpen:
+          type:
+          - string
+          - 'null'
+        slaPeriod:
+          type:
+          - string
+          - 'null'
+        started:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        completed:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        paused:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        unpaused:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        taskType:
+          type:
+          - string
+          - 'null'
+        assignedTo:
+          type:
+          - string
+          - 'null'
+        assignedToId:
+          type:
+          - string
+          - 'null'
+        isFavourite:
+          type: boolean
+        serviceLevelAgreement:
+          $ref: '#/components/schemas/ServiceLevelAgreementDto'
+      additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    ServiceLevelAgreementDto:
+      type: object
+      properties:
+        committedHours:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        dueDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        approachingDueHours:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        approachingDueDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        status:
+          type:
+          - string
+          - 'null'
+        duePeriod:
+          type:
+          - string
+          - 'null'
+        pausedPeriodSec:
+          type:
+          - integer
+          - 'null'
+          format: int32
+      additionalProperties: false
+    JourneyStatsDto:
+      type: object
+      properties:
+        completed:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int32
+        progress:
+          type: number
+          format: float
+      additionalProperties: false
+    MilestoneStageDto:
+      type: object
+      properties:
+        stageId:
+          type: string
+          format: uuid
+        name:
+          type:
+          - string
+          - 'null'
+        status:
+          type:
+          - string
+          - 'null'
+        started:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        completed:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        paused:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        statistics:
+          $ref: '#/components/schemas/JourneyStatsDto'
+        serviceLevelAgreement:
+          $ref: '#/components/schemas/ServiceLevelAgreementDto'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data:
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    UserJourneySummaryDto:
+      type: object
+      properties:
+        journeyId:
+          type: string
+          format: uuid
+        journeyName:
+          type:
+          - string
+          - 'null'
+        entityName:
+          type:
+          - string
+          - 'null'
+        entityId:
+          type: string
+          format: uuid
+        progress:
+          type: number
+          format: double
+        status:
+          type:
+          - string
+          - 'null'
+        tasks:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/JourneyTaskDto'
+        daysOpen:
+          type:
+          - string
+          - 'null'
+        slaPeriod:
+          type:
+          - string
+          - 'null'
+        started:
+          type: string
+          format: date-time
+        paused:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        yourNextTask:
+          $ref: '#/components/schemas/JourneyTaskDto'
+        milestones:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/JourneyMilestoneDto'
+        serviceLevelAgreement:
+          $ref: '#/components/schemas/ServiceLevelAgreementDto'
+        journeyOwner:
+          $ref: '#/components/schemas/JourneyOwnerDto'
+        customStatus:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    JourneyOwnerDto:
+      type: object
+      properties:
+        teamId:
+          type: string
+          format: uuid
+        ownerId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        ownerName:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    UserJourneyDashboardDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/UserJourneyDashboardDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

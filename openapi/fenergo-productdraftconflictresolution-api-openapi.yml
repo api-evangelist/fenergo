@@ -1,0 +1,572 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Product Command Product Draft Conflict…
+  description: Product Command API is part of FenX eco-system to manage Product Data. All the operations require valid access token obtained from Identity service.
+  version: '1.0'
+servers:
+- url: /productcommand
+security:
+- Bearer: []
+tags:
+- name: ProductDraftConflictResolution
+paths:
+  /api/product/{productId}/draft/{id}/conflicts:
+    put:
+      tags:
+      - ProductDraftConflictResolution
+      summary: Manage conflicts for Product Draft Record
+      description: 'Used to check and resolve conflicts for a Product Draft compared to the latest Verified Record.
+
+
+        Required permissions:
+
+        At least one of the following permissions is required: ProductConflictResolutionEdit, ProductConflictResolutionAccess'
+      operationId: ProductDraftConflicts
+      parameters:
+      - name: productId
+        in: path
+        description: Product id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: id
+        in: path
+        description: Product draft id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Conflict Resolutions request
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/DraftConflictDtoServiceRequest'
+      responses:
+        '202':
+          description: Success. No conflicts were found for the Product Draft Record
+        '409':
+          description: Conflict saving changes in expected version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: There are conflicts that cannot be resolved automatically, get latest and apply your changes
+                  type: Error
+                  errorCode: CONFLICT
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found. Product/product draft with given id does not exist
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/product/draft/bulkconflicts:
+    put:
+      tags:
+      - ProductDraftConflictResolution
+      summary: Manage conflicts for bulk Product Draft Records
+      description: 'Used to check and resolve conflicts for multiple Product Drafts compared to their latest Verified Records.
+
+
+        Required permissions:
+
+        At least one of the following permissions is required: ProductConflictResolutionEdit, ProductConflictResolutionAccess'
+      operationId: ProductDraftsBulkConflicts
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: List of Conflict Resolutions request
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/BulkDraftConflictDtoListServiceRequest'
+      responses:
+        '202':
+          description: Success. No conflicts were found for the Product Draft Records
+        '409':
+          description: Conflict saving changes in expected version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: There are conflicts that cannot be resolved automatically, get latest and apply your changes
+                  type: Error
+                  errorCode: CONFLICT
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/product/draft/journey/{journeyId}/complete-inaccessible-conflicts:
+    put:
+      tags:
+      - ProductDraftConflictResolution
+      summary: Complete conflict resolution for product drafts the current user cannot access…
+      description: 'For any product drafts in the journey that are inaccessible to the current user due to access layer
+
+        enforcement, all detected conflicts are automatically resolved. Fields whose policy category matches the
+
+        configured `productCategory` list take the verified record value; all other conflicted fields take
+
+        the new (draft) value. If no `productCategory` is supplied, all conflicts default to the new (draft) value.
+
+
+        Required permissions:
+
+        Following permissions are required: ProductConflictResolutionEdit'
+      operationId: CompleteInaccessibleProductDraftConflicts
+      parameters:
+      - name: journeyId
+        in: path
+        description: Journey id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CompleteInaccessibleConflictsDto'
+      responses:
+        '202':
+          description: Success. Inaccessible conflicts resolved (or none existed)
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+components:
+  schemas:
+    DraftConflictDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/DraftConflictDto'
+          description: Request DTO representing the conflict resolution data
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    BulkDraftConflictDtoListServiceRequest:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/BulkDraftConflictDto'
+      additionalProperties: false
+    DraftConflictDto:
+      type: object
+      properties:
+        productVersion:
+          type:
+          - integer
+          - 'null'
+          description: Used to determine if passed draft is outdated
+          format: int32
+        pushChanges:
+          type: boolean
+          description: If true updates the product Draft when all conflicts are resolved
+          example: true
+        dataConflictResolutions:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+          description: Data conflict resolutions properties
+          example:
+            firstName:
+              type: Single
+              value: Tom
+            dateOfBirth:
+              type: Single
+              value: '2021-07-15'
+            address:
+              type: Collection
+              dataGroupId: 674ccef1-cfdc-46af-97f8-340b24ab7f43
+              collections:
+                54a25d24-1a4b-45c6-a5b4-980e5d3a1df5:
+                  properties:
+                    country: Spain
+                    city: Madrid
+                    street: C. de Sevilla
+                93468632-1a9e-4ad0-b2e1-c5ec0f65d7b2:
+                  properties:
+                    country: Spain
+                    city: Barcelona
+                    street: Carrer de Girona
+      additionalProperties: false
+      description: Request DTO representing the conflict resolution data
+    PropertyType:
+      enum:
+      - Single
+      - Custom
+      - Collection
+      type: string
+    PropertyDto:
+      required:
+      - discriminator
+      - type
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        discriminator:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        isValid:
+          type:
+          - boolean
+          - 'null'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CompleteInaccessibleConflictsDto:
+      type: object
+      properties:
+        productCategory:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'Journey task product categories for which conflicted fields should default to the verified record value.
+
+            Fields whose category is NOT in this list will default to the new (draft) value.
+
+            If null or empty, all conflicts default to the new (draft) value.'
+        fieldCategories:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type:
+            - string
+            - 'null'
+          description: Map of field data key to its product category, used to determine the category of each conflicted field.
+      additionalProperties: false
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    BulkDraftConflictDto:
+      type: object
+      properties:
+        productVersion:
+          type:
+          - integer
+          - 'null'
+          description: Used to determine if passed draft is outdated
+          format: int32
+        pushChanges:
+          type: boolean
+          description: If true updates the product Draft when all conflicts are resolved
+          example: true
+        dataConflictResolutions:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+          description: Data conflict resolutions properties
+          example:
+            firstName:
+              type: Single
+              value: Tom
+            dateOfBirth:
+              type: Single
+              value: '2021-07-15'
+            address:
+              type: Collection
+              dataGroupId: 674ccef1-cfdc-46af-97f8-340b24ab7f43
+              collections:
+                54a25d24-1a4b-45c6-a5b4-980e5d3a1df5:
+                  properties:
+                    country: Spain
+                    city: Madrid
+                    street: C. de Sevilla
+                93468632-1a9e-4ad0-b2e1-c5ec0f65d7b2:
+                  properties:
+                    country: Spain
+                    city: Barcelona
+                    street: Carrer de Girona
+        productId:
+          type: string
+          description: The Product Id
+          format: uuid
+        productDraftId:
+          type: string
+          description: The Product Draft Id
+          format: uuid
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

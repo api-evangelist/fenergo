@@ -1,0 +1,353 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Screening Query Entity Document API
+  description: '**Screening Query API**:
+
+
+    Screening Query API retrieves screening results for screened clients and their associated parties.'
+  version: '4.0'
+servers:
+- url: /screeningquery
+security:
+- Bearer: []
+tags:
+- name: EntityDocument
+paths:
+  /api/v4/batch/{batchId}/entity/{entityId}/documents:
+    get:
+      tags:
+      - EntityDocument
+      summary: Get all documents for a given entity within a batch
+      description: 'Returns all documents uploaded against the specified entity in the specified batch.
+
+
+        Document statuses are updated asynchronously via Document Management integration events.
+
+
+        Required permissions:
+
+        Following permissions are required: ScreeningAccess'
+      operationId: GetEntityDocumentsV4
+      parameters:
+      - name: batchId
+        in: path
+        description: The Id of the batch
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: entityId
+        in: path
+        description: The Id of the entity
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. The list of entity documents is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityDocumentWithBatchDtoIEnumerableServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '403':
+          description: Forbidden. The feature is disabled or the user lacks the necessary permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/v4/entity/{entityId}/documents:
+    get:
+      tags:
+      - EntityDocument
+      summary: Get all documents for a given entity across all batches, optionally scoped to a…
+      description: 'Returns all documents associated with the specified entity across all batches, with status `Closed` or `Overridden`.
+
+
+        When a journeyId is provided, results are scoped to that journey. Without it, all batches for the entity are searched.
+
+
+        Only documents in `Completed` status are included; documents from batches that are deleted or that are not `Closed` or `Overridden` are also excluded.
+
+
+        Document statuses reflect the last-known value from the read model and are not enriched in real-time from DocManagement.
+
+
+        Required permissions:
+
+        Following permissions are required: ScreeningAccess'
+      operationId: GetEntityDocumentsAcrossBatchesV4
+      parameters:
+      - name: entityId
+        in: path
+        description: The Id of the entity
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: journeyId
+        in: query
+        description: Optional. Scopes the search to a specific journey
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. The list of entity documents with batch context is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityDocumentWithBatchDtoIEnumerableServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '403':
+          description: Forbidden. The feature is disabled or the user lacks the necessary permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+components:
+  schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    EntityDocumentWithBatchDto:
+      allOf:
+      - $ref: '#/components/schemas/EntityDocumentDto'
+      - type: object
+        properties:
+          batchId:
+            type:
+            - string
+            - 'null'
+            description: The identifier of the batch that owns this document.
+          entityId:
+            type:
+            - string
+            - 'null'
+            description: The identifier of the entity this document is associated with.
+          journeyId:
+            type:
+            - string
+            - 'null'
+            description: The identifier of the journey this document belongs to.
+          batchStatus:
+            type:
+            - string
+            - 'null'
+            description: The current status of the batch (e.g. `Open`, `Closed`, `Overridden`).
+        additionalProperties: false
+      description: Extends Fenergo.Nebula.Screening.Query.Application.Dto.EntityDocumentDto with the batch and entity context in which the document exists.
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AccessLayersDto:
+      type: object
+      properties:
+        geographic:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'The geographic access layers (e.g. country or regional groupings) that can access the resource.
+
+            Defaults to `["Global"]` when none are specified.'
+        businessRelated:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'The business-related access layers (e.g. business lines or divisions) that can access the resource.
+
+            Defaults to `["Enterprise"]` when none are specified.'
+      additionalProperties: false
+      description: Represents the access layer configuration controlling visibility of a resource.
+    EntityDocumentWithBatchDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/EntityDocumentWithBatchDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    EntityDocumentDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The internal unique identifier of the document.
+          format: uuid
+        externalDocumentId:
+          type:
+          - string
+          - 'null'
+          description: The identifier assigned to the document by the external document management system.
+        fileName:
+          type:
+          - string
+          - 'null'
+          description: The original file name of the uploaded document.
+        documentType:
+          type:
+          - string
+          - 'null'
+          description: The document type as supplied by the external document management system.
+        friendlyName:
+          type:
+          - string
+          - 'null'
+          description: A human-friendly display name for the document.
+        reusedFromBatchId:
+          type:
+          - string
+          - 'null'
+          description: 'When set, indicates this document was reused from a prior batch.
+
+            `null` means the document was freshly uploaded for this batch.'
+          format: uuid
+        createdBy:
+          type:
+          - string
+          - 'null'
+          description: The user or client that uploaded the document.
+        createdAt:
+          type: string
+          description: The UTC timestamp at which the document reference was created.
+          format: date-time
+        status:
+          type:
+          - string
+          - 'null'
+          description: The current processing status of the document (e.g. `Processing`, `Infected`).
+        statusUpdatedAt:
+          type: string
+          description: The UTC timestamp at which the document status was last updated.
+          format: date-time
+        idempotencyKey:
+          type:
+          - string
+          - 'null'
+          description: An idempotency key used to prevent duplicate document uploads.
+        accessLayers:
+          allOf:
+          - $ref: '#/components/schemas/AccessLayersDto'
+          description: The access layers controlling which geographic regions and business lines can access this document.
+      additionalProperties: false
+      description: Represents a document uploaded against a screening entity.
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

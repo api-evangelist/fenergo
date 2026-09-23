@@ -1,0 +1,221 @@
+openapi: 3.2.0
+info:
+  title: Observability Data Export API
+  version: 1.0.0
+  description: The Data Export feature allows you to generate and download transaction reports for a specific date. Reports contain a list of all modification external IDs that were ingested on the requested date, exported as a downloadable JSON file. The process is asynchronous — you trigger a report generation, receive a job ID, and then poll for the status until the report is ready for download.
+servers:
+- url: https://api.fenergox.com/tm/observability
+tags:
+- name: Data Export
+  description: The Data Export feature allows you to generate and download transaction reports for a specific date. Reports contain a list of all modification external IDs that were ingested on the requested date, exported as a downloadable JSON file. The process is asynchronous — you trigger a report generation, receive a job ID, and then poll for the status until the report is ready for download.
+paths:
+  /api/v1/data-export/trigger:
+    post:
+      tags:
+      - Data Export
+      summary: Request Report
+      description: Request a transaction report for a specific date. Reports are generated asynchronously — you will receive a job ID straight away and can check its status until the report is ready to download. Each report contains all modification external IDs ingested on the requested date, available as a downloadable JSON file.
+      operationId: request_report_api_v1_data_export_trigger_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportTriggerRequest'
+            example:
+              report_date: '2026-03-04'
+        required: true
+      responses:
+        '200':
+          description: Report request accepted — use the returned job_id to check progress.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportTriggerResponse'
+              examples:
+                success:
+                  summary: Report job created
+                  value:
+                    job_id: 7a4a2375-4467-4816-b48f-ccf8a3998c2e
+        '400':
+          description: Invalid request — check that the date is correctly formatted and within the allowed range.
+          content:
+            application/json:
+              examples:
+                invalid_format:
+                  summary: Date format is incorrect
+                  value:
+                    message: report_date must be in YYYY-MM-DD format
+                date_out_of_range:
+                  summary: Date is outside the allowed range
+                  value:
+                    message: report_date must not be in the future and must be within the last 30 days
+                validation_error:
+                  summary: Request could not be validated
+                  value:
+                    message: Validation failed
+        '429':
+          description: Too many requests — you have exceeded the allowed number of report requests. Please wait before trying again.
+          content:
+            application/json:
+              examples:
+                hourly_limit:
+                  summary: Hourly limit reached
+                  value:
+                    message: 'Hourly limit exceeded: maximum 1 report request per hour'
+                daily_limit:
+                  summary: Daily limit reached
+                  value:
+                    message: 'Daily limit exceeded: maximum 10 report requests per day'
+                unique_reports_limit:
+                  summary: Maximum unique reports per day reached
+                  value:
+                    message: 'Report count guardrail exceeded: maximum 10 unique reports per day'
+        '500':
+          description: Something went wrong on our end — the report could not be queued. Please try again later.
+          content:
+            application/json:
+              example:
+                message: Failed to enqueue report generation job
+  /api/v1/data-export/{job_id}:
+    get:
+      tags:
+      - Data Export
+      summary: Get Report Status
+      description: Check the status of a report you have previously requested using the job_id. Once the status shows 'completed', a download link will be included in the response so you can retrieve your JSON report.
+      operationId: get_report_status_endpoint_api_v1_data_export__job_id__get
+      parameters:
+      - name: job_id
+        in: path
+        required: true
+        schema:
+          type: string
+          description: Unique identifier (UUID) returned from the trigger endpoint.
+          title: Job Id
+        description: Unique identifier (UUID) returned from the trigger endpoint.
+      responses:
+        '200':
+          description: 'Returns the current status of the report job. Possible statuses: in_progress, completed, failed, or expired. A download link is included once the report is ready.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportStatusResponse'
+              examples:
+                in_progress:
+                  summary: Export job in progress
+                  value:
+                    job_id: 7a4a2375-4467-4816-b48f-ccf8a3998c2e
+                    status: in_progress
+                completed:
+                  summary: Completed with URL
+                  value:
+                    job_id: 7a4a2375-4467-4816-b48f-ccf8a3998c2e
+                    status: completed
+                    download_url: https://dev-prov-clm-dev-observability-reports.s3.eu-central-1.amazonaws.com/reports/dev-prov-clm/7a4a2375-4467-4816-b48f-ccf8a3998c2e/report.json?response-content-disposition=attachment%3B%20filename%3D%22report.json%22&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=900&X-Amz-Signature=...
+                    expires_at: '2026-03-14T12:40:18.446771+00:00'
+                failed:
+                  summary: Export job failed
+                  value:
+                    job_id: 7a4a2375-4467-4816-b48f-ccf8a3998c2e
+                    status: failed
+                expired:
+                  summary: Export job expired
+                  value:
+                    job_id: 7a4a2375-4467-4816-b48f-ccf8a3998c2e
+                    status: expired
+                    expires_at: '2026-03-15T12:40:18.446771+00:00'
+        '400':
+          description: Invalid request — the URL or job_id appears to be malformed.
+          content:
+            application/json:
+              example:
+                message: Bad Request
+        '404':
+          description: Report job not found — the provided job_id does not match any existing report request.
+          content:
+            application/json:
+              example:
+                message: Export job not found
+        '500':
+          description: Something went wrong on our end — we could not retrieve the report status. Please try again later.
+          content:
+            application/json:
+              examples:
+                invalid_job:
+                  summary: Report job is in an invalid state
+                  value:
+                    message: 'Report job record is invalid: missing status'
+                retrieval_error:
+                  summary: Could not retrieve the report job
+                  value:
+                    message: Failed to fetch report job from DynamoDB
+components:
+  schemas:
+    ReportStatusResponse:
+      properties:
+        job_id:
+          type: string
+          format: uuid
+          title: Job Id
+          description: The export job identifier.
+        status:
+          $ref: '#/components/schemas/ReportJobStatus'
+          description: 'Current status of the job. in_progress: being generated, completed: ready to download, failed: generation failed, expired: file no longer available.'
+        download_url:
+          anyOf:
+          - type: string
+            title: Report completed
+          - type: 'null'
+            title: Report not yet completed
+          title: Download Url
+          description: Pre-signed download URL. Only present when status is 'completed'. Valid for 15 minutes.
+        expires_at:
+          anyOf:
+          - type: string
+            title: Report completed or expired
+          - type: 'null'
+            title: Report not yet completed
+          format: date-time
+          title: Expires At
+          description: ISO 8601 timestamp indicating when the exported file will no longer be available for download.
+      additionalProperties: false
+      type: object
+      required:
+      - job_id
+      - status
+      title: ReportStatusResponse
+      description: Model for report status response.
+    ReportTriggerResponse:
+      properties:
+        job_id:
+          type: string
+          format: uuid
+          title: Job Id
+          description: Unique identifier (UUID) for the export job. Use this to poll for status.
+      additionalProperties: false
+      type: object
+      required:
+      - job_id
+      title: ReportTriggerResponse
+      description: Model for report trigger response.
+    ReportTriggerRequest:
+      properties:
+        report_date:
+          type: string
+          format: date
+          title: Report Date
+          description: 'The date to export data for, in YYYY-MM-DD format. Must be today or a past date within the allowed lookback window (default: last 30 days).'
+      additionalProperties: false
+      type: object
+      required:
+      - report_date
+      title: ReportTriggerRequest
+      description: Model for report trigger request.
+    ReportJobStatus:
+      type: string
+      enum:
+      - in_progress
+      - completed
+      - failed
+      - expired
+      title: ReportJobStatus
+      description: Status of a report generation job.

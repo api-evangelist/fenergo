@@ -1,0 +1,2814 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Report API
+  version: '1.0'
+  description: 'Operations tagged Report across 5 of this provider''s published API definitions: fenergo-financialanalysisquery-v1-0-openapi.json, fenergo-reportscommand-v1-0-openapi.json, fenergo-reportscommand-v2-0-openapi.json, fenergo-reportsquery-v1-0-openapi.json, fenergo-reportsquery-v2-0-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- url: /financialanalysisquery
+- url: /reportscommand
+- url: /reportsquery
+security:
+- Bearer: []
+tags:
+- name: Report
+paths:
+  /api/report/set/{setId}/version/{versionId}:
+    get:
+      tags:
+      - Report
+      summary: Retrieve a Financial Analysis report for specific version
+      description: 'This method returns the Financial Analysis data linked to the specific version.
+
+
+        Required permissions:
+
+        Following permissions are required: FinancialAnalysisReport'
+      operationId: GetFinancialAnalysisReportBySetIdAndVersionId
+      parameters:
+      - name: setId
+        in: path
+        description: The id of Financial Analysis Set
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: versionId
+        in: path
+        description: Financial Analysis Version Id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. A Financial Analysis report is returned in csv format.
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found. Financial Analysis with given ids does not exist
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /financialanalysisquery
+  /api/Report:
+    post:
+      tags:
+      - Report
+      summary: Create report
+      description: 'Creates and saves a new report.
+
+
+        Returns the id of the created report.
+
+
+        Required permissions:
+
+        Following permissions are required: ReportingExecute'
+      operationId: CreateReport
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Create report request
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CreateReportV1DtoServiceRequest'
+      responses:
+        '202':
+          description: Success. Report created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GuidServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /reportscommand
+  /api/Report/Preview:
+    post:
+      tags:
+      - Report
+      summary: Preview report
+      description: 'Executes a report with limit 5.
+
+
+        Returns the first 5 rows of a report for preview.
+
+
+        Required permissions:
+
+        At least one of the following permissions is required: ReportingEdit, ReportingExecute'
+      operationId: Preview
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Create report request
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/PreviewReportDtoServiceRequest'
+      responses:
+        '202':
+          description: Success. Report created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /reportscommand
+  /api/v2/Report:
+    post:
+      tags:
+      - Report
+      summary: Create report
+      description: 'Creates and saves a new report.
+
+
+        Returns the id of the created report.
+
+
+        Required permissions:
+
+        Following permissions are required: ReportingExecute'
+      operationId: CreateReportV2
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Create report request
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CreateReportV2DtoServiceRequest'
+      responses:
+        '202':
+          description: Success. Report created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GuidServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /reportscommand
+  /api/v2/Report/assistant/query:
+    post:
+      tags:
+      - Report
+      summary: Creates AI driven report query based on User Input
+      description: 'Required permissions:
+
+        Following permissions are required: ReportingExecute'
+      operationId: CreateQueryStatement
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Create query request
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CreateQueryRequestDtoServiceRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateQueryResponseDtoServiceResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /reportscommand
+  /api/v2/Report/agent:
+    post:
+      tags:
+      - Report
+      summary: Triggers an asynchronous AI agent conversation turn
+      description: 'Required permissions:
+
+        Following permissions are required: ReportingExecute'
+      operationId: AgentConversationTurn
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Agent conversation turn request
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/AgentConversationTurnRequestDtoServiceRequest'
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentConversationTurnResponseDtoServiceResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /reportscommand
+  /api/v2/Report/insights:
+    post:
+      tags:
+      - Report
+      summary: Triggers an asynchronous AI insights analysis on a completed report result set
+      description: 'Validates the target report exists, belongs to the tenant, and has Completed status.
+
+
+        Enqueues an agent insights turn and returns a conversation ID for WebSocket subscription.
+
+
+        Required permissions:
+
+        Following permissions are required: ReportingExecute'
+      operationId: CreateReportInsights
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Report insights request
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CreateReportInsightsRequestDtoServiceRequest'
+      responses:
+        '202':
+          description: Accepted. Insights analysis enqueued. Use the returned conversationId to subscribe to the agent WebSocket stream.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateReportInsightsResponseDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values, the report was not found, or the report is not in Completed status.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /reportscommand
+  /api/v2/Report/insights/feedback:
+    post:
+      tags:
+      - Report
+      summary: Records user feedback on a generated report insight
+      description: 'Captures thumbs-up / thumbs-down feedback for a completed insight conversation turn.
+
+
+        Does not modify agent conversation history or re-trigger insight generation.
+
+
+        Publishes feedback to the analytics/metrics pipeline.
+
+
+        Required permissions:
+
+        Following permissions are required: ReportingExecute'
+      operationId: SubmitReportInsightFeedback
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Insight feedback request
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/SubmitReportInsightFeedbackRequestDtoServiceRequest'
+      responses:
+        '202':
+          description: Accepted. Feedback recorded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmitReportInsightFeedbackResponseDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values or the report was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /reportscommand
+  /api/v2/Report/conversations/{conversationId}/title:
+    patch:
+      tags:
+      - Report
+      summary: Renames a conversation
+      description: 'Required permissions:
+
+        Following permissions are required: ReportingExecute'
+      operationId: UpdateConversationTitle
+      parameters:
+      - name: conversationId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/UpdateConversationTitleRequestDtoServiceRequest'
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /reportscommand
+  /api/v2/Report/conversations/{conversationId}:
+    delete:
+      tags:
+      - Report
+      summary: Deletes a conversation
+      description: 'Required permissions:
+
+        Following permissions are required: ReportingExecute'
+      operationId: DeleteConversation
+      parameters:
+      - name: conversationId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /reportscommand
+  /api/v2/Report/Preview:
+    post:
+      tags:
+      - Report
+      summary: Preview report
+      description: 'Executes a report with limit 5.
+
+
+        Returns the first 5 rows of a report for preview.
+
+
+        Required permissions:
+
+        At least one of the following permissions is required: ReportingEdit, ReportingExecute'
+      operationId: Preview
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Create report request
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/PreviewReportDtoServiceRequest'
+      responses:
+        '202':
+          description: Success. Report created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /reportscommand
+  /api/Report/{id}:
+    get:
+      tags:
+      - Report
+      summary: Get generated Report
+      description: 'This method returns the generated report for the given id
+
+
+        Required permissions:
+
+        Following permissions are required: ReportingAccess'
+      operationId: GetReportById
+      parameters:
+      - name: id
+        in: path
+        description: ''
+        required: true
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. The Report is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetReportByIdDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal Server Error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /reportsquery
+  /api/Report/{id}/status:
+    get:
+      tags:
+      - Report
+      summary: Get Report status
+      description: 'This method returns the report status for the given tenant and id.
+
+
+        Required permissions:
+
+        Following permissions are required: ReportingAccess'
+      operationId: GetStatusById
+      parameters:
+      - name: id
+        in: path
+        description: ''
+        required: true
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. The Report Status is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetReportStatusByIdDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal Server Error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /reportsquery
+  /api/v2/Report/stats:
+    get:
+      tags:
+      - Report
+      summary: Get reports overview stats for the dashboard
+      description: 'Required permissions:
+
+        Following permissions are required: ReportingAccess'
+      operationId: GetReportsStats
+      parameters:
+      - name: period
+        in: query
+        description: Optional period in YYYY-MM format (e.g. "2025-03"). Defaults to current UTC month.
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. The stats are returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportsOverviewStatsDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /reportsquery
+  /api/v2/Report/recent:
+    get:
+      tags:
+      - Report
+      summary: Get recent reports across all queries for the current tenant
+      description: 'Required permissions:
+
+        Following permissions are required: ReportingAccess'
+      operationId: GetRecentReports
+      parameters:
+      - name: pageSize
+        in: query
+        description: 'Number of results per page (default: 10)'
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      - name: paginationToken
+        in: query
+        description: Token for the next page of results
+        schema:
+          type: string
+      - name: status
+        in: query
+        description: 'Optional status filter: InProgress, Completed, or Failed'
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. The recent reports are returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetRecentReportDtoItemsPageServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /reportsquery
+  /api/v2/Report/{id}:
+    get:
+      tags:
+      - Report
+      summary: Get generated Report
+      description: 'This method returns the generated report for the given id
+
+
+        Required permissions:
+
+        Following permissions are required: ReportingAccess'
+      operationId: GetReportByIdV2
+      parameters:
+      - name: id
+        in: path
+        description: ''
+        required: true
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. The Report is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetReportByIdV2DtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal Server Error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /reportsquery
+  /api/v2/Report/{id}/status:
+    get:
+      tags:
+      - Report
+      summary: Get Report status
+      description: 'This method returns the report status for the given tenant and id.
+
+
+        Required permissions:
+
+        Following permissions are required: ReportingAccess'
+      operationId: GetStatusByIdV2
+      parameters:
+      - name: id
+        in: path
+        description: ''
+        required: true
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. The Report Status is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetReportStatusByIdV2DtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal Server Error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /reportsquery
+  /api/v2/Report/{id}/result/download:
+    get:
+      tags:
+      - Report
+      summary: Get Report Result
+      description: 'This method returns a Url to download the result file for the given tenant and id.
+
+
+        Required permissions:
+
+        Following permissions are required: ReportingAccess'
+      operationId: GetReportResultV2
+      parameters:
+      - name: id
+        in: path
+        description: ''
+        required: true
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. The Report url is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresignedUrlV2DtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal Server Error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /reportsquery
+  /api/v2/Report/conversations:
+    get:
+      tags:
+      - Report
+      summary: List conversations for the current user, newest-first
+      description: 'Required permissions:
+
+        Following permissions are required: ReportingAccess'
+      operationId: ListConversations
+      parameters:
+      - name: pageSize
+        in: query
+        description: 'Number of results per page (default: 20).'
+        schema:
+          type: integer
+          format: int32
+          default: 20
+      - name: continuationToken
+        in: query
+        description: Pagination token from the previous page, or null for first page.
+        schema:
+          type: string
+      - name: source
+        in: query
+        description: 'Optional source filter. "standalone" returns conversations with a null or "standalone" source (backwards compat).
+
+          "query" returns only query-scoped conversations. Omit to return all conversations.'
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationSummaryDtoItemsPageServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /reportsquery
+  /api/v2/Report/conversations/{conversationId}/messages:
+    get:
+      tags:
+      - Report
+      summary: Get message history for a specific conversation
+      description: 'Required permissions:
+
+        Following permissions are required: ReportingAccess'
+      operationId: GetConversationMessages
+      parameters:
+      - name: conversationId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationMessageDtoListServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /reportsquery
+components:
+  schemas:
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ProblemDetails:
+      type: object
+      properties:
+        type:
+          type:
+          - string
+          - 'null'
+        title:
+          type:
+          - string
+          - 'null'
+        status:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        detail:
+          type:
+          - string
+          - 'null'
+        instance:
+          type:
+          - string
+          - 'null'
+      additionalProperties: {}
+    PreviewParameterDefinitionDto:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+          description: Parameter name, matching the {{placeholder}} in the SQL template
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Parameter type: String | Date | Number | Boolean | Select'
+      additionalProperties: false
+      description: Carries the type metadata for a single parameter in a preview request.
+    CreateReportV1Dto:
+      type: object
+      properties:
+        sqlQuery:
+          type:
+          - string
+          - 'null'
+          description: SQL query of the report
+          example: Select * from entitydata where category='Retail'
+        description:
+          type:
+          - string
+          - 'null'
+          description: Short description of the report
+          example: My Monthly report for active retail clients
+      additionalProperties: false
+      description: A report model to run a simple query
+    PreviewReportDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/PreviewReportDto'
+          description: A report model to run a simple query
+      additionalProperties: false
+    GuidServiceResponse:
+      type: object
+      properties:
+        data:
+          type: string
+          format: uuid
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CreateReportV1DtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateReportV1Dto'
+          description: A report model to run a simple query
+      additionalProperties: false
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    PreviewReportDto:
+      type: object
+      properties:
+        sqlQuery:
+          type:
+          - string
+          - 'null'
+          description: SQL query of the report
+          example: Select * from entitydata where category='Retail' limit 5
+        parameters:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: string
+          description: Parameter values to substitute into the SQL query placeholders
+        parameterDefinitions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/PreviewParameterDefinitionDto'
+          description: Parameter type definitions for type-aware substitution (e.g. Date → DATE 'yyyy-MM-dd')
+      additionalProperties: false
+      description: A report model to run a simple query
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    AgentConversationTurnRequestDto:
+      type: object
+      properties:
+        conversationId:
+          type:
+          - string
+          - 'null'
+          description: Existing conversation id. If omitted, a new id is generated.
+          example: 1b2d983e-79c8-4d11-8b17-52095a3f6ad0
+        prompt:
+          type:
+          - string
+          - 'null'
+          description: User prompt for the agent.
+          example: Build me a report showing all entities created this week.
+        timeZone:
+          type:
+          - string
+          - 'null'
+          description: Local timezone of the user.
+          example: Europe/Athens
+        title:
+          type:
+          - string
+          - 'null'
+          description: Optional title for the conversation. If provided on first message, used instead of auto-generated title.
+        source:
+          type:
+          - string
+          - 'null'
+          description: 'Conversation source. Values: "standalone", "query". Used to distinguish conversation origins.'
+      additionalProperties: false
+      description: API request to trigger an agent conversation turn.
+    CreateQueryRequestDto:
+      type: object
+      properties:
+        input:
+          type:
+          - string
+          - 'null'
+          description: User input
+          example: Give me all entities of type company with country of incorporation in EU
+        queryId:
+          type:
+          - string
+          - 'null'
+          description: Id of report query
+          example: f1809ba2-2dea-4543-ab4f-1cea6593e3de
+        currentQuery:
+          type:
+          - string
+          - 'null'
+          description: Current query
+          example: SELECT * FROM entities
+        timeZone:
+          type:
+          - string
+          - 'null'
+          description: Local timezone of the user
+          example: Europe/Athens
+      additionalProperties: false
+      description: API request to generate AI driven report query
+    AgentConversationTurnRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/AgentConversationTurnRequestDto'
+          description: API request to trigger an agent conversation turn.
+      additionalProperties: false
+    CreateReportInsightsResponseDto:
+      type: object
+      properties:
+        conversationId:
+          type:
+          - string
+          - 'null'
+          description: 'Newly generated conversation identifier.
+
+            Subscribe to the report agent WebSocket stream using this value.'
+        status:
+          type:
+          - string
+          - 'null'
+          description: Initial processing status. Always `"Processing"` on a successful 202 response.
+        rowCount:
+          type:
+          - integer
+          - 'null'
+          description: 'Row count from the completed report. Null when the report predates row-count tracking.
+
+            Lets the UI display a row-count badge without waiting for tool execution.'
+          format: int32
+        queryName:
+          type:
+          - string
+          - 'null'
+          description: 'Display name of the saved query associated with this report, when available.
+
+            Used for drawer labels and export filenames.'
+      additionalProperties: false
+      description: 'API response for `POST /api/v2/report/insights`.
+
+        The frontend uses Fenergo.Nebula.Reports.Command.Application.Features.Agent.Insights.CreateReportInsightsResponseDto.ConversationId to subscribe to the existing
+
+        agent WebSocket stream (`/ws/report/agent`).'
+    CreateReportInsightsResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateReportInsightsResponseDto'
+          description: 'API response for `POST /api/v2/report/insights`.
+
+            The frontend uses Fenergo.Nebula.Reports.Command.Application.Features.Agent.Insights.CreateReportInsightsResponseDto.ConversationId to subscribe to the existing
+
+            agent WebSocket stream (`/ws/report/agent`).'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CreateQueryRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateQueryRequestDto'
+          description: API request to generate AI driven report query
+      additionalProperties: false
+    SubmitReportInsightFeedbackResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/SubmitReportInsightFeedbackResponseDto'
+          description: API response for `POST /api/v2/report/insights/feedback`.
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CreateReportInsightsRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateReportInsightsRequestDto'
+          description: 'API request body for `POST /api/v2/report/insights`.
+
+            Wrapped in `ServiceRequest<CreateReportInsightsRequestDto>` at the controller layer.'
+      additionalProperties: false
+    SubmitReportInsightFeedbackRequestDto:
+      type: object
+      properties:
+        reportId:
+          type:
+          - string
+          - 'null'
+          description: 'Identifier of the report whose insight the user is rating.
+
+            Must be a non-empty, GUID-compatible string that belongs to the requesting tenant.'
+          example: 3df1f622-7c6e-46a6-8b52-987f9142b6fa
+        conversationId:
+          type:
+          - string
+          - 'null'
+          description: 'Identifier of the insights conversation that produced the rated insight.
+
+            Must be a non-empty, GUID-compatible string.'
+          example: 6b5c5b33-9c4b-4dd4-bd49-0b78d0ff8a18
+        rating:
+          type:
+          - string
+          - 'null'
+          description: 'Thumbs-up / thumbs-down signal.
+
+            Accepted values: `"useful"` or `"notUseful"` (case-insensitive).'
+          example: useful
+        feedbackText:
+          type:
+          - string
+          - 'null'
+          description: 'Optional free-text explanation provided by the user.
+
+            Maximum 2,000 characters; plain text only (no HTML).
+
+            Treated as sensitive tenant data.'
+          example: The risk rating distribution chart was exactly what I needed.
+        insightMessageId:
+          type:
+          - string
+          - 'null'
+          description: 'Optional identifier for a specific insight message within the conversation,
+
+            allowing per-turn feedback when conversations later support multiple insight turns.'
+          example: agent-turn-1
+        insightSummary:
+          type:
+          - string
+          - 'null'
+          description: 'Optional short non-sensitive summary of the rated insight for future tenant-memory retrieval.
+
+            The canonical memory payload stores this summary instead of raw report rows.'
+        chartSuggested:
+          type:
+          - boolean
+          - 'null'
+          description: 'Indicates whether a chart suggestion was present in the rated insight.
+
+            Provides an analytics dimension without requiring the backend to inspect the payload.'
+          example: true
+        storeInTenantMemory:
+          type:
+          - boolean
+          - 'null'
+          description: 'Controls whether the feedback should be written into tenant-scoped long-term agent memory.
+
+            When `null`, the behaviour is determined by the tenant/operational configuration
+
+            (enabled by default until `AgentInsights:EnableTenantMemory` is disabled).'
+      additionalProperties: false
+      description: 'API request body for `POST /api/v2/report/insights/feedback`.
+
+        Wrapped in `ServiceRequest<SubmitReportInsightFeedbackRequestDto>` at the controller layer.'
+    CreateReportInsightsRequestDto:
+      type: object
+      properties:
+        reportId:
+          type:
+          - string
+          - 'null'
+          description: 'Identifier of the completed report whose results should be analysed.
+
+            Must be a non-empty string that parses as a GUID.'
+          example: 3df1f622-7c6e-46a6-8b52-987f9142b6fa
+        timeZone:
+          type:
+          - string
+          - 'null'
+          description: 'IANA timezone of the requesting user.
+
+            Defaults to `UTC` when omitted or empty.'
+          example: Europe/Athens
+      additionalProperties: false
+      description: 'API request body for `POST /api/v2/report/insights`.
+
+        Wrapped in `ServiceRequest<CreateReportInsightsRequestDto>` at the controller layer.'
+    AgentConversationTurnResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/AgentConversationTurnResponseDto'
+          description: API response for an asynchronous agent conversation turn trigger.
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CreateQueryResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateQueryResponseDto'
+          description: Create Query Response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    SubmitReportInsightFeedbackResponseDto:
+      type: object
+      properties:
+        status:
+          type:
+          - string
+          - 'null'
+          description: 'Always `"Recorded"` on a successful response.
+
+            Indicates the feedback was accepted and published to the analytics/metrics pipeline.'
+      additionalProperties: false
+      description: API response for `POST /api/v2/report/insights/feedback`.
+    AgentConversationTurnResponseDto:
+      type: object
+      properties:
+        conversationId:
+          type:
+          - string
+          - 'null'
+        status:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+      description: API response for an asynchronous agent conversation turn trigger.
+    CreateReportV2DtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateReportV2Dto'
+          description: A report model to run a simple query
+      additionalProperties: false
+    UpdateConversationTitleRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UpdateConversationTitleRequestDto'
+          description: Request body for renaming a conversation.
+      additionalProperties: false
+    CreateReportV2Dto:
+      type: object
+      properties:
+        sqlQuery:
+          type:
+          - string
+          - 'null'
+          description: SQL query of the report
+          example: Select * from entitydata where category='Retail'
+        description:
+          type:
+          - string
+          - 'null'
+          description: Short description of the report
+          example: My Monthly report for active retail clients
+        queryId:
+          type:
+          - string
+          - 'null'
+          description: The id of the query. Is null if the report that is being executed is not from a saves query
+          format: uuid
+          example: ' 10a675cb-b286-4ebc-8e7a-25627d54b662 '
+        parameters:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: string
+          description: Parameter values to substitute into the SQL query placeholders
+          example:
+            from_date: '2026-01-01'
+            to_date: '2026-03-16'
+      additionalProperties: false
+      description: A report model to run a simple query
+    SubmitReportInsightFeedbackRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/SubmitReportInsightFeedbackRequestDto'
+          description: 'API request body for `POST /api/v2/report/insights/feedback`.
+
+            Wrapped in `ServiceRequest<SubmitReportInsightFeedbackRequestDto>` at the controller layer.'
+      additionalProperties: false
+    CreateQueryResponseDto:
+      type: object
+      properties:
+        title:
+          type:
+          - string
+          - 'null'
+          description: Short title
+        query:
+          type:
+          - string
+          - 'null'
+          description: SQL query
+        description:
+          type:
+          - string
+          - 'null'
+          description: Short description
+        answer:
+          type:
+          - string
+          - 'null'
+          description: Text describing how the query answers the user's question
+        error:
+          type:
+          - string
+          - 'null'
+          description: Error message (if applicable)
+      additionalProperties: false
+      description: Create Query Response DTO
+    UpdateConversationTitleRequestDto:
+      type: object
+      properties:
+        title:
+          type:
+          - string
+          - 'null'
+          description: The new title (1-100 chars).
+          example: Q4 Revenue Analysis
+      additionalProperties: false
+      description: Request body for renaming a conversation.
+    GetReportByIdDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetReportByIdDto'
+          description: A report item as it is returned by GetReportByIdQuery
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    GetReportByIdDto:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+          description: Identifier of the report
+          example: 00331a74-300e-4a39-a6cb-339a3781dnna
+        user:
+          type:
+          - string
+          - 'null'
+          description: User that created the report
+          example: eac709n7-a89y-3n59-b516-bcuub500de36
+        description:
+          type:
+          - string
+          - 'null'
+          description: Short description of the report
+          example: My Monthly report for active retail clients
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ReportStatusDto'
+          description: Status of the report
+          example: InProgress, Completed, Failed
+        created:
+          type: string
+          description: Creation datetime
+          format: date-time
+          example: '2020-09-21T08:53:37.497+00:00'
+        completed:
+          type:
+          - string
+          - 'null'
+          description: Execution completed datetime
+          format: date-time
+          example: '2020-09-21T08:53:37.497+00:00'
+        query:
+          type:
+          - string
+          - 'null'
+          description: The actual SQL query of the report
+          example: Select * from entitydata where category='Retail'
+      additionalProperties: false
+      description: A report item as it is returned by GetReportByIdQuery
+    GetReportStatusByIdDto:
+      type: object
+      properties:
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ReportStatusDto'
+          description: ''
+        presignedUrl:
+          allOf:
+          - $ref: '#/components/schemas/PresignedUrlDto'
+          description: ''
+        queryErrorMessages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: ''
+      additionalProperties: false
+      description: ''
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ReportStatusDto:
+      enum:
+      - InProgress
+      - Completed
+      - Failed
+      type: string
+      description: Report execution status
+    GetReportStatusByIdDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetReportStatusByIdDto'
+          description: ''
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    PresignedUrlDto:
+      type: object
+      properties:
+        url:
+          type:
+          - string
+          - 'null'
+          description: Link of the report
+        expirationDate:
+          type: string
+          description: Expiration Datetime
+          format: date-time
+        friendlyName:
+          type:
+          - string
+          - 'null'
+          description: Name of the file to download
+        duration:
+          type: number
+          description: Duration of url validity in milliseconds
+          format: double
+          readOnly: true
+      additionalProperties: false
+      description: A URL of a generated Report which is valid for a small period of time
+    ConversationMessageDtoListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConversationMessageDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ConversationSummaryDtoItemsPage:
+      type: object
+      properties:
+        items:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConversationSummaryDto'
+        paginationToken:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    GetRecentReportDto:
+      type: object
+      properties:
+        reportId:
+          type:
+          - string
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ReportStatusV2Dto'
+          description: Report execution status
+        failedReason:
+          type:
+          - string
+          - 'null'
+        created:
+          type: string
+          format: date-time
+        completed:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        runBy:
+          type:
+          - string
+          - 'null'
+        queryId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        rowCount:
+          type:
+          - integer
+          - 'null'
+          format: int32
+      additionalProperties: false
+      description: DTO for a single recent report
+    ReportsOverviewStatsDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ReportsOverviewStatsDto'
+          description: DTO for the reports overview stats dashboard
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ConversationSummaryDtoItemsPageServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ConversationSummaryDtoItemsPage'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    GetReportByIdV2DtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetReportByIdV2Dto'
+          description: A report item as it is returned by GetReportByIdQueryV2
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ReportsOverviewStatsDto:
+      type: object
+      properties:
+        period:
+          type:
+          - string
+          - 'null'
+        totalReports:
+          type: integer
+          format: int32
+        completed:
+          type: integer
+          format: int32
+        inProgress:
+          type: integer
+          format: int32
+        failed:
+          type: integer
+          format: int32
+        successRate:
+          type: number
+          format: double
+        avgRuntimeMs:
+          type: integer
+          format: int64
+        vsLastMonth:
+          allOf:
+          - $ref: '#/components/schemas/VsLastMonthDto'
+          description: Month-over-month delta stats
+        scheduledDeliveriesSent:
+          type: integer
+          format: int32
+      additionalProperties: false
+      description: DTO for the reports overview stats dashboard
+    GetReportStatusByIdV2DtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetReportStatusByIdV2Dto'
+          description: ''
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    GetRecentReportDtoItemsPageServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetRecentReportDtoItemsPage'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ConversationMessageDto:
+      type: object
+      properties:
+        order:
+          type: integer
+          description: Zero-based position in the conversation.
+          format: int32
+        role:
+          type:
+          - string
+          - 'null'
+          description: '"user" or "assistant".'
+        content:
+          type:
+          - string
+          - 'null'
+          description: Plain-text content of the message.
+      additionalProperties: false
+      description: A single turn in an agent chat conversation.
+    VsLastMonthDto:
+      type: object
+      properties:
+        totalReportsDelta:
+          type: number
+          format: double
+      additionalProperties: false
+      description: Month-over-month delta stats
+    GetReportByIdV2Dto:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+          description: Identifier of the report
+          example: 00331a74-300e-4a39-a6cb-339a3781dnna
+        user:
+          type:
+          - string
+          - 'null'
+          description: User that created the report
+          example: eac709n7-a89y-3n59-b516-bcuub500de36
+        description:
+          type:
+          - string
+          - 'null'
+          description: Short description of the report
+          example: My Monthly report for active retail clients
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ReportStatusV2Dto'
+          description: Status of the report
+          example: InProgress, Completed, Failed
+        created:
+          type: string
+          description: Creation datetime
+          format: date-time
+          example: '2020-09-21T08:53:37.497+00:00'
+        completed:
+          type:
+          - string
+          - 'null'
+          description: Execution completed datetime
+          format: date-time
+          example: '2020-09-21T08:53:37.497+00:00'
+        sqlQuery:
+          type:
+          - string
+          - 'null'
+          description: The actual SQL query of the report
+          example: Select * from entitydata where category='Retail'
+      additionalProperties: false
+      description: A report item as it is returned by GetReportByIdQueryV2
+    PresignedUrlV2DtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/PresignedUrlV2Dto'
+          description: A URL of a generated Report which is valid for a small period of time
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    PresignedUrlV2Dto:
+      type: object
+      properties:
+        url:
+          type:
+          - string
+          - 'null'
+          description: Link of the report
+        expirationDate:
+          type:
+          - string
+          - 'null'
+          description: Expiration Datetime
+          format: date-time
+        friendlyName:
+          type:
+          - string
+          - 'null'
+          description: Name of the file to download
+        duration:
+          type: number
+          description: Duration of url validity in milliseconds
+          format: double
+          readOnly: true
+      additionalProperties: false
+      description: A URL of a generated Report which is valid for a small period of time
+    ConversationSummaryDto:
+      type: object
+      properties:
+        conversationId:
+          type:
+          - string
+          - 'null'
+        title:
+          type:
+          - string
+          - 'null'
+        created:
+          type: string
+          format: date-time
+        updated:
+          type: string
+          format: date-time
+        messageCount:
+          type: integer
+          format: int32
+        firstMessageSnippet:
+          type:
+          - string
+          - 'null'
+        lastReportId:
+          type:
+          - string
+          - 'null'
+        lastViewedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+      additionalProperties: false
+      description: DTO representing a single conversation in the list.
+    GetRecentReportDtoItemsPage:
+      type: object
+      properties:
+        items:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/GetRecentReportDto'
+        paginationToken:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    GetReportStatusByIdV2Dto:
+      type: object
+      properties:
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ReportStatusV2Dto'
+          description: Status of the report
+        presignedUrl:
+          allOf:
+          - $ref: '#/components/schemas/PresignedUrlV2Dto'
+          description: A URL of a generated Report which is valid for a small period of time
+        queryErrorMessages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: Query error messages
+      additionalProperties: false
+      description: ''
+    ReportStatusV2Dto:
+      enum:
+      - InProgress
+      - Completed
+      - Failed
+      type: string
+      description: Report execution status
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header
+x-refined-from:
+- fenergo-financialanalysisquery-v1-0-openapi.json
+- fenergo-reportscommand-v1-0-openapi.json
+- fenergo-reportscommand-v2-0-openapi.json
+- fenergo-reportsquery-v1-0-openapi.json
+- fenergo-reportsquery-v2-0-openapi.json

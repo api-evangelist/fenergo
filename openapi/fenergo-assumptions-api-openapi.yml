@@ -1,0 +1,483 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Assumptions API
+  version: '1.0'
+  description: 'Operations tagged Assumptions across 2 of this provider''s published API definitions: fenergo-businessmetricscommand-v1-0-0-openapi.json, fenergo-businessmetricsquery-v1-0-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- url: /businessmetricscommand
+- url: /businessmetricsquery
+security:
+- Bearer: []
+tags:
+- name: Assumptions
+paths:
+  /api/assumptions:
+    put:
+      tags:
+      - Assumptions
+      summary: Save or update ROI assumptions for the current tenant
+      description: 'Creates or replaces the tenant-specific ROI assumptions used for agent value calculations
+
+
+        Required permissions:
+
+        Following permissions are required: ValueStoryEdit'
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      - name: X-CORRELATION-ID
+        in: header
+        description: The UiD of the correlation id
+        schema:
+          type: string
+        example: fee5b5f5-b220-4fef-ba38-bf802b98d74d
+      requestBody:
+        description: Upsert assumptions request
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/UpsertTenantAssumptionsRequestDtoServiceRequest'
+          text/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/UpsertTenantAssumptionsRequestDtoServiceRequest'
+          application/*+json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/UpsertTenantAssumptionsRequestDtoServiceRequest'
+        required: true
+      responses:
+        '204':
+          description: Success. Assumptions were saved
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+      operationId: putApiAssumptions
+      x-operation-id-source: derived
+    get:
+      tags:
+      - Assumptions
+      summary: Get ROI assumptions for the current tenant
+      description: 'Returns the tenant-specific ROI assumptions used for agent value calculations.
+
+        Falls back to system defaults when no tenant configuration has been saved.
+
+
+        Required permissions:
+
+        Following permissions are required: ValueStoryAccess'
+      operationId: GetTenantAssumptions
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. Returns the tenant assumptions
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/GetTenantAssumptionsResponseDtoServiceResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetTenantAssumptionsResponseDtoServiceResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/GetTenantAssumptionsResponseDtoServiceResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /businessmetricscommand
+components:
+  schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    UpsertTenantAssumptionsRequestDto:
+      type: object
+      properties:
+        hourlyRate:
+          type: number
+          format: double
+        docMinutes:
+          type: integer
+          format: int32
+        screenMinutes:
+          type: integer
+          format: int32
+        autoMinutes:
+          type: integer
+          format: int32
+        reportMinutes:
+          type: integer
+          format: int32
+        sourceMinutes:
+          type: integer
+          format: int32
+        policyMinutes:
+          type: integer
+          format: int32
+        productiveHoursPerMonth:
+          type: integer
+          format: int32
+        signalMinutes:
+          type: integer
+          format: int32
+        alertHighScoreThreshold:
+          type: integer
+          format: int32
+        alertMediumScoreThreshold:
+          type: integer
+          format: int32
+        onboardingSlaTargetPercent:
+          type:
+          - number
+          - 'null'
+          format: double
+        periodicReviewSlaTargetPercent:
+          type:
+          - number
+          - 'null'
+          format: double
+        maintenanceSlaTargetPercent:
+          type:
+          - number
+          - 'null'
+          format: double
+        annualSubscriptionCost:
+          type:
+          - number
+          - 'null'
+          format: double
+      additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    UpsertTenantAssumptionsRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UpsertTenantAssumptionsRequestDto'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    GetTenantAssumptionsResponseDto:
+      type: object
+      properties:
+        hourlyRate:
+          type: number
+          format: double
+        docMinutes:
+          type: integer
+          format: int32
+        screenMinutes:
+          type: integer
+          format: int32
+        autoMinutes:
+          type: integer
+          format: int32
+        reportMinutes:
+          type: integer
+          format: int32
+        sourceMinutes:
+          type: integer
+          format: int32
+        policyMinutes:
+          type: integer
+          format: int32
+        productiveHoursPerMonth:
+          type: integer
+          format: int32
+        signalMinutes:
+          type: integer
+          format: int32
+        alertHighScoreThreshold:
+          type: integer
+          format: int32
+        alertMediumScoreThreshold:
+          type: integer
+          format: int32
+        onboardingSlaTargetPercent:
+          type: number
+          format: double
+        periodicReviewSlaTargetPercent:
+          type: number
+          format: double
+        maintenanceSlaTargetPercent:
+          type: number
+          format: double
+        annualHoursAllotment:
+          type: integer
+          format: int32
+        annualSubscriptionCost:
+          type:
+          - number
+          - 'null'
+          format: double
+        isUsingDefaults:
+          type: boolean
+        annualVolumeCredits:
+          type: integer
+          description: 'The tenant''s total annual volume, in capacity credits, used to derive
+
+            Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetTenantAssumptions.GetTenantAssumptionsResponseDto.BandName/Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetTenantAssumptions.GetTenantAssumptionsResponseDto.CreditsPerEuro/Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetTenantAssumptions.GetTenantAssumptionsResponseDto.CreditsFloor below.
+
+            `2_000_000` (the Launch band floor) when the tenant has never set this value.'
+          format: int64
+        activationDate:
+          type:
+          - string
+          - 'null'
+          description: 'The date the tenant''s current commercial capacity period started. `null` when the
+
+            tenant has never saved assumptions (AB#547917 AC6) — see `TenantAssumptions.ActivationDate`
+
+            for the write-time default-on-first-save convention that populates this on save.'
+          format: date
+        bandName:
+          type:
+          - string
+          - 'null'
+          description: 'The name of the capacity band Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetTenantAssumptions.GetTenantAssumptionsResponseDto.AnnualVolumeCredits resolves to (e.g. "Launch",
+
+            "Global Reserved Capacity") — derived at read time, never persisted on the tenant record.
+
+            `null` only if the global band-threshold reference dataset itself is unavailable.'
+        creditsPerEuro:
+          type:
+          - integer
+          - 'null'
+          description: Same derivation source as Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetTenantAssumptions.GetTenantAssumptionsResponseDto.BandName.
+          format: int32
+        creditsFloor:
+          type:
+          - integer
+          - 'null'
+          description: Same derivation source as Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetTenantAssumptions.GetTenantAssumptionsResponseDto.BandName.
+          format: int64
+        annualPeriodEndDate:
+          type:
+          - string
+          - 'null'
+          description: 'The <b>exclusive</b> upper bound of the tenant''s current annual capacity period — i.e. the
+
+            start of the <em>next</em> period, not the last day of the current one. Derived at read time
+
+            as `ActivationDate.Value.AddYears(1)`; `null` when Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetTenantAssumptions.GetTenantAssumptionsResponseDto.ActivationDate is
+
+            null (AB#547917 Open Question 5 — naming/convention is cosmetic and was recorded as-is with
+
+            this XML doc documenting the exclusive semantics, rather than renaming the field).'
+          format: date
+        capacityUnitsPurchased:
+          type: integer
+          description: Gets the tenant's purchased annual entitlement, in capacity credits — same value as Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetTenantAssumptions.GetTenantAssumptionsResponseDto.AnnualVolumeCredits, alias for naming consistency with `CapacityDto.CapacityUnitsPurchased`.
+          format: int64
+        entitlementPeriodStart:
+          type:
+          - string
+          - 'null'
+          description: Gets the inclusive start date of the tenant's current entitlement period — same value as Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetTenantAssumptions.GetTenantAssumptionsResponseDto.ActivationDate, alias for naming consistency with `CapacityDto.EntitlementPeriodStart`.
+          format: date
+        entitlementPeriodEnd:
+          type:
+          - string
+          - 'null'
+          description: Gets the exclusive end date of the tenant's current entitlement period — same value as Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetTenantAssumptions.GetTenantAssumptionsResponseDto.AnnualPeriodEndDate, alias for naming consistency with `CapacityDto.EntitlementPeriodEnd`.
+          format: date
+        agentActivations:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: string
+            format: date
+          description: 'Gets each agent''s individual activation date (AB#550218 RD-4, revised per OQ-6), keyed by
+
+            the canonical agent key (see `Domain.Models.Assumptions.CapacityMeasureCatalog`).
+
+            Populated from a dedicated per-(tenant, agent) DynamoDB item read
+
+            (`IAgentActivationRepository.GetAll`), NOT a field on the settings row — an agent absent
+
+            from this dictionary has no individual activation yet and falls back to
+
+            Fenergo.Nebula.BusinessMetrics.Query.Application.Queries.Features.GetTenantAssumptions.GetTenantAssumptionsResponseDto.ActivationDate (the tenant-level activation) wherever activation-aware
+
+            projection is computed. Read-only here: the only writer is EH''s Ops path
+
+            (`OpsCapacityWriteHandler`, Phase E) — position 1''s "Value Story is read-only for
+
+            entitlement" contract.'
+      additionalProperties: false
+    GetTenantAssumptionsResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetTenantAssumptionsResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header
+x-refined-from:
+- fenergo-businessmetricscommand-v1-0-0-openapi.json
+- fenergo-businessmetricsquery-v1-0-openapi.json

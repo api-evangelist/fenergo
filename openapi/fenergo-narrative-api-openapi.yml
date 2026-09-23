@@ -1,0 +1,520 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Audit Query Narrative API
+  description: The Audit Query API enables the retrieval of audit event data related to various activities within the system.
+  version: '3.0'
+servers:
+- url: /auditquery
+security:
+- Bearer: []
+tags:
+- name: Narrative
+paths:
+  /api/v3/narrative/narrativeEvents:
+    post:
+      tags:
+      - Narrative
+      summary: Get Narratives audit events
+      description: 'Returns list of narrative audit events.
+
+
+        Required permissions:
+
+        Following permissions are required: AuditAccessAndSearch'
+      operationId: GetNarrativeAuditEventsV3
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Request.
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/GetNarrativeAuditEventsRequestDtoServiceRequest'
+      responses:
+        '200':
+          description: Success. The list of audit events is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetNarrativeAuditEventsResultDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+components:
+  schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    SearchTermPagedDto:
+      allOf:
+      - $ref: '#/components/schemas/SearchTermDto'
+      - type: object
+        properties:
+          pager:
+            allOf:
+            - $ref: '#/components/schemas/PagerDto'
+            description: A pager object to specify pagination parameters
+            example:
+              size: 10
+              from: 0
+              sortBy: date
+              sortOrder: Descending
+        additionalProperties: false
+      description: A search request object comprising a list of resource IDs, a search term, and a pager object to retrieve results.
+    GetNarrativeAuditEventsResultDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetNarrativeAuditEventsResultDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    GetNarrativeAuditEventsResultDto:
+      type: object
+      properties:
+        items:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AuditEventDto'
+          description: Items for the current page.
+        totalItems:
+          type: integer
+          description: Total count of items.
+          format: int64
+          example: 1
+      additionalProperties: false
+    AuditMetadata:
+      type: object
+      properties:
+        stages:
+          type:
+          - array
+          - 'null'
+          items:
+            type: object
+            additionalProperties: {}
+        userName:
+          type:
+          - string
+          - 'null'
+        tenantName:
+          type:
+          - string
+          - 'null'
+        journeyName:
+          type:
+          - string
+          - 'null'
+        eventName:
+          type:
+          - string
+          - 'null'
+        taskReassignedUserBefore:
+          type:
+          - string
+          - 'null'
+        taskReassignedUserAfter:
+          type:
+          - string
+          - 'null'
+        taskReassignedTeamNameBefore:
+          type:
+          - string
+          - 'null'
+        taskReassignedTeamNameAfter:
+          type:
+          - string
+          - 'null'
+        reopenedByNameBefore:
+          type:
+          - string
+          - 'null'
+        reopenedByNameAfter:
+          type:
+          - string
+          - 'null'
+        completedByNameBefore:
+          type:
+          - string
+          - 'null'
+        completedByNameAfter:
+          type:
+          - string
+          - 'null'
+        taskUnpausedByNameBefore:
+          type:
+          - string
+          - 'null'
+        taskUnpausedByNameAfter:
+          type:
+          - string
+          - 'null'
+        taskPausedByNameBefore:
+          type:
+          - string
+          - 'null'
+        taskPausedByNameAfter:
+          type:
+          - string
+          - 'null'
+        dateIsoFormat:
+          type:
+          - string
+          - 'null'
+        journeyOwnerReassignedTeamNameBefore:
+          type:
+          - string
+          - 'null'
+        journeyOwnerReassignedTeamNameAfter:
+          type:
+          - string
+          - 'null'
+        journeyOwnerReassignedUserBefore:
+          type:
+          - string
+          - 'null'
+        journeyOwnerReassignedUserAfter:
+          type:
+          - string
+          - 'null'
+        originatedEventId:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ResourceQueryDto:
+      type: object
+      properties:
+        ids:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: The list of resource IDs for which to fetch Audit Events.
+          example:
+          - 7304b842-769f-4c22-9499-7c5d069ffb8f
+          - ad6cf1b0-0925-4d65-98e7-a4e7901cce46
+          - abb80516-3914-4366-a061-2f10e018fdeb
+      additionalProperties: false
+      description: The request object that contains a list of resource IDs for which to fetch Audit Events.
+    SortOrder:
+      enum:
+      - Ascending
+      - Descending
+      type: string
+    PagerDto:
+      type: object
+      properties:
+        size:
+          type: integer
+          format: int32
+          exclusiveMinimum: 0
+        from:
+          minimum: 0
+          type: integer
+          format: int32
+        sortBy:
+          type:
+          - string
+          - 'null'
+        sortOrder:
+          allOf:
+          - $ref: '#/components/schemas/SortOrder'
+      additionalProperties: false
+    GetNarrativeAuditEventsRequestDto:
+      allOf:
+      - $ref: '#/components/schemas/SearchTermPagedDto'
+      - type: object
+        properties:
+          entityId:
+            type: string
+            format: uuid
+        additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AuditEventDto:
+      type: object
+      properties:
+        eventId:
+          type:
+          - string
+          - 'null'
+          description: Event id
+          example: f9bb19a8-07e7-4306-94c9-a00988eadb0f
+        resourceId:
+          type:
+          - string
+          - 'null'
+          description: The unique identifier of the Resource that was updated
+          example: 31a7bd8b-753f-404e-a78b-ee84de61822e
+        resourceType:
+          type:
+          - string
+          - 'null'
+          description: The type of resource this Audit Event relates to
+          example: Entity
+        entityReferenceId:
+          type:
+          - string
+          - 'null'
+          description: The underlying EntityId that is linked to this Audit Event
+          example: 4514d583-7114-4b49-a17e-b424495b9cc7
+        journeyReferenceId:
+          type:
+          - string
+          - 'null'
+          description: The underlying JourneyInstanceId that is linked to this Audit Event
+          example: 5e61d26e-9f2f-4c03-99e7-bc823b55fefc
+        eventType:
+          type:
+          - string
+          - 'null'
+          description: The type of event that initiated this Audit Event
+          example: EntityCreated
+        eventSubType:
+          type:
+          - string
+          - 'null'
+          description: The event sub type
+          example: Created
+        beforeValue:
+          type:
+          - object
+          - 'null'
+          additionalProperties: {}
+          description: Contains the complete object in its previous state.
+        afterValue:
+          type:
+          - object
+          - 'null'
+          additionalProperties: {}
+          description: Contains the complete object in its current state.
+          example:
+            Properties:
+              Nationality:
+                Value: Spain
+                Type: Single
+                Discriminator: Single
+        version:
+          type:
+          - string
+          - 'null'
+          description: Version
+          example: '0'
+        date:
+          type:
+          - string
+          - 'null'
+          description: Date the Audit Event was logged
+          format: date-time
+        userId:
+          type:
+          - string
+          - 'null'
+          description: The Id of the user that affected the change
+          example: f3bdd83c-ac18-42a3-a904-ca3fefda3e5f
+        clientId:
+          type:
+          - string
+          - 'null'
+          description: The underlying client identifier / system that affected the change
+          example: 111e07b2-915f-483f-8815-61e2e05b1351
+        service:
+          type:
+          - string
+          - 'null'
+          description: Identifies the service that affected the change
+          example: EntityData
+        tenant:
+          type:
+          - string
+          - 'null'
+          description: Tenant id
+          example: 449de204-e9d2-4204-918d-1c3b86e91aa6
+        correlationId:
+          type:
+          - string
+          - 'null'
+          description: Correlation id
+          example: 78ae8b73-24bc-4175-91a0-1326388a7de9
+        metadata:
+          allOf:
+          - $ref: '#/components/schemas/AuditMetadata'
+        eventMetadata:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type:
+            - string
+            - 'null'
+          description: Additional optional Audit Event Metadata
+      additionalProperties: false
+      description: An object representing a single Audit Event
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    SearchTermDto:
+      allOf:
+      - $ref: '#/components/schemas/ResourceQueryDto'
+      - type: object
+        properties:
+          searchTerm:
+            type:
+            - string
+            - 'null'
+            description: A search term that can be used to further filter your results. Can be any data found in your Audit Events, e.g. 'EntityCreated','Ireland' etc.
+            example: EntityCreated
+        additionalProperties: false
+      description: A search request object comprising a list of resource IDs and a search term to retrieve results.
+    GetNarrativeAuditEventsRequestDtoServiceRequest:
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetNarrativeAuditEventsRequestDto'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

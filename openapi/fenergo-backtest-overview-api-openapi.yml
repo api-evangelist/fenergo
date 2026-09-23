@@ -1,0 +1,316 @@
+openapi: 3.2.0
+info:
+  title: Transaction Backtest Overview API
+  version: 3.0.1
+servers:
+- url: https://api.fenergox.com/tm/realtime
+tags:
+- name: Backtest Overview
+paths:
+  /backtest-overview:
+    get:
+      summary: Handle Backtest Request Overview
+      description: Get a backtest based on an ID or a list of backtests based on a status
+      operationId: handle_backtest_request_overview_backtest_overview_get
+      parameters:
+      - required: true
+        schema:
+          type: string
+          title: Backtest Id
+        name: backtest_id
+        in: query
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EngineBacktestResponse'
+        '400':
+          description: A data validation occurred.
+        '403':
+          description: No permission to take the respective action.
+        '404':
+          description: The requested resource was not found.
+        '409':
+          description: The requested operation could not be performed due to a data conflict.
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2 Client Credentials: []
+      tags:
+      - Backtest Overview
+components:
+  schemas:
+    Results:
+      properties:
+        periodic:
+          $ref: '#/components/schemas/PeriodicResults'
+        non_periodic:
+          $ref: '#/components/schemas/NonPeriodicResults'
+      type: object
+      required:
+      - periodic
+      - non_periodic
+      title: Results
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ThresholdType:
+      type: string
+      enum:
+      - int
+      - float
+      - bool
+      - str
+      title: ThresholdType
+      description: Defines the different types of threshold values
+    BacktestStatus:
+      type: string
+      enum:
+      - to_do
+      - preparing
+      - in_progress
+      - cleaning_up
+      - done
+      - failed
+      title: BacktestStatus
+      description: Possible states of a backtest request
+    RuleFeature:
+      properties:
+        name:
+          type: string
+          title: Name
+        operator:
+          type: string
+          enum:
+          - '>'
+          - '>='
+          - <
+          - <=
+          - '='
+          - '!='
+          - contains
+          - not_contains
+          title: Operator
+        expected_value:
+          anyOf:
+          - type: integer
+          - type: number
+          - type: boolean
+          - type: string
+          title: Expected Value
+        runtime_value:
+          anyOf:
+          - type: integer
+          - type: number
+          - type: boolean
+          - type: string
+          title: Runtime Value
+        threshold_value_type:
+          $ref: '#/components/schemas/ThresholdType'
+        metadata:
+          type: object
+          title: Metadata
+      type: object
+      required:
+      - name
+      - operator
+      title: RuleFeature
+      description: 'Defines a rule feature, which describes the expected value vs the runtime value of a rule
+
+        feature that was involved in triggering an alert.'
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    NonPeriodicResults:
+      properties:
+        transactions:
+          additionalProperties:
+            type: integer
+          type: object
+          title: Transactions
+        alerts:
+          additionalProperties:
+            additionalProperties:
+              type: integer
+            type: object
+          type: object
+          title: Alerts
+      type: object
+      required:
+      - transactions
+      - alerts
+      title: NonPeriodicResults
+    PeriodicResults:
+      properties:
+        transactions_per_activation:
+          additionalProperties:
+            additionalProperties:
+              type: integer
+            type: object
+          type: object
+          title: Transactions Per Activation
+        alerts:
+          additionalProperties:
+            additionalProperties:
+              type: integer
+            type: object
+          type: object
+          title: Alerts
+      type: object
+      required:
+      - transactions_per_activation
+      - alerts
+      title: PeriodicResults
+    EngineBacktestResponse:
+      properties:
+        Request ID:
+          type: string
+          title: Request Id
+        Request Name:
+          type: string
+          title: Request Name
+        Status:
+          $ref: '#/components/schemas/BacktestStatus'
+        Creation Datetime:
+          type: string
+          format: date-time
+          title: Creation Datetime
+        Test Date:
+          type: string
+          format: date
+          title: Test Date
+        Backload Days:
+          type: integer
+          title: Backload Days
+        Replay Days:
+          type: integer
+          title: Replay Days
+        Skip Backload:
+          type: boolean
+          title: Skip Backload
+          default: false
+        Results:
+          $ref: '#/components/schemas/Results'
+        Alert Samples:
+          items:
+            $ref: '#/components/schemas/AlertSample'
+          type: array
+          title: Alert Samples
+        backtest_duration:
+          type: string
+          title: Backtest Duration
+      type: object
+      required:
+      - Request ID
+      - Request Name
+      - Status
+      - Creation Datetime
+      - Test Date
+      - Replay Days
+      title: EngineBacktestResponse
+      description: The result needs to be json decoded.
+    AlertSample:
+      properties:
+        num_trx:
+          type: integer
+          title: Num Trx
+        trx_external_mod_ids:
+          items:
+            type: string
+          type: array
+          title: Trx External Mod Ids
+        current_trx_external_id:
+          type: string
+          title: Current Trx External Id
+        current_trx_mod_external_id:
+          type: string
+          title: Current Trx Mod External Id
+        current_sender_external_id:
+          type: string
+          title: Current Sender External Id
+        current_receiver_external_id:
+          type: string
+          title: Current Receiver External Id
+        alert_date:
+          type: string
+          title: Alert Date
+        original_datetime:
+          type: string
+          title: Original Datetime
+        alert_type:
+          type: string
+          title: Alert Type
+        rule_alias:
+          type: string
+          title: Rule Alias
+        rule_description:
+          type: string
+          title: Rule Description
+        rule_entity_type:
+          type: string
+          title: Rule Entity Type
+        rule_modification_type:
+          type: string
+          title: Rule Modification Type
+        rule_features:
+          items:
+            $ref: '#/components/schemas/RuleFeature'
+          type: array
+          title: Rule Features
+        screening_results:
+          type: object
+          title: Screening Results
+        deduplication_id:
+          type: string
+          title: Deduplication Id
+      type: object
+      required:
+      - num_trx
+      - trx_external_mod_ids
+      - current_trx_external_id
+      - current_trx_mod_external_id
+      - current_sender_external_id
+      - current_receiver_external_id
+      - alert_type
+      - rule_alias
+      - rule_description
+      - rule_entity_type
+      title: AlertSample
+      description: trx represents the number of transactions
+  securitySchemes:
+    OAuth2_Client_Credentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          scopes: {}
+          tokenUrl: oauth2/token

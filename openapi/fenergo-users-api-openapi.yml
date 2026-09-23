@@ -1,0 +1,2493 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Users API
+  version: '1.0'
+  description: 'Operations tagged Users across 3 of this provider''s published API definitions: fenergo-identity-scim-v1-openapi.json, fenergo-identitymanagementcommand-v1-0-openapi.json, fenergo-identitymanagementquery-v1-0-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- url: /scim
+- url: /identitymanagementcommand
+- url: /identitymanagementquery
+security:
+- Bearer: []
+tags:
+- name: Users
+paths:
+  /Users:
+    get:
+      tags:
+      - Users
+      summary: Gets all users. Accepts filters and sorting
+      description: 'Check out the following sections of the SCIM RFC for more information about how to use the search parameters:
+
+
+        Definition of the search attributes: RFC 7644 Section 3.4.3
+
+
+        The format of the ''attributes'' and the ''excludedAttributes'' properties: RFC 7644 Section 3.10
+
+
+        Supported operators for filtering: RFC 7644 Section 3.4.2.2
+
+
+        Groups with many members could make endpoint timeout, make sure members attribute is added to the list of excludedAttributes. For groups with many members, prefer /Groups/{id} endpoint.'
+      operationId: GetAllUsers
+      parameters:
+      - name: attributes
+        in: query
+        description: A multi-valued list of strings indicating the names of resource attributes to return in the response
+        schema:
+          type: array
+          items:
+            type: string
+      - name: excludedAttributes
+        in: query
+        description: A multi-valued list of strings indicating the names of resource attributes to be removed from the default set of attributes to return
+        schema:
+          type: array
+          items:
+            type: string
+      - name: sortBy
+        in: query
+        description: A string indicating the attribute whose value shall be used to order the returned responses
+        schema:
+          type: string
+      - name: sortOrder
+        in: query
+        description: 'An integer indicating the order in which the "sortBy" parameter is applied. Sort order: 0 ''Ascending'' or 1 ''Descending''.'
+        schema:
+          $ref: '#/components/schemas/SearchSCIMRepresentationOrders'
+      - name: startIndex
+        in: query
+        description: An integer indicating the 1-based index of the first query result.
+        schema:
+          type: integer
+          format: int32
+      - name: count
+        in: query
+        description: An integer indicating the desired maximum number of query results per page
+        schema:
+          type: integer
+          format: int32
+      - name: filter
+        in: query
+        description: Filter expression from the SCIM 2.0 specification <a href="https://www.rfc-editor.org/rfc/rfc7644#section-3.4.2.2">(RFC 7644)</a> (case in-sensitive).
+        schema:
+          type: string
+        examples:
+          No filter:
+            value: ''
+          UserName equals 'peter':
+            value: userName Eq "peter"
+          UserName starts with 'pe' and displayName attribute is present (has value):
+            value: userName sw "pe" and displayName pr
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListUsersResponseDto'
+              example:
+                schemas:
+                - urn:ietf:params:scim:api:messages:2.0:ListResponse
+                totalResults: 2
+                itemsPerPage: 100
+                startIndex: 1
+                Resources:
+                - id: 12345678-1234-1234-1234-123456789011
+                  name:
+                    givenName: John
+                    familyName: Smith
+                  userName: John.Smith
+                  x509Certificates: []
+                  phoneNumbers: []
+                  entitlements: []
+                  emails: []
+                  ims: []
+                  addresses: []
+                  photos: []
+                  roles: []
+                  groups: []
+                  meta:
+                    resourceType: User
+                    created: '2022-02-02T12:59:59.123456'
+                    lastModified: '2022-02-02T12:59:59.123456'
+                    version: 0
+                    location: https://company.com/scim/Users/12345678-1234-1234-1234-123456789011
+                  schemas:
+                  - urn:ietf:params:scim:schemas:core:2.0:User
+                  - urn:ietf:params:scim:schemas:extension:enterprise:2.0:User
+                  - urn:ietf:params:scim:schemas:extension:custom:1.0:User
+                - id: 12345678-1234-1234-1234-123456789012
+                  emails:
+                  - value: peter.jackson@company.com
+                    type: work
+                  - value: peter.jackson@personal.com
+                    primary: true
+                    type: home
+                  userName: peter.jackson
+                  name:
+                    familyName: jackson
+                    givenName: peter
+                  x509Certificates: []
+                  phoneNumbers: []
+                  entitlements: []
+                  ims: []
+                  addresses: []
+                  photos: []
+                  roles: []
+                  groups: []
+                  meta:
+                    resourceType: User
+                    created: '2022-02-02T22:59:59.123456'
+                    lastModified: '2022-02-02T22:59:59.123456'
+                    version: 0
+                    location: https://company.com/scim/Users/12345678-1234-1234-1234-123456789012
+                  schemas:
+                  - urn:ietf:params:scim:schemas:core:2.0:User
+                  - urn:ietf:params:scim:schemas:extension:enterprise:2.0:User
+                  - urn:ietf:params:scim:schemas:extension:custom:1.0:User
+        '401':
+          description: Unauthorized
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+    post:
+      tags:
+      - Users
+      summary: Creates a user and returns the user details along with the user's unique ID
+      description: 'The mandatory fields to create a new user are:
+
+
+        A primary email address (emails.primary: true)
+
+
+        A username (userName)
+
+
+        A name (name.familyName and name.givenName)
+
+
+        The following attributes and values are not supported:
+
+
+        Password. It is not supported to set the user password when creating a new user
+
+
+        Active. It is not supported to create a user with the ''active'' attribute set to ''false''. If not specified, ''active'' will be set to ''true''
+
+
+        Groups. It is not supported to add groups to the users
+
+
+        Roles and Entitlements. The roles and entitlements SCIM extension is not supported
+
+
+        Returns 201 if successfully created, 409 Conflict if ''userName'' already exists.
+
+
+        The ''id'' returned by this endpoint when a user is created is the ID of the user in the SCIM API, and can be used to manage the user resource within the SCIM API. Once the user is created in Fen-X Identity, a new ID will be generated there that can''t be retrieved via the SCIM API. That ID can be used for example to set up the user permissions in the Authorization domain.'
+      operationId: CreateUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsersCreateUpdateRequestDto'
+            examples:
+              users-create-user-minimal:
+                summary: Users - Create a user (minimal)
+                description: Create a new user with the minimal set of data required
+                value:
+                  schemas:
+                  - urn:ietf:params:scim:schemas:core:2.0:User
+                  userName: johndoe@company.com
+                  emails:
+                  - type: work
+                    value: johndoe@company.com
+                    primary: true
+                  name:
+                    familyName: Doe
+                    givenName: John
+              users-create-user-full:
+                summary: Users - Create a user (full)
+                description: Create a new user with all the properties supported by the API
+                value:
+                  schemas:
+                  - urn:ietf:params:scim:schemas:core:2.0:User
+                  externalId: '701984'
+                  userName: bjensen@example.com
+                  name:
+                    formatted: Ms. Barbara J Jensen, III
+                    familyName: Jensen
+                    givenName: Barbara
+                    middleName: Jane
+                    honorificPrefix: Ms.
+                    honorificSuffix: III
+                  emails:
+                  - value: bjensen@example.com
+                    type: work
+                    primary: true
+                  - value: babs@jensen.org
+                    type: home
+                  active: true
+                  displayName: Babs Jensen
+                  nickName: Babs
+                  profileUrl: https://login.example.com/bjensen
+                  userType: Employee
+                  title: Tour Guide
+                  preferredLanguage: en-US
+                  locale: en-US
+                  timezone: America/Los_Angeles
+                  addresses:
+                  - type: work
+                    streetAddress: 100 Universal City Plaza
+                    locality: Hollywood
+                    region: CA
+                    postalCode: '91608'
+                    country: USA
+                    formatted: '100 Universal City Plaza
+
+                      Hollywood, CA 91608 USA'
+                    primary: true
+                  - type: home
+                    streetAddress: 456 Hollywood Blvd
+                    locality: Hollywood
+                    region: CA
+                    postalCode: '91608'
+                    country: USA
+                    formatted: '456 Hollywood Blvd
+
+                      Hollywood, CA 91608 USA'
+                  phoneNumbers:
+                  - value: 555-555-5555
+                    type: work
+                  - value: 555-555-4444
+                    type: mobile
+                  ims:
+                  - value: someaimhandle
+                    type: aim
+                  photos:
+                  - value: https://photos.example.com/profilephoto/72930000000Ccne/F
+                    type: photo
+                  - value: https://photos.example.com/profilephoto/72930000000Ccne/T
+                    type: thumbnail
+                  x509Certificates:
+                  - value: DER-encoded X.509 certificate which MUST be base64 encoded
+              users-create-enterprise-user:
+                summary: Users - Create an enterprise user
+                description: Create a new enterprise user with all the properties supported by the SCIM enterprise extension
+                value:
+                  schemas:
+                  - urn:ietf:params:scim:schemas:core:2.0:User
+                  - urn:ietf:params:scim:schemas:extension:enterprise:2.0:User
+                  userName: johndoe@company.com
+                  emails:
+                  - type: work
+                    value: johndoe@company.com
+                    primary: true
+                  name:
+                    familyName: Doe
+                    givenName: John
+                  urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:
+                    employeeNumber: '701984'
+                    costCenter: '4130'
+                    organization: Universal Studios
+                    division: Theme Park
+                    department: Tour Operations
+                    manager:
+                      value: 26118915-6090-4610-87e4-49d8ca9f808d
+              users-create-with-custom-properties:
+                summary: Users - Create a user with Custom Properties
+                description: Create a new user including Custom Properties
+                value:
+                  schemas:
+                  - urn:ietf:params:scim:schemas:core:2.0:User
+                  - urn:ietf:params:scim:schemas:extension:custom:1.0:User
+                  userName: johndoe@company.com
+                  emails:
+                  - type: work
+                    value: johndoe@company.com
+                    primary: true
+                  name:
+                    familyName: Doe
+                    givenName: John
+                  urn:ietf:params:scim:schemas:extension:custom:1.0:User:
+                    customProperties: '{"propertyString": "StringValue", "propertyNumber": 7, "propertyBoolean": true}'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsersResponseDto'
+              example:
+                id: 12345678-1234-1234-1234-123456789012
+                userName: peter.jackson
+                name:
+                  familyName: jackson
+                  givenName: peter
+                emails:
+                - value: peter.jackson@company.com
+                  type: work
+                - value: peter.jackson@personal.com
+                  primary: true
+                  type: home
+                active: true
+                x509Certificates: []
+                ims: []
+                phoneNumbers: []
+                photos: []
+                entitlements: []
+                roles: []
+                addresses: []
+                groups: []
+                meta:
+                  resourceType: User
+                  created: '2022-02-02T22:59:59.123456'
+                  lastModified: '2022-02-02T22:59:59.123456'
+                  version: 0
+                  location: https://identity.fenergonebula.com/scim/Users/12345678-1234-1234-1234-123456789012
+                schemas:
+                - urn:ietf:params:scim:schemas:core:2.0:User
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '401':
+          description: Unauthorized
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+    servers:
+    - url: /scim
+  /Users/.search:
+    post:
+      tags:
+      - Users
+      summary: Returns users according to the filter, sort and pagination parameters
+      description: 'Check out the following sections of the SCIM RFC for more information about how to use the search parameters:
+
+
+        Definition of the search attributes: RFC 7644 Section 3.4.3
+
+
+        The format of the ''attributes'' and the ''excludedAttributes'' properties: RFC 7644 Section 3.10
+
+
+        Supported operators for filtering: RFC 7644 Section 3.4.2.2
+
+
+        Groups with many members could make endpoint timeout, make sure members attribute is added to the list of excludedAttributes. For groups with many members, prefer /Groups/{id} endpoint.
+
+
+        The supported values for the ''sortOrder'' attribute are:
+
+
+        0: Ascending order
+
+
+        1: Descending order
+
+
+        Returns 200 even if there are no results for the specified filters.'
+      operationId: SearchUsers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsersSearchRequestDto'
+            examples:
+              users-search-users:
+                summary: Users - Search users
+                description: Get the 'userName', 'displayName' and 'employeeNumber' attributes of the first 5 users that have the 'displayName' attribute present, sorted by 'userName' in descending order
+                value:
+                  attributes:
+                  - urn:ietf:params:scim:schemas:core:2.0:User:userName
+                  - urn:ietf:params:scim:schemas:core:2.0:User:displayName
+                  - urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:employeeNumber
+                  sortBy: urn:ietf:params:scim:schemas:core:2.0:User:userName
+                  sortOrder: 1
+                  startIndex: 1
+                  count: 5
+                  filter: displayName pr
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListUsersResponseDto'
+              example:
+                schemas:
+                - urn:ietf:params:scim:api:messages:2.0:ListResponse
+                totalResults: 2
+                itemsPerPage: 100
+                startIndex: 1
+                Resources:
+                - id: 12345678-1234-1234-1234-123456789011
+                  name:
+                    givenName: John
+                    familyName: Smith
+                  userName: John.Smith
+                  x509Certificates: []
+                  phoneNumbers: []
+                  entitlements: []
+                  emails: []
+                  ims: []
+                  addresses: []
+                  photos: []
+                  roles: []
+                  groups: []
+                  meta:
+                    resourceType: User
+                    created: '2022-02-02T12:59:59.123456'
+                    lastModified: '2022-02-02T12:59:59.123456'
+                    version: 0
+                    location: https://company.com/scim/Users/12345678-1234-1234-1234-123456789011
+                  schemas:
+                  - urn:ietf:params:scim:schemas:core:2.0:User
+                  - urn:ietf:params:scim:schemas:extension:enterprise:2.0:User
+                  - urn:ietf:params:scim:schemas:extension:custom:1.0:User
+                - id: 12345678-1234-1234-1234-123456789012
+                  emails:
+                  - value: peter.jackson@company.com
+                    type: work
+                  - value: peter.jackson@personal.com
+                    primary: true
+                    type: home
+                  userName: peter.jackson
+                  name:
+                    familyName: jackson
+                    givenName: peter
+                  x509Certificates: []
+                  phoneNumbers: []
+                  entitlements: []
+                  ims: []
+                  addresses: []
+                  photos: []
+                  roles: []
+                  groups: []
+                  meta:
+                    resourceType: User
+                    created: '2022-02-02T22:59:59.123456'
+                    lastModified: '2022-02-02T22:59:59.123456'
+                    version: 0
+                    location: https://company.com/scim/Users/12345678-1234-1234-1234-123456789012
+                  schemas:
+                  - urn:ietf:params:scim:schemas:core:2.0:User
+                  - urn:ietf:params:scim:schemas:extension:enterprise:2.0:User
+                  - urn:ietf:params:scim:schemas:extension:custom:1.0:User
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '401':
+          description: Unauthorized
+    servers:
+    - url: /scim
+  /Users/{id}:
+    get:
+      tags:
+      - Users
+      summary: Gets a user by ID
+      operationId: GetUserById
+      parameters:
+      - name: id
+        in: path
+        description: 'UUID: Universally Unique Identifier with 32 alpha-numeric characters formated as ''xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx''.'
+        required: true
+        schema:
+          type: string
+      - name: attributes
+        in: query
+        description: A multi-valued list of strings indicating the names of resource attributes to return in the response
+        schema:
+          type: array
+          items:
+            type: string
+      - name: excludedAttributes
+        in: query
+        description: A multi-valued list of strings indicating the names of resource attributes to be removed from the default set of attributes to return
+        schema:
+          type: array
+          items:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsersResponseDto'
+              example:
+                id: 12345678-1234-1234-1234-123456789012
+                userName: peter.jackson
+                name:
+                  familyName: jackson
+                  givenName: peter
+                emails:
+                - value: peter.jackson@company.com
+                  type: work
+                - value: peter.jackson@personal.com
+                  primary: true
+                  type: home
+                active: true
+                x509Certificates: []
+                ims: []
+                phoneNumbers: []
+                photos: []
+                entitlements: []
+                roles: []
+                addresses: []
+                groups: []
+                meta:
+                  resourceType: User
+                  created: '2022-02-02T22:59:59.123456'
+                  lastModified: '2022-02-02T22:59:59.123456'
+                  version: 0
+                  location: https://identity.fenergonebula.com/scim/Users/12345678-1234-1234-1234-123456789012
+                schemas:
+                - urn:ietf:params:scim:schemas:core:2.0:User
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+    delete:
+      tags:
+      - Users
+      summary: Deletes a user by ID
+      description: Returns 204 if successfully deleted, 404 if not found.
+      operationId: DeleteUser
+      parameters:
+      - name: id
+        in: path
+        description: 'UUID: Universally Unique Identifier with 32 alpha-numeric characters formated as ''xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx''.'
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+    put:
+      tags:
+      - Users
+      summary: Updates all user details and returns the updated user details
+      description: 'The mandatory fields to update an existing user are:
+
+
+        A primary email address (emails.primary: true)
+
+
+        A username (userName)
+
+
+        A name (name.familyName and name.givenName)'
+      operationId: UpdateUser
+      parameters:
+      - name: id
+        in: path
+        description: 'UUID: Universally Unique Identifier with 32 alpha-numeric characters formated as ''xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx''.'
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsersCreateUpdateRequestDto'
+            examples:
+              users-update-user:
+                summary: Users - Update a user
+                description: Update an existing user.
+                value:
+                  schemas:
+                  - urn:ietf:params:scim:schemas:core:2.0:User
+                  userName: johndoe@company.com
+                  name:
+                    givenName: New Given Name
+                    familyName: New Family Name
+                  emails:
+                  - primary: true
+                    type: work
+                    value: johndoe@company.com
+                  - type: home
+                    value: johndoe@gmail.com
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsersResponseDto'
+              example:
+                id: 12345678-1234-1234-1234-123456789012
+                userName: peter.jackson
+                name:
+                  familyName: jackson
+                  givenName: peter
+                emails:
+                - value: peter.jackson@company.com
+                  type: work
+                - value: peter.jackson@personal.com
+                  primary: true
+                  type: home
+                active: true
+                x509Certificates: []
+                ims: []
+                phoneNumbers: []
+                photos: []
+                entitlements: []
+                roles: []
+                addresses: []
+                groups: []
+                meta:
+                  resourceType: User
+                  created: '2022-02-02T22:59:59.123456'
+                  lastModified: '2022-02-02T22:59:59.123456'
+                  version: 0
+                  location: https://identity.fenergonebula.com/scim/Users/12345678-1234-1234-1234-123456789012
+                schemas:
+                - urn:ietf:params:scim:schemas:core:2.0:User
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+    patch:
+      tags:
+      - Users
+      summary: Updates some user details and returns the updated user details
+      description: 'The supported values for the ''operations.op'' attribute are:
+
+
+        add
+
+
+        remove
+
+
+        replace
+
+
+        The endpoint may return the following successful responses if the request is accepted:
+
+
+        A 200 response with the updated user details if a change has been made to the user
+
+
+        A 204 response if nothing has been updated in the user'
+      operationId: PatchUser
+      parameters:
+      - name: id
+        in: path
+        description: 'UUID: Universally Unique Identifier with 32 alpha-numeric characters formated as ''xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx''.'
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsersPatchRequestDto'
+            examples:
+              users-patch-user:
+                summary: Users - Patch a user
+                description: Patch an existing user.
+                value:
+                  operations:
+                  - op: replace
+                    path: name
+                    value:
+                      givenName: New Given Name
+                      familyName: New Family Name
+                  - op: add
+                    path: title
+                    value: New title
+                  - op: remove
+                    path: nickName
+                  schemas:
+                  - urn:ietf:params:scim:api:messages:2.0:PatchOp
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsersResponseDto'
+              example:
+                id: 12345678-1234-1234-1234-123456789012
+                userName: peter.jackson
+                name:
+                  familyName: jackson
+                  givenName: peter
+                emails:
+                - value: peter.jackson@company.com
+                  type: work
+                - value: peter.jackson@personal.com
+                  primary: true
+                  type: home
+                active: true
+                x509Certificates: []
+                ims: []
+                phoneNumbers: []
+                photos: []
+                entitlements: []
+                roles: []
+                addresses: []
+                groups: []
+                meta:
+                  resourceType: User
+                  created: '2022-02-02T22:59:59.123456'
+                  lastModified: '2022-02-02T22:59:59.123456'
+                  version: 0
+                  location: https://identity.fenergonebula.com/scim/Users/12345678-1234-1234-1234-123456789012
+                schemas:
+                - urn:ietf:params:scim:schemas:core:2.0:User
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+    servers:
+    - url: /scim
+  /api/users:
+    post:
+      tags:
+      - Users
+      summary: Adds a new user to the tenant, with the data specified in the request
+      description: 'If the user doesn''t exist in Fen-X Identity, it is created and added to the tenant.
+
+
+        If the user already exists, the user is just added to the tenant and the ID of the existing user is returned.
+
+
+        If there are repeated keys in the custom properties (for example, {"prop1": "value1", "prop1": "value2"}, the
+
+        API will remove the duplicates and store only the last value (following the example, {"prop1": "value2"}).
+
+
+        Required permissions:
+
+        Following permissions are required: SecurityCreateUser, UserAdministration'
+      operationId: CreateUser
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Create user request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserDtoServiceRequest'
+      responses:
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '200':
+          description: Success. User added to the tenant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserCreatedDtoServiceResponse'
+        '409':
+          description: Conflict saving changes in expected version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: There are conflicts that cannot be resolved automatically, get latest and apply your changes
+                  type: Error
+                  errorCode: CONFLICT
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    get:
+      tags:
+      - Users
+      summary: Returns all users from the tenant
+      description: 'Required permissions:
+
+        Following permissions are required: UserAdministration'
+      operationId: GetUsers
+      parameters:
+      - name: SearchTerm
+        in: query
+        description: Free-text search matched against the start of the user's email address. Case insensitive.
+        schema:
+          type: string
+          example: john.doe@fenergo
+        example: john.doe@fenergo
+      - name: Size
+        in: query
+        description: Non-negative value indicating desired number of results
+        schema:
+          maximum: 100000
+          minimum: 0
+          type: integer
+          format: int32
+          example: 100
+        example: 100
+      - name: From
+        in: query
+        description: Non-negative value indicating the 0-based index of the query result
+        schema:
+          maximum: 2147483647
+          minimum: 0
+          type: integer
+          format: int32
+          example: 0
+        example: 0
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. Users data retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsersPaginationResponseDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /identitymanagementcommand
+  /api/users/{id}:
+    delete:
+      tags:
+      - Users
+      summary: Removes an existing user from the tenant
+      description: 'The user is not removed from Fen-X Identity, just the assignment to the tenant and its corresponding data
+
+
+        Required permissions:
+
+        Following permissions are required: SecurityDeleteUser, UserAdministration'
+      operationId: DeleteUser
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the user that would be removed
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. User removed from the tenant
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not found. The user hasn't been found
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    put:
+      tags:
+      - Users
+      summary: Updates all the data of a user that already exists in the tenant
+      description: 'This endpoint overwrites all the user details with the data specified in the body of the request
+
+
+        If there are repeated keys in the custom properties (for example, {"prop1": "value1", "prop1": "value2"}, the
+
+        API will remove the duplicates and store only the last value (following the example, {"prop1": "value2"}).
+
+
+        Required permissions:
+
+        Following permissions are required: SecurityEditUser, UserAdministration'
+      operationId: UpdateUser
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the user that would be updated
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Update user request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserDtoServiceRequest'
+      responses:
+        '200':
+          description: Success. User data updated
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not found. The user hasn't been found
+                  type: Error
+                  errorCode: Error Code
+        '409':
+          description: Conflict saving changes in expected version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: There are conflicts that cannot be resolved automatically, get latest and apply your changes
+                  type: Error
+                  errorCode: CONFLICT
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    patch:
+      tags:
+      - Users
+      summary: Updates some data of a user that already exists in the tenant
+      description: 'This endpoint will just update the properties specified in the request
+
+
+        If there are repeated keys in the custom properties (for example, {"prop1": "value1", "prop1": "value2"}, the
+
+        API will remove the duplicates and store only the last value (following the example, {"prop1": "value2"}).
+
+
+        Required permissions:
+
+        Following permissions are required: SecurityEditUser, UserAdministration'
+      operationId: PatchUser
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the user that would be updated
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Patch user request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchUserDtoServiceRequest'
+      responses:
+        '200':
+          description: Success. User data updated
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not found. The user hasn't been found
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    get:
+      tags:
+      - Users
+      summary: Returns the user with the specified id
+      description: 'Required permissions:
+
+        Following permissions are required: UserAdministration'
+      operationId: GetUserById
+      parameters:
+      - name: id
+        in: path
+        description: User Id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. User data retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not found. The user hasn't been found
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /identitymanagementcommand
+  /api/users/{id}/unlock:
+    post:
+      tags:
+      - Users
+      summary: Unlocks a user
+      description: 'The endpoint is responsible for unlocking a locked user
+
+
+        Required permissions:
+
+        Following permissions are required: SecurityEditUser, UserAdministration'
+      operationId: UnlockUser
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the user
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. User unlocked successfully
+        '400':
+          description: Bad request. The user is not locked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not found. The user hasn't been found
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /identitymanagementcommand
+  /api/users/{id}/send-verification-email:
+    post:
+      tags:
+      - Users
+      summary: Sends verification email to the user
+      description: 'The endpoint is responsible for sending a verification email to the user
+
+
+        Required permissions:
+
+        Following permissions are required: SecurityEditUser, UserAdministration'
+      operationId: SendVerificationEmail
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the user
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. Email sent successfully
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not found. The user hasn't been found
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /identitymanagementcommand
+components:
+  schemas:
+    ListUsersResponseDto:
+      type: object
+      properties:
+        schemas:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />
+
+            Example: [ "urn:ietf:params:scim:api:messages:2.0:ListResponse" ]'
+        totalResults:
+          type: integer
+          description: The total number of results returned by the list or query operation
+          format: int32
+          example: 1
+        itemsPerPage:
+          type: integer
+          description: The number of resources returned in a list response page
+          format: int32
+          example: 1
+        startIndex:
+          type: integer
+          description: The 1-based index of the first result in the current set of list results
+          format: int32
+          example: 1
+        Resources:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UsersResponseDto'
+          description: A list of all the users. This MAY be a subset of the full set of users if pagination is requested
+      additionalProperties: false
+    SortOrders:
+      enum:
+      - 0
+      - 1
+      type: integer
+      format: int32
+    SearchSCIMRepresentationOrders:
+      enum:
+      - 0
+      - 1
+      type: integer
+      format: int32
+    ErrorResponseDto:
+      type: object
+      properties:
+        schemas:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />
+
+            Example: [ "urn:ietf:params:scim:api:messages:2.0:Error" ]'
+        status:
+          type:
+          - string
+          - 'null'
+          description: The HTTP status code of the error response
+          example: '400'
+        scimType:
+          type:
+          - string
+          - 'null'
+          description: The type of error
+          example: invalidSyntax
+        detail:
+          type:
+          - string
+          - 'null'
+          description: The summary of the error
+          example: The request is not well-formatted
+      additionalProperties: false
+    UsersAddressMultiValuedAttributeDto:
+      type: object
+      properties:
+        type:
+          type:
+          - string
+          - 'null'
+          description: A label indicating the attribute's function
+          example: work
+        primary:
+          type: boolean
+          description: "A Boolean value indicating the 'primary' or preferred attribute value for this attribute, \ne.g., the preferred mailing address or primary email address"
+          example: true
+        formatted:
+          type:
+          - string
+          - 'null'
+          description: The full mailing address, formatted for display or use with a mailing label. This attribute MAY contain newlines.
+          example: 100 Universal City Plaza, Hollywood, CA 91608 USA
+        streetAddress:
+          type:
+          - string
+          - 'null'
+          description: "The full street address component, which may include house number, street name, P.O. box, and multi-line extended street address information. \nThis attribute MAY contain newlines"
+          example: 100 Universal City Plaza
+        locality:
+          type:
+          - string
+          - 'null'
+          description: The city or locality component
+          example: Hollywood
+        region:
+          type:
+          - string
+          - 'null'
+          description: The state or region component
+          example: CA
+        postalCode:
+          type:
+          - string
+          - 'null'
+          description: The zip code or postal code component
+          example: '91608'
+        country:
+          type:
+          - string
+          - 'null'
+          description: The country name component
+          example: USA
+      additionalProperties: false
+    UsersResponseDto:
+      type: object
+      properties:
+        externalId:
+          type:
+          - string
+          - 'null'
+          description: A String that is an identifier for the user as defined by the provisioning client
+          example: '701984'
+        userName:
+          type:
+          - string
+          - 'null'
+          description: 'Unique identifier for the User, typically used by the user to directly authenticate to the service provider. <br />
+
+            Each User MUST include a non-empty userName value. This identifier MUST be unique across the service provider''s entire set of Users.'
+          example: bjensen@example.com
+        name:
+          $ref: '#/components/schemas/UsersNameDto'
+        active:
+          type: boolean
+          description: A Boolean value indicating the user's administrative status
+          example: true
+        displayName:
+          type:
+          - string
+          - 'null'
+          description: The name of the User, suitable for display to end-users. The name SHOULD be the full name of the User being described, if known
+          example: Babs Jensen
+        nickName:
+          type:
+          - string
+          - 'null'
+          description: 'The casual way to address the user in real life, e.g., ''Bob'' or ''Bobby'' instead of ''Robert''.
+
+            This attribute SHOULD NOT be used to represent a User''s username (e.g., ''bjensen'' or ''mpepperidge'').'
+          example: Babs
+        profileUrl:
+          type:
+          - string
+          - 'null'
+          description: A fully qualified URL pointing to a page representing the User's online profile.
+        userType:
+          type:
+          - string
+          - 'null'
+          description: 'Used to identify the relationship between the organization and the user. <br />
+
+            Typical values used might be "Contractor", "Employee", "Intern", "Temp", "External", and "Unknown", but any value may be used'
+          example: Employee
+        title:
+          type:
+          - string
+          - 'null'
+          description: The user's title
+          example: Tour Guide
+        preferredLanguage:
+          type:
+          - string
+          - 'null'
+          description: 'Indicates the user''s preferred written or spoken languages and is generally used for selecting a localized user interface. <br />
+
+            The format of the value is the same as the HTTP Accept-Language header field'
+          example: en-US
+        locale:
+          type:
+          - string
+          - 'null'
+          description: Used to indicate the User's default location for purposes of localizing such items as currency, date time format, or numerical representations
+          example: en-US
+        timezone:
+          type:
+          - string
+          - 'null'
+          description: The User's time zone, in IANA Time Zone database format
+          example: America/Los_Angeles
+        emails:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
+          description: Email addresses for the User. The values SHOULD be specified according to [RFC5321]
+        phoneNumbers:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
+          description: Phone numbers for the user. The values SHOULD be specified according to the format defined in [RFC3966]
+        ims:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
+          description: 'Instant messaging address for the user. <br />
+
+            Possible types for this attribute: "aim", "gtalk", "icq", "xmpp", "msn", "skype", "qq", "yahoo", or "other"'
+        photos:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
+          description: 'URLs of photos of the User. <br />
+
+            Possible types for this attribute: "photo" and "thumbnail"'
+        addresses:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UsersAddressMultiValuedAttributeDto'
+          description: 'A list of physical mailing addresses for this User <br />
+
+            Possible types for this attribute: "work", "home", and "other"'
+        x509Certificates:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
+          description: A list of certificates issued to the User
+        urn:ietf:params:scim:schemas:extension:custom:1.0:User:
+          $ref: '#/components/schemas/UsersCustomPropertiesExtensionSchemaDto'
+        schemas:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />
+
+            Example: [ "urn:ietf:params:scim:schemas:core:2.0:User", "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User", "urn:ietf:params:scim:schemas:extension:custom:1.0:User" ]'
+        id:
+          type:
+          - string
+          - 'null'
+          description: The unique ID of the user
+          example: 12345678-1234-1234-1234-123456789012
+        meta:
+          $ref: '#/components/schemas/MetaDto'
+      additionalProperties: false
+    MetaDto:
+      type: object
+      properties:
+        resourceType:
+          type:
+          - string
+          - 'null'
+          description: The name of the resource type of the resource
+          example: User
+        created:
+          type: string
+          description: The "DateTime" that the resource was added to the service provider
+          format: date-time
+          example: '2022-02-02T12:59:59.123456'
+        lastModified:
+          type: string
+          description: 'The most recent "DateTime" that the details of this were updated at the service provider. <br />
+
+            If this resource has never been modified since its initial creation, the value will be the same as the value of "created"'
+          format: date-time
+          example: '2022-02-02T12:59:59.123456'
+        location:
+          type:
+          - string
+          - 'null'
+          description: The URI of the resource being returned
+          example: https://company.com/scim/Users/12345678-1234-1234-1234-123456789011
+        version:
+          type: integer
+          description: The version of the resource being returned
+          format: int32
+          example: 0
+      additionalProperties: false
+      description: A complex attribute containing resource metadata, assigned by the service provider
+    UsersPatchRequestOperationDto:
+      type: object
+      properties:
+        op:
+          type:
+          - string
+          - 'null'
+          description: 'Indicates the operation to perform. <br />
+
+            Possible values: "add", "remove", or "replace"'
+          example: add
+        path:
+          type:
+          - string
+          - 'null'
+          description: 'Describes the attribute path that wants to be updated. <br />
+
+            The "path" attribute is OPTIONAL for "add" and "replace" and is REQUIRED for "remove" operations'
+          example: name.familyName
+        value:
+          description: The new value for the attribute. REQUIRED for "add" and "replace" operations
+      additionalProperties: false
+    UsersCreateUpdateRequestDto:
+      type: object
+      properties:
+        externalId:
+          type:
+          - string
+          - 'null'
+          description: A String that is an identifier for the user as defined by the provisioning client
+          example: '701984'
+        userName:
+          type:
+          - string
+          - 'null'
+          description: 'Unique identifier for the User, typically used by the user to directly authenticate to the service provider. <br />
+
+            Each User MUST include a non-empty userName value. This identifier MUST be unique across the service provider''s entire set of Users.'
+          example: bjensen@example.com
+        name:
+          $ref: '#/components/schemas/UsersNameDto'
+        active:
+          type: boolean
+          description: A Boolean value indicating the user's administrative status
+          example: true
+        displayName:
+          type:
+          - string
+          - 'null'
+          description: The name of the User, suitable for display to end-users. The name SHOULD be the full name of the User being described, if known
+          example: Babs Jensen
+        nickName:
+          type:
+          - string
+          - 'null'
+          description: 'The casual way to address the user in real life, e.g., ''Bob'' or ''Bobby'' instead of ''Robert''.
+
+            This attribute SHOULD NOT be used to represent a User''s username (e.g., ''bjensen'' or ''mpepperidge'').'
+          example: Babs
+        profileUrl:
+          type:
+          - string
+          - 'null'
+          description: A fully qualified URL pointing to a page representing the User's online profile.
+        userType:
+          type:
+          - string
+          - 'null'
+          description: 'Used to identify the relationship between the organization and the user. <br />
+
+            Typical values used might be "Contractor", "Employee", "Intern", "Temp", "External", and "Unknown", but any value may be used'
+          example: Employee
+        title:
+          type:
+          - string
+          - 'null'
+          description: The user's title
+          example: Tour Guide
+        preferredLanguage:
+          type:
+          - string
+          - 'null'
+          description: 'Indicates the user''s preferred written or spoken languages and is generally used for selecting a localized user interface. <br />
+
+            The format of the value is the same as the HTTP Accept-Language header field'
+          example: en-US
+        locale:
+          type:
+          - string
+          - 'null'
+          description: Used to indicate the User's default location for purposes of localizing such items as currency, date time format, or numerical representations
+          example: en-US
+        timezone:
+          type:
+          - string
+          - 'null'
+          description: The User's time zone, in IANA Time Zone database format
+          example: America/Los_Angeles
+        emails:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
+          description: Email addresses for the User. The values SHOULD be specified according to [RFC5321]
+        phoneNumbers:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
+          description: Phone numbers for the user. The values SHOULD be specified according to the format defined in [RFC3966]
+        ims:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
+          description: 'Instant messaging address for the user. <br />
+
+            Possible types for this attribute: "aim", "gtalk", "icq", "xmpp", "msn", "skype", "qq", "yahoo", or "other"'
+        photos:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
+          description: 'URLs of photos of the User. <br />
+
+            Possible types for this attribute: "photo" and "thumbnail"'
+        addresses:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UsersAddressMultiValuedAttributeDto'
+          description: 'A list of physical mailing addresses for this User <br />
+
+            Possible types for this attribute: "work", "home", and "other"'
+        x509Certificates:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
+          description: A list of certificates issued to the User
+        urn:ietf:params:scim:schemas:extension:custom:1.0:User:
+          $ref: '#/components/schemas/UsersCustomPropertiesExtensionSchemaDto'
+        schemas:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />
+
+            Example: [ "urn:ietf:params:scim:schemas:core:2.0:User", "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User", "urn:ietf:params:scim:schemas:extension:custom:1.0:User" ]'
+      additionalProperties: false
+    UsersSearchRequestDto:
+      type: object
+      properties:
+        attributes:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: "A multi-valued list of strings indicating the names of resource attributes to return in the response, \noverriding the set of attributes that would be returned by default. <br />\nExample: [ \"userName\", \"displayName\", \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:employeeNumber\"]"
+        excludedAttributes:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'A multi-valued list of strings indicating the names of resource attributes to be removed from the default set of attributes to return. <br />
+
+            Example: [ "nickname", "title" ]'
+        sortBy:
+          type:
+          - string
+          - 'null'
+          description: A string indicating the attribute whose value SHALL be used to order the returned responses
+          example: userName
+        sortOrder:
+          $ref: '#/components/schemas/SortOrders'
+        startIndex:
+          type: integer
+          description: An integer indicating the 1-based index of the first query result
+          format: int32
+          example: 1
+        count:
+          type: integer
+          description: An integer indicating the desired maximum number of query results per page
+          format: int32
+          example: 20
+        filter:
+          type:
+          - string
+          - 'null'
+          description: A string indicating the filter expression that will return only the resources that matches it
+          example: displayName pr
+      additionalProperties: false
+    UsersPatchRequestDto:
+      type: object
+      properties:
+        operations:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UsersPatchRequestOperationDto'
+          description: Defines operations within a bulk or patch job.
+        schemas:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />
+
+            Examples: [ "urn:ietf:params:scim:api:messages:2.0:BulkRequest" ], [ "urn:ietf:params:scim:api:messages:2.0:PatchOp" ]'
+      additionalProperties: false
+    UsersGenericMultiValuedAttributeDto:
+      type: object
+      properties:
+        type:
+          type:
+          - string
+          - 'null'
+          description: A label indicating the attribute's function
+          example: work
+        primary:
+          type: boolean
+          description: "A Boolean value indicating the 'primary' or preferred attribute value for this attribute, \ne.g., the preferred mailing address or primary email address"
+          example: true
+        value:
+          type:
+          - string
+          - 'null'
+          description: The value of the attribute
+          example: bjensen@example.com
+        display:
+          type:
+          - string
+          - 'null'
+          description: A human-readable name, primarily used for display purposes
+          example: bjensen@example.com
+      additionalProperties: false
+    UsersCustomPropertiesExtensionSchemaDto:
+      type: object
+      properties:
+        customProperties:
+          type:
+          - string
+          - 'null'
+          description: Serialized JSON object with custom properties
+          example: '{"propertyString": "StringValue", "propertyNumber": 7, "propertyBoolean": true}'
+      additionalProperties: false
+      description: 'Extension schema to be able to specify custom properties for users.
+
+        To be able to specify values for this property, it is required to add the following schema to the schemas list: "urn:ietf:params:scim:schemas:extension:custom:1.0:User"'
+    UsersNameDto:
+      type: object
+      properties:
+        formatted:
+          type:
+          - string
+          - 'null'
+          description: The full name, including all middle names, titles, and suffixes as appropriate, formatted for display
+          example: Ms. Barbara Jane Jensen, III
+        familyName:
+          type:
+          - string
+          - 'null'
+          description: The family name of the User, or last name in most Western languages
+          example: Jensen
+        givenName:
+          type:
+          - string
+          - 'null'
+          description: The given name of the User, or first name in most Western languages
+          example: Barbara
+        middleName:
+          type:
+          - string
+          - 'null'
+          description: The middle name(s) of the User
+          example: Jane
+        honorificPrefix:
+          type:
+          - string
+          - 'null'
+          description: The honorific prefix(es) of the User, or title in most Western languages
+          example: Ms
+        honorificSuffix:
+          type:
+          - string
+          - 'null'
+          description: The honorific suffix(es) of the User, or suffix in most Western languages
+          example: III
+      additionalProperties: false
+      description: "The components of the user's name. <br />\nProviders MAY return just the full name as a single string in the formatted sub-attribute, or they MAY return just the individual \ncomponent attributes using the other sub-attributes, or they MAY return both. If both variants are returned, they SHOULD be \ndescribing the same name, with the formatted name indicating how the component attributes should be combined."
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    UserCreatedDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/UserCreatedDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    UserCreatedDto:
+      required:
+      - userId
+      type: object
+      properties:
+        userId:
+          minLength: 1
+          type: string
+          description: The id of the user created.
+          example: b2e58c3e-d66f-4d02-b40e-c8e6585a72a7
+      additionalProperties: false
+      description: Represents the data transfer object for a user created.
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CreateUserDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/CreateUserDto'
+      additionalProperties: false
+    PatchUserDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/PatchUserDto'
+      additionalProperties: false
+    UpdateUserDto:
+      required:
+      - firstName
+      - lastName
+      type: object
+      properties:
+        firstName:
+          minLength: 1
+          type: string
+          description: The first name of the user
+          example: John
+        lastName:
+          minLength: 1
+          type: string
+          description: The last name of the user
+          example: Doe
+        customProperties:
+          type:
+          - object
+          - 'null'
+          additionalProperties: {}
+          description: 'A dictionary of custom properties for the user
+
+            Example: {"stringProperty": "value", "booleanProperty": false, "numberProperty": 1}'
+        enabled:
+          type:
+          - boolean
+          - 'null'
+          description: A flag that indicates if user is active or suspended in current tenant
+      additionalProperties: false
+      description: Represents the data transfer object for updating a user (PUT).
+    UpdateUserDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/UpdateUserDto'
+      additionalProperties: false
+    CreateUserDto:
+      required:
+      - email
+      - firstName
+      - lastName
+      type: object
+      properties:
+        email:
+          minLength: 1
+          type: string
+          description: The email address of the user
+          example: john.doe@test.com
+        firstName:
+          minLength: 1
+          type: string
+          description: The first name of the user
+          example: John
+        lastName:
+          minLength: 1
+          type: string
+          description: The last name of the user
+          example: Doe
+        customProperties:
+          type:
+          - object
+          - 'null'
+          additionalProperties: {}
+          description: 'A dictionary of custom properties for the user
+
+            Example: {"stringProperty": "value", "booleanProperty": false, "numberProperty": 1}'
+      additionalProperties: false
+      description: Represents the data transfer object for creating a user.
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    PatchUserDto:
+      type: object
+      properties:
+        firstName:
+          type:
+          - string
+          - 'null'
+          description: The first name of the user
+          example: John
+        lastName:
+          type:
+          - string
+          - 'null'
+          description: The last name of the user
+          example: Doe
+        customProperties:
+          type:
+          - object
+          - 'null'
+          additionalProperties: {}
+          description: 'A dictionary of custom properties for the user
+
+            Example: {"stringProperty": "value", "booleanProperty": false, "numberProperty": 1}'
+        enabled:
+          type:
+          - boolean
+          - 'null'
+          description: A flag that indicates if user is active or suspended in current tenant
+      additionalProperties: false
+      description: Represents the data transfer object for updating a user (PATCH).
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    UserDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/UserDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    UserDto:
+      required:
+      - customProperties
+      - email
+      - emailConfirmed
+      - id
+      - lastLogin
+      - sources
+      type: object
+      properties:
+        id:
+          minLength: 1
+          type: string
+          description: The unique identifier of the user
+          example: b2e58c3e-d66f-4d02-b40e-c8e6585a72a7
+        email:
+          minLength: 1
+          type: string
+          description: The email address of the user
+          example: john.doe@test.com
+        firstName:
+          type:
+          - string
+          - 'null'
+          description: The first name of the user
+          example: John
+        lastName:
+          type:
+          - string
+          - 'null'
+          description: The last name of the user
+          example: Doe
+        sources:
+          type: array
+          items:
+            type: string
+          description: Indicates what are the sources of the user, i.e., how the user was created and managed
+          example:
+          - SSO
+          - User Management
+        emailConfirmed:
+          type: boolean
+          description: Indicates if the user has confirmed their email address
+          example: true
+        customProperties:
+          type: object
+          additionalProperties: {}
+          description: 'A dictionary of custom properties for the user
+
+            Example: {"stringProperty": "value", "booleanProperty": false, "numberProperty": 1}'
+        lastLogin:
+          type: string
+          description: A DateTime value set automatically when user was logged in last time
+          format: date-time
+        enabled:
+          type: boolean
+          description: A flag that indicates if user is active or suspended in current tenant
+        status:
+          type:
+          - string
+          - 'null'
+          description: "Indicates what is the status of the user. \nAvailable statuses: Active, Deactivated, Locked, Suspended, Unverified"
+        scimId:
+          type:
+          - string
+          - 'null'
+          description: The unique identifier of the user in the Fen-X Identity SCIM system
+      additionalProperties: false
+      description: Represents the data transfer object for a user.
+    UsersPaginationResponseDto:
+      required:
+      - from
+      - size
+      - totalResults
+      - users
+      type: object
+      properties:
+        totalResults:
+          type: integer
+          description: Number of users returned
+          format: int32
+          example: 100
+        size:
+          type: integer
+          description: Size value
+          format: int32
+          example: 100
+        from:
+          type: integer
+          description: From value
+          format: int32
+          example: 0
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserDto'
+      additionalProperties: false
+      description: Represents the data transfer object for users pagination response.
+    UsersPaginationResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/UsersPaginationResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header
+x-refined-from:
+- fenergo-identity-scim-v1-openapi.json
+- fenergo-identitymanagementcommand-v1-0-openapi.json
+- fenergo-identitymanagementquery-v1-0-openapi.json

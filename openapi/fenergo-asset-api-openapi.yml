@@ -1,0 +1,767 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Asset API
+  version: '1.0'
+  description: 'Operations tagged Asset across 2 of this provider''s published API definitions: fenergo-collateralcommand-v1-0-openapi.json, fenergo-collateralquery-v1-0-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- url: /collateralcommand
+- url: /collateralquery
+security:
+- Bearer: []
+tags:
+- name: Asset
+paths:
+  /api/asset:
+    post:
+      tags:
+      - Asset
+      summary: Create a new Asset
+      description: 'Creates a new Asset
+
+
+        The returned Id can be used in the Query API to retrieve this Asset.
+
+
+        Required permissions:
+
+        Following permissions are required: CollateralEdit'
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Create Asset request
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/AssetDtoServiceRequest'
+      responses:
+        '202':
+          description: Success. Asset created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: Error Code
+      operationId: postApiAsset
+      x-operation-id-source: derived
+    servers:
+    - url: /collateralcommand
+  /api/asset/{id}:
+    delete:
+      tags:
+      - Asset
+      summary: Delete an Asset
+      description: 'Deletes an Asset and its drafts
+
+
+        Only Assets with the draft status can be deleted.
+
+
+        Required permissions:
+
+        Following permissions are required: CollateralEdit'
+      parameters:
+      - name: id
+        in: path
+        description: Asset Id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '202':
+          description: Accepted for processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: Error Code
+      operationId: deleteApiAssetById
+      x-operation-id-source: derived
+    get:
+      tags:
+      - Asset
+      summary: Get an Asset by Id
+      description: 'This method returns the Asset of specified Id.
+
+
+        Required permissions:
+
+        Following permissions are required: CollateralAccessAndSearch'
+      operationId: GetAssetById
+      parameters:
+      - name: id
+        in: path
+        description: Asset Id
+        required: true
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetDtoServiceResponse'
+        '400':
+          description: Asset Id is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: No Asset was found
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: An exception occurred while processing the command
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: Error Code
+    servers:
+    - url: /collateralcommand
+  /api/asset/getAssetsList:
+    post:
+      tags:
+      - Asset
+      summary: Get Assets with specified attributes
+      description: 'This method returns Assets with attributes specified.
+
+
+        Required permissions:
+
+        Following permissions are required: CollateralAccessAndSearch'
+      operationId: GetAssetsList
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/AssetQueryDtoServiceRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetDtoListServiceResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: An exception occurred while processing the request
+        '202':
+          description: Success. Assets are returned
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: Error Code
+    servers:
+    - url: /collateralquery
+  /api/asset/collateral/{collateralId}/journey/{journeyId}/task/{taskId}/snapshot:
+    get:
+      tags:
+      - Asset
+      summary: Get Collateral Assets snapshot for the given Task
+      description: 'This method retrieves an object containing lists of Assets and drafts from S3 for a given taskId
+
+
+        Required permissions:
+
+        Following permissions are required: CollateralAccessAndSearch'
+      operationId: GetAssetsSnapShot
+      parameters:
+      - name: collateralId
+        in: path
+        description: The id of a Collateral that the Assets belong to
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: journeyId
+        in: path
+        description: The id of a Journey that the Assets belong to
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: taskId
+        in: path
+        description: The id of a Task that the Assets belong to
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetSnapshotDtoServiceResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: An exception occurred while processing the query
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: Error Code
+    servers:
+    - url: /collateralquery
+components:
+  schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    PropertyType:
+      enum:
+      - Single
+      - Custom
+      - Collection
+      type: string
+    AssetDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The Asset Id
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        type:
+          type:
+          - string
+          - 'null'
+          description: The Asset Type
+          example: Financial Asset
+        alternateId:
+          type:
+          - string
+          - 'null'
+          description: Asset Id from data migration
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+          description: 'List of custom properties for an Asset separate from the standard
+
+            out of the box properties.'
+          example:
+            firstName:
+              type: Single
+              value: Tom
+            dateOfBirth:
+              type: Single
+              value: '2021-07-15'
+            address:
+              type: Collection
+              dataGroupId: 674ccef1-cfdc-46af-97f8-340b24ab7f43
+              collections:
+                54a25d24-1a4b-45c6-a5b4-980e5d3a1df5:
+                  properties:
+                    country: Spain
+                    city: Madrid
+                    street: C. de Sevilla
+                93468632-1a9e-4ad0-b2e1-c5ec0f65d7b2:
+                  properties:
+                    country: Spain
+                    city: Barcelona
+                    street: Carrer de Girona
+        collateralId:
+          type: string
+          description: The Collateral Id
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        journeyId:
+          type: string
+          description: The Journey Id
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+      additionalProperties: false
+      description: "Class to represent the Asset uploaded. \nContains all properties needed to fill the metadata of the Asset being uploaded."
+    PropertyDto:
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        discriminator:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        isValid:
+          type:
+          - boolean
+          - 'null'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AssetDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/AssetDto'
+          description: "Class to represent the Asset uploaded. \nContains all properties needed to fill the metadata of the Asset being uploaded."
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AssetDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/AssetDto'
+          description: "Class to represent the Asset uploaded. \nContains all properties needed to fill the metadata of the Asset being uploaded."
+      additionalProperties: false
+    AssetDtoListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AssetDto_2'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AssetSnapshotDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/AssetSnapshotDto'
+          description: An Asset snapshot object
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AssetDto_2:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The Asset Id
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        type:
+          type:
+          - string
+          - 'null'
+          description: The Asset Type
+          example: Financial Asset
+        alternateId:
+          type:
+          - string
+          - 'null'
+          description: Asset Id from data migration
+        collateralId:
+          type: string
+          description: The id of a linked collateral
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+          description: 'List of custom properties for an Asset separate from the standard
+
+            out of the box properties.'
+        lifecycleStatus:
+          type:
+          - string
+          - 'null'
+          description: The lifecycle status of the Asset
+      additionalProperties: false
+      description: "Class to represent the Asset uploaded. \nContains all properties needed to fill the metadata of the Asset being uploaded."
+    AssetQueryDto:
+      type: object
+      properties:
+        ids:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: The list of Asset Ids to fetch
+        attributes:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: The list of attributes to fetch the data for
+      additionalProperties: false
+    AssetDraftDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The Asset Draft Id
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        type:
+          type:
+          - string
+          - 'null'
+          description: The Asset Type
+          example: Financial Asset
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+          description: 'List of custom properties for an Asset separate from the standard
+
+            out of the box properties.'
+        status:
+          type:
+          - string
+          - 'null'
+          description: The Asset Draft Status
+          example: Active
+        assetVersion:
+          type: integer
+          description: The Version of Asset that Draft was made for
+          format: int32
+          example: 1
+        assetId:
+          type: string
+          description: The Asset Id
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        journeyId:
+          type: string
+          description: Id of the related Journey
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        version:
+          type: integer
+          description: Version of the Asset Draft
+          format: int32
+        createdDate:
+          type:
+          - string
+          - 'null'
+          description: DateTime of the created Asset
+          format: date-time
+      additionalProperties: false
+      description: "An Asset object. \nContains all properties needed to fill the metadata of the Asset."
+    AssetQueryDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/AssetQueryDto'
+      additionalProperties: false
+    AssetSnapshotDto:
+      type: object
+      properties:
+        assets:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AssetDto_2'
+          description: List of Assets
+        assetDrafts:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AssetDraftDto'
+          description: List of Asset drafts
+      additionalProperties: false
+      description: An Asset snapshot object
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header
+x-refined-from:
+- fenergo-collateralcommand-v1-0-openapi.json
+- fenergo-collateralquery-v1-0-openapi.json

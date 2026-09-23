@@ -1,0 +1,1429 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Policy Providers Query External Adapter API
+  description: Policy Providers Query API is part of FenX eco-system to manage providers. All the operations require valid access token obtained from Identity service.
+  version: '1.0'
+servers:
+- url: /policyprovidersquery
+security:
+- Bearer: []
+tags:
+- name: ExternalAdapter
+paths:
+  /api/external-adapter/suggestions:
+    post:
+      tags:
+      - ExternalAdapter
+      summary: Get suggestions by multiple field criteria from external provider
+      description: 'Returns all search results.
+
+
+        Required permissions:
+
+        At least one of the following permissions is required: PolicyConfigurationAccess, PolicySearch'
+      operationId: GetMultiFieldSuggestions
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/MultiFieldSuggestionRequestDtoServiceRequest'
+      responses:
+        '200':
+          description: Success. List of suggestions is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalAdapterMultiFieldSuggestionResponseDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found. Provider with given id does not exist
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/external-adapter/suggestion/details:
+    post:
+      tags:
+      - ExternalAdapter
+      summary: Get details for multiple field criteria suggestion from external provider
+      description: 'Returns detail of suggestion.
+
+
+        Required permissions:
+
+        At least one of the following permissions is required: PolicyConfigurationAccess, PolicySearch'
+      operationId: GetMultiFieldSuggestionDetails
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/MultiFieldSuggestionDetailsRequestDtoServiceRequest'
+      responses:
+        '200':
+          description: Success. List of details for suggestion is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MultiFieldSuggestionDetailsResponseDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found. Provider with given id does not exist
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/external-adapter/suggestions/{providerId}:
+    get:
+      tags:
+      - ExternalAdapter
+      summary: Get suggestions from external provider
+      description: 'Returns suggestions based on the specified parameters.
+
+
+        Required permissions:
+
+        At least one of the following permissions is required: PolicyConfigurationAccess, PolicySearch'
+      operationId: GetSuggestions
+      parameters:
+      - name: providerId
+        in: path
+        description: The ID of the provider.
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: fieldName
+        in: query
+        description: The name of the field.
+        required: true
+        schema:
+          type: string
+      - name: fieldValue
+        in: query
+        description: The value of the field.
+        required: true
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalAdapterSuggestionsResponseDtoServiceResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/external-adapter/validation:
+    post:
+      tags:
+      - ExternalAdapter
+      summary: Get validation from external provider
+      description: 'Returns if value for field is valid.
+
+
+        Required permissions:
+
+        At least one of the following permissions is required: PolicyConfigurationAccess, PolicySearch'
+      operationId: GetValidation
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/ExternalAdapterValidationRequestDtoServiceRequest'
+      responses:
+        '200':
+          description: Success. Validation response returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalAdapterValidationResponseDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found. Provider with given id does not exist
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/external-adapter/validation/datagroup:
+    post:
+      tags:
+      - ExternalAdapter
+      summary: Send all fields of a DataGroup to an external provider to allow validation of…
+      description: 'Required permissions:
+
+        At least one of the following permissions is required: PolicyConfigurationAccess, PolicySearch'
+      operationId: GetDataGroupValidation
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/DataGroupValidationRequestDtoServiceRequest'
+      responses:
+        '200':
+          description: Success. Validation response returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataGroupValidationResponseDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found. Provider with given id does not exist
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/external-adapter/validation/customtask:
+    post:
+      tags:
+      - ExternalAdapter
+      summary: Send entity id, draft id, task id and journey id to an external provider to…
+      description: 'Required permissions:
+
+        At least one of the following permissions is required: PolicyConfigurationAccess, PolicySearch'
+      operationId: GetCustomTask
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CustomTaskRequestDtoServiceRequest'
+      responses:
+        '200':
+          description: Success. Success response returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalAdapterCustomTaskResponseServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found. Provider with given id does not exist
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/external-adapter/calculation/property-value:
+    post:
+      tags:
+      - ExternalAdapter
+      summary: Calls one or more other domain services to calculate the value a property…
+      description: 'Required permissions:
+
+        At least one of the following permissions is required: PolicyConfigurationAccess, PolicySearch'
+      operationId: GetCalculatedPropertyValue
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/GetCalculatedPropertyValueDtoServiceRequest'
+      responses:
+        '200':
+          description: Success. Success response returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCalculatedPropertyValueResponseDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found. Provider with given id does not exist
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/external-adapter/extended-search:
+    post:
+      tags:
+      - ExternalAdapter
+      summary: Perform extended search against external provider.
+      description: 'Used for providers with additional search fields configured.
+
+
+        Returns full field data per result, no separate details call needed.
+
+
+        Required permissions:
+
+        At least one of the following permissions is required: PolicyConfigurationAccess, PolicySearch'
+      operationId: GetExtendedSearchResults
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/ExtendedSearchRequestDtoServiceRequest'
+      responses:
+        '200':
+          description: Success. List of results with field data is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExtendedSearchResponseDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found. Provider with given id does not exist
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+components:
+  schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    DataGroupValidationRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/DataGroupValidationRequestDto'
+          description: Request fields for external provider multi field search.
+      additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    DataGroupValidationResponseDto:
+      type: object
+      properties:
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ResponseStatus'
+          description: Status of response from provider.
+          example: Ok
+        validationResults:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/DataGroupFieldValidationResultDto'
+          description: Collection of validation responses for fields in the datagroup.
+      additionalProperties: false
+      description: Response fields for external provider multi field validation.
+    ExternalAdapterMultiFieldSuggestionResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ExternalAdapterMultiFieldSuggestionResponseDto'
+          description: Response fields for external provider multi field search search.
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ExternalAdapterValidationRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ExternalAdapterValidationRequestDto'
+          description: Response DTO representing external provider validation request
+      additionalProperties: false
+    MultiFieldSuggestionDetailsResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/MultiFieldSuggestionDetailsResponseDto'
+          description: Result details suggestion object
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ExtendedSearchResultItemDto:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+          description: Id of a result from external provider.
+          example: 118313c6-91e6-4b05-a537-5a1ab906418a
+        displayValue:
+          type:
+          - string
+          - 'null'
+          description: Display value, nicely formatted
+          example: Ireland, Dublin, 123 Street
+        fields:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ExtendedSearchFieldDto'
+          description: Full list of field name/value pairs for this result.
+      additionalProperties: false
+      description: A single result from extended search containing full field data.
+    ExternalAdapterValidationResponseDto:
+      type: object
+      properties:
+        isValid:
+          type: boolean
+          description: Is value valid.
+        message:
+          type:
+          - string
+          - 'null'
+          description: Validation message.
+          example: Field must contain digits.
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ResponseStatus'
+          description: Status of response from provider.
+          example: Ok
+      additionalProperties: false
+      description: Response DTO representing search suggestions data
+    DataGroupFieldValidationResultDto:
+      type: object
+      properties:
+        fieldName:
+          type:
+          - string
+          - 'null'
+          description: Name of the validated field
+          example: postCode
+        isValid:
+          type: boolean
+          description: Is value valid.
+        message:
+          type:
+          - string
+          - 'null'
+          description: Validation message.
+          example: Postcodes for country 'Ireland' must have 7 alphanumeric characters
+      additionalProperties: false
+    MultiFieldSuggestionDetailsResponseDto:
+      type: object
+      properties:
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ResponseStatus'
+          description: Status of response from provider.
+          example: Ok
+        values:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/MultiFieldSuggestionFieldDto'
+          description: List of returned values with associated filed names
+      additionalProperties: false
+      description: Result details suggestion object
+    ExternalAdapterValidationResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ExternalAdapterValidationResponseDto'
+          description: Response DTO representing search suggestions data
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CustomTaskRequestDto:
+      required:
+      - journeyId
+      - providerId
+      - taskId
+      type: object
+      properties:
+        providerId:
+          minLength: 1
+          type: string
+          description: External provider id
+          example: fd5de466-a2fc-4c03-a649-35a558a0d208
+        entityId:
+          type:
+          - string
+          - 'null'
+          description: The ID of the Entity from which this Validation check was performed
+          format: uuid
+        entityDraftId:
+          type:
+          - string
+          - 'null'
+          description: The ID of the Entity Draft from which this Validation check was performed
+          format: uuid
+        taskId:
+          type: string
+          description: The ID of the Task
+          format: uuid
+        journeyId:
+          type: string
+          description: The ID of the Journey
+          format: uuid
+      additionalProperties: false
+    ResponseStatus:
+      enum:
+      - Ok
+      - Error
+      type: string
+      description: ResponseStatus class with possible statuses
+    DataGroupValidationResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/DataGroupValidationResponseDto'
+          description: Response fields for external provider multi field validation.
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    GetCalculatedPropertyValueResponseDto:
+      type: object
+      properties:
+        calculatedValue:
+          type:
+          - string
+          - 'null'
+          description: Calculated Property Value
+          example: Customer Individual and Customer Company
+      additionalProperties: false
+      description: Request DTO borrower data
+    DataGroupValidationRequestDto:
+      required:
+      - fields
+      - providerId
+      type: object
+      properties:
+        providerId:
+          minLength: 1
+          type: string
+          description: External provider id
+          example: fd5de466-a2fc-4c03-a649-35a558a0d208
+        fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataGroupValidationFieldDto'
+          description: All fields of the Data Group
+        entityId:
+          type:
+          - string
+          - 'null'
+          description: The ID of the Entity from which this Validation check was performed
+          format: uuid
+        entityDraftId:
+          type:
+          - string
+          - 'null'
+          description: The ID of the Entity Draft from which this Validation check was performed
+          format: uuid
+      additionalProperties: false
+      description: Request fields for external provider multi field search.
+    MultiFieldSuggestionResponseItemDto:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+          description: Id of a suggestion from external provider.
+          example: 118313c6-91e6-4b05-a537-5a1ab906418a
+        displayValue:
+          type:
+          - string
+          - 'null'
+          description: Display value, nicely formatted
+          example: Ireland, Dublin, 123 Street
+      additionalProperties: false
+      description: Result suggestion object
+    GetCalculatedPropertyValueDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetCalculatedPropertyValueDto'
+          description: Request DTO borrower data
+      additionalProperties: false
+    ExtendedSearchRequestDto:
+      type: object
+      properties:
+        providerId:
+          type:
+          - string
+          - 'null'
+          description: External provider id
+          example: fd5de466-a2fc-4c03-a649-35a558a0d208
+        searchFields:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ExtendedSearchFieldDto'
+          description: List of fields with values
+      additionalProperties: false
+      description: Request fields for external provider extended search.
+    MultiFieldSuggestionRequestDto:
+      type: object
+      properties:
+        providerId:
+          type:
+          - string
+          - 'null'
+          description: External provider id
+          example: fd5de466-a2fc-4c03-a649-35a558a0d208
+        searchFields:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/MultiFieldSuggestionFieldDto'
+          description: List of fields with values
+      additionalProperties: false
+      description: Request fields for external provider multi field search.
+    ExtendedSearchRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ExtendedSearchRequestDto'
+          description: Request fields for external provider extended search.
+      additionalProperties: false
+    ExternalAdapterMultiFieldSuggestionResponseDto:
+      type: object
+      properties:
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ResponseStatus'
+          description: Status of response from provider.
+          example: Ok
+        searchSuggestions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/MultiFieldSuggestionResponseItemDto'
+          description: List of suggestions
+      additionalProperties: false
+      description: Response fields for external provider multi field search search.
+    GetCalculatedPropertyValueDto:
+      type: object
+      properties:
+        calculatorName:
+          type:
+          - string
+          - 'null'
+          description: The name of the calculator service which will be used to acquire the calculated value
+        propertyName:
+          type:
+          - string
+          - 'null'
+          description: Name of the property to be calculated
+          example: borrowerName
+        calculationProperties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type:
+            - string
+            - 'null'
+          description: Additional properties which provide the information needed to calculate the value of the main property.
+      additionalProperties: false
+      description: Request DTO borrower data
+    DataGroupValidationFieldDto:
+      type: object
+      properties:
+        fieldName:
+          type:
+          - string
+          - 'null'
+          description: Field name
+          example: country
+        fieldValue:
+          type:
+          - string
+          - 'null'
+          description: Field value
+          example: Ireland
+      additionalProperties: false
+      description: Represents field object with name and value
+    ExternalAdapterCustomTaskResponseServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ExternalAdapterCustomTaskResponse'
+          description: Response DTO representing custom task
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ExtendedSearchResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ExtendedSearchResponseDto'
+          description: Response from external provider extended search.
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    GetCalculatedPropertyValueResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetCalculatedPropertyValueResponseDto'
+          description: Request DTO borrower data
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ExternalAdapterSuggestionsResponseDto:
+      type: object
+      properties:
+        searchSuggestions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/SuggestionDto'
+          description: Search suggestions from providers.
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ResponseStatus'
+          description: Status of response from provider.
+          example: Ok
+      additionalProperties: false
+      description: Response DTO representing search suggestions data
+    ExternalAdapterSuggestionsResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ExternalAdapterSuggestionsResponseDto'
+          description: Response DTO representing search suggestions data
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ExternalAdapterCustomTaskResponse:
+      type: object
+      properties:
+        isSuccess:
+          type: boolean
+          description: Is value valid.
+        message:
+          type:
+          - string
+          - 'null'
+          description: Validation message.
+          example: Field must contain digits.
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ResponseStatus'
+          description: Status of response from provider.
+          example: Ok
+      additionalProperties: false
+      description: Response DTO representing custom task
+    CustomTaskRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CustomTaskRequestDto'
+      additionalProperties: false
+    SuggestionDto:
+      type: object
+      properties:
+        value:
+          type:
+          - string
+          - 'null'
+          description: Suggested value. Depends on provider it can be for example street name.
+          example: Abbey Road
+        order:
+          type: integer
+          description: Suggested order value. Determines the order from best to worst match.
+          format: int32
+          example: 1
+      additionalProperties: false
+      description: Single search suggestion
+    MultiFieldSuggestionFieldDto:
+      required:
+      - fieldName
+      - fieldValue
+      type: object
+      properties:
+        fieldName:
+          minLength: 1
+          type: string
+          description: Field name
+          example: country
+        fieldValue:
+          minLength: 1
+          type: string
+          description: Field value
+          example: Ireland
+      additionalProperties: false
+      description: Represents field object with name and value
+    ExtendedSearchFieldDto:
+      required:
+      - fieldName
+      - fieldValue
+      type: object
+      properties:
+        fieldName:
+          minLength: 1
+          type: string
+          description: Field name
+          example: country
+        fieldValue:
+          minLength: 1
+          type: string
+          description: Field value
+          example: Ireland
+      additionalProperties: false
+      description: Represents a field with name and value for extended search.
+    ExternalAdapterValidationRequestDto:
+      type: object
+      properties:
+        providerId:
+          type: string
+          description: Provider Id
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        fieldName:
+          type:
+          - string
+          - 'null'
+          description: Field Name.
+          example: Street
+        fieldValue:
+          type:
+          - string
+          - 'null'
+          description: Field value.
+          example: Abbey
+        entityId:
+          type:
+          - string
+          - 'null'
+          description: Entity Id.
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        entityDraftId:
+          type:
+          - string
+          - 'null'
+          description: Journey Id.
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+      additionalProperties: false
+      description: Response DTO representing external provider validation request
+    MultiFieldSuggestionDetailsRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/MultiFieldSuggestionDetailsRequestDto'
+          description: Request details for external provider of multi field search suggestion.
+      additionalProperties: false
+    MultiFieldSuggestionDetailsRequestDto:
+      type: object
+      properties:
+        providerId:
+          type:
+          - string
+          - 'null'
+          description: External provider id
+          example: fd5de466-a2fc-4c03-a649-35a558a0d208
+        suggestionId:
+          type:
+          - string
+          - 'null'
+          description: Suggestion id from external provider
+          example: 118313c6-91e6-4b05-a537-5a1ab906418a
+      additionalProperties: false
+      description: Request details for external provider of multi field search suggestion.
+    ExtendedSearchResponseDto:
+      type: object
+      properties:
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ResponseStatus'
+          description: Status of response from provider.
+          example: Ok
+        results:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ExtendedSearchResultItemDto'
+          description: List of results with full field data.
+      additionalProperties: false
+      description: Response from external provider extended search.
+    MultiFieldSuggestionRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/MultiFieldSuggestionRequestDto'
+          description: Request fields for external provider multi field search.
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

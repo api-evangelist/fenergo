@@ -1,0 +1,307 @@
+openapi: 3.2.0
+info:
+  title: Observability Transactions API
+  version: 1.0.0
+  description: The Transaction Observability endpoints monitor transactions ingested through the Transactions API.
+servers:
+- url: https://api.fenergox.com/tm/observability
+tags:
+- name: Transactions
+  description: The Transaction Observability endpoints monitor transactions ingested through the Transactions API.
+paths:
+  /api/v1/transactions/summary:
+    get:
+      tags:
+      - Transactions
+      summary: Transaction Ingestion Status By Dates
+      description: 'Returns the status of transaction requests, categorizing them as successful or failed,
+
+        and grouping the results by date on which the requests were made.'
+      operationId: transaction_ingestion_status_by_dates_api_v1_transactions_summary_get
+      parameters:
+      - name: start_date
+        in: query
+        required: true
+        schema:
+          type: string
+          description: The start date from which the metrics should be generated.
+          title: Start Date
+        description: The start date from which the metrics should be generated.
+      - name: end_date
+        in: query
+        required: true
+        schema:
+          type: string
+          description: The end date upto which the metrics should be generated.
+          title: End Date
+        description: The end date upto which the metrics should be generated.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionIngestionByDate'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/transactions/events:
+    get:
+      tags:
+      - Transactions
+      summary: Transaction Ingestion Status By Modifications
+      description: Returns the events for the requested modification external ids.
+      operationId: transaction_ingestion_status_by_modifications_api_v1_transactions_events_get
+      parameters:
+      - name: modification_external_ids
+        in: query
+        required: true
+        schema:
+          type: string
+          description: The modification_external_ids for which the details should be returned.
+          title: Modification External Ids
+        description: The modification_external_ids for which the details should be returned.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionIngestionByModifications'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/transactions/failed-modifications:
+    get:
+      tags:
+      - Transactions
+      summary: Failed Modifications Per Date
+      description: Returns the list of failed modifications for the requested date.
+      operationId: failed_modifications_per_date_api_v1_transactions_failed_modifications_get
+      parameters:
+      - name: date
+        in: query
+        required: true
+        schema:
+          type: string
+          description: The date for which the list of failed modifications should be returned.
+          title: Date
+        description: The date for which the list of failed modifications should be returned.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseFailedModifications'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    LinksModifications:
+      properties:
+        failed_modifications:
+          anyOf:
+          - type: string
+            title: Failed modifications exist
+          - type: 'null'
+            title: No failed modifications
+          title: Failed Modifications
+          description: URL to retrieve failed modifications for this date. Null if there are no failures.
+      additionalProperties: false
+      type: object
+      title: LinksModifications
+      description: Model for links for modifications.
+    TransactionIngestionByModifications:
+      properties:
+        metadata:
+          $ref: '#/components/schemas/ResponseMetadata'
+          description: Response metadata including total results count.
+        data:
+          $ref: '#/components/schemas/ListTransactionModifications'
+          description: Collection of transaction modification event details.
+      additionalProperties: false
+      type: object
+      required:
+      - metadata
+      - data
+      title: TransactionIngestionByModifications
+      description: Model for transaction status by modification.
+    TransactionIngestionStatus:
+      type: string
+      enum:
+      - succeeded
+      - failed
+      title: TransactionIngestionStatus
+    TransactionStatusByDate:
+      properties:
+        succeeded_request_count:
+          type: integer
+          title: Succeeded Request Count
+          description: Number of transaction requests that were successfully ingested on this date.
+        failed_request_count:
+          type: integer
+          title: Failed Request Count
+          description: Number of transaction requests that failed ingestion on this date.
+        links:
+          $ref: '#/components/schemas/LinksModifications'
+          description: Links to further details for this date (e.g. failed modifications).
+      additionalProperties: false
+      type: object
+      required:
+      - succeeded_request_count
+      - failed_request_count
+      - links
+      title: TransactionStatusByDate
+      description: Model for transaction status by date.
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    ListTransactionModifications:
+      properties:
+        modifications:
+          items:
+            $ref: '#/components/schemas/TransactionModification'
+          type: array
+          title: Modifications
+          description: List of transaction modification event details.
+      additionalProperties: false
+      type: object
+      required:
+      - modifications
+      title: ListTransactionModifications
+      description: Model for list of transaction modifications.
+    ResponseMetadata:
+      properties:
+        count:
+          type: integer
+          title: Count
+          description: Total number of transaction modification requests.
+      additionalProperties: false
+      type: object
+      required:
+      - count
+      title: ResponseMetadata
+      description: Model for response metadata.
+    ResponseFailedModifications:
+      properties:
+        metadata:
+          $ref: '#/components/schemas/ResponseMetadata'
+          description: Response metadata including total result count.
+        data:
+          $ref: '#/components/schemas/ListFailedModifications'
+          description: Collection of failed modification external IDs.
+      additionalProperties: false
+      type: object
+      required:
+      - metadata
+      - data
+      title: ResponseFailedModifications
+      description: Model for response for failed modifications.
+    ListFailedModifications:
+      properties:
+        modifications:
+          items:
+            type: string
+          type: array
+          uniqueItems: true
+          title: Modifications
+          description: Set of failed modification external IDs for the requested date.
+      additionalProperties: false
+      type: object
+      required:
+      - modifications
+      title: ListFailedModifications
+      description: Model for list of failed modifications.
+    TransactionModification:
+      properties:
+        status:
+          $ref: '#/components/schemas/TransactionIngestionStatus'
+          description: Ingestion status of the transaction modification.
+        modification_external_id:
+          type: string
+          title: Modification External Id
+          description: External identifier for the modification.
+        transaction_external_id:
+          type: string
+          title: Transaction External Id
+          description: External identifier for the transaction.
+        status_code:
+          type: integer
+          title: Status Code
+          description: HTTP status code returned when the modification was ingested.
+        status_message:
+          type: string
+          title: Status Message
+          description: Human-readable status message returned during ingestion.
+        created_at:
+          type: string
+          title: Created At
+          description: ISO 8601 timestamp indicating when the modification event was recorded.
+      additionalProperties: false
+      type: object
+      required:
+      - status
+      - modification_external_id
+      - transaction_external_id
+      - status_code
+      - status_message
+      - created_at
+      title: TransactionModification
+      description: Model for transaction modification response.
+    TransactionIngestionByDate:
+      properties:
+        data:
+          additionalProperties:
+            $ref: '#/components/schemas/TransactionStatusByDate'
+          type: object
+          title: Data
+          description: Map of date strings (YYYY-MM-DD) to transaction ingestion status counts for that date.
+      additionalProperties: false
+      type: object
+      required:
+      - data
+      title: TransactionIngestionByDate
+      description: Model for response of transaction status by date.

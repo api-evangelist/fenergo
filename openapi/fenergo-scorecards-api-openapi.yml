@@ -1,0 +1,695 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Scorecards API
+  version: '1.0'
+  description: 'Operations tagged Scorecards across 2 of this provider''s published API definitions: fenergo-digitalagentscommand-v1-0-openapi.json, fenergo-digitalagentsquery-v1-0-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- url: /digitalagentscommand
+- url: /digitalagentsquery
+security:
+- Bearer: []
+tags:
+- name: Scorecards
+paths:
+  /api/scorecards:
+    post:
+      tags:
+      - Scorecards
+      summary: Validates and stores a scorecard JSON payload
+      description: 'Required permissions:
+
+        Following permissions are required: AgentConfigurationAccess'
+      operationId: StoreScorecard
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: The scorecard JSON string to validate and persist.
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/StringServiceRequest'
+      responses:
+        '200':
+          description: Scorecard stored successfully. Returns the scorecard ID and S3 URL.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoreScorecardResponseDtoServiceResponse'
+        '400':
+          description: The scorecard payload failed schema validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '500':
+          description: An unexpected error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    get:
+      tags:
+      - Scorecards
+      summary: Returns a list of scorecards filtered by agent name, status, or both
+      description: 'Required permissions:
+
+        Following permissions are required: AgentConfigurationAccess'
+      operationId: ListScorecards
+      parameters:
+      - name: agentName
+        in: query
+        description: Optional agent name filter.
+        schema:
+          type: string
+      - name: status
+        in: query
+        description: Optional status filter (`Draft` or `Approved`).
+        schema:
+          type: string
+      - name: limit
+        in: query
+        description: Maximum number of records to return. Defaults to 50.
+        schema:
+          type: integer
+          format: int32
+          default: 50
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: The list of matching scorecard records.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScorecardRecordListServiceResponse'
+        '500':
+          description: An exception occurred while processing the request.
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.3
+                title: Access to resource is forbidden.
+                detail: 'Access denied. Following permissions are required: Permission1, Permission2'
+                status: 403
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.9
+                title: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+                detail: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                status: 410
+                errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /digitalagentscommand
+  /api/scorecards/{id}/approve:
+    post:
+      tags:
+      - Scorecards
+      summary: Records approver sign-off on an existing scorecard
+      description: 'Required permissions:
+
+        Following permissions are required: AgentConfigurationAccess'
+      operationId: ApproveScorecard
+      parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the scorecard to approve.
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: The approval request containing approver notes.
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/ApproveScorecardRequestServiceRequest'
+      responses:
+        '200':
+          description: Scorecard approved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApproveScorecardResponseDtoServiceResponse'
+        '409':
+          description: Conflict saving changes in expected version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: There are conflicts that cannot be resolved automatically, get latest and apply your changes
+                  type: Error
+                  errorCode: CONFLICT
+        '500':
+          description: An unexpected error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /digitalagentscommand
+  /api/scorecards/{id}:
+    delete:
+      tags:
+      - Scorecards
+      summary: Deletes a scorecard's S3 artefact and DynamoDB index record.
+      description: 'Required permissions:
+
+        Following permissions are required: AgentConfigurationAccess'
+      operationId: DeleteScorecard
+      parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the scorecard to delete.
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '204':
+          description: Scorecard deleted (or not found — deletion is idempotent).
+        '500':
+          description: An unexpected error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    get:
+      tags:
+      - Scorecards
+      summary: Returns a single scorecard by its unique identifier
+      description: 'Required permissions:
+
+        Following permissions are required: AgentConfigurationAccess'
+      operationId: GetScorecard
+      parameters:
+      - name: id
+        in: path
+        description: The unique identifier of the scorecard.
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: The scorecard record.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScorecardRecordServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: https://tools.ietf.org/html/rfc7231#section-6.5.4
+                title: Resource not found
+                detail: No scorecard found for the given ID.
+                status: 404
+        '500':
+          description: An exception occurred while processing the request.
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.3
+                title: Access to resource is forbidden.
+                detail: 'Access denied. Following permissions are required: Permission1, Permission2'
+                status: 403
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.9
+                title: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+                detail: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                status: 410
+                errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /digitalagentscommand
+components:
+  schemas:
+    ApproveScorecardResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        approvedBy:
+          type:
+          - string
+          - 'null'
+        approvalDate:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    StoreScorecardResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        s3Url:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ApproveScorecardRequest:
+      type: object
+      properties:
+        approvalNotes:
+          type:
+          - string
+          - 'null'
+          description: Notes provided by the approver at sign-off.
+      additionalProperties: false
+      description: Request body for approving a scorecard.
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ApproveScorecardRequestServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ApproveScorecardRequest'
+          description: Request body for approving a scorecard.
+      additionalProperties: false
+    StoreScorecardResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/StoreScorecardResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    ApproveScorecardResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ApproveScorecardResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    StringServiceRequest:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ScorecardRecordListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ScorecardRecord'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ProblemDetails:
+      type: object
+      properties:
+        type:
+          type:
+          - string
+          - 'null'
+        title:
+          type:
+          - string
+          - 'null'
+        status:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        detail:
+          type:
+          - string
+          - 'null'
+        instance:
+          type:
+          - string
+          - 'null'
+      additionalProperties: {}
+    ScorecardRecordServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ScorecardRecord'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ScorecardRecord:
+      required:
+      - agentName
+      - createdAt
+      - createdBy
+      - id
+      - modelId
+      - s3Url
+      - status
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        agentName:
+          type:
+          - string
+          - 'null'
+        modelId:
+          type:
+          - string
+          - 'null'
+        status:
+          type:
+          - string
+          - 'null'
+        createdAt:
+          type:
+          - string
+          - 'null'
+        createdBy:
+          type:
+          - string
+          - 'null'
+        s3Url:
+          type:
+          - string
+          - 'null'
+        approvedBy:
+          type:
+          - string
+          - 'null'
+        approvalDate:
+          type:
+          - string
+          - 'null'
+        approvalNotes:
+          type:
+          - string
+          - 'null'
+        biasRiskRating:
+          type:
+          - string
+          - 'null'
+        hallucinationExposureRating:
+          type:
+          - string
+          - 'null'
+        dataPrivacyRating:
+          type:
+          - string
+          - 'null'
+        mitigationNotes:
+          type:
+          - string
+          - 'null'
+        residualRiskStatement:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header
+x-refined-from:
+- fenergo-digitalagentscommand-v1-0-openapi.json
+- fenergo-digitalagentsquery-v1-0-openapi.json

@@ -1,0 +1,337 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Identity Scim Bulk API
+  description: '## What is SCIM?'
+  version: v1
+servers:
+- url: /scim
+security:
+- Bearer: []
+tags:
+- name: Bulk
+paths:
+  /Bulk:
+    post:
+      tags:
+      - Bulk
+      summary: Performs multiple operations at once and returns the status of each operation
+      operationId: Bulk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkRequestDto'
+            examples:
+              bulk-create-users:
+                summary: Bulk - Create multiple users
+                description: Create multiple users at once. The 'bulkId' attribute is REQUIRED because operations are POST
+                value:
+                  schemas:
+                  - urn:ietf:params:scim:api:messages:2.0:BulkRequest
+                  operations:
+                  - method: POST
+                    path: /Users
+                    bulkId: bulkid1
+                    data:
+                      externalId: '1234'
+                      schemas:
+                      - urn:ietf:params:scim:schemas:core:2.0:User
+                      userName: johndoe@company.com
+                      emails:
+                      - type: work
+                        value: johndoe@company.com
+                        primary: true
+                      name:
+                        familyName: Doe
+                        givenName: John
+                  - method: POST
+                    path: /Users
+                    bulkId: bulkid2
+                    data:
+                      externalId: '5678'
+                      schemas:
+                      - urn:ietf:params:scim:schemas:core:2.0:User
+                      userName: johnsmith@company.com
+                      emails:
+                      - type: work
+                        value: johnsmith@company.com
+                        primary: true
+                      name:
+                        familyName: Smith
+                        givenName: John
+              bulk-update-users:
+                summary: Bulk - Update multiple users
+                description: Update multiple users at once. The 'userName' is mandatory and it can't be changed because operations are PUT
+                value:
+                  schemas:
+                  - urn:ietf:params:scim:api:messages:2.0:BulkRequest
+                  operations:
+                  - method: PUT
+                    path: /Users/efca51d8-938d-4855-b461-3166d1e6fe8e
+                    bulkId: '1234'
+                    data:
+                      schemas:
+                      - urn:ietf:params:scim:schemas:core:2.0:User
+                      userName: johndoe@company.com
+                      name:
+                        familyName: New family name
+                        givenName: New given name
+                      emails:
+                      - primary: true
+                        type: work
+                        value: johndoe@company.com
+                      - type: home
+                        value: johndoe@gmail.com
+                  - method: PUT
+                    path: /Users/7cd066bc-b706-468f-938a-f955930b693f
+                    bulkId: '5678'
+                    data:
+                      schemas:
+                      - urn:ietf:params:scim:schemas:core:2.0:User
+                      userName: johnsmith@company.com
+                      nickName: New nickname
+              bulk-patch-users:
+                summary: Bulk - Patch multiple users
+                description: Patch multiple users at once
+                value:
+                  schemas:
+                  - urn:ietf:params:scim:api:messages:2.0:BulkRequest
+                  operations:
+                  - method: PATCH
+                    path: /Users/efca51d8-938d-4855-b461-3166d1e6fe8e
+                    data:
+                      operations:
+                      - op: replace
+                        path: name
+                        value:
+                          givenName: New Given Name
+                          familyName: New Family Name
+                      - op: add
+                        path: title
+                        value: New title
+                      - op: remove
+                        path: nickName
+                      schemas:
+                      - urn:ietf:params:scim:api:messages:2.0:PatchOp
+                  - method: PATCH
+                    path: /Users/7cd066bc-b706-468f-938a-f955930b693f
+                    data:
+                      operations:
+                      - op: add
+                        path: nickName
+                        value: My nickname
+                      schemas:
+                      - urn:ietf:params:scim:api:messages:2.0:PatchOp
+              bulk-delete-users:
+                summary: Bulk - Delete multiple users
+                description: Delete multiple users at once
+                value:
+                  schemas:
+                  - urn:ietf:params:scim:api:messages:2.0:BulkRequest
+                  operations:
+                  - method: DELETE
+                    path: /Users/efca51d8-938d-4855-b461-3166d1e6fe8e
+                  - method: DELETE
+                    path: /Users/7cd066bc-b706-468f-938a-f955930b693f
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkResponseDto'
+              example:
+                schemas:
+                - urn:ietf:params:scim:api:messages:2.0:BulkResponse
+                Operations:
+                - method: '{HTTP_METHOD}'
+                  bulkId: bulkId1
+                  status:
+                    code: 200
+                  version: '1'
+                  location: https://company.com/scim/Users/{userId}
+                - method: '{HTTP_METHOD}'
+                  bulkId: bulkId2
+                  status:
+                    code: 404
+                    response: {}
+                - method: '{HTTP_METHOD}'
+                  bulkId: bulkId3
+                  status:
+                    code: 400
+                    response: {}
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+        '413':
+          description: Client Error
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+components:
+  schemas:
+    BulkRequestDto:
+      type: object
+      properties:
+        operations:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/BulkRequestOperationDto'
+          description: Defines operations within a bulk or patch job.
+        schemas:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />
+
+            Examples: [ "urn:ietf:params:scim:api:messages:2.0:BulkRequest" ], [ "urn:ietf:params:scim:api:messages:2.0:PatchOp" ]'
+      additionalProperties: false
+    BulkRequestOperationDto:
+      type: object
+      properties:
+        method:
+          type:
+          - string
+          - 'null'
+          description: The HTTP method of the current operation. Possible values are "POST", "PUT", "PATCH", or "DELETE". REQUIRED.
+          example: POST
+        bulkId:
+          type:
+          - string
+          - 'null'
+          description: The transient identifier of a newly created resource, unique within a bulk request and created by the client. REQUIRED when "method" is "POST".
+          example: bulkid1
+        version:
+          type:
+          - string
+          - 'null'
+          description: The current resource version.
+          example: '1'
+        path:
+          type:
+          - string
+          - 'null'
+          description: 'The resource''s relative path to the SCIM service provider''s root. <br />
+
+            If "method" is "POST", the value must specify a resource type endpoint, e.g., /Users <br />
+
+            For all other "method" values, it must specify the path to a specific resource, e.g., /Users/2819c223-7f76-453a-919d-413861904646. <br />
+
+            REQUIRED in a request.'
+          example: /Users
+        data:
+          description: 'The resource data as it would appear for a single SCIM POST, PUT, or PATCH operation. <br />
+
+            REQUIRED in a request when "method" is "POST", "PUT", or "PATCH".'
+      additionalProperties: false
+      description: Defines an operation within a bulk job
+    ErrorResponseDto:
+      type: object
+      properties:
+        schemas:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />
+
+            Example: [ "urn:ietf:params:scim:api:messages:2.0:Error" ]'
+        status:
+          type:
+          - string
+          - 'null'
+          description: The HTTP status code of the error response
+          example: '400'
+        scimType:
+          type:
+          - string
+          - 'null'
+          description: The type of error
+          example: invalidSyntax
+        detail:
+          type:
+          - string
+          - 'null'
+          description: The summary of the error
+          example: The request is not well-formatted
+      additionalProperties: false
+    BulkResponseDto:
+      type: object
+      properties:
+        Operations:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/BulkResponseOperationDto'
+          description: Defines operations within a bulk job.
+        schemas:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />
+
+            Examples: [ "urn:ietf:params:scim:api:messages:2.0:BulkResponse" ]'
+      additionalProperties: false
+    BulkResponseOperationDto:
+      type: object
+      properties:
+        method:
+          type:
+          - string
+          - 'null'
+          description: The HTTP method of the current operation. Possible values are "POST", "PUT", "PATCH", or "DELETE". REQUIRED.
+          example: POST
+        bulkId:
+          type:
+          - string
+          - 'null'
+          description: The transient identifier of a newly created resource, unique within a bulk request and created by the client. REQUIRED when "method" is "POST".
+          example: bulkid1
+        version:
+          type:
+          - string
+          - 'null'
+          description: The current resource version.
+          example: '1'
+        status:
+          $ref: '#/components/schemas/BulkResponseStatusDto'
+        location:
+          type:
+          - string
+          - 'null'
+          description: The resource endpoint URL.
+          example: bulkid1
+      additionalProperties: false
+      description: Defines an operation within a bulk job
+    BulkResponseStatusDto:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: The HTTP response status code for the requested operation.
+          format: int32
+          example: 200
+        response:
+          description: The HTTP response body for the specified request operation. It may be omitted if the status code is 2XX.
+      additionalProperties: false
+      description: The HTTP response status code and response for the requested operation.
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

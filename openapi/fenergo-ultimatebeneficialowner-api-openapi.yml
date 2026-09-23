@@ -1,0 +1,258 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula External Data Command Ultimate Beneficial…
+  description: '**External Data Command API**:
+
+
+    External Data Command API allows to import information about clients, their associated parties, documents from external providers.'
+  version: '1.0'
+servers:
+- url: /externaldatacommand
+security:
+- Bearer: []
+tags:
+- name: UltimateBeneficialOwner
+paths:
+  /api/ubo:
+    post:
+      tags:
+      - UltimateBeneficialOwner
+      summary: Create Ultimate Beneficial Owner discovery request
+      description: 'This endpoint is obsolete and will be terminated on 2027-01-12. Use /externaldatabff/api/processes/{contextType}/{contextId}/ubo instead.
+
+
+        This method will create a ultimate beneficial owner discovery request that will trigger asynchronous requests to different external data providers.
+
+
+        The method will return the ultimate beneficial owner discovery request ID created in the system.
+
+
+        Required permissions:
+
+        Following permissions are required: ExternalDataAccess
+
+
+        Required permissions:
+
+        Following permissions are required: ExternalDataAccess'
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: The ultimate beneficial owner discovery request
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/UltimateBeneficialOwnerRequestDtoServiceRequest'
+              description: Service request data
+      responses:
+        '202':
+          description: Success. Ultimate beneficial owner discovery request created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UltimateBeneficialOwnerRequestCreatedDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+      deprecated: true
+      operationId: postApiUbo
+      x-operation-id-source: derived
+components:
+  schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+          description: The message
+          example: Success
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
+      additionalProperties: false
+      description: The message associated to the service response
+    UltimateBeneficialOwnerRequestDto:
+      required:
+      - entityId
+      - importRequestId
+      type: object
+      properties:
+        importRequestId:
+          minLength: 1
+          type: string
+          description: ID of the created Import request
+          format: uuid
+          example: 86fa2093-f161-4231-b1f5-8d6fd6049f96
+        entityId:
+          minLength: 1
+          type: string
+          description: The id of the entity
+          example: c5b6cf1d-e00b-4b96-b1f2-fc2884c543bc
+      additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    UltimateBeneficialOwnerRequestCreatedDto:
+      type: object
+      properties:
+        ultimateBeneficialOwnerRequestId:
+          type:
+          - string
+          - 'null'
+          description: ID of the created Ultimate beneficial owner discovery request
+          example: f93e5f78-bef6-4d48-954d-800a8edb5aa0
+      additionalProperties: false
+      description: Response DTO representing the created Ultimate beneficial owner discovery request
+    UltimateBeneficialOwnerRequestCreatedDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UltimateBeneficialOwnerRequestCreatedDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data:
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    UltimateBeneficialOwnerRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UltimateBeneficialOwnerRequestDto'
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

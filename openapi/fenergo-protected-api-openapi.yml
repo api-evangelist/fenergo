@@ -1,0 +1,238 @@
+openapi: 3.2.0
+info:
+  title: Transaction batch Protected API
+  version: 1.1.0
+servers:
+- url: https://api.fenergox.com/tm/realtime
+tags:
+- name: Protected
+paths:
+  /api/transactions/batch/generate-upload-url:
+    post:
+      tags:
+      - Protected
+      summary: Generate Batch Upload Url
+      description: Endpoint to generate a signed URL for S3 upload.
+      operationId: get_batch_upload_url_api_transactions_batch_get_upload_url_post
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reject_on_invalid:
+                  type: boolean
+                  title: Reject On Invalid
+                  default: true
+                  description: Specifies whether to reject the ingestion if any line included in the `batch.jsonl` file is invalid.
+              example:
+                reject_on_invalid: false
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - url
+                - batch_id
+                properties:
+                  url:
+                    type: string
+                    format: uri
+                    title: upload url
+                    description: pre-signed s3 url, destination for batch.jsonl file upload
+                    example: https://s3.example.com/presigned-upload-url
+                  batch_id:
+                    type: string
+                    format: uuid
+                    title: batch uuid
+                    description: generated unique batch uuid
+                    example: 409cc795-d34f-48d4-b757-57220ae05974
+      security:
+      - OAuth2 Client Credentials: []
+  /api/transactions/batch/status/{batch_id}:
+    get:
+      tags:
+      - Protected
+      summary: Retrieve Batch Status
+      description: Endpoint to get the status of a batch transaction.
+      operationId: get_batch_status_api_transactions_batch_get_batch_status__batch_id__get
+      parameters:
+      - required: true
+        schema:
+          type: string
+          format: uuid
+          title: Batch Id
+        name: batch_id
+        in: path
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  batch_id:
+                    type: string
+                    example: 409cc795-d34f-48d4-b757-57220ae05974
+                    description: batch_id generated with Get Batch Upload Url API
+                  status:
+                    type: string
+                    enum:
+                    - VALIDATION_STARTED
+                    - VALIDATION_FAILED
+                    - PENDING_INGESTION
+                    - INITIALIZED
+                    - IN_PROGRESS
+                    - PROCESSED
+                    - ERROR
+                    description: 'Transaction batch processing status: VALIDATION_STARTED - batch validation in progress, VALIDATION_FAILED - batch validation failed, PENDING_INGESTION - batch validation completed, batch queued for ingestion, INITIALIZED - batch initialization complete, batch queued for processing, IN_PROGRESS - batch processing started, PROCESSED - batch processing completed successfully, ERROR - batch initialization failed'
+                    example: PROCESSED
+                  error_message:
+                    type: string
+                    description: 'contains the error message if the batch pre-validation fails (status: ERROR), empty string otherwise'
+                    example: ''
+        '202':
+          description: Batch is pending - either not yet uploaded completely or not yet processed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    enum:
+                    - Batch not yet processed.
+                    - Batch not yet uploaded completely.
+                    example: Batch not yet uploaded completely.
+        '404':
+          description: Batch file not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Batch not found.
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2 Client Credentials: []
+  /api/transactions/batch/validation-result/{batch_id}:
+    get:
+      tags:
+      - Protected
+      summary: Get Batch Validation Results
+      description: Endpoint to retrieve the results of the batch validation step.
+      operationId: get_batch_validation_results_api_transactions_batch_validation_result__batch_id__get
+      security:
+      - OAuth2 Client Credentials: []
+      parameters:
+      - name: batch_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Batch Id
+      responses:
+        '200':
+          description: Successful response.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - message
+                - valid
+                properties:
+                  message:
+                    type: string
+                    example: Batch validated with errors.
+                  valid:
+                    type: boolean
+                    example: false
+                    description: Indicates whether the batch is valid (true) or has validation errors (false).
+                  errors_file_url:
+                    type: string
+                    format: uri
+                    example: https://s3-presigned-url-to-errors-file
+                    description: Pre-signed S3 URL to download the errors file (present only when there are validation errors).
+        '202':
+          description: Batch validation is not yet completed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Batch not yet uploaded completely.
+                  valid:
+                    nullable: true
+                    type: boolean
+                    example: null
+          '404':
+            description: Batch not found.
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: Batch not found.
+          '422':
+            description: Validation Error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+  securitySchemes:
+    OAuth2_Client_Credentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          scopes: {}
+          tokenUrl: oauth2/token

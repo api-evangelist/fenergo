@@ -1,0 +1,2084 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Agent API
+  version: '1.0'
+  description: 'Operations tagged Agent across 6 of this provider''s published API definitions: fenergo-digitalagentscommand-v1-0-openapi.json, fenergo-digitalagentsquery-v1-0-openapi.json, fenergo-screeningcommand-v2-0-openapi.json, fenergo-screeningcommand-v3-0-openapi.json, fenergo-screeningquery-v3-0-openapi.json, fenergo-screeningquery-v4-0-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- url: /digitalagentscommand
+- url: /digitalagentsquery
+- url: /screeningcommand
+- url: /screeningquery
+security:
+- Bearer: []
+tags:
+- name: Agent
+paths:
+  /api/agent:
+    post:
+      tags:
+      - Agent
+      summary: Registers a new agent in the central agent registry.
+      description: 'Required permissions:
+
+        Following permissions are required: AgentConfigurationAccess'
+      operationId: CreateAgent
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: The agent configuration to create.
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/AgentRequestDtoServiceRequest'
+      responses:
+        '201':
+          description: Created. Returns the newly registered agent.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentRequestDtoServiceResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '409':
+          description: Conflict saving changes in expected version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: There are conflicts that cannot be resolved automatically, get latest and apply your changes
+                  type: Error
+                  errorCode: CONFLICT
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    get:
+      tags:
+      - Agent
+      summary: Get all registered agents by tenant and agent type
+      description: 'Required permissions:
+
+        Following permissions are required: AgentConfigurationAccess'
+      operationId: GetAgents
+      parameters:
+      - name: agentType
+        in: query
+        description: Agent type (optional)
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: The Fenergo.Nebula.DigitalAgents.Query.Application.Features.GetAgents.GetAgentsResponseDto class containing the list of registered agents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAgentsResponseDtoServiceResponse'
+        '400':
+          description: One or more validation errors occurred
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.1
+                title: One or more validation errors occurred
+                detail: Name is required
+                status: 400
+                errorCode: VALIDATION_ERROR
+                validationErrors:
+                - propertyName: Name
+                  errorMessage: Name is required
+                  attemptedValue: ''
+                  validatorType: NotEmptyValidator
+        '500':
+          description: An exception occurred while processing the request
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.3
+                title: Access to resource is forbidden.
+                detail: 'Access denied. Following permissions are required: Permission1, Permission2'
+                status: 403
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.9
+                title: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+                detail: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                status: 410
+                errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /digitalagentscommand
+  /api/agent/{agentId}:
+    put:
+      tags:
+      - Agent
+      summary: Updates the base configuration of an existing agent registry entry.
+      description: 'Required permissions:
+
+        Following permissions are required: AgentConfigurationAccess'
+      operationId: UpdateAgent
+      parameters:
+      - name: agentId
+        in: path
+        description: The unique identifier of the agent.
+        required: true
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: The updated agent configuration.
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/AgentRequestDtoServiceRequest'
+      responses:
+        '200':
+          description: OK. Returns the updated agent.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentRequestDtoServiceResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found. The agent does not exist for the current tenant.
+                  type: Error
+                  errorCode: Error Code
+        '409':
+          description: Conflict saving changes in expected version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: There are conflicts that cannot be resolved automatically, get latest and apply your changes
+                  type: Error
+                  errorCode: CONFLICT
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    delete:
+      tags:
+      - Agent
+      summary: Deletes an agent from the central agent registry
+      description: 'Required permissions:
+
+        Following permissions are required: AgentConfigurationAccess'
+      operationId: DeleteAgent
+      parameters:
+      - name: agentId
+        in: path
+        description: The unique identifier of the agent.
+        required: true
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '204':
+          description: No Content. The agent was deleted (idempotent — also returned if the agent did not exist).
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    get:
+      tags:
+      - Agent
+      summary: Get a single registered agent by its identifier
+      description: 'Required permissions:
+
+        Following permissions are required: AgentConfigurationAccess'
+      operationId: GetAgentById
+      parameters:
+      - name: agentId
+        in: path
+        description: The unique identifier of the agent.
+        required: true
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: The Fenergo.Nebula.DigitalAgents.Query.Application.Common.AgentRegistryDto for the requested agent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentRegistryDtoServiceResponse'
+        '400':
+          description: One or more validation errors occurred
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.1
+                title: One or more validation errors occurred
+                detail: Name is required
+                status: 400
+                errorCode: VALIDATION_ERROR
+                validationErrors:
+                - propertyName: Name
+                  errorMessage: Name is required
+                  attemptedValue: ''
+                  validatorType: NotEmptyValidator
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: https://tools.ietf.org/html/rfc7231#section-6.5.4
+                title: Resource not found
+                detail: If no agent exists for the current tenant with the given identifier.
+                status: 404
+        '500':
+          description: An exception occurred while processing the request
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.3
+                title: Access to resource is forbidden.
+                detail: 'Access denied. Following permissions are required: Permission1, Permission2'
+                status: 403
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.9
+                title: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+                detail: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                status: 410
+                errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /digitalagentscommand
+  /api/v2/agent:
+    post:
+      tags:
+      - Agent
+      summary: 'Test-support-only: create a screening agent configuration directly in…'
+      operationId: CreateScreeningAgentConfig
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/ScreeningAgentConfigDtoServiceRequest'
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /screeningcommand
+  /api/v2/agent/instructions:
+    post:
+      tags:
+      - Agent
+      summary: Create a new screening agent instruction
+      description: 'Instructions start as disabled (IsEnabled = false) and must be explicitly enabled via an update.
+
+        Up to 10 instructions per entity type may be enabled at any time.'
+      operationId: CreateAgentInstruction
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: The instruction to create.
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CreateAgentInstructionDtoServiceRequest'
+      responses:
+        '202':
+          description: Accepted. Returns the new instruction ID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+        '400':
+          description: Bad request. The request has missing or invalid values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '403':
+          description: Forbidden. The feature is disabled or the tenant lacks the required entitlement.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '500':
+          description: Internal server error.
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    put:
+      tags:
+      - Agent
+      summary: Replace one or more existing screening agent instructions by ID
+      description: 'Only the instructions supplied in the request body are replaced. Omitted instructions remain unchanged.
+
+        All edited instructions are saved as drafts (`IsEnabled` is always set to `false`) regardless of the instruction''s
+
+        current state. Use `PATCH /api/v2/agent/instructions/status` to re-activate an instruction after editing.'
+      operationId: UpdateAgentInstructions
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: The list of instructions to replace.
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/UpdateAgentInstructionDtoListServiceRequest'
+      responses:
+        '202':
+          description: Accepted. All supplied instructions were replaced.
+        '400':
+          description: Bad request. The request has missing or invalid values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '403':
+          description: Forbidden. The feature is disabled or the tenant lacks the required entitlement.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not found. One or more supplied instruction IDs do not exist.
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal server error.
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    delete:
+      tags:
+      - Agent
+      summary: Delete one or more screening agent instructions by ID
+      description: 'This operation is idempotent. Instructions that do not exist or are already deleted are silently skipped.
+
+        Product-authored system defaults are soft-deleted and remain restorable via the reset endpoint.'
+      operationId: DeleteAgentInstructions
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: The list of instruction IDs to delete.
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/GuidListServiceRequest'
+      responses:
+        '202':
+          description: Accepted. All supplied instructions were deleted, soft-deleted, or did not exist.
+        '400':
+          description: Bad request. One or more instructions are the last enabled instruction for their entity type.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '403':
+          description: Forbidden. The feature is disabled or the tenant lacks the required entitlement.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '500':
+          description: Internal server error.
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /screeningcommand
+  /api/v2/agent/instructions/system-defaults:
+    post:
+      tags:
+      - Agent
+      summary: Seed or reset product-authored system default agent instructions for the tenant
+      description: 'Seed mode (empty or no body): Seeds any of the 6 canonical defaults that are not already present.
+
+        Instructions that already exist in any state are left untouched. Newly seeded instructions start with IsEnabled = true.
+
+        Intended to be called once on initial UI load; subsequent calls with no body are no-ops.
+
+
+        Reset mode (list of instruction IDs): Resets each supplied system default instruction to its canonical seeded
+
+        content (Name, Identifiers, Description, EntityType, Resolution), sets IsEnabled to true (re-enables the instruction),
+
+        and clears IsModified and IsDeleted. The entire request is rejected if any supplied ID belongs to a
+
+        user-created instruction or does not exist.
+
+
+        Both modes are idempotent.'
+      operationId: SeedSystemDefaultAgentInstructions
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Optional list of system default instruction IDs to reset. Omit or send an empty list to trigger seed mode.
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/GuidListServiceRequest'
+      responses:
+        '202':
+          description: Accepted. Seeding or reset completed (or was already up to date).
+        '400':
+          description: Bad request. One or more supplied IDs belong to user-created instructions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '403':
+          description: Forbidden. The feature is disabled or the tenant lacks the required entitlement.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not found. One or more supplied instruction IDs do not exist.
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal server error.
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /screeningcommand
+  /api/v2/agent/instructions/status:
+    patch:
+      tags:
+      - Agent
+      summary: Activate or deactivate one or more screening agent instructions
+      description: 'Accepts a mixed list of activate (isEnabled: true) and deactivate (isEnabled: false) operations.
+
+        The 10-enabled-instruction cap per entity type is enforced for activation requests.
+
+        Draft-on-edit does not apply — this is the only way to enable an instruction after creation or edit.'
+      operationId: UpdateAgentInstructionStatus
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: The list of instruction status updates.
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/AgentInstructionStatusUpdateListServiceRequest'
+      responses:
+        '202':
+          description: Accepted. All status changes were applied.
+        '400':
+          description: Bad request. Validation error (e.g. duplicate IDs, empty list, cap exceeded, last-enabled guard violated).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '403':
+          description: Forbidden. The feature is disabled or the tenant lacks the required entitlement.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not found. One or more instruction IDs do not exist.
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal server error.
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /screeningcommand
+  /api/v3/agent:
+    post:
+      tags:
+      - Agent
+      summary: 'Test-support-only: create a screening agent configuration directly in…'
+      operationId: CreateScreeningAgentConfig
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/ScreeningAgentConfigDtoServiceRequest'
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /screeningcommand
+  /api/v3/agent/instructions:
+    post:
+      tags:
+      - Agent
+      summary: Create a new screening agent instruction
+      description: 'Instructions start as disabled (IsEnabled = false) and must be explicitly enabled via an update.
+
+        Up to 10 instructions per entity type may be enabled at any time.'
+      operationId: CreateAgentInstruction
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: The instruction to create.
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CreateAgentInstructionDtoServiceRequest'
+      responses:
+        '202':
+          description: Accepted. Returns the new instruction ID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+        '400':
+          description: Bad request. The request has missing or invalid values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '403':
+          description: Forbidden. The feature is disabled or the tenant lacks the required entitlement.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '500':
+          description: Internal server error.
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    put:
+      tags:
+      - Agent
+      summary: Replace one or more existing screening agent instructions by ID
+      description: 'Only the instructions supplied in the request body are replaced. Omitted instructions remain unchanged.
+
+        All edited instructions are saved as drafts (`IsEnabled` is always set to `false`) regardless of the instruction''s
+
+        current state. Use `PATCH /api/v2/agent/instructions/status` to re-activate an instruction after editing.'
+      operationId: UpdateAgentInstructions
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: The list of instructions to replace.
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/UpdateAgentInstructionDtoListServiceRequest'
+      responses:
+        '202':
+          description: Accepted. All supplied instructions were replaced.
+        '400':
+          description: Bad request. The request has missing or invalid values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '403':
+          description: Forbidden. The feature is disabled or the tenant lacks the required entitlement.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not found. One or more supplied instruction IDs do not exist.
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal server error.
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    delete:
+      tags:
+      - Agent
+      summary: Delete one or more screening agent instructions by ID
+      description: 'This operation is idempotent. Instructions that do not exist or are already deleted are silently skipped.
+
+        Product-authored system defaults are soft-deleted and remain restorable via the reset endpoint.'
+      operationId: DeleteAgentInstructions
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: The list of instruction IDs to delete.
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/GuidListServiceRequest'
+      responses:
+        '202':
+          description: Accepted. All supplied instructions were deleted, soft-deleted, or did not exist.
+        '400':
+          description: Bad request. One or more instructions are the last enabled instruction for their entity type.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '403':
+          description: Forbidden. The feature is disabled or the tenant lacks the required entitlement.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '500':
+          description: Internal server error.
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    get:
+      tags:
+      - Agent
+      summary: Retrieve all screening agent instructions for the tenant
+      operationId: GetAgentInstructions
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: OK. Returns a list of instructions ordered by name ascending. Empty list if none exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentInstructionDtoListServiceResponse'
+        '403':
+          description: Forbidden. The feature is disabled or the tenant lacks the required entitlement.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '500':
+          description: Internal server error.
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /screeningcommand
+  /api/v3/agent/instructions/system-defaults:
+    post:
+      tags:
+      - Agent
+      summary: Seed or reset product-authored system default agent instructions for the tenant
+      description: 'Seed mode (empty or no body): Seeds any of the 6 canonical defaults that are not already present.
+
+        Instructions that already exist in any state are left untouched. Newly seeded instructions start with IsEnabled = true.
+
+        Intended to be called once on initial UI load; subsequent calls with no body are no-ops.
+
+
+        Reset mode (list of instruction IDs): Resets each supplied system default instruction to its canonical seeded
+
+        content (Name, Identifiers, Description, EntityType, Resolution), sets IsEnabled to true (re-enables the instruction),
+
+        and clears IsModified and IsDeleted. The entire request is rejected if any supplied ID belongs to a
+
+        user-created instruction or does not exist.
+
+
+        Both modes are idempotent.'
+      operationId: SeedSystemDefaultAgentInstructions
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Optional list of system default instruction IDs to reset. Omit or send an empty list to trigger seed mode.
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/GuidListServiceRequest'
+      responses:
+        '202':
+          description: Accepted. Seeding or reset completed (or was already up to date).
+        '400':
+          description: Bad request. One or more supplied IDs belong to user-created instructions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '403':
+          description: Forbidden. The feature is disabled or the tenant lacks the required entitlement.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not found. One or more supplied instruction IDs do not exist.
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal server error.
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /screeningcommand
+  /api/v3/agent/instructions/status:
+    patch:
+      tags:
+      - Agent
+      summary: Activate or deactivate one or more screening agent instructions
+      description: 'Accepts a mixed list of activate (isEnabled: true) and deactivate (isEnabled: false) operations.
+
+        The 10-enabled-instruction cap per entity type is enforced for activation requests.
+
+        Draft-on-edit does not apply — this is the only way to enable an instruction after creation or edit.'
+      operationId: UpdateAgentInstructionStatus
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: The list of instruction status updates.
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/AgentInstructionStatusUpdateListServiceRequest'
+      responses:
+        '202':
+          description: Accepted. All status changes were applied.
+        '400':
+          description: Bad request. Validation error (e.g. duplicate IDs, empty list, cap exceeded, last-enabled guard violated).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '403':
+          description: Forbidden. The feature is disabled or the tenant lacks the required entitlement.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not found. One or more instruction IDs do not exist.
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal server error.
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /screeningcommand
+  /api/v3/agent/agent-type/{agentType}/id/{agentId}:
+    get:
+      tags:
+      - Agent
+      summary: Test-support-only existence check (AB#549813) — used exclusively by the…
+      operationId: GetAgentConfigById
+      parameters:
+      - name: agentType
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: agentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /screeningquery
+  /api/v4/agent/agent-type/{agentType}/id/{agentId}:
+    get:
+      tags:
+      - Agent
+      summary: Test-support-only existence check (AB#549813) — used exclusively by the…
+      operationId: GetAgentConfigById
+      parameters:
+      - name: agentType
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: agentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /screeningquery
+  /api/v4/agent/instructions:
+    get:
+      tags:
+      - Agent
+      summary: Retrieve all screening agent instructions for the tenant
+      operationId: GetAgentInstructions
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: OK. Returns a list of instructions ordered by name ascending. Empty list if none exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentInstructionDtoListServiceResponse'
+        '403':
+          description: Forbidden. The feature is disabled or the tenant lacks the required entitlement.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '500':
+          description: Internal server error.
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /screeningquery
+components:
+  schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AgentRequestDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/AgentRequestDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    AgentRequestDto:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+          description: Gets or sets the agent identifier.
+        name:
+          type:
+          - string
+          - 'null'
+          description: Gets or sets the name of the agent.
+        description:
+          type:
+          - string
+          - 'null'
+          description: Gets or sets the description of the agent.
+        agentType:
+          type:
+          - string
+          - 'null'
+          description: Gets or sets the agent type.
+        configurationType:
+          type:
+          - string
+          - 'null'
+          description: Gets or sets the configuration type (instance or profile).
+        agentAutonomy:
+          type:
+          - string
+          - 'null'
+          description: Gets or sets the agent autonomy.
+        enabled:
+          type: boolean
+          description: Gets or sets agent enabled status.
+        journeyTypes:
+          uniqueItems: true
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Gets or sets the journey types
+        extensionData:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type:
+            - string
+            - 'null'
+          description: 'Gets or sets the opt-in, domain-specific extension data bag (AB#549014). Populated only for
+
+            domains whose underlying `Agent` subclass implements `IHasAgentExtensionData`
+
+            (e.g. Significance, DataSourcing); null/omitted for all other domains.'
+      additionalProperties: false
+    AgentRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/AgentRequestDto'
+      additionalProperties: false
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    AgentRegistryDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/AgentRegistryDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ProblemDetails:
+      type: object
+      properties:
+        type:
+          type:
+          - string
+          - 'null'
+        title:
+          type:
+          - string
+          - 'null'
+        status:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        detail:
+          type:
+          - string
+          - 'null'
+        instance:
+          type:
+          - string
+          - 'null'
+      additionalProperties: {}
+    AgentRegistryDto:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+          description: Gets or sets the agent identifier.
+        name:
+          type:
+          - string
+          - 'null'
+          description: Gets or sets the name of the agent.
+        description:
+          type:
+          - string
+          - 'null'
+          description: Gets or sets the description of the agent.
+        agentType:
+          type:
+          - string
+          - 'null'
+          description: Gets or sets the agent type.
+        configurationType:
+          type:
+          - string
+          - 'null'
+          description: Gets or sets the configuration type (instance or profile).
+        agentAutonomy:
+          type:
+          - string
+          - 'null'
+          description: Gets or sets the agent autonomy.
+        enabled:
+          type: boolean
+          description: Gets or sets agent enabled status.
+        journeyTypes:
+          uniqueItems: true
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Gets or sets the journey types
+        extensionData:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type:
+            - string
+            - 'null'
+          description: 'Gets or sets the opt-in, domain-specific extension data bag (AB#549014). Populated only for
+
+            domains whose underlying `Agent` subclass implements `IHasAgentExtensionData`
+
+            (e.g. Significance, DataSourcing); null/omitted for all other domains.'
+      additionalProperties: false
+    GetAgentsResponseDto:
+      type: object
+      properties:
+        agents:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AgentRegistryDto'
+      additionalProperties: false
+    GetAgentsResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/GetAgentsResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    GuidListServiceRequest:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+            format: uuid
+      additionalProperties: false
+    ScreeningAgentConfigDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ScreeningAgentConfigDto'
+      additionalProperties: false
+    AgentInstructionStatusUpdate:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        isEnabled:
+          type: boolean
+      additionalProperties: false
+    ScreeningAgentConfigDto:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+        name:
+          type:
+          - string
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+        agentType:
+          type:
+          - string
+          - 'null'
+        configurationType:
+          type:
+          - string
+          - 'null'
+        agentAutonomy:
+          type:
+          - string
+          - 'null'
+        enabled:
+          type: boolean
+        journeyTypes:
+          uniqueItems: true
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        completeMaterialityAssessment:
+          type: boolean
+      additionalProperties: false
+    UpdateAgentInstructionDtoListServiceRequest:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UpdateAgentInstructionDto'
+      additionalProperties: false
+    AgentInstructionStatusUpdateListServiceRequest:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AgentInstructionStatusUpdate'
+      additionalProperties: false
+    CreateAgentInstructionDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateAgentInstructionDto'
+      additionalProperties: false
+    CreateAgentInstructionDto:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+        identifiers:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        description:
+          type:
+          - string
+          - 'null'
+        entityType:
+          type:
+          - string
+          - 'null'
+        resolution:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    UpdateAgentInstructionDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type:
+          - string
+          - 'null'
+        identifiers:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        description:
+          type:
+          - string
+          - 'null'
+        entityType:
+          type:
+          - string
+          - 'null'
+        resolution:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    AgentInstructionDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        referenceId:
+          type:
+          - string
+          - 'null'
+        name:
+          type:
+          - string
+          - 'null'
+        identifiers:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        description:
+          type:
+          - string
+          - 'null'
+        entityType:
+          type:
+          - string
+          - 'null'
+        resolution:
+          type:
+          - string
+          - 'null'
+        isEnabled:
+          type: boolean
+        isSystemDefault:
+          type: boolean
+        isDeleted:
+          type: boolean
+        isModified:
+          type: boolean
+        lastUpdatedById:
+          type:
+          - string
+          - 'null'
+        lastUpdatedAt:
+          type:
+          - string
+          - 'null'
+          description: UTC timestamp; the UI is responsible for formatting to the DD/MM/YYYY HH:mm display format.
+          format: date-time
+      additionalProperties: false
+    AgentInstructionDtoListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AgentInstructionDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header
+x-refined-from:
+- fenergo-digitalagentscommand-v1-0-openapi.json
+- fenergo-digitalagentsquery-v1-0-openapi.json
+- fenergo-screeningcommand-v2-0-openapi.json
+- fenergo-screeningcommand-v3-0-openapi.json
+- fenergo-screeningquery-v3-0-openapi.json
+- fenergo-screeningquery-v4-0-openapi.json

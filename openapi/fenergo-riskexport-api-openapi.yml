@@ -1,0 +1,266 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Risk Query Risk Export API
+  description: '**Risk Query API**:
+
+
+    Risk Query API provides endpoints in order to retrieve all configured risk related models and their versions, as well as to perform risk assessment calculations.
+
+
+    **Risk Query API provides**:
+
+
+    Risk Assessment Calculation
+
+
+    Risk Calculator Scoping Rules retrieval
+
+
+    Risk Configuration Collection and Items retrieval
+
+
+    Risk Models retrieval
+
+
+    Risk Threshold Models retrieval
+
+
+    Risk Scoping Rules retrieval'
+  version: '1.0'
+servers:
+- url: /riskquery
+security:
+- Bearer: []
+tags:
+- name: RiskExport
+paths:
+  /api/risk-export:
+    post:
+      tags:
+      - RiskExport
+      description: 'Required permissions:
+
+        Following permissions are required: RiskConfigurationAccess'
+      operationId: RiskConfigurationExport
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/RiskExportRequestDtoServiceRequest'
+          text/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/RiskExportRequestDtoServiceRequest'
+          application/*+json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/RiskExportRequestDtoServiceRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/RiskConfigurationExportDtoServiceResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiskConfigurationExportDtoServiceResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/RiskConfigurationExportDtoServiceResponse'
+        '400':
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal Server Error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+      summary: Risk configuration export
+      x-summary-source: derived
+components:
+  schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    RiskExportRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/RiskExportRequestDto'
+          description: Risk assessment generation input data
+      additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    RiskConfigurationExportDto:
+      type: object
+      properties:
+        signedUrl:
+          type:
+          - string
+          - 'null'
+        validUntil:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    RiskExportRequestDto:
+      required:
+      - riskConfigurationModelId
+      - riskModelId
+      - thresholdModelId
+      type: object
+      properties:
+        riskModelId:
+          type: string
+          description: The UiD of the selected risk model
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        riskModelVersionNumber:
+          maximum: 2147483647
+          minimum: 1
+          type: integer
+          description: The version number of the RiskModel to use
+          format: int32
+          example: 1
+        thresholdModelId:
+          type: string
+          description: The UiD of the selected threshold model
+          format: uuid
+          example: a8e4a96e-696a-4d04-89e9-faa74738fc43
+        thresholdModelVersionNumber:
+          maximum: 2147483647
+          minimum: 1
+          type: integer
+          description: The version number of the ThresholdModel to use
+          format: int32
+          example: 4
+        riskConfigurationModelId:
+          type: string
+          description: The UiD of the selected risk configuration model
+          format: uuid
+          example: 16d3c5e6-2e50-4d55-bcc8-c46d37fa3fb9
+        riskConfigurationModelVersionNumber:
+          maximum: 2147483647
+          minimum: 1
+          type: integer
+          description: The version number of the RiskConfigurationModel to use
+          format: int32
+          example: 1
+      additionalProperties: false
+      description: Risk assessment generation input data
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    RiskConfigurationExportDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/RiskConfigurationExportDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

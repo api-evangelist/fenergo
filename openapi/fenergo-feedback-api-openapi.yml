@@ -1,0 +1,376 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula DigitalAgents Command Feedback API
+  description: '**DigitalAgents Command API**:
+
+
+    DigitalAgents Command API provides endpoints in order to retrieve all related models and their versions.
+
+
+    **DigitalAgents Command API provides**:'
+  version: '1.0'
+servers:
+- url: /digitalagentscommand
+security:
+- Bearer: []
+tags:
+- name: Feedback
+paths:
+  /api/feedback/clusters/{agentName}/{agentExecutionId}/promote-to-golden-dataset:
+    post:
+      tags:
+      - Feedback
+      summary: Promotes a feedback cluster to the golden dataset by writing a draft test case…
+      description: 'Required permissions:
+
+        Following permissions are required: AgentConfigurationAccess'
+      operationId: PromoteFeedbackClusterToGoldenDataset
+      parameters:
+      - name: agentName
+        in: path
+        description: The name of the agent whose cluster is being promoted.
+        required: true
+        schema:
+          type: string
+      - name: agentExecutionId
+        in: path
+        description: The execution ID of the feedback cluster to promote.
+        required: true
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: The promotion payload including dataset version and quality threshold.
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/PromoteFeedbackClusterRequestServiceRequest'
+      responses:
+        '200':
+          description: Cluster promoted successfully. Returns the new golden dataset test case ID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PromoteFeedbackClusterResponseServiceResponse'
+        '400':
+          description: Request payload failed validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '500':
+          description: An unexpected error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/feedback:
+    post:
+      tags:
+      - Feedback
+      summary: Records a human feedback signal (thumbs-up or thumbs-down) for an agent…
+      description: 'Required permissions:
+
+        Following permissions are required: AgentConfigurationAccess'
+      operationId: RecordFeedback
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: The feedback payload.
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/StoreFeedbackRequestServiceRequest'
+      responses:
+        '204':
+          description: Feedback recorded successfully.
+        '400':
+          description: Request payload failed validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '500':
+          description: An unexpected error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+components:
+  schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    PromoteFeedbackClusterResponseServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/PromoteFeedbackClusterResponse'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    FeedbackType:
+      enum:
+      - Positive
+      - Negative
+      type: string
+      description: Represents a human feedback signal on an agent response.
+    StoreFeedbackRequestServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/StoreFeedbackRequest'
+      additionalProperties: false
+    StoreFeedbackRequest:
+      type: object
+      properties:
+        feedbackType:
+          allOf:
+          - $ref: '#/components/schemas/FeedbackType'
+          description: Represents a human feedback signal on an agent response.
+        agentExecutionId:
+          type:
+          - string
+          - 'null'
+        agentName:
+          type:
+          - string
+          - 'null'
+        capability:
+          type:
+          - string
+          - 'null'
+        agentClass:
+          allOf:
+          - $ref: '#/components/schemas/AgentCategory'
+          description: Represents the category of an agent in the digital agents system.
+        modelId:
+          type:
+          - string
+          - 'null'
+        inferenceProfileArn:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    PromoteFeedbackClusterResponse:
+      type: object
+      properties:
+        testCaseId:
+          type: string
+          format: uuid
+      additionalProperties: false
+    AgentCategory:
+      enum:
+      - KYC
+      - Compliance
+      - Reporting
+      - FenAI
+      - Decisioning
+      - Extraction
+      - Agentic
+      type: string
+      description: Represents the category of an agent in the digital agents system.
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    PromoteFeedbackClusterRequestServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/PromoteFeedbackClusterRequest'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    PromoteFeedbackClusterRequest:
+      type: object
+      properties:
+        datasetVersion:
+          type:
+          - string
+          - 'null'
+        minQualityScoreThreshold:
+          type: number
+          format: double
+        description:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

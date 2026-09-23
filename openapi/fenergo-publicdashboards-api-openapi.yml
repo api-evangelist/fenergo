@@ -1,0 +1,204 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Digital Agents Query Public Dashboards API
+  description: '**DigitalAgents Query API**:
+
+
+    DigitalAgents Query API provides methods to access data related to agents and statistics associated with their work.
+
+
+    **DigitalAgents Query API provides**:
+
+
+    The ability to query metrics related to digital agents work.'
+  version: '1.0'
+servers:
+- url: /digitalagentsquery
+security:
+- Bearer: []
+tags:
+- name: PublicDashboards
+paths:
+  /api/publicdashboards:
+    get:
+      tags:
+      - PublicDashboards
+      summary: Get the list of publicly available dashboards for the current tenant
+      description: 'Required permissions:
+
+        Following permissions are required: ReportingAccess'
+      operationId: GetPublicDashboards
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Successfully retrieved public dashboards.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicDashboardsIndexDtoServiceResponse'
+        '400':
+          description: One or more validation errors occurred
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.1
+                title: One or more validation errors occurred
+                detail: Name is required
+                status: 400
+                errorCode: VALIDATION_ERROR
+                validationErrors:
+                - propertyName: Name
+                  errorMessage: Name is required
+                  attemptedValue: ''
+                  validatorType: NotEmptyValidator
+        '500':
+          description: An exception occurred while processing the request.
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.3
+                title: Access to resource is forbidden.
+                detail: 'Access denied. Following permissions are required: Permission1, Permission2'
+                status: 403
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: https://datatracker.ietf.org/doc/html/rfc7231#section-6.5.9
+                title: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+                detail: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                status: 410
+                errorCode: OBSOLETE_ENDPOINT
+components:
+  schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ProblemDetails:
+      type: object
+      properties:
+        type:
+          type:
+          - string
+          - 'null'
+        title:
+          type:
+          - string
+          - 'null'
+        status:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        detail:
+          type:
+          - string
+          - 'null'
+        instance:
+          type:
+          - string
+          - 'null'
+      additionalProperties: {}
+    PublicDashboardIndexEntryDto:
+      type: object
+      properties:
+        dashboardId:
+          type:
+          - string
+          - 'null'
+        ownerUserId:
+          type:
+          - string
+          - 'null'
+        ownerDisplayName:
+          type:
+          - string
+          - 'null'
+        name:
+          type:
+          - string
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+        personaId:
+          type:
+          - string
+          - 'null'
+        tabColour:
+          type:
+          - string
+          - 'null'
+        widgetCount:
+          type: integer
+          format: int32
+        updatedAt:
+          type:
+          - string
+          - 'null'
+        visualOptions: {}
+      additionalProperties: false
+    PublicDashboardsIndexDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/PublicDashboardsIndexDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    PublicDashboardsIndexDto:
+      type: object
+      properties:
+        entries:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/PublicDashboardIndexEntryDto'
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

@@ -1,0 +1,1988 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Audit Query AuditEvent v3 API
+  description: The Audit Query API enables the retrieval of audit event data related to various activities within the system.
+  version: '3.0'
+servers:
+- url: /auditquery
+security:
+- Bearer: []
+tags:
+- name: AuditEvent v3
+paths:
+  /api/v3/auditevent/resources:
+    post:
+      tags:
+      - AuditEvent v3
+      summary: Get Audit Events for a specific list of resource IDs in a paged manner
+      description: 'This method accepts a list of resource IDs and a pager object.
+
+
+        The resource IDs indicate the records that are being sought, while the pager specifies the number of records to return in each page, the starting index of the first result, sorting field, and order (either "Ascending" or "Descending").
+
+
+        The resource IDs can refer to entities, journeys, or any other record type.
+
+
+        The method then returns a list of audit events for each resource ID and a field indicating the total number of results.
+
+
+        Required permissions:
+
+        Following permissions are required: AuditAccessAndSearch'
+      operationId: GetAuditEventsForMultipleResourcesV3
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Resource request object
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/ResourceQueryPagedDtoServiceRequest'
+      responses:
+        '200':
+          description: Success. The relevant audit events are returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetForMultipleResourcesResultDtoServiceResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '500':
+          description: Internal server error
+        '413':
+          description: Payload Too Large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: The amount of data requested is too large. Please request smaller data set.
+                  type: Error
+                  errorCode: PAYLOAD_TOO_LARGE
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/v3/auditevent/searchterm:
+    post:
+      tags:
+      - AuditEvent v3
+      summary: Get Audit Events for a specific search term in a paged manner
+      description: 'This method takes in a list of resource IDs, a search term and a pager object.
+
+
+        The resource IDs represent the identifiers of entities, journeys, or any other type of record, while the search term filters these records by either specifying a field name or a field value.
+
+        The pager specifies the number of records to return in each page, the starting index of the first result, sorting field, and order (either "Ascending" or "Descending").
+
+
+        The method then returns a list of audit events for each resource ID and a field indicating the total number of results.
+
+
+        Required permissions:
+
+        Following permissions are required: AuditAccessAndSearch'
+      operationId: SearchByTermV3
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Search term paged request.
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/SearchTermPagedDtoServiceRequest'
+      responses:
+        '200':
+          description: Success. The relevant audit events are returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetBySearchTermResultDtoServiceResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '500':
+          description: Internal server error
+        '413':
+          description: Payload Too Large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: The amount of data requested is too large. Please request smaller data set.
+                  type: Error
+                  errorCode: PAYLOAD_TOO_LARGE
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/v3/auditevent/groupedEntityEvents:
+    post:
+      tags:
+      - AuditEvent v3
+      summary: Get Entity Specific Audit Events, grouped and summarized by the fields that…
+      description: 'This method accepts a list of Entity specific resource IDs and returns a list of Audit Events grouped and summarized by field name.
+
+
+        Each returned record contains the original value as well as the last updated value.
+
+
+        To retrieve a complete list of updated fields for an Entity, include all entity draft IDs in the request.
+
+
+        Required permissions:
+
+        Following permissions are required: AuditAccessAndSearch'
+      operationId: GetGroupedEntityAuditEventsV3
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Grouped entity events request object
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/GetGroupedEntityAuditEventsDtoServiceRequest'
+      responses:
+        '200':
+          description: Success. The relevant audit events are returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupedEntityAuditEventsResultDtoServiceResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '500':
+          description: Internal server error
+        '413':
+          description: Payload Too Large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: The amount of data requested is too large. Please request smaller data set.
+                  type: Error
+                  errorCode: PAYLOAD_TOO_LARGE
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/v3/auditevent/entityeventdetails:
+    post:
+      tags:
+      - AuditEvent v3
+      summary: Get all Audit Events specific to an Entity, for a particular field
+      description: 'This method accepts a list of resource IDs specific to an Entity and a field name, and returns relevant Audit Events filtered by the specified field in a paginated format.
+
+
+        To retrieve a complete list of Audit Event entries for the specified field, make sure to include both the Entity ID and all its related Entity Draft IDs in your request.
+
+
+        Required permissions:
+
+        Following permissions are required: AuditAccessAndSearch'
+      operationId: GetEntityAuditEventsByFieldNameV3
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Entity Audit Events request.
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/EntityEventDetailQueryPagedDtoServiceRequest'
+      responses:
+        '200':
+          description: Success. The list of audit events is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityEventDetailResultDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '413':
+          description: Payload Too Large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: The amount of data requested is too large. Please request smaller data set.
+                  type: Error
+                  errorCode: PAYLOAD_TOO_LARGE
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/v3/auditevent/screeningEvents:
+    post:
+      tags:
+      - AuditEvent v3
+      summary: Get Audit Events related to Screening for a group of Journey IDs in a paged…
+      description: 'This method accepts a list of Journey IDs and returns relevant Audit Events related to the screening tasks within those journeys.
+
+
+        It''s advisable to send a single Journey ID at a time.
+
+
+        Required permissions:
+
+        Following permissions are required: AuditAccessAndSearch'
+      operationId: GetScreeningAuditEventsV3
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Paged request.
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/ScreeningAuditEventsRequestDtoServiceRequest'
+      responses:
+        '200':
+          description: Success. The list of audit events is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScreeningAuditEventsResultDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '413':
+          description: Payload Too Large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: The amount of data requested is too large. Please request smaller data set.
+                  type: Error
+                  errorCode: PAYLOAD_TOO_LARGE
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/v3/auditevent/journeyEvents:
+    post:
+      tags:
+      - AuditEvent v3
+      summary: Get Audit Events related to a Journey in a paged manner
+      description: 'This method accepts a list of Journey IDs and returns relevant Audit Events related to those Journeys
+
+
+        It''s advisable to send a single Journey ID at a time.
+
+
+        Required permissions:
+
+        Following permissions are required: AuditAccessAndSearch'
+      operationId: GetJourneyAuditEventsV3
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Paged request.
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/GetJourneyAuditEventsRequestDtoServiceRequest'
+      responses:
+        '200':
+          description: Success. The list of audit events is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetJourneyAuditEventsResultDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '413':
+          description: Payload Too Large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: The amount of data requested is too large. Please request smaller data set.
+                  type: Error
+                  errorCode: PAYLOAD_TOO_LARGE
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+  /api/v3/auditevent/financialAnalysisEvents:
+    post:
+      tags:
+      - AuditEvent v3
+      summary: Get Financial Analysis audit events
+      description: 'Returns list of financial analysis audit events.
+
+
+        Required permissions:
+
+        Following permissions are required: AuditAccessAndSearch'
+      operationId: GetFinancialAnalysisAuditEventsV3
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Request.
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/GetFinancialAnalysisAuditEventsRequestDtoServiceRequest'
+      responses:
+        '200':
+          description: Success. The list of audit events is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetFinancialAnalysisAuditEventsResultDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+components:
+  schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ScreeningAuditMatchDto:
+      type: object
+      properties:
+        matchId:
+          type:
+          - string
+          - 'null'
+          description: Match Id
+        entityName:
+          type:
+          - string
+          - 'null'
+          description: Entity name
+        provider:
+          type:
+          - string
+          - 'null'
+          description: Provider name
+        entityType:
+          type:
+          - string
+          - 'null'
+          description: Entity type
+        dateOfBirth:
+          type:
+          - string
+          - 'null'
+          description: Entity Date of Birth
+        nationality:
+          type:
+          - string
+          - 'null'
+          description: Nationality
+        alias:
+          type:
+          - string
+          - 'null'
+          description: Alias
+        fieldsChanges:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AuditFieldChangeDto'
+          description: List of field changes history
+      additionalProperties: false
+      description: DTO representing screening audit match
+    GetFinancialAnalysisAuditEventsResultDto:
+      type: object
+      properties:
+        items:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/BaseAuditEvent'
+          description: Items for the current page.
+        totalItems:
+          type: integer
+          description: Total count of items.
+          format: int64
+          example: 1
+      additionalProperties: false
+    ResourceQueryPagedDto:
+      allOf:
+      - $ref: '#/components/schemas/ResourceQueryDto'
+      - type: object
+        properties:
+          pager:
+            allOf:
+            - $ref: '#/components/schemas/PagerDto'
+            description: A pager object to specify pagination parameters
+            example:
+              size: 10
+              from: 0
+              sortBy: date
+              sortOrder: Descending
+          excludeEventTypes:
+            type:
+            - array
+            - 'null'
+            items:
+              type: string
+            description: 'Optional list of event types to exclude from results.
+
+              When provided, audit events whose `eventType` matches any value in this list are omitted.'
+        additionalProperties: false
+      description: The request object that contains a list of resource IDs for which to fetch Audit Events. Includes a pager object.
+    AuditMetadata:
+      type: object
+      properties:
+        stages:
+          type:
+          - array
+          - 'null'
+          items:
+            type: object
+            additionalProperties: {}
+        userName:
+          type:
+          - string
+          - 'null'
+        tenantName:
+          type:
+          - string
+          - 'null'
+        journeyName:
+          type:
+          - string
+          - 'null'
+        eventName:
+          type:
+          - string
+          - 'null'
+        taskReassignedUserBefore:
+          type:
+          - string
+          - 'null'
+        taskReassignedUserAfter:
+          type:
+          - string
+          - 'null'
+        taskReassignedTeamNameBefore:
+          type:
+          - string
+          - 'null'
+        taskReassignedTeamNameAfter:
+          type:
+          - string
+          - 'null'
+        reopenedByNameBefore:
+          type:
+          - string
+          - 'null'
+        reopenedByNameAfter:
+          type:
+          - string
+          - 'null'
+        completedByNameBefore:
+          type:
+          - string
+          - 'null'
+        completedByNameAfter:
+          type:
+          - string
+          - 'null'
+        taskUnpausedByNameBefore:
+          type:
+          - string
+          - 'null'
+        taskUnpausedByNameAfter:
+          type:
+          - string
+          - 'null'
+        taskPausedByNameBefore:
+          type:
+          - string
+          - 'null'
+        taskPausedByNameAfter:
+          type:
+          - string
+          - 'null'
+        dateIsoFormat:
+          type:
+          - string
+          - 'null'
+        journeyOwnerReassignedTeamNameBefore:
+          type:
+          - string
+          - 'null'
+        journeyOwnerReassignedTeamNameAfter:
+          type:
+          - string
+          - 'null'
+        journeyOwnerReassignedUserBefore:
+          type:
+          - string
+          - 'null'
+        journeyOwnerReassignedUserAfter:
+          type:
+          - string
+          - 'null'
+        originatedEventId:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    GetGroupedEntityAuditEventsDto:
+      allOf:
+      - $ref: '#/components/schemas/ResourceQueryDto'
+      - required:
+        - aggregator
+        type: object
+        properties:
+          pager:
+            allOf:
+            - $ref: '#/components/schemas/AggregatePagerDto'
+            description: Pager details
+            example:
+              from: 0
+              size: 10
+              sortOrder: Descending
+          aggregator:
+            allOf:
+            - $ref: '#/components/schemas/EntityEventAggregatorDto'
+            description: Specifies how to aggregate the Entity Audit Data. (Mandatory)
+          searchProperties:
+            allOf:
+            - $ref: '#/components/schemas/SearchFieldsDto'
+            description: (Optional) Search object to filter returned fields
+          excludeDrafts:
+            type: boolean
+            description: Exclude draft values from search results
+          excludeSystemFields:
+            type: boolean
+            description: Exclude system fields from search results
+        additionalProperties: false
+      description: The request object that contains a list of entity IDs for which to fetch entity specific audit events.
+    JourneyAuditFieldHistoryDto:
+      type: object
+      properties:
+        fieldName:
+          type:
+          - string
+          - 'null'
+          description: Field name
+          example: TeamId
+        newValue:
+          type:
+          - string
+          - 'null'
+          description: New field value
+          example: Halley
+        oldValue:
+          type:
+          - string
+          - 'null'
+          description: Old field value
+          example: Andromeda
+        changedBy:
+          type:
+          - string
+          - 'null'
+          description: Changed by user
+          example: John@example.com
+        updatedOn:
+          type:
+          - string
+          - 'null'
+          description: Updated date
+          example: '2012-04-23T18:25:43.511Z'
+        fieldType:
+          type:
+          - string
+          - 'null'
+          description: Field type (Single, Collection, Custom)
+          example: Single
+        subFields:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/JourneyAuditSubFieldDto'
+          description: Sub-fields for Collection/Custom types
+      additionalProperties: false
+      description: Response DTO representing history of fields changes
+    EntityEventAggregatorDto:
+      required:
+      - fieldName
+      - sortings
+      type: object
+      properties:
+        fieldName:
+          minLength: 1
+          type: string
+          description: Specifies the property to Group By
+          example: fieldName
+        sortings:
+          minItems: 1
+          type: array
+          items:
+            $ref: '#/components/schemas/SortDto'
+          description: List of field properties to sort by, including the sort order.
+          example:
+          - sortFieldName: resourceType
+            sortOrder: Ascending
+          - sortFieldName: lastUpdated
+            sortOrder: Descending
+      additionalProperties: false
+    EntityEventDetailQueryPagedDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/EntityEventDetailQueryPagedDto'
+          description: The request object that contains a list of resource IDs, a pager object and other filters for which to fetch Audit Events.
+      additionalProperties: false
+    EntityEventDetailModel:
+      type: object
+      properties:
+        fieldName:
+          type:
+          - string
+          - 'null'
+          description: Entity field name
+          example: lastName
+        valueType:
+          type:
+          - string
+          - 'null'
+          description: Entity field verified or draft value type
+          example: Verified
+        valueBefore:
+          type:
+          - string
+          - 'null'
+          description: Entity field before value
+          example: Smith
+        valueAfter:
+          type:
+          - string
+          - 'null'
+          description: Entity field after value
+          example: Tucker
+        dataGroupValues:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AuditFieldChangeDto'
+          description: Entity Before and After values for data group type fields
+        changedBy:
+          type:
+          - string
+          - 'null'
+          description: Entity field changed by user name
+          example: test.user@fenergo.com
+        updatedOn:
+          type:
+          - string
+          - 'null'
+          description: Entity field updated on date
+          example: '2021-10-10'
+        journeyReferenceId:
+          type:
+          - string
+          - 'null'
+          description: Journey id where filed was modified
+          example: f9bb19a8-07e7-4306-94c9-a00988eadb0d
+        journeyName:
+          type:
+          - string
+          - 'null'
+          description: Journey name where filed was modified
+          example: Screening Individual
+        fieldType:
+          type:
+          - string
+          - 'null'
+          description: Entity field type
+          example: Single
+        isSensitive:
+          type: boolean
+          description: Determines if the field holds sensitive PII data
+      additionalProperties: false
+      description: Response DTO representing get by field name entity details result
+    GetJourneyAuditEventsRequestDtoServiceRequest:
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetJourneyAuditEventsRequestDto'
+          description: The request object that contains a list of JourneyIDs, a pager object and other filters for which to fetch Journey related Audit Events
+      additionalProperties: false
+    PagerDto:
+      type: object
+      properties:
+        size:
+          type: integer
+          format: int32
+          exclusiveMinimum: 0
+        from:
+          minimum: 0
+          type: integer
+          format: int32
+        sortBy:
+          type:
+          - string
+          - 'null'
+        sortOrder:
+          allOf:
+          - $ref: '#/components/schemas/SortOrder'
+      additionalProperties: false
+    SortDto:
+      required:
+      - sortFieldName
+      type: object
+      properties:
+        sortFieldName:
+          minLength: 1
+          type: string
+        sortOrder:
+          allOf:
+          - $ref: '#/components/schemas/SortOrder'
+      additionalProperties: false
+    ScreeningAuditEventsDto:
+      type: object
+      properties:
+        legalEntityName:
+          type:
+          - string
+          - 'null'
+          description: Name of screened legal entity
+        eventType:
+          type:
+          - string
+          - 'null'
+          description: Type of an event
+        lastUpdatedBy:
+          type:
+          - string
+          - 'null'
+          description: Last updated by username
+          example: john.doye@example.com
+        lastUpdated:
+          type:
+          - string
+          - 'null'
+          description: Last Updated date
+        matches:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ScreeningAuditMatchDto'
+          description: List of matches
+        materialityChanges:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AuditFieldChangeDto'
+          description: 'Field-level changes for an entity-level materiality assessment update. Populated when
+
+            the source audit event is a `BatchEntityUpdated` that mutated
+
+            `EntityMaterialityAssessment`. Mutually exclusive with Fenergo.Nebula.Audit.Query.Application.Dto.ScreeningAuditEventsDto.Matches in
+
+            practice — a single screening audit row represents either match-level changes or
+
+            materiality changes, not both.'
+        impactedClientsChanges:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ImpactedClientChangeDto'
+          description: 'Per-client OGS follow-up decisions. Populated when the source audit event is a
+
+            `BatchEntityUpdated` on an OGS batch that recorded impacted-client decisions.
+
+            Each entry is a snapshot of the after-state for one client.'
+        documentChanges:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AuditFieldChangeDto'
+          description: 'Field-level changes for entity document lifecycle events
+
+            (`EntityDocumentAdded`, `EntityDocumentRemoved`, `EntityDocumentStatusUpdated`,
+
+            `EntityDocumentArchived`, `EntityDocumentUnarchived`).
+
+            Null / empty for all other event types.'
+        matchDocumentChanges:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AuditFieldChangeDto'
+          description: 'Field-level changes for match document lifecycle events
+
+            (`MatchDocumentAdded`, `MatchDocumentRemoved`, `MatchDocumentStatusUpdated`,
+
+            `MatchDocumentArchived`, `MatchDocumentUnarchived`).
+
+            Null / empty for all other event types.'
+      additionalProperties: false
+      description: Response DTO representing screening audit events
+    SearchTermDto:
+      allOf:
+      - $ref: '#/components/schemas/ResourceQueryDto'
+      - type: object
+        properties:
+          searchTerm:
+            type:
+            - string
+            - 'null'
+            description: A search term that can be used to further filter your results. Can be any data found in your Audit Events, e.g. 'EntityCreated','Ireland' etc.
+            example: EntityCreated
+        additionalProperties: false
+      description: A search request object comprising a list of resource IDs and a search term to retrieve results.
+    JourneyAuditEventsDto:
+      type: object
+      properties:
+        resourceType:
+          type:
+          - string
+          - 'null'
+          description: Resource type discriminator (e.g. JourneyInstance, EntityDraft, JourneyData)
+          example: JourneyInstance
+        eventId:
+          type:
+          - string
+          - 'null'
+          description: Event id
+          example: f9bb19a8-07e7-4306-94c9-a00988eadb0f
+        eventName:
+          type:
+          - string
+          - 'null'
+          description: Event name
+          example: Journey Instance Created
+        taskName:
+          type:
+          - string
+          - 'null'
+          description: Task name
+          example: Basic Details
+        taskId:
+          type:
+          - string
+          - 'null'
+          description: Task id
+          example: f9bb19a8-07e7-4306-94c9-a00988eadb0f
+        stageName:
+          type:
+          - string
+          - 'null'
+          description: Stage name
+          example: KYC
+        stageId:
+          type:
+          - string
+          - 'null'
+          description: Stage id
+          example: f9bb19a8-07e7-4306-94c9-a00988eadb0f
+        lastUpdated:
+          type:
+          - string
+          - 'null'
+          description: Last updated date
+          example: '2012-04-23T18:25:43.511Z'
+        journeyId:
+          type:
+          - string
+          - 'null'
+          description: Journey id
+          example: f9bb19a8-07e7-4306-94c9-a00988eadb0f
+        fieldsHistory:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/JourneyAuditFieldHistoryDto'
+          description: History of fields changes.
+      additionalProperties: false
+      description: Response DTO representing journey audit event dto
+    GetFinancialAnalysisAuditEventsRequestDtoServiceRequest:
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetFinancialAnalysisAuditEventsRequestDto'
+          description: Request DTO to get financial analysis audit events within paged list of resources
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    JourneyAuditSubFieldDto:
+      type: object
+      properties:
+        fieldName:
+          type:
+          - string
+          - 'null'
+          description: Sub-field name
+          example: Address Line 1
+        newValue:
+          type:
+          - string
+          - 'null'
+          description: New value
+        oldValue:
+          type:
+          - string
+          - 'null'
+          description: Old value
+      additionalProperties: false
+      description: Sub-field within a Collection or Custom property
+    GroupedEntityAuditEventsResultDto:
+      type: object
+      properties:
+        items:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/EntityAuditEventDto'
+          description: Items for the current page.
+        totalItems:
+          type: integer
+          description: Total count of items.
+          format: int64
+          example: 1
+      additionalProperties: false
+    GetJourneyAuditEventsRequestDto:
+      allOf:
+      - $ref: '#/components/schemas/ResourceQueryDto'
+      - type: object
+        properties:
+          pager:
+            allOf:
+            - $ref: '#/components/schemas/PagerDto'
+            description: A pager object to specify pagination parameters
+            example:
+              size: 10
+              from: 0
+              sortBy: date
+              sortOrder: Descending
+          searchPhrase:
+            type:
+            - string
+            - 'null'
+            description: Phrase you want to search by
+        additionalProperties: false
+      description: The request object that contains a list of JourneyIDs, a pager object and other filters for which to fetch Journey related Audit Events
+    GetBySearchTermResultDto:
+      type: object
+      properties:
+        items:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AuditEventDto'
+          description: Items for the current page.
+        totalItems:
+          type: integer
+          description: Total count of items.
+          format: int64
+          example: 1
+      additionalProperties: false
+      description: Response DTO representing get by search result
+    ResourceQueryDto:
+      type: object
+      properties:
+        ids:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: The list of resource IDs for which to fetch Audit Events.
+          example:
+          - 7304b842-769f-4c22-9499-7c5d069ffb8f
+          - ad6cf1b0-0925-4d65-98e7-a4e7901cce46
+          - abb80516-3914-4366-a061-2f10e018fdeb
+      additionalProperties: false
+      description: The request object that contains a list of resource IDs for which to fetch Audit Events.
+    ImpactedClientChangeDto:
+      type: object
+      properties:
+        legalEntityId:
+          type:
+          - string
+          - 'null'
+          description: Legal entity ID of the impacted client.
+          example: 5db5a437-6854-4f07-a3f8-0d0c0cef0629
+        isSelected:
+          type: boolean
+          description: 'Whether the compliance officer selected this client for a follow-up On-Demand Screening
+
+            (ODS) journey.'
+          example: true
+        reasonForNoFollowUp:
+          type:
+          - string
+          - 'null'
+          description: 'Reason provided when the client was not selected for follow-up. Null when
+
+            Fenergo.Nebula.Audit.Query.Application.Dto.Screening.ImpactedClientChangeDto.IsSelected is `true`.'
+          example: Client is out of jurisdiction
+      additionalProperties: false
+      description: 'Per-client snapshot of an OGS impacted-client decision in the audit panel. One entry per
+
+        client that was assessed in the source `BatchEntityUpdated` event.'
+    SearchFieldsDto:
+      required:
+      - searchPhrase
+      type: object
+      properties:
+        searchPhrase:
+          minLength: 1
+          type: string
+          description: Phrase with which you want to search
+          example: FirstName
+        fieldName:
+          type:
+          - string
+          - 'null'
+          description: Field name by which you want to search. Search field must be one from AuditDetailedESModel
+          example: fieldName
+      additionalProperties: false
+      description: Request object used for searching in fields
+    EntityEventDetailQueryDto:
+      allOf:
+      - $ref: '#/components/schemas/ResourceQueryDto'
+      - type: object
+        properties:
+          fieldName:
+            type:
+            - string
+            - 'null'
+            description: Field name by which you want to search. Search field must be one from AuditDetailedESModel
+            example: lastName
+          excludeDrafts:
+            type: boolean
+            description: Exclude draft values from search results
+          excludeSystemFields:
+            type: boolean
+            description: Exclude system fields from search results
+        additionalProperties: false
+      description: The request object that contains a list of resource IDs and other filters for which to fetch Audit Events.
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AuditEventDto:
+      type: object
+      properties:
+        eventId:
+          type:
+          - string
+          - 'null'
+          description: Event id
+          example: f9bb19a8-07e7-4306-94c9-a00988eadb0f
+        resourceId:
+          type:
+          - string
+          - 'null'
+          description: The unique identifier of the Resource that was updated
+          example: 31a7bd8b-753f-404e-a78b-ee84de61822e
+        resourceType:
+          type:
+          - string
+          - 'null'
+          description: The type of resource this Audit Event relates to
+          example: Entity
+        entityReferenceId:
+          type:
+          - string
+          - 'null'
+          description: The underlying EntityId that is linked to this Audit Event
+          example: 4514d583-7114-4b49-a17e-b424495b9cc7
+        journeyReferenceId:
+          type:
+          - string
+          - 'null'
+          description: The underlying JourneyInstanceId that is linked to this Audit Event
+          example: 5e61d26e-9f2f-4c03-99e7-bc823b55fefc
+        eventType:
+          type:
+          - string
+          - 'null'
+          description: The type of event that initiated this Audit Event
+          example: EntityCreated
+        eventSubType:
+          type:
+          - string
+          - 'null'
+          description: The event sub type
+          example: Created
+        beforeValue:
+          type:
+          - object
+          - 'null'
+          additionalProperties: {}
+          description: Contains the complete object in its previous state.
+        afterValue:
+          type:
+          - object
+          - 'null'
+          additionalProperties: {}
+          description: Contains the complete object in its current state.
+          example:
+            Properties:
+              Nationality:
+                Value: Spain
+                Type: Single
+                Discriminator: Single
+        version:
+          type:
+          - string
+          - 'null'
+          description: Version
+          example: '0'
+        date:
+          type:
+          - string
+          - 'null'
+          description: Date the Audit Event was logged
+          format: date-time
+        userId:
+          type:
+          - string
+          - 'null'
+          description: The Id of the user that affected the change
+          example: f3bdd83c-ac18-42a3-a904-ca3fefda3e5f
+        clientId:
+          type:
+          - string
+          - 'null'
+          description: The underlying client identifier / system that affected the change
+          example: 111e07b2-915f-483f-8815-61e2e05b1351
+        service:
+          type:
+          - string
+          - 'null'
+          description: Identifies the service that affected the change
+          example: EntityData
+        tenant:
+          type:
+          - string
+          - 'null'
+          description: Tenant id
+          example: 449de204-e9d2-4204-918d-1c3b86e91aa6
+        correlationId:
+          type:
+          - string
+          - 'null'
+          description: Correlation id
+          example: 78ae8b73-24bc-4175-91a0-1326388a7de9
+        metadata:
+          allOf:
+          - $ref: '#/components/schemas/AuditMetadata'
+        eventMetadata:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type:
+            - string
+            - 'null'
+          description: Additional optional Audit Event Metadata
+      additionalProperties: false
+      description: An object representing a single Audit Event
+    GetForMultipleResourcesResultDto:
+      type: object
+      properties:
+        items:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AuditEventDto'
+          description: Items for the current page.
+        totalItems:
+          type: integer
+          description: Total count of items.
+          format: int64
+          example: 1
+      additionalProperties: false
+      description: Response DTO representing get by search result
+    GroupedEntityAuditEventsResultDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GroupedEntityAuditEventsResultDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AggregatePagerDto:
+      type: object
+      properties:
+        size:
+          type: integer
+          format: int32
+          exclusiveMinimum: 0
+        from:
+          minimum: 0
+          type: integer
+          format: int32
+        sortBy:
+          type:
+          - string
+          - 'null'
+        sortOrder:
+          allOf:
+          - $ref: '#/components/schemas/SortOrder'
+      additionalProperties: false
+    EntityEventDetailResultDto:
+      type: object
+      properties:
+        items:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/EntityEventDetailModel'
+          description: Items for the current page.
+        totalItems:
+          type: integer
+          description: Total count of items.
+          format: int64
+          example: 1
+      additionalProperties: false
+      description: Response DTO representing get by field name entity detail query
+    GetJourneyAuditEventsResultDto:
+      type: object
+      properties:
+        items:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/JourneyAuditEventsDto'
+          description: Items for the current page.
+        totalItems:
+          type: integer
+          description: Total count of items.
+          format: int64
+          example: 1
+      additionalProperties: false
+    SearchTermPagedDtoServiceRequest:
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/SearchTermPagedDto'
+          description: A search request object comprising a list of resource IDs, a search term, and a pager object to retrieve results.
+      additionalProperties: false
+    SearchTermPagedDto:
+      allOf:
+      - $ref: '#/components/schemas/SearchTermDto'
+      - type: object
+        properties:
+          pager:
+            allOf:
+            - $ref: '#/components/schemas/PagerDto'
+            description: A pager object to specify pagination parameters
+            example:
+              size: 10
+              from: 0
+              sortBy: date
+              sortOrder: Descending
+        additionalProperties: false
+      description: A search request object comprising a list of resource IDs, a search term, and a pager object to retrieve results.
+    AuditFieldChangeDto:
+      type: object
+      properties:
+        fieldName:
+          type:
+          - string
+          - 'null'
+          description: Field name
+        oldValue:
+          type:
+          - string
+          - 'null'
+          description: Field old value
+        newValue:
+          type:
+          - string
+          - 'null'
+          description: Field new value
+        itemOrdinal:
+          type:
+          - integer
+          - 'null'
+          description: '1-based position of the collection item this change belongs to. Only set when the
+
+            owning data group holds more than one item, so consumers can tell same-named
+
+            columns apart without exposing the internal item identifier.'
+          format: int32
+      additionalProperties: false
+      description: DTO representing screening audit match field change
+    BaseAuditEvent:
+      type: object
+      properties:
+        eventType:
+          type:
+          - string
+          - 'null'
+          description: Type of an event
+        changeType:
+          type:
+          - string
+          - 'null'
+          description: Type of an event
+        changedBy:
+          type:
+          - string
+          - 'null'
+          description: Last updated by username
+          example: john.doye@example.com
+        updatedOn:
+          type:
+          - string
+          - 'null'
+          description: Last Updated date
+        financialItemsChanges:
+          type:
+          - array
+          - 'null'
+          items: {}
+          description: Summary of before and after values of the corresponding Financial Items
+      additionalProperties: false
+    SortOrder:
+      enum:
+      - Ascending
+      - Descending
+      type: string
+    EntityEventDetailResultDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/EntityEventDetailResultDto'
+          description: Response DTO representing get by field name entity detail query
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ScreeningAuditEventsResultDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ScreeningAuditEventsResultDto'
+          description: Response DTO representing get by resource ids results
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ScreeningAuditEventsResultDto:
+      type: object
+      properties:
+        items:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ScreeningAuditEventsDto'
+          description: Items for the current page.
+        totalItems:
+          type: integer
+          description: Total count of items.
+          format: int64
+          example: 1
+      additionalProperties: false
+      description: Response DTO representing get by resource ids results
+    GetFinancialAnalysisAuditEventsResultDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetFinancialAnalysisAuditEventsResultDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    EntityAuditEventDto:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+          description: Unique id
+          example: 9f14cdfb-845e-4ec6-803b-17f6b7477b36_lastName
+        resourceId:
+          type:
+          - string
+          - 'null'
+          description: Resource id
+          example: 0bdfeb2c-8b19-4203-a70b-c28b73f392f0
+        resourceType:
+          type:
+          - string
+          - 'null'
+          description: Resource Type
+          example: Entity
+        fieldName:
+          type:
+          - string
+          - 'null'
+          description: Field name
+          example: fieldName
+        fieldBeforeValue:
+          type:
+          - string
+          - 'null'
+          description: Field name value before
+          example: Smith
+        fieldAfterValue:
+          type:
+          - string
+          - 'null'
+          description: Field name value after
+          example: Tucker
+        fieldType:
+          type:
+          - string
+          - 'null'
+          description: Field type
+          example: Single
+        lastUpdated:
+          type:
+          - string
+          - 'null'
+        lastUpdatedBy:
+          type:
+          - string
+          - 'null'
+          description: Last updated by username
+          example: Entity data
+        journeyName:
+          type:
+          - string
+          - 'null'
+          description: Journey name
+          example: Screening Individual
+        isSensitive:
+          type: boolean
+          description: Determines if the field holds sensitive PII data
+      additionalProperties: false
+      description: Response DTO representing entity audit event DTO
+    ScreeningAuditEventsRequestDto:
+      allOf:
+      - $ref: '#/components/schemas/ResourceQueryDto'
+      - type: object
+        properties:
+          pager:
+            allOf:
+            - $ref: '#/components/schemas/PagerDto'
+            description: A pager object to specify pagination parameters
+            example:
+              size: 10
+              from: 0
+              sortBy: date
+              sortOrder: Descending
+          searchProperties:
+            allOf:
+            - $ref: '#/components/schemas/SearchFieldsDto'
+            description: (Optional) Search object to filter returned fields
+        additionalProperties: false
+      description: The request object that contains a list of Journey IDs, and a pager object and other filters for which to fetch Screening related Audit Events
+    ResourceQueryPagedDtoServiceRequest:
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ResourceQueryPagedDto'
+          description: The request object that contains a list of resource IDs for which to fetch Audit Events. Includes a pager object.
+      additionalProperties: false
+    GetFinancialAnalysisAuditEventsRequestDto:
+      allOf:
+      - $ref: '#/components/schemas/SearchTermPagedDto'
+      - type: object
+        additionalProperties: false
+      description: Request DTO to get financial analysis audit events within paged list of resources
+    GetGroupedEntityAuditEventsDtoServiceRequest:
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetGroupedEntityAuditEventsDto'
+          description: The request object that contains a list of entity IDs for which to fetch entity specific audit events.
+      additionalProperties: false
+    GetJourneyAuditEventsResultDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetJourneyAuditEventsResultDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    GetBySearchTermResultDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetBySearchTermResultDto'
+          description: Response DTO representing get by search result
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    GetForMultipleResourcesResultDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetForMultipleResourcesResultDto'
+          description: Response DTO representing get by search result
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ScreeningAuditEventsRequestDtoServiceRequest:
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ScreeningAuditEventsRequestDto'
+          description: The request object that contains a list of Journey IDs, and a pager object and other filters for which to fetch Screening related Audit Events
+      additionalProperties: false
+    EntityEventDetailQueryPagedDto:
+      allOf:
+      - $ref: '#/components/schemas/EntityEventDetailQueryDto'
+      - type: object
+        properties:
+          pager:
+            allOf:
+            - $ref: '#/components/schemas/PagerDto'
+            description: A pager object to specify pagination parameters
+            example:
+              size: 10
+              from: 0
+              sortBy: date
+              sortOrder: Descending
+        additionalProperties: false
+      description: The request object that contains a list of resource IDs, a pager object and other filters for which to fetch Audit Events.
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

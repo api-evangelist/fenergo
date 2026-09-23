@@ -1,0 +1,172 @@
+openapi: 3.2.0
+info:
+  title: Data Export Insights API
+  description: The Export API is used to create a CSV insights report.
+  version: 3.0.0
+servers:
+- url: https://api.fenergox.com/tm/aml
+security:
+- exportToken:
+  - export_all
+tags:
+- name: Insights
+paths:
+  /api/v1/insights/download:
+    post:
+      summary: Request to create a report for insights data
+      description: Request to create insights report based on a time range.
+      operationId: insights_download_api_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InsightsDownloadRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsightsDownloadPostResponse'
+        '400':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      tags:
+      - Insights
+  /api/v1/insights/download/{job_id}:
+    get:
+      summary: Return the status of the job
+      description: Returns the status of the job. If the job is completed then it also includes the credentials to download the file.
+      operationId: insights_download_api_get
+      parameters:
+      - required: true
+        schema:
+          title: Job Id
+          type: string
+        name: job_id
+        in: path
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsightsDownloadResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      tags:
+      - Insights
+components:
+  schemas:
+    HTTPValidationError:
+      title: HTTPValidationError
+      additionalProperties: true
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    InsightsDownloadRequest:
+      title: InsightsDownloadRequest
+      required:
+      - start_date
+      - end_date
+      type: object
+      properties:
+        start_date:
+          title: start date in timestamp
+          type: int64
+          default: 1686607200000
+        end_date:
+          title: end date in timestamp
+          type: integer
+          default: 1686607200000
+    InsightsDownloadPostResponse:
+      title: InsightsDownloadPostResponse
+      type: object
+      properties:
+        job_id:
+          title: Job Id
+          type: string
+        status:
+          title: Job Status
+          type: string
+          default: In_Progress
+    InsightsDownloadResponse:
+      title: InsightsDownloadResponse
+      type: object
+      properties:
+        job_id:
+          title: Job Id
+          type: string
+        status:
+          title: Job Status
+          type: string
+          enum:
+          - In_Progress
+          - Completed
+        file_credentials:
+          type: object
+          $ref: '#/components/schemas/FileCredentials'
+    ValidationError:
+      title: ValidationError
+      required:
+      - loc
+      - msg
+      - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+    FileCredentials:
+      title: FileCredentials
+      type: object
+      properties:
+        location:
+          title: Location
+          type: string
+        access_key_id:
+          title: Access Key Id
+          type: string
+        secret_access_key:
+          title: Secret Access Key
+          type: string
+        session_token:
+          title: Session token
+          type: string
+        bucket_name:
+          title: Bucket Name
+          type: string
+        region:
+          title: Region
+          type: string
+      description: Defines a FileCredentials structure and types.
+  securitySchemes:
+    exportToken:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://your_api_endpoint/oauth2/token
+          scopes:
+            export_all: all exports operations

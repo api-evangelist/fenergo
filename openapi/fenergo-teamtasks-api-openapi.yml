@@ -1,0 +1,194 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Dashboards Query (PENDING DEPRECATION) Team…
+  description: '!!! IMPORTANT NOTICE:
+
+    This API is pending deprecation and will be removed on 28.02.2026. For more information visit: https://docs.fenergox.com/notice-of-change/2025/07/22/legacy-dashboards-deprecation
+
+
+    Dashboards Query API is part of FenX eco-system to manage Dashboards. All the operations require valid access token obtained from Identity service.'
+  version: 1.0.0
+servers:
+- url: /dashboardsquery
+security:
+- Bearer: []
+tags:
+- name: TeamTasks
+paths:
+  /api/team-tasks:
+    post:
+      tags:
+      - TeamTasks
+      summary: Get team tasks dashboard
+      description: 'Required permissions:
+
+        Following permissions are required: TeamDashboardAccess'
+      operationId: GetTeamTasksDashboard
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: List of team IDs
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StringListServiceRequest'
+      responses:
+        '413':
+          description: Payload Too Large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: The amount of data requested is too large. Please request smaller data set.
+                  type: Error
+                  errorCode: PAYLOAD_TOO_LARGE
+        '200':
+          description: Success. Team tasks dashboard is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamTasksCountSummaryItemDtoIEnumerableServiceResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+components:
+  schemas:
+    TeamTasksCountSummaryItemDto:
+      type: object
+      properties:
+        teamName:
+          type:
+          - string
+          - 'null'
+        notStartedCount:
+          type: integer
+          format: int32
+        startedCount:
+          type: integer
+          format: int32
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+          description: The message
+          example: Success
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
+      additionalProperties: false
+      description: The message associated to the service response
+    TeamTasksCountSummaryItemDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/TeamTasksCountSummaryItemDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data:
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    StringListServiceRequest:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

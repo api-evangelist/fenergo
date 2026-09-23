@@ -1,0 +1,336 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Dashboards Query (PENDING DEPRECATION) Task…
+  description: '!!! IMPORTANT NOTICE:
+
+    This API is pending deprecation and will be removed on 28.02.2026. For more information visit: https://docs.fenergox.com/notice-of-change/2025/07/22/legacy-dashboards-deprecation
+
+
+    Dashboards Query API is part of FenX eco-system to manage Dashboards. All the operations require valid access token obtained from Identity service.'
+  version: 1.0.0
+servers:
+- url: /dashboardsquery
+security:
+- Bearer: []
+tags:
+- name: TaskQueueDashboard
+paths:
+  /api/task-queue/{userId}:
+    get:
+      tags:
+      - TaskQueueDashboard
+      summary: Get tasks assigned to the specified user
+      description: 'Required permissions:
+
+        At least one of the following permissions is required: TeamDashboardAccess, TaskDashboardAccess'
+      operationId: GetUserTasksDashboard
+      parameters:
+      - name: userId
+        in: path
+        description: ''
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '413':
+          description: Payload Too Large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: The amount of data requested is too large. Please request smaller data set.
+                  type: Error
+                  errorCode: PAYLOAD_TOO_LARGE
+        '200':
+          description: Success. Journey dashboard for specified criteria is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskQueueDtoListServiceResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+  /api/task-queue/favourites/{userId}:
+    get:
+      tags:
+      - TaskQueueDashboard
+      summary: Get favourite tasks assigned to the specified user
+      description: 'Required permissions:
+
+        Following permissions are required: TeamDashboardAccess'
+      operationId: GetFavouriteTasksDashboard
+      parameters:
+      - name: userId
+        in: path
+        description: ''
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '413':
+          description: Payload Too Large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: The amount of data requested is too large. Please request smaller data set.
+                  type: Error
+                  errorCode: PAYLOAD_TOO_LARGE
+        '200':
+          description: Success. Journey dashboard for specified criteria is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskQueueDtoListServiceResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+components:
+  schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+          description: The message
+          example: Success
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
+      additionalProperties: false
+      description: The message associated to the service response
+    TaskQueueDtoListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/TaskQueueDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    ServiceLevelAgreementDto:
+      type: object
+      properties:
+        committedHours:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        dueDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        approachingDueHours:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        approachingDueDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        status:
+          type:
+          - string
+          - 'null'
+        duePeriod:
+          type:
+          - string
+          - 'null'
+        pausedPeriodSec:
+          type:
+          - integer
+          - 'null'
+          format: int32
+      additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data:
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    TaskQueueDto:
+      type: object
+      properties:
+        clientName:
+          type:
+          - string
+          - 'null'
+        taskId:
+          type:
+          - string
+          - 'null'
+        taskName:
+          type:
+          - string
+          - 'null'
+        taskStatus:
+          type:
+          - string
+          - 'null'
+        journeyId:
+          type:
+          - string
+          - 'null'
+        assignedTeamId:
+          type:
+          - string
+          - 'null'
+        daysOpen:
+          type:
+          - string
+          - 'null'
+        slaPeriod:
+          type:
+          - string
+          - 'null'
+        entityId:
+          type:
+          - string
+          - 'null'
+        isFavourite:
+          type: boolean
+        startedDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        pausedDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        unpausedDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        serviceLevelAgreement:
+          $ref: '#/components/schemas/ServiceLevelAgreementDto'
+        isConditional:
+          type: boolean
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

@@ -1,0 +1,319 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Product Policy Query Get Merged Product…
+  description: Product Policy Query API is part of FenX eco-system to query for Product Requirement Sets, Requirements, Data Groups and Data Group Fields Instances. All the operations require valid access token obtained from Identity service.
+  version: '1.0'
+servers:
+- url: /productpolicyquery
+security:
+- Bearer: []
+tags:
+- name: GetMergedProductRequirementSetsDataFields
+paths:
+  /api/product-requirement-set/merged-data-fields:
+    post:
+      tags:
+      - GetMergedProductRequirementSetsDataFields
+      summary: Gets summary of data fields from all jurisdictions merged by property name
+      description: 'Required permissions:
+
+        At least one of the following permissions is required: ProductConfigurationSearch, ProductConfigurationAccess'
+      operationId: GetMergedProductRequirementSetsDataFields
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Parameters used for filtering retrived requirements
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/GetMergedProductRequirementSetsDataFieldsRequestDtoServiceRequest'
+      responses:
+        '200':
+          description: Success. Data fields summary grouped by property name is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetMergedProductRequirementSetsDataFieldsResponseDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+components:
+  schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    GetMergedProductRequirementSetsDataFieldsResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetMergedProductRequirementSetsDataFieldsResponseDto'
+          description: Response DTO representing data fields summary grouped by property name
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    GetMergedProductRequirementSetsDataFieldsRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetMergedProductRequirementSetsDataFieldsRequestDto'
+          description: Request DTO representing parameters to filter returned data fields
+      additionalProperties: false
+    GetMergedProductRequirementSetsDataFieldsRequestDto:
+      type: object
+      properties:
+        targetEntity:
+          type:
+          - string
+          - 'null'
+          description: Requirement target entity
+          example: Product
+        entityType:
+          type:
+          - string
+          - 'null'
+          description: Requirement entity type
+          example: Product
+        categories:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Requirement business categories
+          example:
+          - Basic Details
+        forceMergeFromRequirementSetVersionId:
+          type:
+          - string
+          - 'null'
+          description: Id of requirement set version (can be draft) forced to merge with other latest published requirement sets
+          format: uuid
+          example: 228313c6-91e6-4b05-a537-5a1ab906418f
+      additionalProperties: false
+      description: Request DTO representing parameters to filter returned data fields
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    DataFieldSummaryDto:
+      type: object
+      properties:
+        propertyType:
+          type:
+          - string
+          - 'null'
+          description: Property type
+          example: text
+        propertyTypeId:
+          type:
+          - string
+          - 'null'
+          description: Property type id
+          format: uuid
+          example: ab92ecbc-bd77-494b-acad-3d2fb0b8136c
+        linkChildFieldPropertyName:
+          type:
+          - string
+          - 'null'
+          description: Linked child field property name
+          example: productCategory
+        linkedParentFieldPropertyName:
+          type:
+          - string
+          - 'null'
+          description: Linked Parent field property name
+          example: productCategory
+        externalSearchApiProviderId:
+          type:
+          - string
+          - 'null'
+          description: External search api provider id
+          format: uuid
+          example: ab92ecbc-bd77-494b-acad-3d2fb0b8136c
+        name:
+          type:
+          - string
+          - 'null'
+          description: Requirement name
+          example: First Name
+        mergedNames:
+          type:
+          - string
+          - 'null'
+          description: Merged requirement names in case of different duplicates
+          example: First Name | Name
+          deprecated: true
+        names:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Requirement names in case of different duplicates
+          example:
+          - First Name
+          - Name
+        description:
+          type:
+          - string
+          - 'null'
+          description: Requirement description
+          example: This is the client first name
+        categories:
+          uniqueItems: true
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: All requirement business categories for property
+          example:
+          - Basic Details
+        jurisdictions:
+          uniqueItems: true
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: All requirement jurisdictions for property
+          example:
+          - Global
+      additionalProperties: false
+      description: Response DTO representing data field summary
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    GetMergedProductRequirementSetsDataFieldsResponseDto:
+      type: object
+      properties:
+        dataFieldsByPropertyName:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/DataFieldSummaryDto'
+          description: Data fields summary grouped by property name
+      additionalProperties: false
+      description: Response DTO representing data fields summary grouped by property name
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

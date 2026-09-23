@@ -1,0 +1,399 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Journey Configuration API
+  version: '1.0'
+  description: 'Operations tagged JourneyConfiguration across 2 of this provider''s published API definitions: fenergo-journeycommand-v1-0-openapi.json, fenergo-journeyquery-v1-0-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- url: /journeycommand
+- url: /journeyquery
+security:
+- Bearer: []
+tags:
+- name: JourneyConfiguration
+paths:
+  /api/configuration:
+    put:
+      tags:
+      - JourneyConfiguration
+      summary: Update journey configuration
+      description: 'Updates the configuration
+
+
+        Required permissions:
+
+        Following permissions are required: JourneyConfigurationEdit'
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      - name: X-CORRELATION-ID
+        in: header
+        description: The UiD of the correlation id
+        schema:
+          type: string
+        example: fee5b5f5-b220-4fef-ba38-bf802b98d74d
+      requestBody:
+        description: Update configuration request
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/UpdateJourneyConfigurationRequestDtoServiceRequest'
+              description: Service request data
+      responses:
+        '202':
+          description: Success. Configuration updated
+        '409':
+          description: Conflict saving changes in expected version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: There are conflicts that cannot be resolved automatically, get latest and apply your changes
+                  type: Error
+                  errorCode: CONFLICT
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+      operationId: putApiConfiguration
+      x-operation-id-source: derived
+    get:
+      tags:
+      - JourneyConfiguration
+      summary: Get configuration
+      description: Returns configuration.
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Success. The configuration options
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetJourneyConfigurationResponseDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorModelListServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+      operationId: getApiConfiguration
+      x-operation-id-source: derived
+    servers:
+    - url: /journeycommand
+components:
+  schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+          description: The message
+          example: Success
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
+      additionalProperties: false
+      description: The message associated to the service response
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data:
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    UpdateJourneyConfigurationRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UpdateJourneyConfigurationRequestDto'
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    UpdateJourneyConfigurationRequestDto:
+      type: object
+      properties:
+        isCancellationCommentMandatory:
+          type: boolean
+          description: Flag indicating if journey cancellation comment should be enabled or disabled
+        enableSlaEventNotifications:
+          type: boolean
+          description: Flag indicating if SLA event notifications should be enabled or disabled
+        restrictTaskReopenToAssignedTeam:
+          type: boolean
+          description: Flag indicating if task reopen should be restricted to the assigned team only
+        isCancellationReasonMandatory:
+          type: boolean
+          description: Flag indicating if journey cancellation reason should be mandatory
+        isReassignCommentMandatory:
+          type: boolean
+          description: Flag indicating if reassign-task comment should be mandatory
+        isReopenReasonEnabled:
+          type:
+          - boolean
+          - 'null'
+          description: 'Flag indicating if the reopen-reason dropdown is enabled.
+
+            Nullable to avoid silent resets from older callers that don''t send this field.'
+        isReopenReasonMandatory:
+          type:
+          - boolean
+          - 'null'
+          description: 'Flag indicating if the reopen-reason dropdown selection is mandatory.
+
+            Nullable to avoid silent resets from older callers that don''t send this field.'
+        validateExistingReferenceDataValues:
+          type:
+          - boolean
+          - 'null'
+          description: 'Flag indicating if existing reference data values should be validated on load.
+
+            Nullable to avoid silent resets from older callers that don''t send this field.'
+      additionalProperties: false
+      description: Request DTO representing configuration data to update
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+          description: Name of the property
+          example: data
+        errorMessage:
+          type:
+          - string
+          - 'null'
+          description: User friendly error message
+          example: Data is required
+        attemptedValue:
+          description: Invalid value
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Internal error code
+          example: NotNullValidator
+      additionalProperties: false
+      description: Represents the details of validation error
+    GetJourneyConfigurationResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetJourneyConfigurationResponseDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    GetJourneyConfigurationResponseDto:
+      type: object
+      properties:
+        isCancellationCommentMandatory:
+          type: boolean
+          description: Flag indicating if inheritance is enabled or disabled
+        enableSlaEventNotifications:
+          type: boolean
+          description: Flag indicating if SLA event notifications are enabled or disabled
+        restrictTaskReopenToAssignedTeam:
+          type: boolean
+          description: Flag indicating if task reopening is restricted to users in the task's assigned team
+        isCancellationReasonMandatory:
+          type: boolean
+          description: Flag indicating if journey cancellation reason is mandatory
+        isReassignCommentMandatory:
+          type: boolean
+          description: Flag indicating if reassign-task comment is mandatory
+        isReopenReasonEnabled:
+          type: boolean
+          description: Flag indicating if the reopen-reason dropdown is enabled
+        isReopenReasonMandatory:
+          type: boolean
+          description: Flag indicating if the reopen-reason dropdown selection is mandatory
+        validateExistingReferenceDataValues:
+          type: boolean
+          description: Flag indicating if existing reference data values should be validated on load
+      additionalProperties: false
+      description: Request DTO representing current related party access layers inheritance configuration data
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header
+x-refined-from:
+- fenergo-journeycommand-v1-0-openapi.json
+- fenergo-journeyquery-v1-0-openapi.json

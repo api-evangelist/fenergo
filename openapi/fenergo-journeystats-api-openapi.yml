@@ -1,0 +1,238 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Nebula Dashboards Query (PENDING DEPRECATION)…
+  description: '!!! IMPORTANT NOTICE:
+
+    This API is pending deprecation and will be removed on 28.02.2026. For more information visit: https://docs.fenergox.com/notice-of-change/2025/07/22/legacy-dashboards-deprecation
+
+
+    Dashboards Query API is part of FenX eco-system to manage Dashboards. All the operations require valid access token obtained from Identity service.'
+  version: 1.0.0
+servers:
+- url: /dashboardsquery
+security:
+- Bearer: []
+tags:
+- name: JourneyStats
+paths:
+  /api/journey-stats:
+    post:
+      tags:
+      - JourneyStats
+      summary: Get journey stats like number of journeys completed or average journey time
+      description: 'Required permissions:
+
+        Following permissions are required: TeamDashboardAccess'
+      operationId: GetJourneyStatsDashboard
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: 'Request object that contains a list of teams and date range for which the data is requested. Available range values: Daily, RollingSeven, RollingThirty'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JourneyStatsDashboardRequestDtoServiceRequest'
+      responses:
+        '413':
+          description: Payload Too Large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: The amount of data requested is too large. Please request smaller data set.
+                  type: Error
+                  errorCode: PAYLOAD_TOO_LARGE
+        '200':
+          description: Success. Stats dashboard for specified criteria is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JourneyStatsDashboardResponseDtoServiceResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+components:
+  schemas:
+    DashboardRange:
+      enum:
+      - Daily
+      - RollingSeven
+      - RollingThirty
+      type: string
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+          description: The message
+          example: Success
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
+      additionalProperties: false
+      description: The message associated to the service response
+    JourneyStatsDashboardResponseDto:
+      type: object
+      properties:
+        journeysStartedCountPoints:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ChartPoint'
+        journeysCompletedPoints:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ChartPoint'
+        journeyAverageTimePoints:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ChartPoint'
+        journeysStartedDiff:
+          type: number
+          format: double
+        journeysCompletedDiff:
+          type: number
+          format: double
+        journeysStartedToday:
+          type: integer
+          format: int32
+        journeysCompletedToday:
+          type: integer
+          format: int32
+        journeyAverageTimeToday:
+          type: number
+          format: double
+        journeyAverageTimeDiff:
+          type: number
+          format: double
+      additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    JourneyStatsDashboardRequestDto:
+      type: object
+      properties:
+        teamIds:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        dashboardRange:
+          $ref: '#/components/schemas/DashboardRange'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data:
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    JourneyStatsDashboardResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/JourneyStatsDashboardResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    ChartPoint:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date-time
+        value:
+          type: number
+          format: double
+      additionalProperties: false
+    JourneyStatsDashboardRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/JourneyStatsDashboardRequestDto'
+      additionalProperties: false
+      description: Service request data
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header

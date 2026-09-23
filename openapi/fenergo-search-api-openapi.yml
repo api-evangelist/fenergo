@@ -1,0 +1,623 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Search API
+  version: '1.0'
+  description: 'Operations tagged Search across 2 of this provider''s published API definitions: fenergo-externaldatacommand-v1-0-openapi.json, fenergo-externaldataquery-v1-0-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- url: /externaldatacommand
+- url: /externaldataquery
+security:
+- Bearer: []
+tags:
+- name: Search
+paths:
+  /api/search:
+    post:
+      tags:
+      - Search
+      summary: Create new search request
+      description: 'This endpoint is obsolete and will be terminated on 2027-01-12. Use /externaldatabff/api/processes/{contextType}/search instead.
+
+
+        This method will create a search request that will trigger asynchronous requests to different external data providers.
+
+
+        The method will return the search request ID created in the system.
+
+        This search request ID can be used in the ExternalData Query Api to check the status of the request and to get the screening results.
+
+
+        Required permissions:
+
+        Following permissions are required: ExternalDataAccess
+
+
+        Required permissions:
+
+        Following permissions are required: ExternalDataAccess'
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: The search request
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/SearchRequestDtoServiceRequest'
+              description: Service request data
+      responses:
+        '202':
+          description: Success. Search request created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchRequestCreatedDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+      deprecated: true
+      operationId: postApiSearch
+      x-operation-id-source: derived
+    servers:
+    - url: /externaldatacommand
+  /api/search/{id}:
+    get:
+      tags:
+      - Search
+      summary: Get search results by search request id
+      description: 'This method will return search results by given search request ID
+
+
+        Required permissions:
+
+        Following permissions are required: ExternalDataAccess
+
+
+        Required permissions:
+
+        Following permissions are required: ExternalDataAccess'
+      operationId: GetSearchResultsById
+      parameters:
+      - name: id
+        in: path
+        description: The ID of search request
+        required: true
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Fenergo.Nebula.ExternalData.Query.Application.Dto.SearchResultsDto class containing search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResultsDtoServiceResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Search Results for given Search Request ID does not exist
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /externaldataquery
+  /api/search/journey/{journeyId}:
+    get:
+      tags:
+      - Search
+      summary: Get search results by journey id
+      description: 'This method will return last search results by given Journey Id
+
+
+        Required permissions:
+
+        Following permissions are required: ExternalDataAccess
+
+
+        Required permissions:
+
+        Following permissions are required: ExternalDataAccess'
+      operationId: GetSearchResultsByJourneyId
+      parameters:
+      - name: journeyId
+        in: path
+        description: Journey ID from which the request originated from
+        required: true
+        schema:
+          type: string
+      - name: fromInternalProviders
+        in: query
+        description: If true, then returns data from internal providers only. If false, returns data from external providers only.
+        schema:
+          type: boolean
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Instance of Fenergo.Nebula.ExternalData.Query.Application.Dto.SearchResultsDto class containing search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResultsDtoServiceResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Search Results for given Journey ID does not exist
+                  type: Error
+                  errorCode: Error Code
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '500':
+          description: Internal server exception. Please, contact your provider.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: Internal server exception. Please, contact your provider.
+                  type: Error
+                  errorCode: INTERNAL_SERVER_ERROR
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /externaldataquery
+components:
+  schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+          description: The message
+          example: Success
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
+      additionalProperties: false
+      description: The message associated to the service response
+    SearchRequestCreatedDto:
+      type: object
+      properties:
+        searchRequestId:
+          type:
+          - string
+          - 'null'
+          description: ID of the created Search request
+          example: 495669fb-e3c5-4538-8457-4dcbcb720578
+      additionalProperties: false
+      description: Response DTO representing the created Search request
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    SearchRequestDto:
+      required:
+      - searchCriteria
+      type: object
+      properties:
+        searchCriteria:
+          description: Search Criteria that we want to search for
+          example:
+            legalEntityName: Fenergo
+            countryOfIncorporation: Ireland
+        journeyId:
+          type:
+          - string
+          - 'null'
+          description: Id of the Journey instance that will be connected to this Search request
+          example: c0c7b87d-1fc3-4127-b87d-c5b76a13d159
+      additionalProperties: false
+      description: Request DTO to create a Search request
+    SearchRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/SearchRequestDto'
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data:
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    SearchRequestCreatedDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/SearchRequestCreatedDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    SearchResultsDto:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+          description: Id of the Search results
+          format: uuid
+          example: 63717ef9-9601-4218-be6d-6fc843cb4644
+        journeyId:
+          type:
+          - string
+          - 'null'
+          description: Id of the Journey from which the request originated from
+          example: c0c7b87d-1fc3-4127-b87d-c5b76a13d159
+        status:
+          type:
+          - string
+          - 'null'
+          description: Status of Search results
+          example: PublishInProgress
+        providerIds:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of Provider Ids that were called
+        searchCriteria:
+          description: Search Criteria on which the search was based on
+        ongoingMonitoring:
+          type: boolean
+          description: If subscribed to ongoing monitoring
+          example: true
+        ongoingMonitoringStatus:
+          type:
+          - string
+          - 'null'
+          description: Ongoing Monitoring Subscription Status
+        ongoingMonitoringData:
+          description: Ongoing Monitoring Subscription Data
+        searchResponses:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/SearchResponseDto'
+          description: List of each Search response returned from each provider
+        entityType:
+          enum:
+          - Company
+          - Individual
+          type:
+          - string
+          - 'null'
+          description: Entity Type for which search has been executed
+          example: Company
+      additionalProperties: false
+      description: Class to represent Search results
+    SearchResponseResultDto:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+        entityType:
+          type:
+          - string
+          - 'null'
+        fullName:
+          type:
+          - string
+          - 'null'
+        matchHint:
+          type:
+          - string
+          - 'null'
+        matchScore:
+          type:
+          - number
+          - 'null'
+          format: double
+        data: {}
+      additionalProperties: false
+    SearchResultsDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/SearchResultsDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    ErrorDetailsDto:
+      type: object
+      properties:
+        source:
+          type:
+          - string
+          - 'null'
+          description: Source from where the error comes from
+          example: Invoker
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Internal error code
+          example: E231
+        message:
+          type:
+          - string
+          - 'null'
+          description: Error message
+          example: 'Returned error code 403: Forbidden'
+      additionalProperties: false
+      description: Details of error that might occur
+    SearchResponseDto:
+      type: object
+      properties:
+        providerId:
+          type:
+          - string
+          - 'null'
+          description: Id of the Provider from which Search response is from
+          example: f47b539d-ffb8-4cf2-bf68-1af79e3b0040
+        status:
+          type:
+          - string
+          - 'null'
+          description: Status of the Search response
+          example: PublishInProgress
+        errorDetails:
+          allOf:
+          - $ref: '#/components/schemas/ErrorDetailsDto'
+          description: Error Details
+        results:
+          type:
+          - array
+          - 'null'
+          items: {}
+          description: List of results from this Search operation
+          deprecated: true
+        records:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/SearchResponseResultDto'
+          description: List of records from this Search operation
+        mappedSearchCriteria:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of search criteria which were mapped
+      additionalProperties: false
+      description: Class to represent Search response from specific Provider
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header
+x-refined-from:
+- fenergo-externaldatacommand-v1-0-openapi.json
+- fenergo-externaldataquery-v1-0-openapi.json

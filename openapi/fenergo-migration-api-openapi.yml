@@ -1,0 +1,3542 @@
+openapi: 3.2.0
+info:
+  title: Fenergo Migration API
+  version: '1.0'
+  description: 'Operations tagged Migration across 3 of this provider''s published API definitions: fenergo-datamigrationcommand-v1-0-openapi.json, fenergo-datamigrationcommand-v2-0-openapi.json, fenergo-datamigrationquery-v1-0-openapi.json. Each path carries the servers of the definition it was published in.'
+servers:
+- url: /datamigrationcommand
+- url: /datamigrationquery
+security:
+- Bearer: []
+tags:
+- name: Migration
+paths:
+  /api/migration:
+    post:
+      tags:
+      - Migration
+      summary: Creates a migration instance that holds and control the data flow
+      description: 'Migration instances are the starting point for any migration. After this instance is created, data can be attached to it and pushed to the supported domains.
+
+
+        Returns the migration instance Id to be used by the rest of the commands.
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: CreateMigration
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Create migration request
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CreateMigrationRequestServiceRequest'
+      responses:
+        '202':
+          description: Id of the migration created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationcommand
+  /api/migration/{id}/start:
+    put:
+      tags:
+      - Migration
+      summary: Starts a migration
+      description: 'Starts a migration. It requires that the files have been already added to the migration using /add-file and that the migration instance has finished running preparation tasks.
+
+
+        Returns the migration instance Id to be used by the rest of the commands.
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: StartMigration
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the migration to start
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '202':
+          description: The Id of the migration started
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationcommand
+  /api/migration/{id}/startAssociation:
+    put:
+      tags:
+      - Migration
+      summary: Starts only an association migration
+      description: 'Starts only an association migration.
+
+
+        It requires that the source files have been already attached to the migration using /add-file, the migration instance has finished running preparation tasks and any entity related with the association is part of the current migration or previous one.
+
+
+        Returns the migration instance Id to be used by the rest of the commands.
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: StartAssociationMigration
+      parameters:
+      - name: id
+        in: path
+        description: The migration Id to start
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '202':
+          description: The Id of the migration started
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationcommand
+  /api/migration/{id}/add-file:
+    put:
+      tags:
+      - Migration
+      summary: Adds a file as data source to the migration
+      description: 'The file should be in csv format.
+
+
+        It should contain a header describing the fields with the same name as in the requirements for the target type plus "alternateId" and "parentAlternateId" (this last one only for datagroups).
+
+
+        Each value/field should be surrounded by quotes and separated by commas (e.g., "value1", "value2").
+
+
+        If multiple values are to be represented in a single field, like in the lookups scenario, separate them with a pipe (e.g., "value1|value2").
+
+
+        Returns the migration instance Id to be used by the rest of the commands.
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: AddFileToDataMigration
+      parameters:
+      - name: id
+        in: path
+        description: The migration id to start
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - Data.File
+              - Data.TableName
+              type: object
+              properties:
+                Data.File:
+                  type: string
+                  description: File
+                  format: binary
+                Data.TableName:
+                  type: string
+                  description: Table name what the file has information
+            encoding:
+              Data.File:
+                style: form
+              Data.TableName:
+                style: form
+      responses:
+        '202':
+          description: The Id of the migration the file was added to
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationcommand
+  /api/migration/{id}/{tableName}:
+    delete:
+      tags:
+      - Migration
+      summary: Deletes a file previously added to a migration instance
+      description: 'Allows to delete files that have not been yet processed by the migration.
+
+
+        Returns the migration instance Id to be used by the rest of the commands.
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: DeleteMigrationFile
+      parameters:
+      - name: id
+        in: path
+        description: The id of the migration
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: tableName
+        in: path
+        description: Table name related with the file
+        required: true
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '202':
+          description: Document deleted successfully
+        '400':
+          description: Document not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationcommand
+  /api/migration/{id}/migration-records-file-signed-url:
+    put:
+      tags:
+      - Migration
+      summary: Generates a signed url for the migration records csv file
+      description: 'If the file has not been generated yet, the generation gets triggered, which adds a new task to the migration (generate-migration-records-file) and update its status to completed when the file has been generated.
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: GenerateMigrationRecordsFileSignedUrl
+      parameters:
+      - name: id
+        in: path
+        description: The id of the migration
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '202':
+          description: Signed Url generated correctly
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+        '400':
+          description: Request malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '412':
+          description: Precondition Failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationcommand
+  /api/record-reference-ingestion:
+    post:
+      tags:
+      - Migration
+      summary: Creates an ingestion process that allows users to create or overwrite record…
+      description: 'Using the response pre-signed url, please add a csv format file. The file should contain the following headers: ''tableName'', ''alternateId'' and ''fenxId''.
+
+
+        The options for tableName are "Company", "Individual", "Entity Group", "Product" or "Association".
+
+
+        This endpoint bypasses original DataMigration restrictions and should be used with caution.
+
+
+        The tenant id is mandatory and should be included as the header X-TENANT-ID.
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: CreateRecordReferenceIngestion
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Ingestion process created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateRecordReferenceIngestionResultDto'
+        '400':
+          description: Bad request. The request has missing/invalid values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationcommand
+  /api/record-reference-ingestion/{id}/execution:
+    post:
+      tags:
+      - Migration
+      summary: Create an execution for the ingestion process that will start immediately and…
+      description: 'The ingestion execution will take a snapshot of uploaded file in the moment request the execution.
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: CreateRecordReferenceIngestionExecution
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the record-reference-ingestion process returned provided when requesting pre-signed url.
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '202':
+          description: Ingestion process execution accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '409':
+          description: Conflict saving changes in expected version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: There are conflicts that cannot be resolved automatically, get latest and apply your changes
+                  type: Error
+                  errorCode: CONFLICT
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    get:
+      tags:
+      - Migration
+      summary: Gets the record reference ingestion execution information
+      description: 'The tenant id is mandatory and should be included as the header X-TENANT-ID.
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: GetRecordReferenceIngestionExecution
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Successful request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetProcessExecutionResultDto'
+        '400':
+          description: Bad request. The request has missing/invalid values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not found. Could not find the resource.
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal server error.
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationcommand
+  /api/jurisdiction-evaluation-execution:
+    post:
+      tags:
+      - Migration
+      summary: Create an execution for jurisdiction evaluation
+      description: 'Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: CreateJurisdictionEvaluationWithExecutionHandler
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CreateJurisdictionEvaluationExecutionRequestDtoServiceRequest'
+      responses:
+        '202':
+          description: jurisdiction evaluation process execution accepted.
+        '400':
+          description: Bad request. The request has missing/invalid values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '409':
+          description: Conflict saving changes in expected version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: There are conflicts that cannot be resolved automatically, get latest and apply your changes
+                  type: Error
+                  errorCode: CONFLICT
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationcommand
+  /api/jurisdiction-evaluation/{id}/execution:
+    post:
+      tags:
+      - Migration
+      summary: Create an execution for the jurisdiction evaluation that will start immediately…
+      description: 'Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: CreateJurisdictionEvaluationExecution
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the jurisdiction-evaluation process returned provided when triggering jurisdiction evaluation
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '202':
+          description: jurisdiction evaluation execution accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '409':
+          description: Conflict saving changes in expected version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: There are conflicts that cannot be resolved automatically, get latest and apply your changes
+                  type: Error
+                  errorCode: CONFLICT
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    get:
+      tags:
+      - Migration
+      summary: Gets the evaluate jurisdictions execution information
+      description: 'The tenant id is mandatory and should be included as the header X-TENANT-ID.
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: GetJurisdictionEvaluationExecution
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Successful request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetProcessExecutionResultDto'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '403':
+          description: Forbidden access to the tenant.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not found. Could not find the resource
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationcommand
+  /api/access-layer-propagation-execution:
+    post:
+      tags:
+      - Migration
+      summary: Create an execution for Access Layer Propagation
+      description: 'Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: CreateAccessLayerPropagationWithExecutionHandler
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CreateJurisdictionEvaluationExecutionRequestDtoServiceRequest'
+      responses:
+        '202':
+          description: Access Layer propagation process execution accepted.
+        '400':
+          description: Bad request. The request has missing/invalid values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '409':
+          description: Conflict saving changes in expected version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: There are conflicts that cannot be resolved automatically, get latest and apply your changes
+                  type: Error
+                  errorCode: CONFLICT
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationcommand
+  /api/access-layer-propagation/{id}/execution:
+    post:
+      tags:
+      - Migration
+      summary: Create an execution for the Access Layer propagation that will start…
+      description: 'Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: CreateAccessLayerPropagationExecution
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the access layer propagation process returned provided when triggering access layer propagation
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '202':
+          description: Access Layer propagation execution accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '409':
+          description: Conflict saving changes in expected version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: There are conflicts that cannot be resolved automatically, get latest and apply your changes
+                  type: Error
+                  errorCode: CONFLICT
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    get:
+      tags:
+      - Migration
+      summary: Gets the Access Layer propagation execution information
+      description: 'The tenant id is mandatory and should be included as the header X-TENANT-ID.
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: GetAccessLayerPropagationExecution
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Successful request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetProcessExecutionResultDto'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '403':
+          description: Forbidden access to the tenant.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not found. Could not find the resource
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationcommand
+  /api/migration/{id}/input-files-clean-up:
+    post:
+      tags:
+      - Migration
+      summary: Deletes all the files in the migration
+      description: 'Allows to clean files added to a migration with status completed or failed.
+
+
+        Returns the migration instance Id to be used by the rest of the commands.
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: CleanUpInputFiles
+      parameters:
+      - name: id
+        in: path
+        description: The id of the migration
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CleanUpInputFilesDtoServiceRequest'
+      responses:
+        '202':
+          description: Document deleted successfully
+        '400':
+          description: Document not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationcommand
+  /api/v2/migration/{id}/add-file:
+    put:
+      tags:
+      - Migration
+      summary: Adds the information about the file data source and generate a signed url to…
+      description: 'This method adds the information about an artifact to an existing data migration which has been pre created via the create migration method.
+
+
+        The method returns the signed url to upload the file directly in the S3 bucket
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: GenerateSignedUrlToUploadFile
+      parameters:
+      - name: id
+        in: path
+        description: The data migration id to start
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: The migration upload request must contain the filename used to generate the signed url and a tablename to link to this file.
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/GenerateSignedUrlRequestServiceRequest'
+          text/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/GenerateSignedUrlRequestServiceRequest'
+          application/*+json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/GenerateSignedUrlRequestServiceRequest'
+      responses:
+        '202':
+          description: The signed url to upload the file
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationcommand
+  /api/v2/migration:
+    post:
+      tags:
+      - Migration
+      summary: Creates a migration instance that holds and control the data flow
+      description: 'Migration instances are the starting point for any migration. After this isntance is created, data can be attached to it and pushed to the supported domains.
+
+
+        Returns the migration instance Id to be used by the rest of the commands.
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: CreateMigration
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        description: Create migration request
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CreateMigrationV2RequestServiceRequest'
+      responses:
+        '202':
+          description: Id of the migration created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationcommand
+  /api/v2/migration/{id}/start:
+    put:
+      tags:
+      - Migration
+      summary: Starts a migration
+      description: 'Starts a migration. It requires that the files have been already added to the migration using /add-file and that the migration instance has finished running preparation tasks.
+
+
+        Returns the migration instance Id to be used by the rest of the commands.
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: StartMigration
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the migration to start
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '202':
+          description: The Id of the migration started
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationcommand
+  /api/v2/migration/{id}/startAssociation:
+    put:
+      tags:
+      - Migration
+      summary: Starts only an association migration
+      description: 'Starts only an association migration.
+
+
+        It requires that the source files have been already attached to the migration using /add-file, the migration instance has finished running preparation tasks and any entity related with the association is part of the current migration or previous one.
+
+
+        Returns the migration instance Id to be used by the rest of the commands.
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: StartAssociationMigration
+      parameters:
+      - name: id
+        in: path
+        description: The migration Id to start
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '202':
+          description: The Id of the migration started
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationcommand
+  /api/v2/migration/{id}/{tableName}:
+    delete:
+      tags:
+      - Migration
+      summary: Deletes a file previously added to a migration instance
+      description: 'Allows to delete files that have not been yet processed by the migration.
+
+
+        Returns the migration instance Id to be used by the rest of the commands.
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: DeleteMigrationFile
+      parameters:
+      - name: id
+        in: path
+        description: The id of the migration
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: tableName
+        in: path
+        description: Table name related with the file
+        required: true
+        schema:
+          type: string
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '202':
+          description: Document deleted successfully
+        '400':
+          description: Document not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationcommand
+  /api/v2/migration/{id}/migration-records-file-signed-url:
+    put:
+      tags:
+      - Migration
+      summary: Generates a signed url for the migration records csv file
+      description: 'If the file has not been generated yet, the generation gets triggered, which adds a new task to the migration (generate-migration-records-file) and update its status to completed when the file has been generated.
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: GenerateMigrationRecordsFileSignedUrl
+      parameters:
+      - name: id
+        in: path
+        description: The id of the migration
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '202':
+          description: Signed Url generated correctly
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+        '400':
+          description: Request malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '412':
+          description: Precondition Failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationcommand
+  /api/v2/record-reference-ingestion:
+    post:
+      tags:
+      - Migration
+      summary: Creates an ingestion process that allows users to create or overwrite record…
+      description: 'Using the response pre-signed url, please add a csv format file. The file should contain the following headers: ''tableName'', ''alternateId'' and ''fenxId''.
+
+
+        The options for tableName are "Company", "Individual", "Entity Group", "Product" or "Association".
+
+
+        This endpoint bypasses original DataMigration restrictions and should be used with caution.
+
+
+        The tenant id is mandatory and should be included as the header X-TENANT-ID.
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: CreateRecordReferenceIngestion
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Ingestion process created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateRecordReferenceIngestionResultDto'
+        '400':
+          description: Bad request. The request has missing/invalid values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationcommand
+  /api/v2/record-reference-ingestion/{id}/execution:
+    post:
+      tags:
+      - Migration
+      summary: Create an execution for the ingestion process that will start immediately and…
+      description: 'The ingestion execution will take a snapshot of uploaded file in the moment request the execution.
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: CreateRecordReferenceIngestionExecution
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the record-reference-ingestion process returned provided when requesting pre-signed url.
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '202':
+          description: Ingestion process execution accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '409':
+          description: Conflict saving changes in expected version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: There are conflicts that cannot be resolved automatically, get latest and apply your changes
+                  type: Error
+                  errorCode: CONFLICT
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationcommand
+  /api/v2/jurisdiction-evaluation-execution:
+    post:
+      tags:
+      - Migration
+      summary: Create an execution for jurisdiction evaluation
+      description: 'Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: CreateJurisdictionEvaluationWithExecutionHandler
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CreateJurisdictionEvaluationExecutionRequestDtoServiceRequest'
+      responses:
+        '202':
+          description: jurisdiction evaluation process execution accepted.
+        '400':
+          description: Bad request. The request has missing/invalid values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '409':
+          description: Conflict saving changes in expected version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: There are conflicts that cannot be resolved automatically, get latest and apply your changes
+                  type: Error
+                  errorCode: CONFLICT
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationcommand
+  /api/v2/jurisdiction-evaluation/{id}/execution:
+    post:
+      tags:
+      - Migration
+      summary: Create an execution for the jurisdiction evaluation that will start immediately…
+      description: 'Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: CreateJurisdictionEvaluationExecution
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the jurisdiction-evaluation process returned provided when triggering jurisdiction evaluation
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '202':
+          description: jurisdiction evaluation execution accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '409':
+          description: Conflict saving changes in expected version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: There are conflicts that cannot be resolved automatically, get latest and apply your changes
+                  type: Error
+                  errorCode: CONFLICT
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationcommand
+  /api/v2/access-layer-propagation-execution:
+    post:
+      tags:
+      - Migration
+      summary: Create an execution for Access Layer Propagation
+      description: 'Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: CreateAccessLayerPropagationWithExecutionHandler
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CreateJurisdictionEvaluationExecutionRequestDtoServiceRequest'
+      responses:
+        '202':
+          description: Access Layer propagation process execution accepted.
+        '400':
+          description: Bad request. The request has missing/invalid values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '409':
+          description: Conflict saving changes in expected version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: There are conflicts that cannot be resolved automatically, get latest and apply your changes
+                  type: Error
+                  errorCode: CONFLICT
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationcommand
+  /api/v2/access-layer-propagation/{id}/execution:
+    post:
+      tags:
+      - Migration
+      summary: Create an execution for the Access Layer propagation that will start…
+      description: 'Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: CreateAccessLayerPropagationExecution
+      parameters:
+      - name: id
+        in: path
+        description: The Id of the access layer propagation process returned provided when triggering access layer propagation
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '202':
+          description: Access Layer propagation execution accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '409':
+          description: Conflict saving changes in expected version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: There are conflicts that cannot be resolved automatically, get latest and apply your changes
+                  type: Error
+                  errorCode: CONFLICT
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationcommand
+  /api/v2/migration/{id}/input-files-clean-up:
+    post:
+      tags:
+      - Migration
+      summary: Deletes all the files in the migration
+      description: 'Allows to clean files added to a migration with status completed or failed.
+
+
+        Returns the migration instance Id to be used by the rest of the commands.
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: CleanUpInputFiles
+      parameters:
+      - name: id
+        in: path
+        description: The id of the migration
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/CleanUpInputFilesDtoServiceRequest'
+      responses:
+        '202':
+          description: Document deleted successfully
+        '400':
+          description: Document not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationcommand
+  /api/migration/{id}:
+    get:
+      tags:
+      - Migration
+      summary: Gets migration metadata by id
+      description: 'This method gets the metadata information around a created migration including data around each stage and task
+
+
+        The tenant id is mandatory and should be included as the header X-TENANT-ID
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: Get
+      parameters:
+      - name: id
+        in: path
+        description: Id of an existing migration
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: "An instance of the Fenergo.Nebula.DataMigration.Query.Application.Dto.DataMigrationDto class representing the migration metadata with the specified \n            id, if found; otherwise, `null`."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataMigrationDtoServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not Found
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationquery
+  /api/migration/{id}/get-artifacts:
+    get:
+      tags:
+      - Migration
+      summary: Gets an available artifacts list
+      description: 'This method gets the artifacts / files that have been upload and attached to the created data migration
+
+
+        The tenant id is mandatory and should be included as the header X-TENANT-ID
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: GetArtifacts
+      parameters:
+      - name: id
+        in: path
+        description: Id of an existing migration
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Returns a list with the artifacts names for the migration <cref name="ArtifactDto" />
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtifactDtoListServiceResponse'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not found. Could not find the resource
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationquery
+  /api/migration/{id}/get-artifact-content:
+    get:
+      tags:
+      - Migration
+      summary: Gets the artifact content
+      description: 'This method gets the content for a specified artifact
+
+
+        The tenant id is mandatory and should be included as the header X-TENANT-ID
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: GetArtifactContent
+      parameters:
+      - name: id
+        in: path
+        description: Id of an existing migration
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: type
+        in: query
+        description: Type of the artifact
+        required: true
+        schema:
+          type: string
+          example: SchemaReference or Template
+        example: SchemaReference or Template
+      - name: name
+        in: query
+        description: Name of the artifact
+        required: true
+        schema:
+          type: string
+      - name: format
+        in: query
+        description: Format of the artifact
+        required: true
+        schema:
+          type: string
+          example: csv, xlsx
+        example: csv, xlsx
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Returns the file content for the artifact provided
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not found. Could not find the resource
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationquery
+  /api/migration/{id}/get-error-file:
+    get:
+      tags:
+      - Migration
+      summary: Gets an error file
+      description: 'This method returns an error file for a specified data migration containing information on the failed records
+
+
+        The tenant id is mandatory and should be included as the header X-TENANT-ID
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: GetErrorFile
+      parameters:
+      - name: id
+        in: path
+        description: Id of an existing migration
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Returns the file content for the error file.
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not found. Could not find the resource
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationquery
+  /api/migration/{id}/get-migrated-records-file:
+    get:
+      tags:
+      - Migration
+      summary: Gets the migrated records file
+      description: 'This method gets the list of records migrated for the specified data migration
+
+
+        The tenant id is mandatory and should be included as the header X-TENANT-ID
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: GetMigratedRecords
+      parameters:
+      - name: id
+        in: path
+        description: Id of an existing migration
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Returns the file content for the migrated records.
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not found. Could not find the resource
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationquery
+  /api/migration/{id}/get-error-file-signed-url:
+    get:
+      tags:
+      - Migration
+      summary: Generates a signed url for the migration error csv file
+      description: 'This method returns a signed url pointing to the error file if it was generated
+
+
+        The tenant id is mandatory and should be included as the header X-TENANT-ID
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: GetErrorFileSignedUrl
+      parameters:
+      - name: id
+        in: path
+        description: Id of an existing migration
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Signed Url generated correctly
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not found. Could not find the resource
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: 'Access denied. Following permissions are required: Permission1, Permission2'
+                  type: Forbidden
+                  errorCode: Error Code
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationquery
+  /api/record-reference-ingestion/{id}/execution-error-detail-file:
+    get:
+      tags:
+      - Migration
+      summary: Provides access to the error detail file
+      description: 'The default format for the error detail file is jsonl.
+
+
+        The tenant id is mandatory and should be included as the header X-TENANT-ID.
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: GetRecordReferenceIngestionExecutionErrorDetailFile
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Successful request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCurrentProcessExecutionErrorDetailFileResultDto'
+        '400':
+          description: Bad request. The request has missing/invalid values.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '403':
+          description: Access to resource is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not found. Could not find the resource.
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal server error.
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationquery
+  /api/access-layer-propagation-progress/{processId}:
+    get:
+      tags:
+      - Migration
+      summary: Gets the Access Layer propagation execution progress information
+      description: 'The tenant id is mandatory and should be included as the header X-TENANT-ID.
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      parameters:
+      - name: processId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Successful request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostMigrationProgressDto'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '403':
+          description: Forbidden access to the tenant.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not found. Could not find the resource
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+      operationId: getApiAccessLayerPropagationProgressByProcessId
+      x-operation-id-source: derived
+    servers:
+    - url: /datamigrationquery
+  /api/migrations/file:
+    get:
+      tags:
+      - Migration
+      summary: Get file with all migrations in it
+      description: 'This method exports all migrations data as a file.
+
+
+        Data included in the file: Id, Status
+
+
+        Required permissions:
+
+        Following permissions are required: DataMigrationAdministrator'
+      operationId: GetMigrationsFile
+      parameters:
+      - name: X-TENANT-ID
+        in: header
+        description: The UiD of the tenant representing organization
+        required: true
+        schema:
+          type: string
+        example: b11f8be3-f29b-4959-8964-956d4af7c468
+      responses:
+        '200':
+          description: Successful request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetProcessExecutionResultDto'
+        '400':
+          description: Bad request. The request has missing/invalid values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '403':
+          description: Forbidden access to the tenant.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceResponse'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectServiceResponse'
+              example:
+                data: {}
+                messages:
+                - message: Not found. Could not find the resource
+                  type: Error
+                  errorCode: Error Code
+        '500':
+          description: Internal server error
+        '401':
+          description: User is not authorized to perform this request
+          content:
+            application/json:
+              example:
+                message: Unauthorized
+        '410':
+          description: Endpoint marked as deprecated was terminated. This response will be present only if the endpoint was marked as deprecated and has reached the sunset date. During the deprecation period, the API will include additional 'sunset' and 'deprecation' headers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringServiceResponse'
+              example:
+                data: null
+                messages:
+                - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
+                  type: Error
+                  errorCode: OBSOLETE_ENDPOINT
+    servers:
+    - url: /datamigrationquery
+components:
+  schemas:
+    CreateJurisdictionEvaluationExecutionRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateJurisdictionEvaluationExecutionRequestDto'
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CleanUpInputFilesDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CleanUpInputFilesDto'
+      additionalProperties: false
+    CreateMigrationRequest:
+      required:
+      - jurisdictions
+      type: object
+      properties:
+        jurisdictions:
+          type: array
+          items:
+            type: string
+          description: Policy Jurisdiction to generate the policy schema
+      additionalProperties: false
+      description: Request to create a migration
+    CreateRecordReferenceIngestionResultDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        preSignedUrl:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CreateJurisdictionEvaluationExecutionRequestDto:
+      type: object
+      properties:
+        dataMigrationId:
+          type: string
+          format: uuid
+      additionalProperties: false
+    CreateMigrationRequestServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateMigrationRequest'
+          description: Request to create a migration
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CleanUpInputFilesDto:
+      type: object
+      properties:
+        force:
+          type:
+          - boolean
+          - 'null'
+      additionalProperties: false
+    CreateMigrationV2Request:
+      type: object
+      properties:
+        jurisdictions:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Policy Jurisdictions to generate the policy schema
+          deprecated: true
+        jurisdiction:
+          type:
+          - string
+          - 'null'
+          description: Policy Jurisdiction to generate the policy schema
+          example: Global
+        productJurisdiction:
+          type:
+          - string
+          - 'null'
+          description: Product Policy Jurisdiction to generate the policy schema
+          example: Global
+      additionalProperties: false
+      description: Request to create a migration
+    GenerateSignedUrlRequestServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GenerateSignedUrlRequest'
+          description: Request to upload a file in a data migration
+      additionalProperties: false
+    CreateMigrationV2RequestServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateMigrationV2Request'
+          description: Request to create a migration
+      additionalProperties: false
+    GenerateSignedUrlRequest:
+      required:
+      - fileName
+      - tableName
+      type: object
+      properties:
+        fileName:
+          minLength: 1
+          type: string
+          description: File
+        tableName:
+          minLength: 1
+          type: string
+          description: Table name what the file has information
+      additionalProperties: false
+      description: Request to upload a file in a data migration
+    DataMigrationTaskDto:
+      type: object
+      properties:
+        taskName:
+          type:
+          - string
+          - 'null'
+          description: Migration task name
+          example: build-schema
+        taskStatus:
+          type:
+          - string
+          - 'null'
+          description: Migration tasks
+          example: Running
+      additionalProperties: false
+      description: Dto to represent the data migration task
+    ProblemDetails:
+      type: object
+      properties:
+        type:
+          type:
+          - string
+          - 'null'
+        title:
+          type:
+          - string
+          - 'null'
+        status:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        detail:
+          type:
+          - string
+          - 'null'
+        instance:
+          type:
+          - string
+          - 'null'
+      additionalProperties: {}
+    DataMigrationDto:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+          description: The unique identifier of the document
+          example: baee4b61-7ebb-48b2-a44b-18ce814b703b
+        createdDate:
+          type: string
+          description: Created date
+          format: date-time
+        completedDate:
+          type:
+          - string
+          - 'null'
+          description: Started date
+          format: date-time
+        status:
+          type:
+          - string
+          - 'null'
+          description: Migration status
+          example: Processing
+        entityCount:
+          type: integer
+          description: Total of entities to migrate
+          format: int32
+        migratedEntityCount:
+          type: integer
+          description: Total of migrated entities
+          format: int32
+        failedEntityCount:
+          type: integer
+          description: Total of failed entities
+          format: int32
+        productCount:
+          type: integer
+          description: Total of products to migrate
+          format: int32
+        migratedProductCount:
+          type: integer
+          description: Total of migrated products
+          format: int32
+        failedProductCount:
+          type: integer
+          description: Total of failed products
+          format: int32
+        associationCount:
+          type: integer
+          description: Total of associations to migrate
+          format: int32
+        migratedAssociationCount:
+          type: integer
+          description: Total of migrated associations
+          format: int32
+        failedAssociationCount:
+          type: integer
+          description: Total of failed associations
+          format: int32
+        inputFilesCleanedUp:
+          type: boolean
+          description: Flag to confirm that files were removed or not from S3
+        dataMigrationFilesDto:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/DataMigrationFileDto'
+          description: List of files for this data migration
+        tasks:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/DataMigrationTaskDto'
+          description: Current migration task
+        errorMessage:
+          type:
+          - string
+          - 'null'
+          description: Error messages associated with the migration
+      additionalProperties: false
+      description: Document metadata
+    GetCurrentProcessExecutionErrorDetailFileResultDto:
+      type: object
+      properties:
+        preSignedUrl:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ArtifactDtoListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ArtifactDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    GetProcessExecutionResultDto:
+      type: object
+      properties:
+        status:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    PostMigrationProgressDto:
+      type: object
+      properties:
+        isDone:
+          type: boolean
+          description: Flag informing if all events are processed
+        associationEventsPercentageProgress:
+          type: integer
+          description: Percentage progress of association events
+          format: int32
+        entityDataEventsPercentageProgress:
+          type: integer
+          description: Percentage progress of entity data events
+          format: int32
+        entityDataEventsCount:
+          type: integer
+          description: Total count of entity data events produced by post migration job
+          format: int32
+        associationEventsCount:
+          type: integer
+          description: Total count of association events produced by post migration job
+          format: int32
+      additionalProperties: false
+      description: Dto to represent percentage events completion of access layers post migration job
+    DataMigrationFileDto:
+      type: object
+      properties:
+        folderPath:
+          type:
+          - string
+          - 'null'
+          description: S3 key for this file
+          example: /tenantId/migrationId/tableName/
+        fileName:
+          type:
+          - string
+          - 'null'
+          description: File name
+        uploadedDate:
+          type: string
+          description: Uploaded date
+          format: date-time
+      additionalProperties: false
+      description: Dto to represent the file in this data migration
+    DataMigrationDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/DataMigrationDto'
+          description: Document metadata
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ArtifactDto:
+      required:
+      - format
+      - name
+      - type
+      type: object
+      properties:
+        type:
+          minLength: 1
+          type: string
+          description: Type of the artifact
+          example: SchemaReference or Template
+        name:
+          minLength: 1
+          type: string
+          description: Name of the artifact
+        format:
+          minLength: 1
+          type: string
+          description: Format of the artifact
+          example: csv, xlsx
+      additionalProperties: false
+      description: Artifact information
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: Please insert JWT with Bearer into field
+      name: Authorization
+      in: header
+x-refined-from:
+- fenergo-datamigrationcommand-v1-0-openapi.json
+- fenergo-datamigrationcommand-v2-0-openapi.json
+- fenergo-datamigrationquery-v1-0-openapi.json

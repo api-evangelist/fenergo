@@ -1497,7 +1497,7 @@ paths:
     - url: /journeyquery
 components:
   schemas:
-    ServiceLevelAgreementLightDtoConditionalValueDto:
+    ConditionalValueDto:
       required:
       - logicalOperation
       - operands
@@ -1532,229 +1532,110 @@ components:
             $ref: '#/components/schemas/ConditionDefinitionDto'
           description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
         value:
-          allOf:
-          - $ref: '#/components/schemas/ServiceLevelAgreementLightDto'
+          type:
+          - string
+          - 'null'
           description: Value that should be returned when conditions are met
+          example: Relationship Manager
         priority:
           type: integer
           description: Priority of the value in case when multiple conditional values are evaluated
           format: int32
           example: 1
           exclusiveMinimum: 0
-      additionalProperties: false
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
+        valueId:
           type:
           - string
           - 'null'
-          description: The message
-          example: Success
+          description: Value Id that should be returned when conditions are met
+          example: RM
+      additionalProperties: false
+    CloneJourneySchemaVersionDto:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+          description: Name of new journey schema
+          example: Client Onboarding
+        identifier:
+          type:
+          - string
+          - 'null'
+          description: Identifier of new journey schema
+          example: COB_COMP_1
         type:
           type:
           - string
           - 'null'
-          description: 'Type of the message
-
-            One of Info, Warning, Error, Forbidden'
-          example: Info
-        errorCode:
+          description: The type of new journey schema
+          example: Client Onboarding
+        channelType:
+          allOf:
+          - $ref: '#/components/schemas/ChannelTypeDto'
+          description: Channel type of new journey schema
+      additionalProperties: false
+      description: Request DTO representing clone journey schema data
+    Signee:
+      type: object
+      properties:
+        subject:
           type:
           - string
           - 'null'
-          description: Error Code
-          example: INTERNAL_SERVER_ERROR
+        successor:
+          allOf:
+          - $ref: '#/components/schemas/Approver'
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
       additionalProperties: false
-      description: The message associated to the service response
-    JourneyMilestoneDto:
-      required:
-      - id
-      - name
-      - stages
+      description: Defines a version Signee
+    JourneySchemaUpdatedDtoServiceResponse:
       type: object
       properties:
-        id:
-          minLength: 1
-          type: string
-          description: The UiD of the Journey Milestone
-          format: uuid
-          example: 24511767-4586-4b69-af43-c405ec6b154a
-        name:
-          maxLength: 255
-          minLength: 1
-          type: string
-          description: Journey Milestone name
-          example: New Request
-        description:
-          maxLength: 255
-          type:
-          - string
-          - 'null'
-          description: Journey Milestone description
-          example: New Request Milestone
-        order:
-          minimum: 0
-          type: integer
-          description: Journey Milestone order
-          format: int32
-          example: 1
-        stages:
-          minItems: 1
-          type: array
-          items:
-            type: string
-            format: uuid
-          description: List of Journey Milestone's stages
-      additionalProperties: false
-      description: DTO representing Journey Milestone
-    ServiceLevelAgreementDto:
-      type: object
-      properties:
-        committedHours:
-          type:
-          - integer
-          - 'null'
-          description: Committed Hours - sets the amount of time a user has to complete a Journey/Stage/Task
-          format: int32
-          example: 7
-        approachingDueHours:
-          type:
-          - integer
-          - 'null'
-          description: Approaching Due Hours - sets the amount of time when the SLA status change to ‘Approaching Due’
-          format: int32
-          example: 8
-        conditions:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/JourneySchemaUpdatedDto'
+          description: The service response DTO
+        messages:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ServiceLevelAgreementLightDtoConditionalValueDto'
-          description: List of conditions required to dynamically assign SLA to Journey/Stage/Task
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
-      description: Request DTO representing Service Level Agreement of a Journey/Stage/Task
-    JourneySchemaVersionSignResponse:
-      type: object
-      properties:
-        journeySchemaId:
-          type: string
-          description: The UiD of the journey schema
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        versionNumber:
-          type: integer
-          description: The number of the version that has been signed
-          format: int32
-          example: 2
-        status:
-          allOf:
-          - $ref: '#/components/schemas/VersionStatus'
-          description: The new version status
-          example: Rejected
-      additionalProperties: false
-      description: Sign journey schema response contains the new version status
-    JourneySchemaDtoServiceRequest:
+      description: Service response data
+    JourneySchemaDtoServiceResponse:
       type: object
       properties:
         data:
           allOf:
           - $ref: '#/components/schemas/JourneySchemaDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    CloneJourneySchemaVersionDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CloneJourneySchemaVersionDto'
           description: The service request DTO
       additionalProperties: false
       description: Service request data
-    StageDto:
-      required:
-      - id
-      - name
-      - processes
-      type: object
-      properties:
-        id:
-          minLength: 1
-          type: string
-          description: The UiD of the stage
-          format: uuid
-          example: 24511767-4586-4b69-af43-c405ec6b154a
-        name:
-          maxLength: 255
-          minLength: 1
-          type: string
-          description: Stage name
-          example: New Request
-        dataKey:
-          maxLength: 255
-          pattern: (^$)|(^[\dA-z]+$)
-          type:
-          - string
-          - 'null'
-          description: Stage Datakey
-          example: NewRequestStageDataKey
-        description:
-          maxLength: 255
-          type:
-          - string
-          - 'null'
-          description: Stage description
-          example: New Request Stage
-        order:
-          minimum: 0
-          type: integer
-          description: Stage order
-          format: int32
-          example: 1
-        processesCompletionOrder:
-          enum:
-          - Sequential
-          - AnyOrder
-          type:
-          - string
-          - 'null'
-          description: 'Determines the order of completing processes. Defaults to Sequential.
-
-            One of Sequential, AnyOrder'
-          example: Sequential
-        inParallelWithStages:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-            format: uuid
-          description: Optional list of previous stages when this stage should start
-        stageChannel:
-          type:
-          - string
-          - 'null'
-          description: Stage channel
-          example: Internal
-        assignedPortalRoleIds:
-          type:
-          - array
-          - 'null'
-          items:
-            maxLength: 20
-            type: string
-          description: The list of IDs of the assigned portal roles
-        processes:
-          minItems: 1
-          type: array
-          items:
-            $ref: '#/components/schemas/ProcessDto'
-          description: List of stage processes
-        conditions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDto'
-          description: List of conditions required to trigger stage
-        serviceLevelAgreement:
-          allOf:
-          - $ref: '#/components/schemas/ServiceLevelAgreementDto'
-          description: Stage Service Level Agreement
-      additionalProperties: false
-      description: DTO representing journey stage
     ProcessDto:
       required:
       - id
@@ -1813,6 +1694,418 @@ components:
           description: List of conditions required to trigger process
       additionalProperties: false
       description: DTO representing journey process
+    ExternalDataProviderConfigurationDto:
+      type: object
+      properties:
+        providerId:
+          type:
+          - string
+          - 'null'
+        mandatory:
+          type: boolean
+        name:
+          type:
+          - string
+          - 'null'
+        order:
+          type: integer
+          format: int32
+      additionalProperties: false
+    CreateJourneySchemaDraftFromVersionResponse:
+      type: object
+      properties:
+        versionNumber:
+          type: integer
+          format: int32
+        versionId:
+          type: string
+          format: uuid
+      additionalProperties: false
+    CloneJourneySchemaVersionResponse:
+      type: object
+      properties:
+        journeySchemaId:
+          type: string
+          description: Id of the cloned journey schema
+          format: uuid
+          example: 7084669b-0813-4faa-b1d5-b7bf6d749717
+      additionalProperties: false
+      description: Cloned journey schema response data
+    ConditionDto:
+      required:
+      - logicalOperation
+      - name
+      - operands
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the condition
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        name:
+          minLength: 1
+          type: string
+          description: The name of the condition
+          example: Company-type only
+        description:
+          type:
+          - string
+          - 'null'
+          description: The description of the condition
+          example: Applicable only when EntityType=Company
+        logicalOperation:
+          minLength: 1
+          type: string
+          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
+          example: AND
+        operands:
+          minItems: 1
+          type: array
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto'
+          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
+      additionalProperties: false
+      description: Represents condition root
+      example:
+        id: 118313c6-91e6-4b05-a537-5a1ab906418f
+        name: Company-type only
+        description: Applicable only when EntityType=Company
+        logicalOperation: AND
+        operands:
+        - fieldName: EntityType
+          value:
+          - string
+          valueType: text
+          operation: equal
+          operands: []
+    UpdateJourneySchemaVersionDto:
+      type: object
+      properties:
+        journeySchemaId:
+          type: string
+          description: The UiD of the journey schema
+          format: uuid
+          example: 7084669b-0813-4faa-b1d5-b7bf6d749717
+        name:
+          type:
+          - string
+          - 'null'
+          description: Journey schema name
+          example: Client Onboarding
+        type:
+          type:
+          - string
+          - 'null'
+          description: Journey schema type
+          example: Client Onboarding
+        stages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/StageDto'
+          description: Journey schema stage collection
+        versionNumber:
+          type: integer
+          description: The versions number
+          format: int32
+          example: 1
+        effectiveFrom:
+          type: string
+          description: The date that the version takes effect when published
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        signees:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/Signee'
+          description: The defined list of signees for the version
+        conditions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDto'
+          description: Conditions under which the schema can be used
+        externalConditions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDto'
+          description: External Conditions under which the schema can be used
+        milestones:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/JourneyMilestoneDto'
+          description: List of Journey Schema Milestones
+        channelType:
+          allOf:
+          - $ref: '#/components/schemas/ChannelTypeDto'
+          description: Channel type describing whether journeys will be initiated by internal teams (Internal) or external customers through Portal (External)
+        version:
+          type: integer
+          description: "Current version of journey schema version aggregate where the changes needs to be applied. This parameter is required \nto guarantee consistency and conflicts detection. If it is not provided, it will save new changes\non top of latest without conflicts checking"
+          format: int32
+          default: -1
+          example: 5
+        notes:
+          type:
+          - string
+          - 'null'
+          description: Optional description of the references and details of changes made that will be visible to all users who can access the version. It's assumed that version notes won't contain 'personal identifiable information'. Please note that having many versions with very long notes could hurt API performance in the long term.
+          example: Example Notes
+        serviceLevelAgreement:
+          allOf:
+          - $ref: '#/components/schemas/ServiceLevelAgreementDto'
+          description: Journey Schema Service Level Agreement
+        areReopenCommentsOptional:
+          type: boolean
+          description: If true then comments are non-mandatory. If false then comments are mandatory.
+          example: true
+      additionalProperties: false
+      description: Request DTO representing set of properties which define a new version of journey schema
+    TeamAssignmentDto:
+      type: object
+      properties:
+        teamId:
+          type:
+          - string
+          - 'null'
+          description: The UiD of the team
+          format: uuid
+          example: c5207c1d-5242-4c28-b16f-ac028e2bfdfd
+        journeyOwnerAssigned:
+          type: boolean
+          description: Flag to determine if task is assigned to journey owner
+          example: true
+      additionalProperties: false
+      description: DTO representing task's team assignment metadata
+    CloneJourneySchemaVersionResponseServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CloneJourneySchemaVersionResponse'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    ServiceLevelAgreementLightDtoConditionalValueDto:
+      required:
+      - logicalOperation
+      - operands
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the condition
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        name:
+          type:
+          - string
+          - 'null'
+          description: The name of the condition
+          example: Company-type only
+        description:
+          type:
+          - string
+          - 'null'
+          description: The description of the condition
+          example: Applicable only when EntityType=Company
+        logicalOperation:
+          minLength: 1
+          type: string
+          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
+          example: AND
+        operands:
+          minItems: 1
+          type: array
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto'
+          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
+        value:
+          allOf:
+          - $ref: '#/components/schemas/ServiceLevelAgreementLightDto'
+          description: Value that should be returned when conditions are met
+        priority:
+          type: integer
+          description: Priority of the value in case when multiple conditional values are evaluated
+          format: int32
+          example: 1
+          exclusiveMinimum: 0
+      additionalProperties: false
+    EntityResolutionSearchQueryFieldDto:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    JourneyMilestoneDto:
+      required:
+      - id
+      - name
+      - stages
+      type: object
+      properties:
+        id:
+          minLength: 1
+          type: string
+          description: The UiD of the Journey Milestone
+          format: uuid
+          example: 24511767-4586-4b69-af43-c405ec6b154a
+        name:
+          maxLength: 255
+          minLength: 1
+          type: string
+          description: Journey Milestone name
+          example: New Request
+        description:
+          maxLength: 255
+          type:
+          - string
+          - 'null'
+          description: Journey Milestone description
+          example: New Request Milestone
+        order:
+          minimum: 0
+          type: integer
+          description: Journey Milestone order
+          format: int32
+          example: 1
+        stages:
+          minItems: 1
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: List of Journey Milestone's stages
+      additionalProperties: false
+      description: DTO representing Journey Milestone
+    ValueField:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          description: Value of DataSource used to filter field values
+        field:
+          type:
+          - string
+          - 'null'
+          description: Field value used to validate conditional value
+      additionalProperties: false
+    ChannelTypeDto:
+      enum:
+      - Internal
+      - External
+      - InternalAndExternal
+      type: string
+    CreateJourneySchemaDraftFromVersionResponseServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateJourneySchemaDraftFromVersionResponse'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    ExternalDataConfigurationsDto:
+      type: object
+      properties:
+        default:
+          allOf:
+          - $ref: '#/components/schemas/ExternalDataConfigurationDto'
+        configurations:
+          type:
+          - object
+          - 'null'
+          properties:
+            Company:
+              $ref: '#/components/schemas/ExternalDataConfigurationDto'
+            Individual:
+              $ref: '#/components/schemas/ExternalDataConfigurationDto'
+            Other:
+              $ref: '#/components/schemas/ExternalDataConfigurationDto'
+            DataGroup:
+              $ref: '#/components/schemas/ExternalDataConfigurationDto'
+          additionalProperties: false
+      additionalProperties: false
+    JourneySchemaVersionSignResponse:
+      type: object
+      properties:
+        journeySchemaId:
+          type: string
+          description: The UiD of the journey schema
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        versionNumber:
+          type: integer
+          description: The number of the version that has been signed
+          format: int32
+          example: 2
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+          description: The new version status
+          example: Rejected
+      additionalProperties: false
+      description: Sign journey schema response contains the new version status
+    JourneySchemaDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/JourneySchemaDto'
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
+    JourneySchemaUpdatedDto:
+      type: object
+      properties:
+        version:
+          type: integer
+          description: Journey schema aggregate version after update
+          format: int32
+          example: 4
+      additionalProperties: false
+      description: Response DTO representing updated journey schema
+    Decision:
+      enum:
+      - Approve
+      - Reject
+      type: string
+    UpdateJourneySchemaVersionDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UpdateJourneySchemaVersionDto'
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
     TaskDto:
       required:
       - id
@@ -2995,163 +3288,7 @@ components:
           description: Entity document required document type
       additionalProperties: false
       description: DTO representing journey task
-    ExternalDataConfigurationsDto:
-      type: object
-      properties:
-        default:
-          allOf:
-          - $ref: '#/components/schemas/ExternalDataConfigurationDto'
-        configurations:
-          type:
-          - object
-          - 'null'
-          properties:
-            Company:
-              $ref: '#/components/schemas/ExternalDataConfigurationDto'
-            Individual:
-              $ref: '#/components/schemas/ExternalDataConfigurationDto'
-            Other:
-              $ref: '#/components/schemas/ExternalDataConfigurationDto'
-            DataGroup:
-              $ref: '#/components/schemas/ExternalDataConfigurationDto'
-          additionalProperties: false
-      additionalProperties: false
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    TeamAssignmentDto:
-      type: object
-      properties:
-        teamId:
-          type:
-          - string
-          - 'null'
-          description: The UiD of the team
-          format: uuid
-          example: c5207c1d-5242-4c28-b16f-ac028e2bfdfd
-        journeyOwnerAssigned:
-          type: boolean
-          description: Flag to determine if task is assigned to journey owner
-          example: true
-      additionalProperties: false
-      description: DTO representing task's team assignment metadata
-    JourneySchemaUpdatedDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/JourneySchemaUpdatedDto'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    ServiceLevelAgreementLightDto:
-      type: object
-      properties:
-        committedHours:
-          type: integer
-          description: Committed Hours - sets the amount of time a user has to complete a Journey/Stage/Task
-          format: int32
-          example: 7
-        approachingDueHours:
-          type: integer
-          description: Approaching Due Hours - sets the amount of time when the SLA status change to ‘Approaching Due’
-          format: int32
-          example: 8
-      additionalProperties: false
-      description: Request DTO representing Service Level Agreement of a Journey/Stage/Task
-    JourneySchemaUpdatedDto:
-      type: object
-      properties:
-        version:
-          type: integer
-          description: Journey schema aggregate version after update
-          format: int32
-          example: 4
-      additionalProperties: false
-      description: Response DTO representing updated journey schema
-    UpdateJourneySchemaVersionDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/UpdateJourneySchemaVersionDto'
-          description: The service request DTO
-      additionalProperties: false
-      description: Service request data
-    ChannelTypeDto:
-      enum:
-      - Internal
-      - External
-      - InternalAndExternal
-      type: string
-    ValueField:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          description: Value of DataSource used to filter field values
-        field:
-          type:
-          - string
-          - 'null'
-          description: Field value used to validate conditional value
-      additionalProperties: false
-    CreateJourneySchemaDraftFromVersionResponse:
-      type: object
-      properties:
-        versionNumber:
-          type: integer
-          format: int32
-        versionId:
-          type: string
-          format: uuid
-      additionalProperties: false
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data:
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    EntityResolutionSearchQueryFieldDto:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ConditionalValueDto:
+    TeamAssignmentDtoConditionalValueDto:
       required:
       - logicalOperation
       - operands
@@ -3186,101 +3323,148 @@ components:
             $ref: '#/components/schemas/ConditionDefinitionDto'
           description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
         value:
-          type:
-          - string
-          - 'null'
+          allOf:
+          - $ref: '#/components/schemas/TeamAssignmentDto'
           description: Value that should be returned when conditions are met
-          example: Relationship Manager
         priority:
           type: integer
           description: Priority of the value in case when multiple conditional values are evaluated
           format: int32
           example: 1
           exclusiveMinimum: 0
-        valueId:
-          type:
-          - string
-          - 'null'
-          description: Value Id that should be returned when conditions are met
-          example: RM
       additionalProperties: false
-    ConditionDefinitionDto:
+    StageDto:
+      required:
+      - id
+      - name
+      - processes
       type: object
       properties:
-        fieldName:
+        id:
+          minLength: 1
+          type: string
+          description: The UiD of the stage
+          format: uuid
+          example: 24511767-4586-4b69-af43-c405ec6b154a
+        name:
+          maxLength: 255
+          minLength: 1
+          type: string
+          description: Stage name
+          example: New Request
+        dataKey:
+          maxLength: 255
+          pattern: (^$)|(^[\dA-z]+$)
           type:
           - string
           - 'null'
-          description: Name of the field to evaluate
-          example: EntityType
-        value:
+          description: Stage Datakey
+          example: NewRequestStageDataKey
+        description:
+          maxLength: 255
+          type:
+          - string
+          - 'null'
+          description: Stage description
+          example: New Request Stage
+        order:
+          minimum: 0
+          type: integer
+          description: Stage order
+          format: int32
+          example: 1
+        processesCompletionOrder:
+          enum:
+          - Sequential
+          - AnyOrder
+          type:
+          - string
+          - 'null'
+          description: 'Determines the order of completing processes. Defaults to Sequential.
+
+            One of Sequential, AnyOrder'
+          example: Sequential
+        inParallelWithStages:
           type:
           - array
           - 'null'
           items:
             type: string
-          description: List of values
-        valueId:
+            format: uuid
+          description: Optional list of previous stages when this stage should start
+        stageChannel:
+          type:
+          - string
+          - 'null'
+          description: Stage channel
+          example: Internal
+        assignedPortalRoleIds:
           type:
           - array
           - 'null'
           items:
+            maxLength: 20
             type: string
-          description: List of value ids
-        valueType:
-          type:
-          - string
-          - 'null'
-          description: Type of the value
-          example: text
-        dataSource:
-          type:
-          - string
-          - 'null'
-          description: Data source from which field is retrieved. If empty then Entity Data properties will be used.
-          example: entityDataMetadata
-        operation:
-          type:
-          - string
-          - 'null'
-          description: Logical operation to be performed to match the values
-          example: equal
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-          description: Logical operation to be performed on the operands collection
-          example: AND
-        operands:
+          description: The list of IDs of the assigned portal roles
+        processes:
+          minItems: 1
+          type: array
+          items:
+            $ref: '#/components/schemas/ProcessDto'
+          description: List of stage processes
+        conditions:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ConditionDefinitionDto'
-          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
-        valueField:
+            $ref: '#/components/schemas/ConditionDto'
+          description: List of conditions required to trigger stage
+        serviceLevelAgreement:
           allOf:
-          - $ref: '#/components/schemas/ValueField'
-          description: Field value used for conditional limit validation
+          - $ref: '#/components/schemas/ServiceLevelAgreementDto'
+          description: Stage Service Level Agreement
       additionalProperties: false
-      description: Represents condition
-    Approver:
+      description: DTO representing journey stage
+    ApproveActionServiceRequest:
       type: object
       properties:
-        subject:
-          type:
-          - string
-          - 'null'
-        successor:
-          allOf:
-          - $ref: '#/components/schemas/Approver'
-        action:
+        data:
           allOf:
           - $ref: '#/components/schemas/ApproveAction'
-        hasProcessedRequest:
-          type: boolean
-          readOnly: true
+          description: The service request DTO
       additionalProperties: false
+      description: Service request data
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data:
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
     JourneySchemaDto:
       type: object
       properties:
@@ -3382,7 +3566,7 @@ components:
           example: true
       additionalProperties: false
       description: DTO representing journey schema data
-    Signee:
+    Approver:
       type: object
       properties:
         subject:
@@ -3399,349 +3583,6 @@ components:
           type: boolean
           readOnly: true
       additionalProperties: false
-      description: Defines a version Signee
-    Decision:
-      enum:
-      - Approve
-      - Reject
-      type: string
-    ConditionDto:
-      required:
-      - logicalOperation
-      - name
-      - operands
-      type: object
-      properties:
-        id:
-          type: string
-          description: The ID of the condition
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        name:
-          minLength: 1
-          type: string
-          description: The name of the condition
-          example: Company-type only
-        description:
-          type:
-          - string
-          - 'null'
-          description: The description of the condition
-          example: Applicable only when EntityType=Company
-        logicalOperation:
-          minLength: 1
-          type: string
-          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
-          example: AND
-        operands:
-          minItems: 1
-          type: array
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto'
-          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
-      additionalProperties: false
-      description: Represents condition root
-      example:
-        id: 118313c6-91e6-4b05-a537-5a1ab906418f
-        name: Company-type only
-        description: Applicable only when EntityType=Company
-        logicalOperation: AND
-        operands:
-        - fieldName: EntityType
-          value:
-          - string
-          valueType: text
-          operation: equal
-          operands: []
-    ExternalDataConfigurationDto:
-      type: object
-      properties:
-        providers:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ExternalDataProviderConfigurationDto'
-      additionalProperties: false
-    JourneySchemaDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/JourneySchemaDto'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    CreateJourneySchemaDraftFromVersionResponseServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateJourneySchemaDraftFromVersionResponse'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    CloneJourneySchemaVersionResponseServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CloneJourneySchemaVersionResponse'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    ExternalDataProviderConfigurationDto:
-      type: object
-      properties:
-        providerId:
-          type:
-          - string
-          - 'null'
-        mandatory:
-          type: boolean
-        name:
-          type:
-          - string
-          - 'null'
-        order:
-          type: integer
-          format: int32
-      additionalProperties: false
-    ValidationErrorModel:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-          description: Name of the property
-          example: data
-        errorMessage:
-          type:
-          - string
-          - 'null'
-          description: User friendly error message
-          example: Data is required
-        attemptedValue:
-          description: Invalid value
-        errorCode:
-          type:
-          - string
-          - 'null'
-          description: Internal error code
-          example: NotNullValidator
-      additionalProperties: false
-      description: Represents the details of validation error
-    ApproveActionServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ApproveAction'
-          description: The service request DTO
-      additionalProperties: false
-      description: Service request data
-    VersionStatus:
-      enum:
-      - Draft
-      - Pending
-      - Rejected
-      - Published
-      - Archived
-      - Deleted
-      type: string
-    JourneySchemaVersionSignResponseServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/JourneySchemaVersionSignResponse'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    TeamAssignmentDtoConditionalValueDto:
-      required:
-      - logicalOperation
-      - operands
-      type: object
-      properties:
-        id:
-          type: string
-          description: The ID of the condition
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        name:
-          type:
-          - string
-          - 'null'
-          description: The name of the condition
-          example: Company-type only
-        description:
-          type:
-          - string
-          - 'null'
-          description: The description of the condition
-          example: Applicable only when EntityType=Company
-        logicalOperation:
-          minLength: 1
-          type: string
-          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
-          example: AND
-        operands:
-          minItems: 1
-          type: array
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto'
-          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
-        value:
-          allOf:
-          - $ref: '#/components/schemas/TeamAssignmentDto'
-          description: Value that should be returned when conditions are met
-        priority:
-          type: integer
-          description: Priority of the value in case when multiple conditional values are evaluated
-          format: int32
-          example: 1
-          exclusiveMinimum: 0
-      additionalProperties: false
-    UpdateJourneySchemaVersionDto:
-      type: object
-      properties:
-        journeySchemaId:
-          type: string
-          description: The UiD of the journey schema
-          format: uuid
-          example: 7084669b-0813-4faa-b1d5-b7bf6d749717
-        name:
-          type:
-          - string
-          - 'null'
-          description: Journey schema name
-          example: Client Onboarding
-        type:
-          type:
-          - string
-          - 'null'
-          description: Journey schema type
-          example: Client Onboarding
-        stages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/StageDto'
-          description: Journey schema stage collection
-        versionNumber:
-          type: integer
-          description: The versions number
-          format: int32
-          example: 1
-        effectiveFrom:
-          type: string
-          description: The date that the version takes effect when published
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        signees:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/Signee'
-          description: The defined list of signees for the version
-        conditions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDto'
-          description: Conditions under which the schema can be used
-        externalConditions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDto'
-          description: External Conditions under which the schema can be used
-        milestones:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/JourneyMilestoneDto'
-          description: List of Journey Schema Milestones
-        channelType:
-          allOf:
-          - $ref: '#/components/schemas/ChannelTypeDto'
-          description: Channel type describing whether journeys will be initiated by internal teams (Internal) or external customers through Portal (External)
-        version:
-          type: integer
-          description: "Current version of journey schema version aggregate where the changes needs to be applied. This parameter is required \nto guarantee consistency and conflicts detection. If it is not provided, it will save new changes\non top of latest without conflicts checking"
-          format: int32
-          default: -1
-          example: 5
-        notes:
-          type:
-          - string
-          - 'null'
-          description: Optional description of the references and details of changes made that will be visible to all users who can access the version. It's assumed that version notes won't contain 'personal identifiable information'. Please note that having many versions with very long notes could hurt API performance in the long term.
-          example: Example Notes
-        serviceLevelAgreement:
-          allOf:
-          - $ref: '#/components/schemas/ServiceLevelAgreementDto'
-          description: Journey Schema Service Level Agreement
-        areReopenCommentsOptional:
-          type: boolean
-          description: If true then comments are non-mandatory. If false then comments are mandatory.
-          example: true
-      additionalProperties: false
-      description: Request DTO representing set of properties which define a new version of journey schema
-    CloneJourneySchemaVersionResponse:
-      type: object
-      properties:
-        journeySchemaId:
-          type: string
-          description: Id of the cloned journey schema
-          format: uuid
-          example: 7084669b-0813-4faa-b1d5-b7bf6d749717
-      additionalProperties: false
-      description: Cloned journey schema response data
-    CloneJourneySchemaVersionDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CloneJourneySchemaVersionDto'
-          description: The service request DTO
-      additionalProperties: false
-      description: Service request data
     ValidationErrorModelListServiceResponse:
       type: object
       properties:
@@ -3771,6 +3612,192 @@ components:
         - message: Data is required
           type: Error
           errorCode: Error Code
+    ConditionDefinitionDto:
+      type: object
+      properties:
+        fieldName:
+          type:
+          - string
+          - 'null'
+          description: Name of the field to evaluate
+          example: EntityType
+        value:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of values
+        valueId:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of value ids
+        valueType:
+          type:
+          - string
+          - 'null'
+          description: Type of the value
+          example: text
+        dataSource:
+          type:
+          - string
+          - 'null'
+          description: Data source from which field is retrieved. If empty then Entity Data properties will be used.
+          example: entityDataMetadata
+        operation:
+          type:
+          - string
+          - 'null'
+          description: Logical operation to be performed to match the values
+          example: equal
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+          description: Logical operation to be performed on the operands collection
+          example: AND
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto'
+          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
+        valueField:
+          allOf:
+          - $ref: '#/components/schemas/ValueField'
+          description: Field value used for conditional limit validation
+      additionalProperties: false
+      description: Represents condition
+    ExternalDataConfigurationDto:
+      type: object
+      properties:
+        providers:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ExternalDataProviderConfigurationDto'
+      additionalProperties: false
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+          description: Name of the property
+          example: data
+        errorMessage:
+          type:
+          - string
+          - 'null'
+          description: User friendly error message
+          example: Data is required
+        attemptedValue:
+          description: Invalid value
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Internal error code
+          example: NotNullValidator
+      additionalProperties: false
+      description: Represents the details of validation error
+    VersionStatus:
+      enum:
+      - Draft
+      - Pending
+      - Rejected
+      - Published
+      - Archived
+      - Deleted
+      type: string
+    JourneySchemaVersionSignResponseServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/JourneySchemaVersionSignResponse'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    ServiceLevelAgreementLightDto:
+      type: object
+      properties:
+        committedHours:
+          type: integer
+          description: Committed Hours - sets the amount of time a user has to complete a Journey/Stage/Task
+          format: int32
+          example: 7
+        approachingDueHours:
+          type: integer
+          description: Approaching Due Hours - sets the amount of time when the SLA status change to ‘Approaching Due’
+          format: int32
+          example: 8
+      additionalProperties: false
+      description: Request DTO representing Service Level Agreement of a Journey/Stage/Task
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+          description: The message
+          example: Success
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
+      additionalProperties: false
+      description: The message associated to the service response
+    ServiceLevelAgreementDto:
+      type: object
+      properties:
+        committedHours:
+          type:
+          - integer
+          - 'null'
+          description: Committed Hours - sets the amount of time a user has to complete a Journey/Stage/Task
+          format: int32
+          example: 7
+        approachingDueHours:
+          type:
+          - integer
+          - 'null'
+          description: Approaching Due Hours - sets the amount of time when the SLA status change to ‘Approaching Due’
+          format: int32
+          example: 8
+        conditions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceLevelAgreementLightDtoConditionalValueDto'
+          description: List of conditions required to dynamically assign SLA to Journey/Stage/Task
+      additionalProperties: false
+      description: Request DTO representing Service Level Agreement of a Journey/Stage/Task
     ApproveAction:
       type: object
       properties:
@@ -3785,33 +3812,558 @@ components:
           type: string
           format: date-time
       additionalProperties: false
-    CloneJourneySchemaVersionDto:
+    JourneySchemaVersionDtoServiceResponse:
       type: object
       properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/JourneySchemaVersionDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    ConditionalValueDto_2:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the condition
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
         name:
           type:
           - string
           - 'null'
-          description: Name of new journey schema
-          example: Client Onboarding
+          description: The name of the condition
+          example: Company-type only
+        description:
+          type:
+          - string
+          - 'null'
+          description: The description of the condition
+          example: Applicable only when EntityType=Company
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
+          example: AND
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto'
+          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
+        value:
+          type:
+          - string
+          - 'null'
+          description: Value that should be returned when conditions are met
+          example: Relationship Manager
+        priority:
+          type: integer
+          description: Priority of the value in case when multiple conditional values are evaluated
+          format: int32
+          example: 1
+        valueId:
+          type:
+          - string
+          - 'null'
+          description: Value Id that should be returned when conditions are met
+          example: RM
+      additionalProperties: false
+    TaskMessageDto:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+          description: Message
+          example: Generated Message
+        date:
+          type: string
+          description: Date
+          format: date-time
+          example: 02/02/2000
+        messageType:
+          type:
+          - string
+          - 'null'
+          description: Message Type
+          example: Success
+        messageSource:
+          type:
+          - string
+          - 'null'
+          description: Message Source
+          example: Autocomplete
+      additionalProperties: false
+    JourneySchemaProcessDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The UiD of the process
+          format: uuid
+          example: 3bdd0379-11e9-4fa7-9ddf-05a8eb5e3d37
+        name:
+          type:
+          - string
+          - 'null'
+          description: Process name
+          example: New Request
+        description:
+          type:
+          - string
+          - 'null'
+          description: Process description
+          example: New Request Process
+        order:
+          type: integer
+          description: Process order
+          format: int32
+          example: 1
+        tasksCompletionOrder:
+          type:
+          - string
+          - 'null'
+          description: 'Determines the order of completing tasks. Defaults to Sequential.
+
+            One of Sequential, AnyOrder'
+          example: Sequential
+        tasks:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/JourneyTaskDto'
+          description: List of process tasks
+        conditions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/Condition'
+          description: List of conditions required to trigger process
+        isConditional:
+          type: boolean
+          description: True if the process contains conditions, false otherwise
+          example: false
+      additionalProperties: false
+      description: Journey Schema Process metadata
+    Condition:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type:
+          - string
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinition'
+      additionalProperties: false
+    JourneySchemaLiteDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/JourneySchemaLiteDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    JourneySchemaMilestoneDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The UiD of the Journey Milestone
+          format: uuid
+          example: 24511767-4586-4b69-af43-c405ec6b154a
+        name:
+          type:
+          - string
+          - 'null'
+          description: Journey Milestone name
+          example: New Request
+        description:
+          type:
+          - string
+          - 'null'
+          description: Journey Milestone description
+          example: New Request Milestone
+        order:
+          type: integer
+          description: Journey Milestone order
+          format: int32
+          example: 1
+        stages:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+            format: uuid
+          description: List of Journey Milestone's stages
+      additionalProperties: false
+      description: DTO representing Journey Milestone
+    JourneySchemaExportDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/JourneySchemaExportDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    JourneySchemaVersionDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The UiD of the journey schema version
+          format: uuid
+          example: 228313c6-91e6-4b05-a537-5a1ab906418f
+        journeySchemaId:
+          type: string
+          description: The UiD of the journey schema that the version belongs to
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        name:
+          type:
+          - string
+          - 'null'
+          description: Display name of journey schema
+          example: Individual Client Onboarding
         identifier:
           type:
           - string
           - 'null'
-          description: Identifier of new journey schema
-          example: COB_COMP_1
+          description: Short identifier of journey schema
+          example: IND_ONB_1
         type:
           type:
           - string
           - 'null'
-          description: The type of new journey schema
+          description: Journey schema type
           example: Client Onboarding
+        versionNumber:
+          type: integer
+          description: The versions number
+          format: int32
+          example: 1
+        effectiveFrom:
+          type: string
+          description: The date that the version takes effect when published
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        effectiveUntil:
+          type:
+          - string
+          - 'null'
+          description: The calculated date that the version ceases being active
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        publicationDate:
+          type:
+          - string
+          - 'null'
+          description: The date that the version got published
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+          description: The status of the version
+          example: Published
+        created:
+          type: string
+          description: The creation date of the version
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        isActive:
+          type: boolean
+          description: 'The calculated flag to annotate whether this is the model''s latest version
+
+            at the time of the query (not necessarily published)'
+          example: true
         channelType:
           allOf:
           - $ref: '#/components/schemas/ChannelTypeDto'
-          description: Channel type of new journey schema
+          description: 'Channel type describing whether journeys will be initiated by internal teams (Internal) or external customers through Portal (External)
+
+
+            <ul><li>Internal journeys are ones that are initiated and processed by internal teams, e.g., RMs, KYC Analysts, Compliance.</li><li>External journeys are ones that are initiated and processed by the end customer via the portal.</li><li>This let''s the portal quickly know which journey to pick up and which to ignore.</li></ul>'
+        version:
+          type:
+          - integer
+          - 'null'
+          description: Version number for given Aggregate (concurrency check)
+          format: int32
+          example: 1
+        notes:
+          type:
+          - string
+          - 'null'
+          description: Optional description of the references and details of changes made that will be visible to all users who can access the version. It's assumed that version notes won't contain 'personal identifiable information'. Please note that having many versions with very long notes could hurt API performance in the long term.
+          example: Example Notes
+        areReopenCommentsOptional:
+          type: boolean
+          description: If true then comments are non-mandatory. If false then comments are mandatory.
+          example: true
+        signees:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/Signee'
+          description: The defined list of signees for the version
+        stages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/JourneySchemaStageDto'
+          description: Collection of stages defining journey
+        conditions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDto_2'
+          description: Conditions under which the schema can be used
+        externalConditions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDto_2'
+          description: External Conditions under which the schema can be used
+        milestones:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/JourneySchemaMilestoneDto'
+          description: List of Journey Schema Milestones
+        serviceLevelAgreement:
+          allOf:
+          - $ref: '#/components/schemas/SchemaServiceLevelAgreementDto'
+          description: Journey Schema Service Level Agreement
       additionalProperties: false
-      description: Request DTO representing clone journey schema data
+      description: Response DTO representing journey schema version data
+    ConditionDto_2:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the condition
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        name:
+          type:
+          - string
+          - 'null'
+          description: The name of the condition
+          example: Company-type only
+        description:
+          type:
+          - string
+          - 'null'
+          description: The description of the condition
+          example: Applicable only when EntityType=Company
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
+          example: AND
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto'
+          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
+      additionalProperties: false
+      description: Represents condition root
+    ServiceLevelAgreementLightDtoConditionalValueDto_2:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the condition
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        name:
+          type:
+          - string
+          - 'null'
+          description: The name of the condition
+          example: Company-type only
+        description:
+          type:
+          - string
+          - 'null'
+          description: The description of the condition
+          example: Applicable only when EntityType=Company
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
+          example: AND
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto'
+          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
+        value:
+          allOf:
+          - $ref: '#/components/schemas/ServiceLevelAgreementLightDto'
+          description: Value that should be returned when conditions are met
+        priority:
+          type: integer
+          description: Priority of the value in case when multiple conditional values are evaluated
+          format: int32
+          example: 1
+      additionalProperties: false
+    JourneySchemaLiteVersionDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The UiD of the journey schema version
+          format: uuid
+          example: 228313c6-91e6-4b05-a537-5a1ab906418f
+        journeySchemaId:
+          type: string
+          description: The UiD of the journey schema that the version belongs to
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        name:
+          type:
+          - string
+          - 'null'
+          description: Display name of journey schema
+          example: Individual Client Onboarding
+        identifier:
+          type:
+          - string
+          - 'null'
+          description: Short identifier of journey schema
+          example: IND_ONB_1
+        type:
+          type:
+          - string
+          - 'null'
+          description: Journey schema type
+          example: Client Onboarding
+        versionNumber:
+          type: integer
+          description: The versions number
+          format: int32
+          example: 1
+        effectiveFrom:
+          type: string
+          description: The date that the version takes effect when published
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        effectiveUntil:
+          type:
+          - string
+          - 'null'
+          description: The calculated date that the version ceases being active
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        publicationDate:
+          type:
+          - string
+          - 'null'
+          description: The date that the version got published
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+          description: The status of the version
+          example: Published
+        created:
+          type: string
+          description: The creation date of the version
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        isActive:
+          type: boolean
+          description: 'The calculated flag to annotate whether this is the model''s latest version
+
+            at the time of the query (not necessarily published)'
+          example: true
+        channelType:
+          allOf:
+          - $ref: '#/components/schemas/ChannelTypeDto'
+          description: 'Channel type describing whether journeys will be initiated by internal teams (Internal) or external customers through Portal (External)
+
+
+            <ul><li>Internal journeys are ones that are initiated and processed by internal teams, e.g., RMs, KYC Analysts, Compliance.</li><li>External journeys are ones that are initiated and processed by the end customer via the portal.</li><li>This let''s the portal quickly know which journey to pick up and which to ignore.</li></ul>'
+        version:
+          type:
+          - integer
+          - 'null'
+          description: Version number for given Aggregate (concurrency check)
+          format: int32
+          example: 1
+        notes:
+          type:
+          - string
+          - 'null'
+          description: Optional description of the references and details of changes made that will be visible to all users who can access the version. It's assumed that version notes won't contain 'personal identifiable information'. Please note that having many versions with very long notes could hurt API performance in the long term.
+          example: Example Notes
+        areReopenCommentsOptional:
+          type: boolean
+          description: If true then comments are non-mandatory. If false then comments are mandatory.
+          example: true
+      additionalProperties: false
     JourneyTaskDto:
       required:
       - discriminator
@@ -4251,7 +4803,7 @@ components:
           TransactionScreeningMatchResolutionTask: '#/components/schemas/TransactionScreeningMatchResolutionTaskDto'
           ScreeningUnsubscribeOgsTask: '#/components/schemas/UnsubscribeOgsTaskDto'
           VerifyScreeningPeriodTask: '#/components/schemas/VerifyScreeningPeriodTaskDto'
-    ServiceLevelAgreementLightDtoConditionalValueDto_2:
+    TeamAssignmentDtoConditionalValueDto_2:
       type: object
       properties:
         id:
@@ -4286,379 +4838,13 @@ components:
           description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
         value:
           allOf:
-          - $ref: '#/components/schemas/ServiceLevelAgreementLightDto'
+          - $ref: '#/components/schemas/TeamAssignmentDto'
           description: Value that should be returned when conditions are met
         priority:
           type: integer
           description: Priority of the value in case when multiple conditional values are evaluated
           format: int32
           example: 1
-      additionalProperties: false
-    ServiceLevelAgreementDto_2:
-      type: object
-      properties:
-        committedHours:
-          type:
-          - integer
-          - 'null'
-          description: Committed Hours - sets the amount of time a user has to complete a Journey/Stage/Task
-          format: int32
-          example: 7
-        dueDate:
-          type:
-          - string
-          - 'null'
-          description: Due Date - calculated date by which Journey/Stage/Task is expected to be completed
-          format: date-time
-          example: '2021-02-05T14:48:00.000Z'
-        approachingDueHours:
-          type:
-          - integer
-          - 'null'
-          description: Approaching Due Hours - sets the amount of time when the SLA status change to ‘Approaching Due’
-          format: int32
-          example: 2
-        approachingDueDate:
-          type:
-          - string
-          - 'null'
-          description: Approaching Due Date - calculated date after which the SLA status change to ‘Approaching Due’
-          format: date-time
-          example: '2021-07-07T07:00:00.000Z'
-        status:
-          enum:
-          - Not Started
-          - In Progress
-          - Approaching Due
-          - Completed
-          - Completed Overdue
-          - Overdue
-          - In Evaluation
-          - Paused
-          - Error
-          type:
-          - string
-          - 'null'
-          description: Status of Service Level Agreement
-          example: Overdue
-        duePeriod:
-          type:
-          - string
-          - 'null'
-          description: Due Period of Service Level Agreement
-          example: 2 Days Overdue
-        pausedPeriodSec:
-          type:
-          - integer
-          - 'null'
-          description: Total time in seconds when Journey/Stage/Task was paused
-          format: int32
-          example: 3600
-        defaultCommittedHours:
-          type:
-          - integer
-          - 'null'
-          description: Committed Hours - sets the default amount of time a user has to complete a Journey/Stage/Task
-          format: int32
-          example: 7
-        defaultApproachingDueHours:
-          type:
-          - integer
-          - 'null'
-          description: Approaching Due Hours - sets the default amount of time when the SLA status change to ‘Approaching Due’
-          format: int32
-          example: 8
-        conditions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceLevelAgreementLightDtoConditionalValueDto_2'
-          description: List of conditions required to dynamically assign SLA to Journey/Stage/Task
-      additionalProperties: false
-      description: Response DTO representing Service Level Agreement of a Journey/Stage/Task
-    JourneySchemaExportDto:
-      type: object
-      properties:
-        signedUrl:
-          type:
-          - string
-          - 'null'
-        validUntil:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    JourneySchemaLiteVersionDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The UiD of the journey schema version
-          format: uuid
-          example: 228313c6-91e6-4b05-a537-5a1ab906418f
-        journeySchemaId:
-          type: string
-          description: The UiD of the journey schema that the version belongs to
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        name:
-          type:
-          - string
-          - 'null'
-          description: Display name of journey schema
-          example: Individual Client Onboarding
-        identifier:
-          type:
-          - string
-          - 'null'
-          description: Short identifier of journey schema
-          example: IND_ONB_1
-        type:
-          type:
-          - string
-          - 'null'
-          description: Journey schema type
-          example: Client Onboarding
-        versionNumber:
-          type: integer
-          description: The versions number
-          format: int32
-          example: 1
-        effectiveFrom:
-          type: string
-          description: The date that the version takes effect when published
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        effectiveUntil:
-          type:
-          - string
-          - 'null'
-          description: The calculated date that the version ceases being active
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        publicationDate:
-          type:
-          - string
-          - 'null'
-          description: The date that the version got published
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        status:
-          allOf:
-          - $ref: '#/components/schemas/VersionStatus'
-          description: The status of the version
-          example: Published
-        created:
-          type: string
-          description: The creation date of the version
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        isActive:
-          type: boolean
-          description: 'The calculated flag to annotate whether this is the model''s latest version
-
-            at the time of the query (not necessarily published)'
-          example: true
-        channelType:
-          allOf:
-          - $ref: '#/components/schemas/ChannelTypeDto'
-          description: 'Channel type describing whether journeys will be initiated by internal teams (Internal) or external customers through Portal (External)
-
-
-            <ul><li>Internal journeys are ones that are initiated and processed by internal teams, e.g., RMs, KYC Analysts, Compliance.</li><li>External journeys are ones that are initiated and processed by the end customer via the portal.</li><li>This let''s the portal quickly know which journey to pick up and which to ignore.</li></ul>'
-        version:
-          type:
-          - integer
-          - 'null'
-          description: Version number for given Aggregate (concurrency check)
-          format: int32
-          example: 1
-        notes:
-          type:
-          - string
-          - 'null'
-          description: Optional description of the references and details of changes made that will be visible to all users who can access the version. It's assumed that version notes won't contain 'personal identifiable information'. Please note that having many versions with very long notes could hurt API performance in the long term.
-          example: Example Notes
-        areReopenCommentsOptional:
-          type: boolean
-          description: If true then comments are non-mandatory. If false then comments are mandatory.
-          example: true
-      additionalProperties: false
-    JourneySchemaLiteDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The UiD of the journey schema
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        versions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/JourneySchemaLiteVersionDto'
-          description: Versions associated to the journey schema
-        version:
-          type: integer
-          description: Version number for given Aggregate (concurrency check)
-          format: int32
-          example: 1
-      additionalProperties: false
-    JourneySchemaExportDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/JourneySchemaExportDto'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    TaskMessageDto:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-          description: Message
-          example: Generated Message
-        date:
-          type: string
-          description: Date
-          format: date-time
-          example: 02/02/2000
-        messageType:
-          type:
-          - string
-          - 'null'
-          description: Message Type
-          example: Success
-        messageSource:
-          type:
-          - string
-          - 'null'
-          description: Message Source
-          example: Autocomplete
-      additionalProperties: false
-    ConditionalValueDto_2:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The ID of the condition
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        name:
-          type:
-          - string
-          - 'null'
-          description: The name of the condition
-          example: Company-type only
-        description:
-          type:
-          - string
-          - 'null'
-          description: The description of the condition
-          example: Applicable only when EntityType=Company
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
-          example: AND
-        operands:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto'
-          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
-        value:
-          type:
-          - string
-          - 'null'
-          description: Value that should be returned when conditions are met
-          example: Relationship Manager
-        priority:
-          type: integer
-          description: Priority of the value in case when multiple conditional values are evaluated
-          format: int32
-          example: 1
-        valueId:
-          type:
-          - string
-          - 'null'
-          description: Value Id that should be returned when conditions are met
-          example: RM
-      additionalProperties: false
-    ConditionDto_2:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The ID of the condition
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        name:
-          type:
-          - string
-          - 'null'
-          description: The name of the condition
-          example: Company-type only
-        description:
-          type:
-          - string
-          - 'null'
-          description: The description of the condition
-          example: Applicable only when EntityType=Company
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
-          example: AND
-        operands:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto'
-          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
-      additionalProperties: false
-      description: Represents condition root
-    Condition:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type:
-          - string
-          - 'null'
-        description:
-          type:
-          - string
-          - 'null'
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-        operands:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDefinition'
       additionalProperties: false
     SchemaServiceLevelAgreementDto:
       type: object
@@ -4770,308 +4956,122 @@ components:
           description: Stage Service Level Agreement
       additionalProperties: false
       description: Journey Schema Stage metadata
-    JourneySchemaLiteDtoIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/JourneySchemaLiteDto'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    TeamAssignmentDtoConditionalValueDto_2:
+    JourneySchemaLiteDto:
       type: object
       properties:
         id:
           type: string
-          description: The ID of the condition
+          description: The UiD of the journey schema
           format: uuid
           example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        name:
-          type:
-          - string
-          - 'null'
-          description: The name of the condition
-          example: Company-type only
-        description:
-          type:
-          - string
-          - 'null'
-          description: The description of the condition
-          example: Applicable only when EntityType=Company
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
-          example: AND
-        operands:
+        versions:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ConditionDefinitionDto'
-          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
-        value:
-          allOf:
-          - $ref: '#/components/schemas/TeamAssignmentDto'
-          description: Value that should be returned when conditions are met
-        priority:
-          type: integer
-          description: Priority of the value in case when multiple conditional values are evaluated
-          format: int32
-          example: 1
-      additionalProperties: false
-    JourneySchemaProcessDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The UiD of the process
-          format: uuid
-          example: 3bdd0379-11e9-4fa7-9ddf-05a8eb5e3d37
-        name:
-          type:
-          - string
-          - 'null'
-          description: Process name
-          example: New Request
-        description:
-          type:
-          - string
-          - 'null'
-          description: Process description
-          example: New Request Process
-        order:
-          type: integer
-          description: Process order
-          format: int32
-          example: 1
-        tasksCompletionOrder:
-          type:
-          - string
-          - 'null'
-          description: 'Determines the order of completing tasks. Defaults to Sequential.
-
-            One of Sequential, AnyOrder'
-          example: Sequential
-        tasks:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/JourneyTaskDto'
-          description: List of process tasks
-        conditions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/Condition'
-          description: List of conditions required to trigger process
-        isConditional:
-          type: boolean
-          description: True if the process contains conditions, false otherwise
-          example: false
-      additionalProperties: false
-      description: Journey Schema Process metadata
-    JourneySchemaVersionDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/JourneySchemaVersionDto'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    JourneySchemaMilestoneDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The UiD of the Journey Milestone
-          format: uuid
-          example: 24511767-4586-4b69-af43-c405ec6b154a
-        name:
-          type:
-          - string
-          - 'null'
-          description: Journey Milestone name
-          example: New Request
-        description:
-          type:
-          - string
-          - 'null'
-          description: Journey Milestone description
-          example: New Request Milestone
-        order:
-          type: integer
-          description: Journey Milestone order
-          format: int32
-          example: 1
-        stages:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-            format: uuid
-          description: List of Journey Milestone's stages
-      additionalProperties: false
-      description: DTO representing Journey Milestone
-    JourneySchemaVersionDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The UiD of the journey schema version
-          format: uuid
-          example: 228313c6-91e6-4b05-a537-5a1ab906418f
-        journeySchemaId:
-          type: string
-          description: The UiD of the journey schema that the version belongs to
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        name:
-          type:
-          - string
-          - 'null'
-          description: Display name of journey schema
-          example: Individual Client Onboarding
-        identifier:
-          type:
-          - string
-          - 'null'
-          description: Short identifier of journey schema
-          example: IND_ONB_1
-        type:
-          type:
-          - string
-          - 'null'
-          description: Journey schema type
-          example: Client Onboarding
-        versionNumber:
-          type: integer
-          description: The versions number
-          format: int32
-          example: 1
-        effectiveFrom:
-          type: string
-          description: The date that the version takes effect when published
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        effectiveUntil:
-          type:
-          - string
-          - 'null'
-          description: The calculated date that the version ceases being active
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        publicationDate:
-          type:
-          - string
-          - 'null'
-          description: The date that the version got published
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        status:
-          allOf:
-          - $ref: '#/components/schemas/VersionStatus'
-          description: The status of the version
-          example: Published
-        created:
-          type: string
-          description: The creation date of the version
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        isActive:
-          type: boolean
-          description: 'The calculated flag to annotate whether this is the model''s latest version
-
-            at the time of the query (not necessarily published)'
-          example: true
-        channelType:
-          allOf:
-          - $ref: '#/components/schemas/ChannelTypeDto'
-          description: 'Channel type describing whether journeys will be initiated by internal teams (Internal) or external customers through Portal (External)
-
-
-            <ul><li>Internal journeys are ones that are initiated and processed by internal teams, e.g., RMs, KYC Analysts, Compliance.</li><li>External journeys are ones that are initiated and processed by the end customer via the portal.</li><li>This let''s the portal quickly know which journey to pick up and which to ignore.</li></ul>'
+            $ref: '#/components/schemas/JourneySchemaLiteVersionDto'
+          description: Versions associated to the journey schema
         version:
-          type:
-          - integer
-          - 'null'
+          type: integer
           description: Version number for given Aggregate (concurrency check)
           format: int32
           example: 1
-        notes:
+      additionalProperties: false
+    JourneySchemaExportDto:
+      type: object
+      properties:
+        signedUrl:
           type:
           - string
           - 'null'
-          description: Optional description of the references and details of changes made that will be visible to all users who can access the version. It's assumed that version notes won't contain 'personal identifiable information'. Please note that having many versions with very long notes could hurt API performance in the long term.
-          example: Example Notes
-        areReopenCommentsOptional:
-          type: boolean
-          description: If true then comments are non-mandatory. If false then comments are mandatory.
-          example: true
-        signees:
+        validUntil:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/Signee'
-          description: The defined list of signees for the version
-        stages:
+      additionalProperties: false
+    ServiceLevelAgreementDto_2:
+      type: object
+      properties:
+        committedHours:
           type:
-          - array
+          - integer
           - 'null'
-          items:
-            $ref: '#/components/schemas/JourneySchemaStageDto'
-          description: Collection of stages defining journey
+          description: Committed Hours - sets the amount of time a user has to complete a Journey/Stage/Task
+          format: int32
+          example: 7
+        dueDate:
+          type:
+          - string
+          - 'null'
+          description: Due Date - calculated date by which Journey/Stage/Task is expected to be completed
+          format: date-time
+          example: '2021-02-05T14:48:00.000Z'
+        approachingDueHours:
+          type:
+          - integer
+          - 'null'
+          description: Approaching Due Hours - sets the amount of time when the SLA status change to ‘Approaching Due’
+          format: int32
+          example: 2
+        approachingDueDate:
+          type:
+          - string
+          - 'null'
+          description: Approaching Due Date - calculated date after which the SLA status change to ‘Approaching Due’
+          format: date-time
+          example: '2021-07-07T07:00:00.000Z'
+        status:
+          enum:
+          - Not Started
+          - In Progress
+          - Approaching Due
+          - Completed
+          - Completed Overdue
+          - Overdue
+          - In Evaluation
+          - Paused
+          - Error
+          type:
+          - string
+          - 'null'
+          description: Status of Service Level Agreement
+          example: Overdue
+        duePeriod:
+          type:
+          - string
+          - 'null'
+          description: Due Period of Service Level Agreement
+          example: 2 Days Overdue
+        pausedPeriodSec:
+          type:
+          - integer
+          - 'null'
+          description: Total time in seconds when Journey/Stage/Task was paused
+          format: int32
+          example: 3600
+        defaultCommittedHours:
+          type:
+          - integer
+          - 'null'
+          description: Committed Hours - sets the default amount of time a user has to complete a Journey/Stage/Task
+          format: int32
+          example: 7
+        defaultApproachingDueHours:
+          type:
+          - integer
+          - 'null'
+          description: Approaching Due Hours - sets the default amount of time when the SLA status change to ‘Approaching Due’
+          format: int32
+          example: 8
         conditions:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ConditionDto_2'
-          description: Conditions under which the schema can be used
-        externalConditions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDto_2'
-          description: External Conditions under which the schema can be used
-        milestones:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/JourneySchemaMilestoneDto'
-          description: List of Journey Schema Milestones
-        serviceLevelAgreement:
-          allOf:
-          - $ref: '#/components/schemas/SchemaServiceLevelAgreementDto'
-          description: Journey Schema Service Level Agreement
+            $ref: '#/components/schemas/ServiceLevelAgreementLightDtoConditionalValueDto_2'
+          description: List of conditions required to dynamically assign SLA to Journey/Stage/Task
       additionalProperties: false
-      description: Response DTO representing journey schema version data
+      description: Response DTO representing Service Level Agreement of a Journey/Stage/Task
     ConditionDefinition:
       type: object
       properties:

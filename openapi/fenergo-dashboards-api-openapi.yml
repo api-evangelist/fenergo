@@ -654,13 +654,13 @@ paths:
                   errorCode: OBSOLETE_ENDPOINT
 components:
   schemas:
-    JourneyDashboardDataDtoServiceResponse:
+    ServiceResponse:
       type: object
       properties:
         data:
-          allOf:
-          - $ref: '#/components/schemas/JourneyDashboardDataDto'
-          description: Represents the data returned by the Journey Dashboard
+          type:
+          - string
+          - 'null'
         messages:
           type:
           - array
@@ -668,41 +668,33 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    ServiceResponseMessage:
+    TaskDashboardDataRequestDto:
       type: object
       properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    AggregationResponseDto:
-      type: object
-      properties:
-        aggregatedResults:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/AggregatedFieldDto'
-          description: The aggregated results
-        totalCount:
+        page:
+          minimum: 0
           type: integer
-          description: The combined total of all aggregated counts
-          format: int64
-      additionalProperties: false
-      description: Represents the response after aggregation.
-    AggregationRequestDto:
-      type: object
-      properties:
+          description: Requested page number
+          format: int32
+        pageSize:
+          minimum: 1
+          type: integer
+          description: Page size
+          format: int32
+        sortBy:
+          type:
+          - string
+          - 'null'
+          description: Field name used for sorting
+        sortOrder:
+          allOf:
+          - $ref: '#/components/schemas/SortOrder'
+          description: Sort order
+        searchPhrase:
+          type:
+          - string
+          - 'null'
+          description: Full-text search phrase
         filter:
           type:
           - object
@@ -713,25 +705,56 @@ components:
             - 'null'
             items:
               type: string
-          description: A dictionary of field names and their corresponding values to filter the data.
-        aggregationField:
+          description: Filter criteria
+        viewId:
           type:
           - string
           - 'null'
-          description: The field to aggregate data by (e.g., for generating pie charts or grouped summaries).
-        maxAggregationResults:
-          type: integer
-          description: The number of aggregated results to return in the response
-          format: int32
+          description: View to use when formatting the data, if not provided, the default view will be used
       additionalProperties: false
-      description: Represents the request for aggregation.
-    ServiceResponse:
+      description: Represents the data model Task Dashboard request
+    SortOrder:
+      enum:
+      - Ascending
+      - Descending
+      type: string
+    TaskDashboardDataDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/TaskDashboardDataDto'
+          description: Represents the data returned by the Task Dashboard
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AggregationResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/AggregationResponseDto'
+          description: Represents the response after aggregation.
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    StringArrayServiceResponse:
       type: object
       properties:
         data:
           type:
-          - string
+          - array
           - 'null'
+          items:
+            type: string
         messages:
           type:
           - array
@@ -784,26 +807,17 @@ components:
           description: View to use when formatting the data, if not provided, the default view will be used
       additionalProperties: false
       description: Represents the data model Journey Dashboard request
-    JourneyDashboardDataDto:
+    AggregatedFieldDto:
       type: object
       properties:
-        total:
-          type: integer
-          description: Total number of items matching the criteria
-          format: int64
-        items:
+        fieldValue:
           type:
-          - array
+          - string
           - 'null'
-          items: {}
-          description: Items for the requested page
+        count:
+          type: integer
+          format: int32
       additionalProperties: false
-      description: Represents the data returned by the Journey Dashboard
-    SortOrder:
-      enum:
-      - Ascending
-      - Descending
-      type: string
     TaskDashboardDataDto:
       type: object
       properties:
@@ -819,54 +833,96 @@ components:
           description: Items for the requested page
       additionalProperties: false
       description: Represents the data returned by the Task Dashboard
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    JourneyDashboardDataDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/JourneyDashboardDataDto'
+          description: Represents the data returned by the Journey Dashboard
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AggregationResponseDto:
+      type: object
+      properties:
+        aggregatedResults:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AggregatedFieldDto'
+          description: The aggregated results
+        totalCount:
+          type: integer
+          description: The combined total of all aggregated counts
+          format: int64
+      additionalProperties: false
+      description: Represents the response after aggregation.
+    JourneyDashboardDataDto:
+      type: object
+      properties:
+        total:
+          type: integer
+          description: Total number of items matching the criteria
+          format: int64
+        items:
+          type:
+          - array
+          - 'null'
+          items: {}
+          description: Items for the requested page
+      additionalProperties: false
+      description: Represents the data returned by the Journey Dashboard
+    AggregationRequestDto:
+      type: object
+      properties:
+        filter:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type:
+            - array
+            - 'null'
+            items:
+              type: string
+          description: A dictionary of field names and their corresponding values to filter the data.
+        aggregationField:
+          type:
+          - string
+          - 'null'
+          description: The field to aggregate data by (e.g., for generating pie charts or grouped summaries).
+        maxAggregationResults:
+          type: integer
+          description: The number of aggregated results to return in the response
+          format: int32
+      additionalProperties: false
+      description: Represents the request for aggregation.
     ObjectServiceResponse:
       type: object
       properties:
         data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    StringArrayServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    TaskDashboardDataDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/TaskDashboardDataDto'
-          description: Represents the data returned by the Task Dashboard
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    AggregationResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/AggregationResponseDto'
-          description: Represents the response after aggregation.
         messages:
           type:
           - array
@@ -888,62 +944,6 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    AggregatedFieldDto:
-      type: object
-      properties:
-        fieldValue:
-          type:
-          - string
-          - 'null'
-        count:
-          type: integer
-          format: int32
-      additionalProperties: false
-    TaskDashboardDataRequestDto:
-      type: object
-      properties:
-        page:
-          minimum: 0
-          type: integer
-          description: Requested page number
-          format: int32
-        pageSize:
-          minimum: 1
-          type: integer
-          description: Page size
-          format: int32
-        sortBy:
-          type:
-          - string
-          - 'null'
-          description: Field name used for sorting
-        sortOrder:
-          allOf:
-          - $ref: '#/components/schemas/SortOrder'
-          description: Sort order
-        searchPhrase:
-          type:
-          - string
-          - 'null'
-          description: Full-text search phrase
-        filter:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type:
-            - array
-            - 'null'
-            items:
-              type: string
-          description: Filter criteria
-        viewId:
-          type:
-          - string
-          - 'null'
-          description: View to use when formatting the data, if not provided, the default view will be used
-      additionalProperties: false
-      description: Represents the data model Task Dashboard request
   securitySchemes:
     Bearer:
       type: apiKey

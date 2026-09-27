@@ -847,7 +847,7 @@ paths:
         Required permissions:
 
         Following permissions are required: SecurityCreateUser, UserAdministration'
-      operationId: CreateUser
+      operationId: postApiUsers
       parameters:
       - name: X-TENANT-ID
         in: header
@@ -923,6 +923,8 @@ paths:
                 - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
                   type: Error
                   errorCode: OBSOLETE_ENDPOINT
+      x-operation-id-source: normalized
+      x-operation-id-original: CreateUser
     get:
       tags:
       - Users
@@ -1028,7 +1030,7 @@ paths:
         Required permissions:
 
         Following permissions are required: SecurityDeleteUser, UserAdministration'
-      operationId: DeleteUser
+      operationId: deleteApiUsersById
       parameters:
       - name: id
         in: path
@@ -1101,6 +1103,8 @@ paths:
                 - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
                   type: Error
                   errorCode: OBSOLETE_ENDPOINT
+      x-operation-id-source: normalized
+      x-operation-id-original: DeleteUser
     put:
       tags:
       - Users
@@ -1116,7 +1120,7 @@ paths:
         Required permissions:
 
         Following permissions are required: SecurityEditUser, UserAdministration'
-      operationId: UpdateUser
+      operationId: putApiUsersById
       parameters:
       - name: id
         in: path
@@ -1207,6 +1211,8 @@ paths:
                 - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
                   type: Error
                   errorCode: OBSOLETE_ENDPOINT
+      x-operation-id-source: normalized
+      x-operation-id-original: UpdateUser
     patch:
       tags:
       - Users
@@ -1222,7 +1228,7 @@ paths:
         Required permissions:
 
         Following permissions are required: SecurityEditUser, UserAdministration'
-      operationId: PatchUser
+      operationId: patchApiUsersById
       parameters:
       - name: id
         in: path
@@ -1301,6 +1307,8 @@ paths:
                 - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
                   type: Error
                   errorCode: OBSOLETE_ENDPOINT
+      x-operation-id-source: normalized
+      x-operation-id-original: PatchUser
     get:
       tags:
       - Users
@@ -1308,7 +1316,7 @@ paths:
       description: 'Required permissions:
 
         Following permissions are required: UserAdministration'
-      operationId: GetUserById
+      operationId: getApiUsersById
       parameters:
       - name: id
         in: path
@@ -1385,6 +1393,8 @@ paths:
                 - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
                   type: Error
                   errorCode: OBSOLETE_ENDPOINT
+      x-operation-id-source: normalized
+      x-operation-id-original: GetUserById
     servers:
     - url: /identitymanagementcommand
   /api/users/{id}/unlock:
@@ -1561,6 +1571,249 @@ paths:
     - url: /identitymanagementcommand
 components:
   schemas:
+    UsersGenericMultiValuedAttributeDto:
+      type: object
+      properties:
+        type:
+          type:
+          - string
+          - 'null'
+          description: A label indicating the attribute's function
+          example: work
+        primary:
+          type: boolean
+          description: "A Boolean value indicating the 'primary' or preferred attribute value for this attribute, \ne.g., the preferred mailing address or primary email address"
+          example: true
+        value:
+          type:
+          - string
+          - 'null'
+          description: The value of the attribute
+          example: bjensen@example.com
+        display:
+          type:
+          - string
+          - 'null'
+          description: A human-readable name, primarily used for display purposes
+          example: bjensen@example.com
+      additionalProperties: false
+    MetaDto:
+      type: object
+      properties:
+        resourceType:
+          type:
+          - string
+          - 'null'
+          description: The name of the resource type of the resource
+          example: User
+        created:
+          type: string
+          description: The "DateTime" that the resource was added to the service provider
+          format: date-time
+          example: '2022-02-02T12:59:59.123456'
+        lastModified:
+          type: string
+          description: 'The most recent "DateTime" that the details of this were updated at the service provider. <br />
+
+            If this resource has never been modified since its initial creation, the value will be the same as the value of "created"'
+          format: date-time
+          example: '2022-02-02T12:59:59.123456'
+        location:
+          type:
+          - string
+          - 'null'
+          description: The URI of the resource being returned
+          example: https://company.com/scim/Users/12345678-1234-1234-1234-123456789011
+        version:
+          type: integer
+          description: The version of the resource being returned
+          format: int32
+          example: 0
+      additionalProperties: false
+      description: A complex attribute containing resource metadata, assigned by the service provider
+    UsersNameDto:
+      type: object
+      properties:
+        formatted:
+          type:
+          - string
+          - 'null'
+          description: The full name, including all middle names, titles, and suffixes as appropriate, formatted for display
+          example: Ms. Barbara Jane Jensen, III
+        familyName:
+          type:
+          - string
+          - 'null'
+          description: The family name of the User, or last name in most Western languages
+          example: Jensen
+        givenName:
+          type:
+          - string
+          - 'null'
+          description: The given name of the User, or first name in most Western languages
+          example: Barbara
+        middleName:
+          type:
+          - string
+          - 'null'
+          description: The middle name(s) of the User
+          example: Jane
+        honorificPrefix:
+          type:
+          - string
+          - 'null'
+          description: The honorific prefix(es) of the User, or title in most Western languages
+          example: Ms
+        honorificSuffix:
+          type:
+          - string
+          - 'null'
+          description: The honorific suffix(es) of the User, or suffix in most Western languages
+          example: III
+      additionalProperties: false
+      description: "The components of the user's name. <br />\nProviders MAY return just the full name as a single string in the formatted sub-attribute, or they MAY return just the individual \ncomponent attributes using the other sub-attributes, or they MAY return both. If both variants are returned, they SHOULD be \ndescribing the same name, with the formatted name indicating how the component attributes should be combined."
+    SearchSCIMRepresentationOrders:
+      enum:
+      - 0
+      - 1
+      type: integer
+      format: int32
+    UsersCreateUpdateRequestDto:
+      type: object
+      properties:
+        externalId:
+          type:
+          - string
+          - 'null'
+          description: A String that is an identifier for the user as defined by the provisioning client
+          example: '701984'
+        userName:
+          type:
+          - string
+          - 'null'
+          description: 'Unique identifier for the User, typically used by the user to directly authenticate to the service provider. <br />
+
+            Each User MUST include a non-empty userName value. This identifier MUST be unique across the service provider''s entire set of Users.'
+          example: bjensen@example.com
+        name:
+          $ref: '#/components/schemas/UsersNameDto'
+        active:
+          type: boolean
+          description: A Boolean value indicating the user's administrative status
+          example: true
+        displayName:
+          type:
+          - string
+          - 'null'
+          description: The name of the User, suitable for display to end-users. The name SHOULD be the full name of the User being described, if known
+          example: Babs Jensen
+        nickName:
+          type:
+          - string
+          - 'null'
+          description: 'The casual way to address the user in real life, e.g., ''Bob'' or ''Bobby'' instead of ''Robert''.
+
+            This attribute SHOULD NOT be used to represent a User''s username (e.g., ''bjensen'' or ''mpepperidge'').'
+          example: Babs
+        profileUrl:
+          type:
+          - string
+          - 'null'
+          description: A fully qualified URL pointing to a page representing the User's online profile.
+        userType:
+          type:
+          - string
+          - 'null'
+          description: 'Used to identify the relationship between the organization and the user. <br />
+
+            Typical values used might be "Contractor", "Employee", "Intern", "Temp", "External", and "Unknown", but any value may be used'
+          example: Employee
+        title:
+          type:
+          - string
+          - 'null'
+          description: The user's title
+          example: Tour Guide
+        preferredLanguage:
+          type:
+          - string
+          - 'null'
+          description: 'Indicates the user''s preferred written or spoken languages and is generally used for selecting a localized user interface. <br />
+
+            The format of the value is the same as the HTTP Accept-Language header field'
+          example: en-US
+        locale:
+          type:
+          - string
+          - 'null'
+          description: Used to indicate the User's default location for purposes of localizing such items as currency, date time format, or numerical representations
+          example: en-US
+        timezone:
+          type:
+          - string
+          - 'null'
+          description: The User's time zone, in IANA Time Zone database format
+          example: America/Los_Angeles
+        emails:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
+          description: Email addresses for the User. The values SHOULD be specified according to [RFC5321]
+        phoneNumbers:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
+          description: Phone numbers for the user. The values SHOULD be specified according to the format defined in [RFC3966]
+        ims:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
+          description: 'Instant messaging address for the user. <br />
+
+            Possible types for this attribute: "aim", "gtalk", "icq", "xmpp", "msn", "skype", "qq", "yahoo", or "other"'
+        photos:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
+          description: 'URLs of photos of the User. <br />
+
+            Possible types for this attribute: "photo" and "thumbnail"'
+        addresses:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UsersAddressMultiValuedAttributeDto'
+          description: 'A list of physical mailing addresses for this User <br />
+
+            Possible types for this attribute: "work", "home", and "other"'
+        x509Certificates:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
+          description: A list of certificates issued to the User
+        urn:ietf:params:scim:schemas:extension:custom:1.0:User:
+          $ref: '#/components/schemas/UsersCustomPropertiesExtensionSchemaDto'
+        schemas:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />
+
+            Example: [ "urn:ietf:params:scim:schemas:core:2.0:User", "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User", "urn:ietf:params:scim:schemas:extension:custom:1.0:User" ]'
+      additionalProperties: false
     ListUsersResponseDto:
       type: object
       properties:
@@ -1596,98 +1849,27 @@ components:
             $ref: '#/components/schemas/UsersResponseDto'
           description: A list of all the users. This MAY be a subset of the full set of users if pagination is requested
       additionalProperties: false
-    SortOrders:
-      enum:
-      - 0
-      - 1
-      type: integer
-      format: int32
-    SearchSCIMRepresentationOrders:
-      enum:
-      - 0
-      - 1
-      type: integer
-      format: int32
-    ErrorResponseDto:
+    UsersPatchRequestOperationDto:
       type: object
       properties:
-        schemas:
+        op:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            type: string
-          description: 'List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />
+          description: 'Indicates the operation to perform. <br />
 
-            Example: [ "urn:ietf:params:scim:api:messages:2.0:Error" ]'
-        status:
+            Possible values: "add", "remove", or "replace"'
+          example: add
+        path:
           type:
           - string
           - 'null'
-          description: The HTTP status code of the error response
-          example: '400'
-        scimType:
-          type:
-          - string
-          - 'null'
-          description: The type of error
-          example: invalidSyntax
-        detail:
-          type:
-          - string
-          - 'null'
-          description: The summary of the error
-          example: The request is not well-formatted
-      additionalProperties: false
-    UsersAddressMultiValuedAttributeDto:
-      type: object
-      properties:
-        type:
-          type:
-          - string
-          - 'null'
-          description: A label indicating the attribute's function
-          example: work
-        primary:
-          type: boolean
-          description: "A Boolean value indicating the 'primary' or preferred attribute value for this attribute, \ne.g., the preferred mailing address or primary email address"
-          example: true
-        formatted:
-          type:
-          - string
-          - 'null'
-          description: The full mailing address, formatted for display or use with a mailing label. This attribute MAY contain newlines.
-          example: 100 Universal City Plaza, Hollywood, CA 91608 USA
-        streetAddress:
-          type:
-          - string
-          - 'null'
-          description: "The full street address component, which may include house number, street name, P.O. box, and multi-line extended street address information. \nThis attribute MAY contain newlines"
-          example: 100 Universal City Plaza
-        locality:
-          type:
-          - string
-          - 'null'
-          description: The city or locality component
-          example: Hollywood
-        region:
-          type:
-          - string
-          - 'null'
-          description: The state or region component
-          example: CA
-        postalCode:
-          type:
-          - string
-          - 'null'
-          description: The zip code or postal code component
-          example: '91608'
-        country:
-          type:
-          - string
-          - 'null'
-          description: The country name component
-          example: USA
+          description: 'Describes the attribute path that wants to be updated. <br />
+
+            The "path" attribute is OPTIONAL for "add" and "replace" and is REQUIRED for "remove" operations'
+          example: name.familyName
+        value:
+          description: The new value for the attribute. REQUIRED for "add" and "replace" operations
       additionalProperties: false
     UsersResponseDto:
       type: object
@@ -1833,197 +2015,55 @@ components:
         meta:
           $ref: '#/components/schemas/MetaDto'
       additionalProperties: false
-    MetaDto:
+    UsersAddressMultiValuedAttributeDto:
       type: object
       properties:
-        resourceType:
+        type:
           type:
           - string
           - 'null'
-          description: The name of the resource type of the resource
-          example: User
-        created:
-          type: string
-          description: The "DateTime" that the resource was added to the service provider
-          format: date-time
-          example: '2022-02-02T12:59:59.123456'
-        lastModified:
-          type: string
-          description: 'The most recent "DateTime" that the details of this were updated at the service provider. <br />
-
-            If this resource has never been modified since its initial creation, the value will be the same as the value of "created"'
-          format: date-time
-          example: '2022-02-02T12:59:59.123456'
-        location:
-          type:
-          - string
-          - 'null'
-          description: The URI of the resource being returned
-          example: https://company.com/scim/Users/12345678-1234-1234-1234-123456789011
-        version:
-          type: integer
-          description: The version of the resource being returned
-          format: int32
-          example: 0
-      additionalProperties: false
-      description: A complex attribute containing resource metadata, assigned by the service provider
-    UsersPatchRequestOperationDto:
-      type: object
-      properties:
-        op:
-          type:
-          - string
-          - 'null'
-          description: 'Indicates the operation to perform. <br />
-
-            Possible values: "add", "remove", or "replace"'
-          example: add
-        path:
-          type:
-          - string
-          - 'null'
-          description: 'Describes the attribute path that wants to be updated. <br />
-
-            The "path" attribute is OPTIONAL for "add" and "replace" and is REQUIRED for "remove" operations'
-          example: name.familyName
-        value:
-          description: The new value for the attribute. REQUIRED for "add" and "replace" operations
-      additionalProperties: false
-    UsersCreateUpdateRequestDto:
-      type: object
-      properties:
-        externalId:
-          type:
-          - string
-          - 'null'
-          description: A String that is an identifier for the user as defined by the provisioning client
-          example: '701984'
-        userName:
-          type:
-          - string
-          - 'null'
-          description: 'Unique identifier for the User, typically used by the user to directly authenticate to the service provider. <br />
-
-            Each User MUST include a non-empty userName value. This identifier MUST be unique across the service provider''s entire set of Users.'
-          example: bjensen@example.com
-        name:
-          $ref: '#/components/schemas/UsersNameDto'
-        active:
+          description: A label indicating the attribute's function
+          example: work
+        primary:
           type: boolean
-          description: A Boolean value indicating the user's administrative status
+          description: "A Boolean value indicating the 'primary' or preferred attribute value for this attribute, \ne.g., the preferred mailing address or primary email address"
           example: true
-        displayName:
+        formatted:
           type:
           - string
           - 'null'
-          description: The name of the User, suitable for display to end-users. The name SHOULD be the full name of the User being described, if known
-          example: Babs Jensen
-        nickName:
+          description: The full mailing address, formatted for display or use with a mailing label. This attribute MAY contain newlines.
+          example: 100 Universal City Plaza, Hollywood, CA 91608 USA
+        streetAddress:
           type:
           - string
           - 'null'
-          description: 'The casual way to address the user in real life, e.g., ''Bob'' or ''Bobby'' instead of ''Robert''.
-
-            This attribute SHOULD NOT be used to represent a User''s username (e.g., ''bjensen'' or ''mpepperidge'').'
-          example: Babs
-        profileUrl:
+          description: "The full street address component, which may include house number, street name, P.O. box, and multi-line extended street address information. \nThis attribute MAY contain newlines"
+          example: 100 Universal City Plaza
+        locality:
           type:
           - string
           - 'null'
-          description: A fully qualified URL pointing to a page representing the User's online profile.
-        userType:
+          description: The city or locality component
+          example: Hollywood
+        region:
           type:
           - string
           - 'null'
-          description: 'Used to identify the relationship between the organization and the user. <br />
-
-            Typical values used might be "Contractor", "Employee", "Intern", "Temp", "External", and "Unknown", but any value may be used'
-          example: Employee
-        title:
+          description: The state or region component
+          example: CA
+        postalCode:
           type:
           - string
           - 'null'
-          description: The user's title
-          example: Tour Guide
-        preferredLanguage:
+          description: The zip code or postal code component
+          example: '91608'
+        country:
           type:
           - string
           - 'null'
-          description: 'Indicates the user''s preferred written or spoken languages and is generally used for selecting a localized user interface. <br />
-
-            The format of the value is the same as the HTTP Accept-Language header field'
-          example: en-US
-        locale:
-          type:
-          - string
-          - 'null'
-          description: Used to indicate the User's default location for purposes of localizing such items as currency, date time format, or numerical representations
-          example: en-US
-        timezone:
-          type:
-          - string
-          - 'null'
-          description: The User's time zone, in IANA Time Zone database format
-          example: America/Los_Angeles
-        emails:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
-          description: Email addresses for the User. The values SHOULD be specified according to [RFC5321]
-        phoneNumbers:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
-          description: Phone numbers for the user. The values SHOULD be specified according to the format defined in [RFC3966]
-        ims:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
-          description: 'Instant messaging address for the user. <br />
-
-            Possible types for this attribute: "aim", "gtalk", "icq", "xmpp", "msn", "skype", "qq", "yahoo", or "other"'
-        photos:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
-          description: 'URLs of photos of the User. <br />
-
-            Possible types for this attribute: "photo" and "thumbnail"'
-        addresses:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/UsersAddressMultiValuedAttributeDto'
-          description: 'A list of physical mailing addresses for this User <br />
-
-            Possible types for this attribute: "work", "home", and "other"'
-        x509Certificates:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
-          description: A list of certificates issued to the User
-        urn:ietf:params:scim:schemas:extension:custom:1.0:User:
-          $ref: '#/components/schemas/UsersCustomPropertiesExtensionSchemaDto'
-        schemas:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: 'List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />
-
-            Example: [ "urn:ietf:params:scim:schemas:core:2.0:User", "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User", "urn:ietf:params:scim:schemas:extension:custom:1.0:User" ]'
+          description: The country name component
+          example: USA
       additionalProperties: false
     UsersSearchRequestDto:
       type: object
@@ -2089,32 +2129,6 @@ components:
 
             Examples: [ "urn:ietf:params:scim:api:messages:2.0:BulkRequest" ], [ "urn:ietf:params:scim:api:messages:2.0:PatchOp" ]'
       additionalProperties: false
-    UsersGenericMultiValuedAttributeDto:
-      type: object
-      properties:
-        type:
-          type:
-          - string
-          - 'null'
-          description: A label indicating the attribute's function
-          example: work
-        primary:
-          type: boolean
-          description: "A Boolean value indicating the 'primary' or preferred attribute value for this attribute, \ne.g., the preferred mailing address or primary email address"
-          example: true
-        value:
-          type:
-          - string
-          - 'null'
-          description: The value of the attribute
-          example: bjensen@example.com
-        display:
-          type:
-          - string
-          - 'null'
-          description: A human-readable name, primarily used for display purposes
-          example: bjensen@example.com
-      additionalProperties: false
     UsersCustomPropertiesExtensionSchemaDto:
       type: object
       properties:
@@ -2128,62 +2142,42 @@ components:
       description: 'Extension schema to be able to specify custom properties for users.
 
         To be able to specify values for this property, it is required to add the following schema to the schemas list: "urn:ietf:params:scim:schemas:extension:custom:1.0:User"'
-    UsersNameDto:
+    SortOrders:
+      enum:
+      - 0
+      - 1
+      type: integer
+      format: int32
+    ErrorResponseDto:
       type: object
       properties:
-        formatted:
+        schemas:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />
+
+            Example: [ "urn:ietf:params:scim:api:messages:2.0:Error" ]'
+        status:
           type:
           - string
           - 'null'
-          description: The full name, including all middle names, titles, and suffixes as appropriate, formatted for display
-          example: Ms. Barbara Jane Jensen, III
-        familyName:
+          description: The HTTP status code of the error response
+          example: '400'
+        scimType:
           type:
           - string
           - 'null'
-          description: The family name of the User, or last name in most Western languages
-          example: Jensen
-        givenName:
+          description: The type of error
+          example: invalidSyntax
+        detail:
           type:
           - string
           - 'null'
-          description: The given name of the User, or first name in most Western languages
-          example: Barbara
-        middleName:
-          type:
-          - string
-          - 'null'
-          description: The middle name(s) of the User
-          example: Jane
-        honorificPrefix:
-          type:
-          - string
-          - 'null'
-          description: The honorific prefix(es) of the User, or title in most Western languages
-          example: Ms
-        honorificSuffix:
-          type:
-          - string
-          - 'null'
-          description: The honorific suffix(es) of the User, or suffix in most Western languages
-          example: III
-      additionalProperties: false
-      description: "The components of the user's name. <br />\nProviders MAY return just the full name as a single string in the formatted sub-attribute, or they MAY return just the individual \ncomponent attributes using the other sub-attributes, or they MAY return both. If both variants are returned, they SHOULD be \ndescribing the same name, with the formatted name indicating how the component attributes should be combined."
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
+          description: The summary of the error
+          example: The request is not well-formatted
       additionalProperties: false
     UserCreatedDtoServiceResponse:
       type: object
@@ -2223,18 +2217,6 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    CreateUserDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/CreateUserDto'
-      additionalProperties: false
-    PatchUserDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/PatchUserDto'
-      additionalProperties: false
     UpdateUserDto:
       required:
       - firstName
@@ -2266,6 +2248,12 @@ components:
           description: A flag that indicates if user is active or suspended in current tenant
       additionalProperties: false
       description: Represents the data transfer object for updating a user (PUT).
+    PatchUserDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/PatchUserDto'
+      additionalProperties: false
     UpdateUserDtoServiceRequest:
       type: object
       properties:
@@ -2304,17 +2292,6 @@ components:
             Example: {"stringProperty": "value", "booleanProperty": false, "numberProperty": 1}'
       additionalProperties: false
       description: Represents the data transfer object for creating a user.
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
     PatchUserDto:
       type: object
       properties:
@@ -2345,13 +2322,32 @@ components:
           description: A flag that indicates if user is active or suspended in current tenant
       additionalProperties: false
       description: Represents the data transfer object for updating a user (PATCH).
-    StringServiceResponse:
+    ServiceResponseMessage:
       type: object
       properties:
-        data:
+        message:
           type:
           - string
           - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    CreateUserDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/CreateUserDto'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
         messages:
           type:
           - array
@@ -2359,11 +2355,13 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    UserDtoServiceResponse:
+    StringServiceResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/UserDto'
+          type:
+          - string
+          - 'null'
         messages:
           type:
           - array
@@ -2440,6 +2438,30 @@ components:
           description: The unique identifier of the user in the Fen-X Identity SCIM system
       additionalProperties: false
       description: Represents the data transfer object for a user.
+    UsersPaginationResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/UsersPaginationResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    UserDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/UserDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
     UsersPaginationResponseDto:
       required:
       - from
@@ -2469,18 +2491,6 @@ components:
             $ref: '#/components/schemas/UserDto'
       additionalProperties: false
       description: Represents the data transfer object for users pagination response.
-    UsersPaginationResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/UsersPaginationResponseDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
   securitySchemes:
     Bearer:
       type: apiKey

@@ -1158,39 +1158,7 @@ paths:
     - url: /riskcommand
 components:
   schemas:
-    ApproveActionServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ApproveAction'
-      additionalProperties: false
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    VersionStatus:
-      enum:
-      - Draft
-      - Pending
-      - Rejected
-      - Published
-      - Archived
-      - Deleted
-      type: string
-    Signee:
+    Approver:
       type: object
       properties:
         subject:
@@ -1207,107 +1175,6 @@ components:
           type: boolean
           readOnly: true
       additionalProperties: false
-    ApproveAction:
-      type: object
-      properties:
-        comment:
-          type:
-          - string
-          - 'null'
-        decision:
-          allOf:
-          - $ref: '#/components/schemas/Decision'
-        created:
-          type: string
-          format: date-time
-      additionalProperties: false
-    Decision:
-      enum:
-      - Approve
-      - Reject
-      type: string
-    ServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ThresholdModelDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ThresholdModelDto'
-          description: ThresholdModel version wrapper
-      additionalProperties: false
-    ThresholdModelVersionDto:
-      required:
-      - effectiveFrom
-      - name
-      - versionNumber
-      type: object
-      properties:
-        parentThresholdModelId:
-          type: string
-          description: The UiD of the model that the version belongs to
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        name:
-          minLength: 1
-          type: string
-          description: Display name of the model
-          example: Standard Threshold Model
-        thresholds:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ThresholdDto'
-          description: The list of threshold ranges that belong to this version
-        versionNumber:
-          maximum: 2147483647
-          minimum: 1
-          type: integer
-          description: The number of the model version
-          format: int32
-          example: 2
-        effectiveFrom:
-          type: string
-          description: The date that the version takes effect when published
-          format: date-time
-        created:
-          type: string
-          description: The creation date of the version
-          format: date-time
-        status:
-          allOf:
-          - $ref: '#/components/schemas/VersionStatus'
-          description: The status of the version
-          example: Draft
-        signees:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/Signee'
-          description: The defined list of signees for the version
-        notes:
-          maxLength: 2000
-          type:
-          - string
-          - 'null'
-          description: Optional description of changes made that will be visible to all users who can access the version. It's assumed that version notes won't contain 'personal identifiable information'. Please note that having many versions with very long notes could hurt API performance in the long term.
-          example: Example Notes
-      additionalProperties: false
-      description: A ThresholdModel version
     ModelVersionSignResponseServiceResponse:
       type: object
       properties:
@@ -1322,30 +1189,13 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    ModelVersionSignResponse:
+    ServiceResponse:
       type: object
       properties:
-        parentModelId:
-          type: string
-          description: The Id of the model the version belongs to
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        versionNumber:
-          type: integer
-          description: The number of the version that has been signed
-          format: int32
-          example: 3
-        status:
-          allOf:
-          - $ref: '#/components/schemas/VersionStatus'
-          description: The new version status
-          example: Published
-      additionalProperties: false
-      description: Contains the new version Status, after a version sign operation
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
+        data:
+          type:
+          - string
+          - 'null'
         messages:
           type:
           - array
@@ -1409,36 +1259,35 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    Approver:
+    VersionStatus:
+      enum:
+      - Draft
+      - Pending
+      - Rejected
+      - Published
+      - Archived
+      - Deleted
+      type: string
+    Decision:
+      enum:
+      - Approve
+      - Reject
+      type: string
+    ServiceResponseMessage:
       type: object
       properties:
-        subject:
+        message:
           type:
           - string
           - 'null'
-        successor:
-          allOf:
-          - $ref: '#/components/schemas/Approver'
-        action:
-          allOf:
-          - $ref: '#/components/schemas/ApproveAction'
-        hasProcessedRequest:
-          type: boolean
-          readOnly: true
-      additionalProperties: false
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
+        type:
           type:
           - string
           - 'null'
-        messages:
+        errorCode:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
     ThresholdModelDto:
       required:
@@ -1458,6 +1307,157 @@ components:
           description: The version of the model
       additionalProperties: false
       description: ThresholdModel version wrapper
+    ModelVersionSignResponse:
+      type: object
+      properties:
+        parentModelId:
+          type: string
+          description: The Id of the model the version belongs to
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        versionNumber:
+          type: integer
+          description: The number of the version that has been signed
+          format: int32
+          example: 3
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+          description: The new version status
+          example: Published
+      additionalProperties: false
+      description: Contains the new version Status, after a version sign operation
+    Signee:
+      type: object
+      properties:
+        subject:
+          type:
+          - string
+          - 'null'
+        successor:
+          allOf:
+          - $ref: '#/components/schemas/Approver'
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
+      additionalProperties: false
+    ThresholdModelVersionDto:
+      required:
+      - effectiveFrom
+      - name
+      - versionNumber
+      type: object
+      properties:
+        parentThresholdModelId:
+          type: string
+          description: The UiD of the model that the version belongs to
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        name:
+          minLength: 1
+          type: string
+          description: Display name of the model
+          example: Standard Threshold Model
+        thresholds:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ThresholdDto'
+          description: The list of threshold ranges that belong to this version
+        versionNumber:
+          maximum: 2147483647
+          minimum: 1
+          type: integer
+          description: The number of the model version
+          format: int32
+          example: 2
+        effectiveFrom:
+          type: string
+          description: The date that the version takes effect when published
+          format: date-time
+        created:
+          type: string
+          description: The creation date of the version
+          format: date-time
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+          description: The status of the version
+          example: Draft
+        signees:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/Signee'
+          description: The defined list of signees for the version
+        notes:
+          maxLength: 2000
+          type:
+          - string
+          - 'null'
+          description: Optional description of changes made that will be visible to all users who can access the version. It's assumed that version notes won't contain 'personal identifiable information'. Please note that having many versions with very long notes could hurt API performance in the long term.
+          example: Example Notes
+      additionalProperties: false
+      description: A ThresholdModel version
+    ApproveAction:
+      type: object
+      properties:
+        comment:
+          type:
+          - string
+          - 'null'
+        decision:
+          allOf:
+          - $ref: '#/components/schemas/Decision'
+        created:
+          type: string
+          format: date-time
+      additionalProperties: false
+    ApproveActionServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+      additionalProperties: false
+    ThresholdModelDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ThresholdModelDto'
+          description: ThresholdModel version wrapper
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
     Threshold:
       type: object
       properties:
@@ -1485,6 +1485,39 @@ components:
           - string
           - 'null'
       additionalProperties: false
+    ThresholdModelDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ThresholdModelDto_2'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ThresholdModelDto_2:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The UiD of the threshold model
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        versions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ThresholdModelVersionDto_2'
+          description: A list of the model versions metadata and calculated properties
+      additionalProperties: false
+      description: ThresholdModel with all version metadata
     ThresholdModelVersionDtoServiceResponse:
       type: object
       properties:
@@ -1576,39 +1609,6 @@ components:
           example: Example Notes
       additionalProperties: false
       description: ThresholdModel version data
-    ThresholdModelDtoIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ThresholdModelDto_2'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ThresholdModelDto_2:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The UiD of the threshold model
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        versions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ThresholdModelVersionDto_2'
-          description: A list of the model versions metadata and calculated properties
-      additionalProperties: false
-      description: ThresholdModel with all version metadata
   securitySchemes:
     Bearer:
       type: apiKey

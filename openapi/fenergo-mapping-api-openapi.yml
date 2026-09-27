@@ -463,28 +463,148 @@ paths:
     - url: /externaldataquery
 components:
   schemas:
-    Map:
+    ServiceResponse:
       type: object
       properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    MapDto:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+          description: Map Name
+          example: Example Map
+        map:
+          allOf:
+          - $ref: '#/components/schemas/Map'
+          description: Map defining source to target fields transformations
+      additionalProperties: false
+      description: Class to represent Source - Target Map
+    ObjectSelector:
+      type: object
+      properties:
+        fieldName:
+          type:
+          - string
+          - 'null'
+        value:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ObjectField:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+        order:
+          type: integer
+          format: int32
+        isLoV:
+          type: boolean
+        loVMapName:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ObjectToTextProperties:
+      type: object
+      properties:
+        separator:
+          type:
+          - string
+          - 'null'
+        fields:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ObjectField'
+        selector:
+          allOf:
+          - $ref: '#/components/schemas/ObjectSelector'
+      additionalProperties: false
+    LoVMap:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+        map:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type:
+            - string
+            - 'null'
+      additionalProperties: false
+    Mapping:
+      type: object
+      properties:
+        source:
+          type:
+          - string
+          - 'null'
+        target:
+          type:
+          - string
+          - 'null'
+        type:
+          allOf:
+          - $ref: '#/components/schemas/MappingType'
+        loVMapName:
+          type:
+          - string
+          - 'null'
+        toArray:
+          type: boolean
+        displaySource:
+          type: boolean
+        constantValue:
+          type:
+          - string
+          - 'null'
+        objectToTextProperties:
+          allOf:
+          - $ref: '#/components/schemas/ObjectToTextProperties'
         mappings:
           type:
           - array
           - 'null'
           items:
             $ref: '#/components/schemas/Mapping'
-        loVMaps:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/LoVMap'
-        loVArrayMaps:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/LoVArrayMap'
       additionalProperties: false
+    ProviderMappingDto:
+      required:
+      - operationsMappings
+      type: object
+      properties:
+        operationsMappings:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationMappingDto'
+          description: Set of Operation Mappings (Search Request, Search Response, Get Request, Get Response)
+      additionalProperties: false
+      description: Class to represent mappings set for Provider
     ServiceResponseMessage:
       type: object
       properties:
@@ -510,17 +630,54 @@ components:
           example: INTERNAL_SERVER_ERROR
       additionalProperties: false
       description: The message associated to the service response
-    OperationMappingDtoServiceRequest:
+    Map:
+      type: object
+      properties:
+        mappings:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/Mapping'
+        loVMaps:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/LoVMap'
+        loVArrayMaps:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/LoVArrayMap'
+      additionalProperties: false
+    ProviderMappingDtoServiceRequest:
       required:
       - data
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/OperationMappingDto'
+          - $ref: '#/components/schemas/ProviderMappingDto'
           description: The service request DTO
       additionalProperties: false
       description: Service request data
+    MappingType:
+      enum:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+      - 11
+      type: integer
+      format: int32
     OperationMappingDto:
       required:
       - maps
@@ -560,85 +717,6 @@ components:
           description: Set of Maps
       additionalProperties: false
       description: Class to represent mapping for single operation
-    ProviderMappingDtoServiceRequest:
-      required:
-      - data
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ProviderMappingDto'
-          description: The service request DTO
-      additionalProperties: false
-      description: Service request data
-    ServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    MapDto:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-          description: Map Name
-          example: Example Map
-        map:
-          allOf:
-          - $ref: '#/components/schemas/Map'
-          description: Map defining source to target fields transformations
-      additionalProperties: false
-      description: Class to represent Source - Target Map
-    Mapping:
-      type: object
-      properties:
-        source:
-          type:
-          - string
-          - 'null'
-        target:
-          type:
-          - string
-          - 'null'
-        type:
-          allOf:
-          - $ref: '#/components/schemas/MappingType'
-        loVMapName:
-          type:
-          - string
-          - 'null'
-        toArray:
-          type: boolean
-        displaySource:
-          type: boolean
-        constantValue:
-          type:
-          - string
-          - 'null'
-        objectToTextProperties:
-          allOf:
-          - $ref: '#/components/schemas/ObjectToTextProperties'
-        mappings:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/Mapping'
-      additionalProperties: false
     LoVArrayMap:
       type: object
       properties:
@@ -657,33 +735,17 @@ components:
             items:
               type: string
       additionalProperties: false
-    MappingType:
-      enum:
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-      - 6
-      - 7
-      - 8
-      - 9
-      - 10
-      - 11
-      type: integer
-      format: int32
-    ObjectSelector:
+    OperationMappingDtoServiceRequest:
+      required:
+      - data
       type: object
       properties:
-        fieldName:
-          type:
-          - string
-          - 'null'
-        value:
-          type:
-          - string
-          - 'null'
+        data:
+          allOf:
+          - $ref: '#/components/schemas/OperationMappingDto'
+          description: The service request DTO
       additionalProperties: false
+      description: Service request data
     ObjectServiceResponse:
       type: object
       properties:
@@ -698,68 +760,6 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    LoVMap:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-        map:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type:
-            - string
-            - 'null'
-      additionalProperties: false
-    ObjectToTextProperties:
-      type: object
-      properties:
-        separator:
-          type:
-          - string
-          - 'null'
-        fields:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ObjectField'
-        selector:
-          allOf:
-          - $ref: '#/components/schemas/ObjectSelector'
-      additionalProperties: false
-    ObjectField:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-        order:
-          type: integer
-          format: int32
-        isLoV:
-          type: boolean
-        loVMapName:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ProviderMappingDto:
-      required:
-      - operationsMappings
-      type: object
-      properties:
-        operationsMappings:
-          type: array
-          items:
-            $ref: '#/components/schemas/OperationMappingDto'
-          description: Set of Operation Mappings (Search Request, Search Response, Get Request, Get Response)
-      additionalProperties: false
-      description: Class to represent mappings set for Provider
     StringServiceResponse:
       type: object
       properties:
@@ -777,57 +777,21 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    MappingToolAllowedMappingTypesDto:
-      type: object
-      properties:
-        sourcePropertyType:
-          type:
-          - string
-          - 'null'
-        targetPropertyType:
-          type:
-          - string
-          - 'null'
-        mappingTypes:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-      additionalProperties: false
-    MappingIdentifierDto:
+    MapDto_2:
       type: object
       properties:
         name:
           type:
           - string
           - 'null'
-        category:
-          type:
-          - string
-          - 'null'
-        entityType:
-          type:
-          - string
-          - 'null'
-        targetEntity:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    MappingConfigurationDto:
-      type: object
-      properties:
-        operations:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/OperationDto'
-        mappingToolConfiguration:
+          description: Map Name
+          example: Example map
+        map:
           allOf:
-          - $ref: '#/components/schemas/MappingToolConfigurationDto'
+          - $ref: '#/components/schemas/Map'
+          description: Map defining source to target fields transformations
       additionalProperties: false
+      description: Class to represent Source - Target Map
     OperationMappingDto_2:
       type: object
       properties:
@@ -858,54 +822,23 @@ components:
           description: Set of Maps
       additionalProperties: false
       description: Class to represent mapping for single operation
-    ProviderMappingDto_2:
+    MappingToolAllowedMappingTypesDto:
       type: object
       properties:
-        providerId:
+        sourcePropertyType:
           type:
           - string
           - 'null'
-          description: The UiD of the Provider
-          example: f47b539d-ffb8-4cf2-bf68-1af79e3b0040
-        operationsMappings:
+        targetPropertyType:
+          type:
+          - string
+          - 'null'
+        mappingTypes:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/OperationMappingDto_2'
-          description: Set of Operation Mappings (Search Request, Search Response, Get Request, Get Response)
-      additionalProperties: false
-      description: Class to represent mappings set for Provider
-    MappingToolTypesDto:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int32
-        name:
-          type:
-          - string
-          - 'null'
-        caption:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    MappingToolConfigurationDto:
-      type: object
-      properties:
-        types:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/MappingToolTypesDto'
-        allowedMappingTypes:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/MappingToolAllowedMappingTypesDto'
+            type: string
       additionalProperties: false
     OperationDto:
       type: object
@@ -941,21 +874,88 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    MapDto_2:
+    MappingIdentifierDto:
       type: object
       properties:
         name:
           type:
           - string
           - 'null'
-          description: Map Name
-          example: Example map
-        map:
-          allOf:
-          - $ref: '#/components/schemas/Map'
-          description: Map defining source to target fields transformations
+        category:
+          type:
+          - string
+          - 'null'
+        entityType:
+          type:
+          - string
+          - 'null'
+        targetEntity:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
-      description: Class to represent Source - Target Map
+    MappingToolTypesDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        name:
+          type:
+          - string
+          - 'null'
+        caption:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    MappingToolConfigurationDto:
+      type: object
+      properties:
+        types:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/MappingToolTypesDto'
+        allowedMappingTypes:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/MappingToolAllowedMappingTypesDto'
+      additionalProperties: false
+    MappingConfigurationDto:
+      type: object
+      properties:
+        operations:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/OperationDto'
+        mappingToolConfiguration:
+          allOf:
+          - $ref: '#/components/schemas/MappingToolConfigurationDto'
+      additionalProperties: false
+    ProviderMappingDto_2:
+      type: object
+      properties:
+        providerId:
+          type:
+          - string
+          - 'null'
+          description: The UiD of the Provider
+          example: f47b539d-ffb8-4cf2-bf68-1af79e3b0040
+        operationsMappings:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/OperationMappingDto_2'
+          description: Set of Operation Mappings (Search Request, Search Response, Get Request, Get Response)
+      additionalProperties: false
+      description: Class to represent mappings set for Provider
     ProviderMappingDtoServiceResponse:
       type: object
       properties:

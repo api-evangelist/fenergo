@@ -1220,42 +1220,36 @@ paths:
     - url: /reviewcommand
 components:
   schemas:
-    ServiceResponseMessage:
+    Signee:
       type: object
       properties:
-        message:
+        subject:
           type:
           - string
           - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    EntityRuleVersionSignResponse:
-      type: object
-      properties:
-        entityRuleId:
-          type: string
-          format: uuid
-        versionNumber:
-          type: integer
-          format: int32
-        status:
+        successor:
           allOf:
-          - $ref: '#/components/schemas/VersionStatus'
+          - $ref: '#/components/schemas/Approver'
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
       additionalProperties: false
-    StringServiceResponse:
+    UpdateEntityRuleVersionDtoServiceRequest:
       type: object
       properties:
         data:
-          type:
-          - string
-          - 'null'
+          allOf:
+          - $ref: '#/components/schemas/UpdateEntityRuleVersionDto'
+      additionalProperties: false
+    EntityRuleDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/EntityRuleDto'
         messages:
           type:
           - array
@@ -1263,6 +1257,107 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
+    EntityRuleDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/EntityRuleDto'
+      additionalProperties: false
+    CloneEntityRuleVersionResponseServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CloneEntityRuleVersionResponse'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    UpdateEntityRuleVersionDto:
+      allOf:
+      - $ref: '#/components/schemas/EntityRuleDto'
+      - type: object
+        properties:
+          version:
+            type: integer
+            format: int32
+            default: -1
+        additionalProperties: false
+    ConditionDto:
+      required:
+      - logicalOperation
+      - operands
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type:
+          - string
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+        logicalOperation:
+          minLength: 1
+          type: string
+        operands:
+          minItems: 1
+          type: array
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto'
+      additionalProperties: false
+    CloneEntityRuleVersionDto:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ValueField:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+        field:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    EntityRuleVersionSignResponseServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/EntityRuleVersionSignResponse'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CloneEntityRuleVersionDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CloneEntityRuleVersionDto'
+      additionalProperties: false
+    Decision:
+      enum:
+      - Approve
+      - Reject
+      type: string
     EntityRuleDto:
       type: object
       properties:
@@ -1343,6 +1438,94 @@ components:
           allOf:
           - $ref: '#/components/schemas/VersionStatus'
       additionalProperties: false
+    ApproveActionServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    Approver:
+      type: object
+      properties:
+        subject:
+          type:
+          - string
+          - 'null'
+        successor:
+          allOf:
+          - $ref: '#/components/schemas/Approver'
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
+      additionalProperties: false
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    EntityRuleVersionSignResponse:
+      type: object
+      properties:
+        entityRuleId:
+          type: string
+          format: uuid
+        versionNumber:
+          type: integer
+          format: int32
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+      additionalProperties: false
     CloneEntityRuleVersionResponse:
       type: object
       properties:
@@ -1350,29 +1533,12 @@ components:
           type: string
           format: uuid
       additionalProperties: false
-    ValueField:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-        field:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    UpdateEntityRuleVersionDtoServiceRequest:
+    UpdateEntityRuleVersionDtoServiceResponse:
       type: object
       properties:
         data:
           allOf:
           - $ref: '#/components/schemas/UpdateEntityRuleVersionDto'
-      additionalProperties: false
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
         messages:
           type:
           - array
@@ -1425,129 +1591,6 @@ components:
           allOf:
           - $ref: '#/components/schemas/ValueField'
       additionalProperties: false
-    Approver:
-      type: object
-      properties:
-        subject:
-          type:
-          - string
-          - 'null'
-        successor:
-          allOf:
-          - $ref: '#/components/schemas/Approver'
-        action:
-          allOf:
-          - $ref: '#/components/schemas/ApproveAction'
-        hasProcessedRequest:
-          type: boolean
-          readOnly: true
-      additionalProperties: false
-    CloneEntityRuleVersionDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CloneEntityRuleVersionDto'
-      additionalProperties: false
-    EntityRuleVersionSignResponseServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/EntityRuleVersionSignResponse'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    CloneEntityRuleVersionDto:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    UpdateEntityRuleVersionDto:
-      allOf:
-      - $ref: '#/components/schemas/EntityRuleDto'
-      - type: object
-        properties:
-          version:
-            type: integer
-            format: int32
-            default: -1
-        additionalProperties: false
-    Signee:
-      type: object
-      properties:
-        subject:
-          type:
-          - string
-          - 'null'
-        successor:
-          allOf:
-          - $ref: '#/components/schemas/Approver'
-        action:
-          allOf:
-          - $ref: '#/components/schemas/ApproveAction'
-        hasProcessedRequest:
-          type: boolean
-          readOnly: true
-      additionalProperties: false
-    Decision:
-      enum:
-      - Approve
-      - Reject
-      type: string
-    ConditionDto:
-      required:
-      - logicalOperation
-      - operands
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type:
-          - string
-          - 'null'
-        description:
-          type:
-          - string
-          - 'null'
-        logicalOperation:
-          minLength: 1
-          type: string
-        operands:
-          minItems: 1
-          type: array
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto'
-      additionalProperties: false
-    CloneEntityRuleVersionResponseServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CloneEntityRuleVersionResponse'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    EntityRuleDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/EntityRuleDto'
-      additionalProperties: false
     ValidationErrorModel:
       type: object
       properties:
@@ -1565,26 +1608,6 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    EntityRuleDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/EntityRuleDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ApproveActionServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ApproveAction'
-      additionalProperties: false
     VersionStatus:
       enum:
       - Draft
@@ -1594,45 +1617,22 @@ components:
       - Archived
       - Deleted
       type: string
-    UpdateEntityRuleVersionDtoServiceResponse:
+    ServiceResponseMessage:
       type: object
       properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/UpdateEntityRuleVersionDto'
-        messages:
+        message:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
-    ValidationErrorModelListServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
     ApproveAction:
       type: object
       properties:
@@ -1647,6 +1647,78 @@ components:
           type: string
           format: date-time
       additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    BaseVersionDto:
+      type: object
+      properties:
+        versionNumber:
+          type: integer
+          description: The versions number
+          format: int32
+          example: 1
+        effectiveFrom:
+          type: string
+          description: The date that the version takes effect when published
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        effectiveUntil:
+          type:
+          - string
+          - 'null'
+          description: The calculated date that the version ceases being active
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        publicationDate:
+          type:
+          - string
+          - 'null'
+          description: The date that the version got published
+          format: date-time
+          readOnly: true
+          example: '2021-01-01T14:48:00.000Z'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+          description: The status of the version
+          example: Published
+        created:
+          type: string
+          description: The creation date of the version
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        isActive:
+          type: boolean
+          description: 'The calculated flag to annotate whether this is the model''s latest version
+
+            at the time of the query (not necessarily published)'
+          example: true
+        signees:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/Signee'
+          description: The defined list of signees for the version
+        version:
+          type: integer
+          description: Version number for given Aggregate (concurrency check)
+          format: int32
+          example: 1
+      additionalProperties: false
+      description: Response DTO representing data group version data
     EntityRuleVersionDtoServiceResponse:
       type: object
       properties:
@@ -1660,6 +1732,47 @@ components:
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    EntityRuleDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/EntityRuleDto_2'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ConditionDto_2:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type:
+          - string
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto'
       additionalProperties: false
     EntityRuleDto_2:
       type: object
@@ -1683,20 +1796,6 @@ components:
           example: 1
       additionalProperties: false
       description: Response DTO representing entity rule
-    ServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
     EntityRuleVersionDto:
       allOf:
       - $ref: '#/components/schemas/BaseVersionDto'
@@ -1793,105 +1892,6 @@ components:
             example: true
         additionalProperties: false
       description: Response DTO representing entity rule version data
-    ConditionDto_2:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type:
-          - string
-          - 'null'
-        description:
-          type:
-          - string
-          - 'null'
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-        operands:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto'
-      additionalProperties: false
-    BaseVersionDto:
-      type: object
-      properties:
-        versionNumber:
-          type: integer
-          description: The versions number
-          format: int32
-          example: 1
-        effectiveFrom:
-          type: string
-          description: The date that the version takes effect when published
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        effectiveUntil:
-          type:
-          - string
-          - 'null'
-          description: The calculated date that the version ceases being active
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        publicationDate:
-          type:
-          - string
-          - 'null'
-          description: The date that the version got published
-          format: date-time
-          readOnly: true
-          example: '2021-01-01T14:48:00.000Z'
-        status:
-          allOf:
-          - $ref: '#/components/schemas/VersionStatus'
-          description: The status of the version
-          example: Published
-        created:
-          type: string
-          description: The creation date of the version
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        isActive:
-          type: boolean
-          description: 'The calculated flag to annotate whether this is the model''s latest version
-
-            at the time of the query (not necessarily published)'
-          example: true
-        signees:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/Signee'
-          description: The defined list of signees for the version
-        version:
-          type: integer
-          description: Version number for given Aggregate (concurrency check)
-          format: int32
-          example: 1
-      additionalProperties: false
-      description: Response DTO representing data group version data
-    EntityRuleDtoIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/EntityRuleDto_2'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
   securitySchemes:
     Bearer:
       type: apiKey

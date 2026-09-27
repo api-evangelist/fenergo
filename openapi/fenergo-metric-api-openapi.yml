@@ -252,21 +252,341 @@ paths:
                 errorCode: OBSOLETE_ENDPOINT
 components:
   schemas:
-    ServiceResponseMessage:
+    GetAgentMetricsResponseDto:
       type: object
       properties:
-        message:
+        metrics:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AgentMetricsTimestreamResult'
+      additionalProperties: false
+    AgentMetricsQueryParameters:
+      required:
+      - agentType
+      - measureNames
+      - queryFromInDays
+      type: object
+      properties:
+        agentType:
           type:
           - string
           - 'null'
-        type:
+        queryFromInDays:
+          type: integer
+          format: int32
+        groupMetricsByMonth:
+          type: boolean
+        measureNames:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+      additionalProperties: false
+    TaskAutocompleteTimestreamResult:
+      type: object
+      properties:
+        taskType:
           type:
           - string
           - 'null'
-        errorCode:
+        policyRequirementType:
           type:
           - string
           - 'null'
+        taskName:
+          type:
+          - string
+          - 'null'
+        journeyType:
+          type:
+          - string
+          - 'null'
+        measureValue:
+          type: number
+          format: double
+        count:
+          type: integer
+          format: int32
+        timeBin:
+          type:
+          - string
+          - 'null'
+          format: date-time
+      additionalProperties: false
+    AgentValueSummaryRequestDto:
+      required:
+      - from
+      - to
+      type: object
+      properties:
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+      additionalProperties: false
+      description: Request body DTO for the agent value summary endpoint.
+    AgentMetricsTimestreamResult:
+      type: object
+      properties:
+        taskType:
+          type:
+          - string
+          - 'null'
+        journeyType:
+          type:
+          - string
+          - 'null'
+        measureName:
+          type:
+          - string
+          - 'null'
+        measureValue:
+          type: number
+          format: double
+        count:
+          type: integer
+          format: int32
+        timeBin:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        additionalDimensions:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type:
+            - string
+            - 'null'
+      additionalProperties: false
+    MonthlyAgentBucketDto:
+      required:
+      - month
+      type: object
+      properties:
+        docsClassified:
+          type: integer
+          format: int32
+        hitsAutoResolved:
+          type: integer
+          format: int32
+        suggestionsAccepted:
+          type: integer
+          format: int32
+        reportsGenerated:
+          type: integer
+          format: int32
+        sourcesRetrieved:
+          type: integer
+          format: int32
+        policyChecksRun:
+          type: integer
+          format: int32
+        signalChecksRun:
+          type: integer
+          format: int32
+        screeningDetectionsTotal:
+          type: integer
+          format: int32
+        screeningMatchCount:
+          type: integer
+          format: int32
+        screeningNoMatchCount:
+          type: integer
+          format: int32
+        screeningUnresolvedCount:
+          type: integer
+          format: int32
+        screeningSanctionsCount:
+          type: integer
+          description: 'Number of screening hits classified as Sanctions.
+
+            Populated from the per-category measure names emitted by Fenergo.Nebula.Screening (AB#543745).'
+          format: int32
+        screeningPepsCount:
+          type: integer
+          description: 'Number of screening hits classified as PEPs.
+
+            Populated from the per-category measure names emitted by Fenergo.Nebula.Screening (AB#543745).'
+          format: int32
+        screeningAdverseMediaCount:
+          type: integer
+          description: 'Number of screening hits classified as Adverse Media.
+
+            Populated from the per-category measure names emitted by Fenergo.Nebula.Screening (AB#543745).'
+          format: int32
+        idpFieldExtractedCount:
+          type: integer
+          description: "`IDP_field_extracted_count` Timestream measure count for the Document agent (AB#547917;\n            promoted onto this shared base — and therefore onto Fenergo.Nebula.DigitalAgents.Query.Application.Features.GetAgentValueSummary.MonthlyAgentBucketDto — by\n            AB#550406). Same query/aggregation shape as Fenergo.Nebula.DigitalAgents.Query.Application.Features.GetAgentValueSummary.AgentValueCountsDto.DocsClassified. Feeds BusinessMetrics'\n            Capacity gauge \"Data field extractions\" pricing metric via `CapacityAgentActionCountsDto.Extraction`\n            on the total, and its per-period capacity-consumption ledger (AB#550218) on the monthly breakdown.\n            Not broken out by document type — aggregate-only."
+          format: int32
+        month:
+          type:
+          - string
+          - 'null'
+          description: The calendar month represented as "yyyy-MM".
+      additionalProperties: false
+      description: Per-month aggregate counts for the agent value summary.
+    AgentValueSummaryResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/AgentValueSummaryResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    GetTaskAutocompletionMetricsResponseDto:
+      type: object
+      properties:
+        taskAutocompleteMetrics:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/TaskAutocompleteTimestreamResult'
+      additionalProperties: false
+    QueryParameters:
+      required:
+      - agentType
+      - queryFromInDays
+      type: object
+      properties:
+        agentType:
+          type:
+          - string
+          - 'null'
+        queryFromInDays:
+          type: integer
+          format: int32
+        groupMetricsByMonth:
+          type: boolean
+      additionalProperties: false
+    OperationsMonthlyBucketDto:
+      required:
+      - month
+      type: object
+      properties:
+        month:
+          type:
+          - string
+          - 'null'
+          description: '"yyyy-MM" bucket.'
+        interventionCount:
+          type: integer
+          description: Count of Trust.Decision.Overridden rows for the month, summed across all categories.
+          format: int32
+        agreementRate:
+          type:
+          - number
+          - 'null'
+          description: Percentage of reviewed decisions confirmed this month, summed across categories with a review denominator. Null when none exists.
+          format: double
+      additionalProperties: false
+      description: Monthly intervention volume and agreement-rate trend, summed across all decision categories.
+    QaFindingCandidateDto:
+      required:
+      - agent
+      - date
+      - id
+      - issue
+      - severity
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+          description: 'The finding''s natural key — the source event''s EntryId when present (rows written since
+
+            AB#547300''s rollout), else a composite `AgentExecutionId+Timestamp` fallback for
+
+            pre-rollout rows.'
+        agent:
+          type:
+          - string
+          - 'null'
+          description: The agent whose decision was overridden/reviewed.
+        issue:
+          type:
+          - string
+          - 'null'
+          description: 'A short description of what was flagged. The source event''s OverrideReason when populated
+
+            (Screening today), else falls back to the domain''s DecisionType — most domains don''t capture
+
+            a real reviewer-supplied reason yet, so this is a best-effort label, not a true diagnosis.'
+        severity:
+          type:
+          - string
+          - 'null'
+          description: 'Coarse severity placeholder (AB#547300) — NOT a real severity model. No confidence/score/
+
+            magnitude signal exists anywhere in the underlying Trust.Decision.* telemetry today (see
+
+            `GetAgentValueSummaryQueryHandler.DeriveSeverity` for the exact rule and why).'
+        date:
+          type: string
+          format: date-time
+      additionalProperties: false
+      description: 'A single QA finding candidate (AB#547300) — one qualifying Trust.Decision.Overridden event,
+
+        individually (not aggregated), for BusinessMetrics to consume and persist as a mutable
+
+        `QaFinding` (AB#547301). Read-only/point-in-time: DigitalAgents does not track status
+
+        (open/in review/resolved) — that''s owned by BusinessMetrics once a finding is persisted.'
+    OperationsOverrideReasonDto:
+      required:
+      - count
+      - pct
+      - reason
+      type: object
+      properties:
+        reason:
+          type:
+          - string
+          - 'null'
+          description: Verbatim Trust.Decision.Overridden OverrideReason value, or "Unspecified" when empty/missing.
+        count:
+          type: integer
+          description: Count of overrides with this reason.
+          format: int32
+        pct:
+          type: number
+          description: Percentage of all overrides (including Unspecified) with this reason, rounded to 1dp.
+          format: double
+      additionalProperties: false
+      description: 'Override-reason breakdown for Trust.Decision.Overridden, across all 4 domains (AB#546238).
+
+        Rows with an empty/missing OverrideReason (SmartDocs'' Overridden/AcceptedWithChanges paths,
+
+        domains that don''t populate the field) bucket under "Unspecified" rather than being dropped.'
+    QueryParametersServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/QueryParameters'
+      additionalProperties: false
+    GetAgentMetricsResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/GetAgentMetricsResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
     ProblemDetails:
       type: object
@@ -293,6 +613,38 @@ components:
           - string
           - 'null'
       additionalProperties: {}
+    GetTaskAutocompletionMetricsResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/GetTaskAutocompletionMetricsResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    DocClassificationBreakdownItemDto:
+      required:
+      - type
+      type: object
+      properties:
+        type:
+          type:
+          - string
+          - 'null'
+        count:
+          type: integer
+          format: int32
+      additionalProperties: false
+      description: A single per-document-type bucket in the document classification breakdown.
+    AgentValueSummaryRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/AgentValueSummaryRequestDto'
+      additionalProperties: false
     AgentValueSummaryResponseDto:
       type: object
       properties:
@@ -499,20 +851,6 @@ components:
           $ref: '#/components/schemas/AgentValueSummaryPriorPeriodDto'
       additionalProperties: false
       description: Response DTO for the agent value summary endpoint.
-    DocClassificationBreakdownItemDto:
-      required:
-      - type
-      type: object
-      properties:
-        type:
-          type:
-          - string
-          - 'null'
-        count:
-          type: integer
-          format: int32
-      additionalProperties: false
-      description: A single per-document-type bucket in the document classification breakdown.
     AgentValueSummaryPriorPeriodDto:
       type: object
       properties:
@@ -567,169 +905,22 @@ components:
         counts and rates a trend/prior-count calculation needs, not the full monthly-series/QA-findings
 
         payload for a comparison period nobody asked for at that granularity.'
-    AgentMetricsQueryParameters:
-      required:
-      - agentType
-      - measureNames
-      - queryFromInDays
+    ServiceResponseMessage:
       type: object
       properties:
-        agentType:
+        message:
           type:
           - string
           - 'null'
-        queryFromInDays:
-          type: integer
-          format: int32
-        groupMetricsByMonth:
-          type: boolean
-        measureNames:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-      additionalProperties: false
-    QueryParametersServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/QueryParameters'
-      additionalProperties: false
-    QueryParameters:
-      required:
-      - agentType
-      - queryFromInDays
-      type: object
-      properties:
-        agentType:
+        type:
           type:
           - string
           - 'null'
-        queryFromInDays:
-          type: integer
-          format: int32
-        groupMetricsByMonth:
-          type: boolean
-      additionalProperties: false
-    OperationsOverrideReasonDto:
-      required:
-      - count
-      - pct
-      - reason
-      type: object
-      properties:
-        reason:
+        errorCode:
           type:
           - string
           - 'null'
-          description: Verbatim Trust.Decision.Overridden OverrideReason value, or "Unspecified" when empty/missing.
-        count:
-          type: integer
-          description: Count of overrides with this reason.
-          format: int32
-        pct:
-          type: number
-          description: Percentage of all overrides (including Unspecified) with this reason, rounded to 1dp.
-          format: double
       additionalProperties: false
-      description: 'Override-reason breakdown for Trust.Decision.Overridden, across all 4 domains (AB#546238).
-
-        Rows with an empty/missing OverrideReason (SmartDocs'' Overridden/AcceptedWithChanges paths,
-
-        domains that don''t populate the field) bucket under "Unspecified" rather than being dropped.'
-    AgentValueSummaryRequestDto:
-      required:
-      - from
-      - to
-      type: object
-      properties:
-        from:
-          type: string
-          format: date-time
-        to:
-          type: string
-          format: date-time
-      additionalProperties: false
-      description: Request body DTO for the agent value summary endpoint.
-    GetTaskAutocompletionMetricsResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/GetTaskAutocompletionMetricsResponseDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    GetAgentMetricsResponseDto:
-      type: object
-      properties:
-        metrics:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/AgentMetricsTimestreamResult'
-      additionalProperties: false
-    GetTaskAutocompletionMetricsResponseDto:
-      type: object
-      properties:
-        taskAutocompleteMetrics:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/TaskAutocompleteTimestreamResult'
-      additionalProperties: false
-    AgentValueSummaryRequestDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/AgentValueSummaryRequestDto'
-      additionalProperties: false
-    AgentMetricsQueryParametersServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/AgentMetricsQueryParameters'
-      additionalProperties: false
-    GetAgentMetricsResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/GetAgentMetricsResponseDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    OperationsMonthlyBucketDto:
-      required:
-      - month
-      type: object
-      properties:
-        month:
-          type:
-          - string
-          - 'null'
-          description: '"yyyy-MM" bucket.'
-        interventionCount:
-          type: integer
-          description: Count of Trust.Decision.Overridden rows for the month, summed across all categories.
-          format: int32
-        agreementRate:
-          type:
-          - number
-          - 'null'
-          description: Percentage of reviewed decisions confirmed this month, summed across categories with a review denominator. Null when none exists.
-          format: double
-      additionalProperties: false
-      description: Monthly intervention volume and agreement-rate trend, summed across all decision categories.
     SignalVerdictBucketDto:
       required:
       - count
@@ -787,202 +978,11 @@ components:
       description: 'Per-decision-category intervention count and agreement rate, sourced from Trust.Decision.Overridden
 
         (all four domains) and Trust.Decision.Reviewed (Screening only today — see AB#546092 Open Question 1).'
-    QaFindingCandidateDto:
-      required:
-      - agent
-      - date
-      - id
-      - issue
-      - severity
-      type: object
-      properties:
-        id:
-          type:
-          - string
-          - 'null'
-          description: 'The finding''s natural key — the source event''s EntryId when present (rows written since
-
-            AB#547300''s rollout), else a composite `AgentExecutionId+Timestamp` fallback for
-
-            pre-rollout rows.'
-        agent:
-          type:
-          - string
-          - 'null'
-          description: The agent whose decision was overridden/reviewed.
-        issue:
-          type:
-          - string
-          - 'null'
-          description: 'A short description of what was flagged. The source event''s OverrideReason when populated
-
-            (Screening today), else falls back to the domain''s DecisionType — most domains don''t capture
-
-            a real reviewer-supplied reason yet, so this is a best-effort label, not a true diagnosis.'
-        severity:
-          type:
-          - string
-          - 'null'
-          description: 'Coarse severity placeholder (AB#547300) — NOT a real severity model. No confidence/score/
-
-            magnitude signal exists anywhere in the underlying Trust.Decision.* telemetry today (see
-
-            `GetAgentValueSummaryQueryHandler.DeriveSeverity` for the exact rule and why).'
-        date:
-          type: string
-          format: date-time
-      additionalProperties: false
-      description: 'A single QA finding candidate (AB#547300) — one qualifying Trust.Decision.Overridden event,
-
-        individually (not aggregated), for BusinessMetrics to consume and persist as a mutable
-
-        `QaFinding` (AB#547301). Read-only/point-in-time: DigitalAgents does not track status
-
-        (open/in review/resolved) — that''s owned by BusinessMetrics once a finding is persisted.'
-    MonthlyAgentBucketDto:
-      required:
-      - month
-      type: object
-      properties:
-        docsClassified:
-          type: integer
-          format: int32
-        hitsAutoResolved:
-          type: integer
-          format: int32
-        suggestionsAccepted:
-          type: integer
-          format: int32
-        reportsGenerated:
-          type: integer
-          format: int32
-        sourcesRetrieved:
-          type: integer
-          format: int32
-        policyChecksRun:
-          type: integer
-          format: int32
-        signalChecksRun:
-          type: integer
-          format: int32
-        screeningDetectionsTotal:
-          type: integer
-          format: int32
-        screeningMatchCount:
-          type: integer
-          format: int32
-        screeningNoMatchCount:
-          type: integer
-          format: int32
-        screeningUnresolvedCount:
-          type: integer
-          format: int32
-        screeningSanctionsCount:
-          type: integer
-          description: 'Number of screening hits classified as Sanctions.
-
-            Populated from the per-category measure names emitted by Fenergo.Nebula.Screening (AB#543745).'
-          format: int32
-        screeningPepsCount:
-          type: integer
-          description: 'Number of screening hits classified as PEPs.
-
-            Populated from the per-category measure names emitted by Fenergo.Nebula.Screening (AB#543745).'
-          format: int32
-        screeningAdverseMediaCount:
-          type: integer
-          description: 'Number of screening hits classified as Adverse Media.
-
-            Populated from the per-category measure names emitted by Fenergo.Nebula.Screening (AB#543745).'
-          format: int32
-        idpFieldExtractedCount:
-          type: integer
-          description: "`IDP_field_extracted_count` Timestream measure count for the Document agent (AB#547917;\n            promoted onto this shared base — and therefore onto Fenergo.Nebula.DigitalAgents.Query.Application.Features.GetAgentValueSummary.MonthlyAgentBucketDto — by\n            AB#550406). Same query/aggregation shape as Fenergo.Nebula.DigitalAgents.Query.Application.Features.GetAgentValueSummary.AgentValueCountsDto.DocsClassified. Feeds BusinessMetrics'\n            Capacity gauge \"Data field extractions\" pricing metric via `CapacityAgentActionCountsDto.Extraction`\n            on the total, and its per-period capacity-consumption ledger (AB#550218) on the monthly breakdown.\n            Not broken out by document type — aggregate-only."
-          format: int32
-        month:
-          type:
-          - string
-          - 'null'
-          description: The calendar month represented as "yyyy-MM".
-      additionalProperties: false
-      description: Per-month aggregate counts for the agent value summary.
-    AgentValueSummaryResponseDtoServiceResponse:
+    AgentMetricsQueryParametersServiceRequest:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/AgentValueSummaryResponseDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    TaskAutocompleteTimestreamResult:
-      type: object
-      properties:
-        taskType:
-          type:
-          - string
-          - 'null'
-        policyRequirementType:
-          type:
-          - string
-          - 'null'
-        taskName:
-          type:
-          - string
-          - 'null'
-        journeyType:
-          type:
-          - string
-          - 'null'
-        measureValue:
-          type: number
-          format: double
-        count:
-          type: integer
-          format: int32
-        timeBin:
-          type:
-          - string
-          - 'null'
-          format: date-time
-      additionalProperties: false
-    AgentMetricsTimestreamResult:
-      type: object
-      properties:
-        taskType:
-          type:
-          - string
-          - 'null'
-        journeyType:
-          type:
-          - string
-          - 'null'
-        measureName:
-          type:
-          - string
-          - 'null'
-        measureValue:
-          type: number
-          format: double
-        count:
-          type: integer
-          format: int32
-        timeBin:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        additionalDimensions:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type:
-            - string
-            - 'null'
+          $ref: '#/components/schemas/AgentMetricsQueryParameters'
       additionalProperties: false
   securitySchemes:
     Bearer:

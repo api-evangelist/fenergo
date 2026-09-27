@@ -1276,31 +1276,98 @@ paths:
     - url: /journeycommand
 components:
   schemas:
-    ServiceResponseMessage:
+    UpdateJourneyScheduleVersionDto:
       type: object
       properties:
-        message:
+        journeyScheduleId:
+          type: string
+          description: The UiD of the journey Schedule
+          format: uuid
+          example: 7084669b-0813-4faa-b1d5-b7bf6d749717
+        name:
           type:
           - string
           - 'null'
-          description: The message
-          example: Success
+          description: Journey schedule name
+          example: Client Onboarding
         type:
           type:
           - string
           - 'null'
-          description: 'Type of the message
-
-            One of Info, Warning, Error, Forbidden'
-          example: Info
-        errorCode:
+          description: Journey Type
+          example: Client Onboarding
+        notes:
           type:
           - string
           - 'null'
-          description: Error Code
-          example: INTERNAL_SERVER_ERROR
+          description: Optional description of the references and details of changes made that will be visible to all users who can access the version. It's assumed that version notes won't contain 'personal identifiable information'. Please note that having many versions with very long notes could hurt API performance in the long term.
+          example: Example Notes
+        versionNumber:
+          type: integer
+          description: The versions number
+          format: int32
+          example: 1
+        effectiveFrom:
+          type: string
+          description: The date that the version takes effect when published
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        signees:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/Signee'
+          description: The defined list of signees for the version
+        conditions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDto'
+          description: Conditions under which the Schedule can be used
+        version:
+          type: integer
+          description: "Current version of journey instance aggregate where the changes needs to be applied. This parameter is required \nto guarantee consistency and conflicts detection. If it is not provided, it will save new changes\non top of latest without conflicts checking"
+          format: int32
+          default: -1
+          example: 5
       additionalProperties: false
-      description: The message associated to the service response
+      description: Request DTO representing set of properties which define a new version of journey Schedule
+    CloneJourneyScheduleVersionResponseServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CloneJourneyScheduleVersionResponse'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    Signee:
+      type: object
+      properties:
+        subject:
+          type:
+          - string
+          - 'null'
+        successor:
+          allOf:
+          - $ref: '#/components/schemas/Approver'
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
+      additionalProperties: false
+      description: Defines a version Signee
     JourneyScheduleDto:
       required:
       - conditions
@@ -1366,15 +1433,6 @@ components:
           description: Conditions under which the Schedule can be used
       additionalProperties: false
       description: DTO representing journey Schedule data
-    CloneJourneyScheduleVersionDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CloneJourneyScheduleVersionDto'
-          description: The service request DTO
-      additionalProperties: false
-      description: Service request data
     CloneJourneyScheduleVersionDto:
       type: object
       properties:
@@ -1392,12 +1450,104 @@ components:
           example: Client Onboarding
       additionalProperties: false
       description: Request DTO representing clone journey Schedule data
-    JourneyScheduleDtoServiceResponse:
+    ConditionDto:
+      required:
+      - logicalOperation
+      - name
+      - operands
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the condition
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        name:
+          minLength: 1
+          type: string
+          description: The name of the condition
+          example: Company-type only
+        description:
+          type:
+          - string
+          - 'null'
+          description: The description of the condition
+          example: Applicable only when EntityType=Company
+        logicalOperation:
+          minLength: 1
+          type: string
+          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
+          example: AND
+        operands:
+          minItems: 1
+          type: array
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto'
+          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
+      additionalProperties: false
+      description: Represents condition root
+      example:
+        id: 118313c6-91e6-4b05-a537-5a1ab906418f
+        name: Company-type only
+        description: Applicable only when EntityType=Company
+        logicalOperation: AND
+        operands:
+        - fieldName: EntityType
+          value:
+          - string
+          valueType: text
+          operation: equal
+          operands: []
+    ValueField:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          description: Value of DataSource used to filter field values
+        field:
+          type:
+          - string
+          - 'null'
+          description: Field value used to validate conditional value
+      additionalProperties: false
+    Decision:
+      enum:
+      - Approve
+      - Reject
+      type: string
+    CloneJourneyScheduleVersionDtoServiceRequest:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/JourneyScheduleDto'
+          - $ref: '#/components/schemas/CloneJourneyScheduleVersionDto'
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
+    UpdateJourneyScheduleVersionDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UpdateJourneyScheduleVersionDto'
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
+    ApproveActionServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data:
           description: The service response DTO
         messages:
           type:
@@ -1408,15 +1558,6 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    JourneyScheduleDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/JourneyScheduleDto'
-          description: The service request DTO
-      additionalProperties: false
-      description: Service request data
     StringServiceResponse:
       type: object
       properties:
@@ -1434,12 +1575,32 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    CloneJourneyScheduleVersionResponseServiceResponse:
+    Approver:
+      type: object
+      properties:
+        subject:
+          type:
+          - string
+          - 'null'
+        successor:
+          allOf:
+          - $ref: '#/components/schemas/Approver'
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
+      additionalProperties: false
+    ValidationErrorModelListServiceResponse:
       type: object
       properties:
         data:
-          allOf:
-          - $ref: '#/components/schemas/CloneJourneyScheduleVersionResponse'
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
           description: The service response DTO
         messages:
           type:
@@ -1450,44 +1611,32 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    JourneyScheduleVersionSignResponse:
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    CloneJourneyScheduleVersionResponse:
       type: object
       properties:
         journeyScheduleId:
           type: string
-          description: The UiD of the journey Schedule
+          description: Id of the cloned journey schedule
           format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        versionNumber:
-          type: integer
-          description: The number of the version that has been signed
-          format: int32
-          example: 2
-        status:
-          allOf:
-          - $ref: '#/components/schemas/VersionStatus'
-          description: The new version status
-          example: Rejected
+          example: 7084669b-0813-4faa-b1d5-b7bf6d749717
       additionalProperties: false
-      description: Sign journey Schedule response contains the new version status
-    ValueField:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          description: Value of DataSource used to filter field values
-        field:
-          type:
-          - string
-          - 'null'
-          description: Field value used to validate conditional value
-      additionalProperties: false
-    ObjectServiceResponse:
+      description: Cloned journey schedule response data
+    JourneyScheduleVersionSignResponseServiceResponse:
       type: object
       properties:
         data:
+          allOf:
+          - $ref: '#/components/schemas/JourneyScheduleVersionSignResponse'
           description: The service response DTO
         messages:
           type:
@@ -1558,120 +1707,6 @@ components:
           description: Field value used for conditional limit validation
       additionalProperties: false
       description: Represents condition
-    Approver:
-      type: object
-      properties:
-        subject:
-          type:
-          - string
-          - 'null'
-        successor:
-          allOf:
-          - $ref: '#/components/schemas/Approver'
-        action:
-          allOf:
-          - $ref: '#/components/schemas/ApproveAction'
-        hasProcessedRequest:
-          type: boolean
-          readOnly: true
-      additionalProperties: false
-    Signee:
-      type: object
-      properties:
-        subject:
-          type:
-          - string
-          - 'null'
-        successor:
-          allOf:
-          - $ref: '#/components/schemas/Approver'
-        action:
-          allOf:
-          - $ref: '#/components/schemas/ApproveAction'
-        hasProcessedRequest:
-          type: boolean
-          readOnly: true
-      additionalProperties: false
-      description: Defines a version Signee
-    Decision:
-      enum:
-      - Approve
-      - Reject
-      type: string
-    ConditionDto:
-      required:
-      - logicalOperation
-      - name
-      - operands
-      type: object
-      properties:
-        id:
-          type: string
-          description: The ID of the condition
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        name:
-          minLength: 1
-          type: string
-          description: The name of the condition
-          example: Company-type only
-        description:
-          type:
-          - string
-          - 'null'
-          description: The description of the condition
-          example: Applicable only when EntityType=Company
-        logicalOperation:
-          minLength: 1
-          type: string
-          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
-          example: AND
-        operands:
-          minItems: 1
-          type: array
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto'
-          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
-      additionalProperties: false
-      description: Represents condition root
-      example:
-        id: 118313c6-91e6-4b05-a537-5a1ab906418f
-        name: Company-type only
-        description: Applicable only when EntityType=Company
-        logicalOperation: AND
-        operands:
-        - fieldName: EntityType
-          value:
-          - string
-          valueType: text
-          operation: equal
-          operands: []
-    JourneyScheduleVersionSignResponseServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/JourneyScheduleVersionSignResponse'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    CloneJourneyScheduleVersionResponse:
-      type: object
-      properties:
-        journeyScheduleId:
-          type: string
-          description: Id of the cloned journey schedule
-          format: uuid
-          example: 7084669b-0813-4faa-b1d5-b7bf6d749717
-      additionalProperties: false
-      description: Cloned journey schedule response data
     ValidationErrorModel:
       type: object
       properties:
@@ -1697,15 +1732,6 @@ components:
           example: NotNullValidator
       additionalProperties: false
       description: Represents the details of validation error
-    ApproveActionServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ApproveAction'
-          description: The service request DTO
-      additionalProperties: false
-      description: Service request data
     VersionStatus:
       enum:
       - Draft
@@ -1715,24 +1741,57 @@ components:
       - Archived
       - Deleted
       type: string
-    UpdateJourneyScheduleVersionDtoServiceRequest:
+    JourneyScheduleVersionSignResponse:
+      type: object
+      properties:
+        journeyScheduleId:
+          type: string
+          description: The UiD of the journey Schedule
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        versionNumber:
+          type: integer
+          description: The number of the version that has been signed
+          format: int32
+          example: 2
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+          description: The new version status
+          example: Rejected
+      additionalProperties: false
+      description: Sign journey Schedule response contains the new version status
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+          description: The message
+          example: Success
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
+      additionalProperties: false
+      description: The message associated to the service response
+    JourneyScheduleDtoServiceResponse:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/UpdateJourneyScheduleVersionDto'
-          description: The service request DTO
-      additionalProperties: false
-      description: Service request data
-    ValidationErrorModelListServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel'
+          - $ref: '#/components/schemas/JourneyScheduleDto'
           description: The service response DTO
         messages:
           type:
@@ -1743,16 +1802,15 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-      example:
+    JourneyScheduleDtoServiceRequest:
+      type: object
+      properties:
         data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
+          allOf:
+          - $ref: '#/components/schemas/JourneyScheduleDto'
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
     ApproveAction:
       type: object
       properties:
@@ -1767,64 +1825,6 @@ components:
           type: string
           format: date-time
       additionalProperties: false
-    UpdateJourneyScheduleVersionDto:
-      type: object
-      properties:
-        journeyScheduleId:
-          type: string
-          description: The UiD of the journey Schedule
-          format: uuid
-          example: 7084669b-0813-4faa-b1d5-b7bf6d749717
-        name:
-          type:
-          - string
-          - 'null'
-          description: Journey schedule name
-          example: Client Onboarding
-        type:
-          type:
-          - string
-          - 'null'
-          description: Journey Type
-          example: Client Onboarding
-        notes:
-          type:
-          - string
-          - 'null'
-          description: Optional description of the references and details of changes made that will be visible to all users who can access the version. It's assumed that version notes won't contain 'personal identifiable information'. Please note that having many versions with very long notes could hurt API performance in the long term.
-          example: Example Notes
-        versionNumber:
-          type: integer
-          description: The versions number
-          format: int32
-          example: 1
-        effectiveFrom:
-          type: string
-          description: The date that the version takes effect when published
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        signees:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/Signee'
-          description: The defined list of signees for the version
-        conditions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDto'
-          description: Conditions under which the Schedule can be used
-        version:
-          type: integer
-          description: "Current version of journey instance aggregate where the changes needs to be applied. This parameter is required \nto guarantee consistency and conflicts detection. If it is not provided, it will save new changes\non top of latest without conflicts checking"
-          format: int32
-          default: -1
-          example: 5
-      additionalProperties: false
-      description: Request DTO representing set of properties which define a new version of journey Schedule
     JourneyScheduleDto_2:
       type: object
       properties:
@@ -1847,41 +1847,6 @@ components:
           example: 1
       additionalProperties: false
       description: Response DTO representing journey Schedule data
-    ConditionDto_2:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The ID of the condition
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        name:
-          type:
-          - string
-          - 'null'
-          description: The name of the condition
-          example: Company-type only
-        description:
-          type:
-          - string
-          - 'null'
-          description: The description of the condition
-          example: Applicable only when EntityType=Company
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
-          example: AND
-        operands:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto'
-          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
-      additionalProperties: false
-      description: Represents condition root
     JourneyScheduleDtoIEnumerableServiceResponse:
       type: object
       properties:
@@ -1891,22 +1856,6 @@ components:
           - 'null'
           items:
             $ref: '#/components/schemas/JourneyScheduleDto_2'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    JourneyScheduleVersionDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/JourneyScheduleVersionDto'
           description: The service response DTO
         messages:
           type:
@@ -2011,6 +1960,57 @@ components:
           example: 1
       additionalProperties: false
       description: Response DTO representing journey Schedule version data
+    ConditionDto_2:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the condition
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        name:
+          type:
+          - string
+          - 'null'
+          description: The name of the condition
+          example: Company-type only
+        description:
+          type:
+          - string
+          - 'null'
+          description: The description of the condition
+          example: Applicable only when EntityType=Company
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
+          example: AND
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto'
+          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
+      additionalProperties: false
+      description: Represents condition root
+    JourneyScheduleVersionDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/JourneyScheduleVersionDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
   securitySchemes:
     Bearer:
       type: apiKey

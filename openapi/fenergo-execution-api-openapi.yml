@@ -1581,41 +1581,19 @@ paths:
                   errorCode: OBSOLETE_ENDPOINT
 components:
   schemas:
-    MetricName:
+    AttemptStatus:
       enum:
-      - ConsumedComplexity
-      - ThrottledRequests
+      - InProgress
+      - Success
+      - Failed
+      - Paused
       type: string
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    StepDataDto:
-      type: object
-      properties:
-        parameters: {}
-        state: {}
-        output: {}
-      additionalProperties: false
-    ServiceResponse:
+    MetricsResultDtoServiceResponse:
       type: object
       properties:
         data:
-          type:
-          - string
-          - 'null'
+          allOf:
+          - $ref: '#/components/schemas/MetricsResultDto'
         messages:
           type:
           - array
@@ -1623,15 +1601,12 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    ExecutionDtoIEnumerableServiceResponse:
+    ExecutionFilteredDtoPaginatedResponseServiceResponse:
       type: object
       properties:
         data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ExecutionDto'
+          allOf:
+          - $ref: '#/components/schemas/ExecutionFilteredDtoPaginatedResponse'
         messages:
           type:
           - array
@@ -1639,80 +1614,95 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    ExecutionFilteredDtoPaginatedResponse:
+    MetricStatistic:
+      enum:
+      - Sum
+      - Min
+      - Max
+      - Average
+      type: string
+    MetricsResultDto:
       type: object
       properties:
-        items:
+        pointsTotalCount:
+          type: integer
+          format: int32
+        results:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ExecutionFilteredDto'
-        nextToken:
-          type:
-          - string
-          - 'null'
-        hasNextPage:
-          type: boolean
+            $ref: '#/components/schemas/MetricDataPointDto'
       additionalProperties: false
-    ExecutionDto:
+    ComplexityBucketLimitsDtoIEnumerableServiceResponse:
       type: object
       properties:
-        id:
-          type: string
-          format: uuid
-        initiatorType:
-          allOf:
-          - $ref: '#/components/schemas/SourceType'
-        sourceId:
-          type: string
-          format: uuid
-        parentExecutionId:
-          type:
-          - string
-          - 'null'
-          format: uuid
-        dateCreated:
-          type: string
-          format: date-time
-        dateStarted:
-          type: string
-          format: date-time
-        dateCompleted:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        executionStatus:
-          allOf:
-          - $ref: '#/components/schemas/AttemptStatus'
-        attempts:
+        data:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/AttemptDto'
-        initialRequest: {}
-        correlationId:
+            $ref: '#/components/schemas/ComplexityBucketLimitsDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    SearchExecutionsByFilterRequest:
+      type: object
+      properties:
+        startDate:
           type:
           - string
           - 'null'
-        flow:
-          allOf:
-          - $ref: '#/components/schemas/Flow'
+          format: date-time
+        endDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        configurationId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        configurationVersion:
+          type:
+          - integer
+          - 'null'
+          format: int32
         scheduleKey:
           type:
           - string
           - 'null'
-        isDebugMode:
+        pager:
+          allOf:
+          - $ref: '#/components/schemas/Pager'
+      additionalProperties: false
+    DebugTransformerTaskRequestDto:
+      type: object
+      properties:
+        input:
+          type:
+          - string
+          - 'null'
+        transpiledCode:
+          type:
+          - string
+          - 'null'
+        includeLookups:
+          type: boolean
+        libraries:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        useDraftLibraries:
           type: boolean
       additionalProperties: false
-    ExecutionStepResult:
-      enum:
-      - Success
-      - Failed
-      - InProgress
-      type: string
     Flow:
       type: object
       properties:
@@ -1731,42 +1721,12 @@ components:
           type: integer
           format: int32
       additionalProperties: false
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ExecutionStepLogDtoIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ExecutionStepLogDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    CancelExecutionResponseDtoServiceResponse:
+    DebugTransformerTaskResponseDtoServiceResponse:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/CancelExecutionResponseDto'
+          - $ref: '#/components/schemas/DebugTransformerTaskResponseDto'
         messages:
           type:
           - array
@@ -1774,24 +1734,28 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    SourceType:
-      enum:
-      - Unknown
-      - Journey
-      - ExternalData
-      - Api
-      - Policy
-      - Scheduler
-      type: string
-    Pager:
-      required:
-      - first
+    ComplexityBucketLimitsDto:
       type: object
       properties:
-        first:
-          type: integer
-          format: int32
-        after:
+        bucketName:
+          type:
+          - string
+          - 'null'
+        limits:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ComplexityBucketRuleLimitDto'
+      additionalProperties: false
+    ExecutionError:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        code:
           type:
           - string
           - 'null'
@@ -1854,12 +1818,22 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    GetStepLogsResponseServiceResponse:
+    GetStepLogsResponse:
+      type: object
+      properties:
+        stepLogs:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ExecutionStepLogDto'
+      additionalProperties: false
+    ExecutionDtoServiceResponse:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/GetStepLogsResponse'
+          - $ref: '#/components/schemas/ExecutionDto'
         messages:
           type:
           - array
@@ -1867,54 +1841,25 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    ExecutionFilteredDtoPaginatedResponseServiceResponse:
+    Pager:
+      required:
+      - first
       type: object
       properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ExecutionFilteredDtoPaginatedResponse'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ExecutionError:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        code:
+        first:
+          type: integer
+          format: int32
+        after:
           type:
           - string
           - 'null'
       additionalProperties: false
-    StartExecutionResponseDtoServiceResponse:
+    StartExecutionResponseDto:
       type: object
       properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/StartExecutionResponseDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+        sourceId:
+          type: string
+          format: uuid
       additionalProperties: false
     CancelExecutionResponseDto:
       type: object
@@ -1928,12 +1873,15 @@ components:
         isSuccess:
           type: boolean
       additionalProperties: false
-    MetricsResultDtoServiceResponse:
+    ExecutionDtoIEnumerableServiceResponse:
       type: object
       properties:
         data:
-          allOf:
-          - $ref: '#/components/schemas/MetricsResultDto'
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ExecutionDto'
         messages:
           type:
           - array
@@ -1941,47 +1889,57 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    MetricDataPointDto:
+    ServiceResponse:
       type: object
       properties:
-        timestamp:
-          type: string
-          format: date-time
-        value:
-          type: number
-          format: double
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    SearchExecutionsByFilterRequest:
+    StepDataDto:
       type: object
       properties:
-        startDate:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        endDate:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        configurationId:
-          type:
-          - string
-          - 'null'
-          format: uuid
-        configurationVersion:
-          type:
-          - integer
-          - 'null'
-          format: int32
-        scheduleKey:
-          type:
-          - string
-          - 'null'
-        pager:
+        parameters: {}
+        state: {}
+        output: {}
+      additionalProperties: false
+    MetricPeriod:
+      enum:
+      - OneMinute
+      - FiveMinutes
+      - FifteenMinutes
+      - ThirtyMinutes
+      - OneHour
+      type: string
+    StepDataDtoServiceResponse:
+      type: object
+      properties:
+        data:
           allOf:
-          - $ref: '#/components/schemas/Pager'
+          - $ref: '#/components/schemas/StepDataDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
+    SourceType:
+      enum:
+      - Unknown
+      - Journey
+      - ExternalData
+      - Api
+      - Policy
+      - Scheduler
+      type: string
     ComplexityBucketRuleLimitDto:
       type: object
       properties:
@@ -2001,56 +1959,10 @@ components:
           type: integer
           format: int32
       additionalProperties: false
-    TransformLambdaResponseError:
+    ObjectServiceResponse:
       type: object
       properties:
-        type:
-          allOf:
-          - $ref: '#/components/schemas/TransformerErrorType'
-        code:
-          type:
-          - string
-          - 'null'
-        message:
-          type:
-          - string
-          - 'null'
-        stack:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    DebugTransformerTaskRequestDto:
-      type: object
-      properties:
-        input:
-          type:
-          - string
-          - 'null'
-        transpiledCode:
-          type:
-          - string
-          - 'null'
-        includeLookups:
-          type: boolean
-        libraries:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-        useDraftLibraries:
-          type: boolean
-      additionalProperties: false
-    ComplexityBucketLimitsDtoIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ComplexityBucketLimitsDto'
+        data: {}
         messages:
           type:
           - array
@@ -2058,122 +1970,19 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    AttemptDto:
+    StringServiceResponse:
       type: object
       properties:
-        id:
-          type: string
-          format: uuid
-        status:
-          allOf:
-          - $ref: '#/components/schemas/AttemptStatus'
-        configurationVersion:
-          type: integer
-          format: int32
-        dateStarted:
-          type: string
-          format: date-time
-        dateCompleted:
+        data:
           type:
           - string
           - 'null'
-          format: date-time
-        error:
-          allOf:
-          - $ref: '#/components/schemas/ExecutionError'
-      additionalProperties: false
-    MetricStatistic:
-      enum:
-      - Sum
-      - Min
-      - Max
-      - Average
-      type: string
-    ExecutionDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ExecutionDto'
         messages:
           type:
           - array
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    TransformerErrorType:
-      enum:
-      - Unhandled
-      - Custom
-      type: string
-    StepDataDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/StepDataDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    StartExecutionResponseDto:
-      type: object
-      properties:
-        sourceId:
-          type: string
-          format: uuid
-      additionalProperties: false
-    MetricsResultDto:
-      type: object
-      properties:
-        pointsTotalCount:
-          type: integer
-          format: int32
-        results:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/MetricDataPointDto'
-      additionalProperties: false
-    MetricBucketName:
-      enum:
-      - DebugTransformerTask
-      - FlowsExecutions
-      - FlowsExecutionTime
-      - FlowsTransitions
-      type: string
-    GetStepLogsResponse:
-      type: object
-      properties:
-        stepLogs:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ExecutionStepLogDto'
-      additionalProperties: false
-    DebugTransformerTaskResponseDto:
-      type: object
-      properties:
-        isSuccess:
-          type: boolean
-        isTimeOut:
-          type: boolean
-        output: {}
-        logs:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-        errorDetails:
-          allOf:
-          - $ref: '#/components/schemas/TransformLambdaResponseError'
       additionalProperties: false
     ExecutionFilteredDto:
       type: object
@@ -2210,19 +2019,104 @@ components:
         isDebugMode:
           type: boolean
       additionalProperties: false
-    AttemptStatus:
+    ExecutionFilteredDtoPaginatedResponse:
+      type: object
+      properties:
+        items:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ExecutionFilteredDto'
+        nextToken:
+          type:
+          - string
+          - 'null'
+        hasNextPage:
+          type: boolean
+      additionalProperties: false
+    MetricDataPointDto:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        value:
+          type: number
+          format: double
+      additionalProperties: false
+    ExecutionDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        initiatorType:
+          allOf:
+          - $ref: '#/components/schemas/SourceType'
+        sourceId:
+          type: string
+          format: uuid
+        parentExecutionId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        dateCreated:
+          type: string
+          format: date-time
+        dateStarted:
+          type: string
+          format: date-time
+        dateCompleted:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        executionStatus:
+          allOf:
+          - $ref: '#/components/schemas/AttemptStatus'
+        attempts:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AttemptDto'
+        initialRequest: {}
+        correlationId:
+          type:
+          - string
+          - 'null'
+        flow:
+          allOf:
+          - $ref: '#/components/schemas/Flow'
+        scheduleKey:
+          type:
+          - string
+          - 'null'
+        isDebugMode:
+          type: boolean
+      additionalProperties: false
+    ExecutionStepResult:
       enum:
-      - InProgress
       - Success
       - Failed
-      - Paused
+      - InProgress
       type: string
-    DebugTransformerTaskResponseDtoServiceResponse:
+    MetricName:
+      enum:
+      - ConsumedComplexity
+      - ThrottledRequests
+      type: string
+    ExecutionStepLogDtoIEnumerableServiceResponse:
       type: object
       properties:
         data:
-          allOf:
-          - $ref: '#/components/schemas/DebugTransformerTaskResponseDto'
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ExecutionStepLogDto'
         messages:
           type:
           - array
@@ -2230,27 +2124,133 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    MetricPeriod:
-      enum:
-      - OneMinute
-      - FiveMinutes
-      - FifteenMinutes
-      - ThirtyMinutes
-      - OneHour
-      type: string
-    ComplexityBucketLimitsDto:
+    GetStepLogsResponseServiceResponse:
       type: object
       properties:
-        bucketName:
-          type:
-          - string
-          - 'null'
-        limits:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetStepLogsResponse'
+        messages:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ComplexityBucketRuleLimitDto'
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CancelExecutionResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CancelExecutionResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AttemptDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          allOf:
+          - $ref: '#/components/schemas/AttemptStatus'
+        configurationVersion:
+          type: integer
+          format: int32
+        dateStarted:
+          type: string
+          format: date-time
+        dateCompleted:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        error:
+          allOf:
+          - $ref: '#/components/schemas/ExecutionError'
+      additionalProperties: false
+    DebugTransformerTaskResponseDto:
+      type: object
+      properties:
+        isSuccess:
+          type: boolean
+        isTimeOut:
+          type: boolean
+        output: {}
+        logs:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        errorDetails:
+          allOf:
+          - $ref: '#/components/schemas/TransformLambdaResponseError'
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    TransformLambdaResponseError:
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/TransformerErrorType'
+        code:
+          type:
+          - string
+          - 'null'
+        message:
+          type:
+          - string
+          - 'null'
+        stack:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    TransformerErrorType:
+      enum:
+      - Unhandled
+      - Custom
+      type: string
+    MetricBucketName:
+      enum:
+      - DebugTransformerTask
+      - FlowsExecutions
+      - FlowsExecutionTime
+      - FlowsTransitions
+      type: string
+    StartExecutionResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/StartExecutionResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
   securitySchemes:
     Bearer:

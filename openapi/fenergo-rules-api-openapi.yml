@@ -684,50 +684,6 @@ paths:
     - url: https://api.fenergox.com/tm/realtime
 components:
   schemas:
-    RuleExecutionStatus:
-      type: string
-      enum:
-      - requested
-      - started
-      - succeeded
-      - failed
-      title: RuleExecutionStatus
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    RuleExecutionProgress:
-      properties:
-        requested_rules:
-          type: integer
-          title: Requested Rules
-          description: Number of rules that have been queued but not yet started.
-        started_rules:
-          type: integer
-          title: Started Rules
-          description: Number of rules that have started but not yet reached a terminal state.
-        succeeded_rules:
-          type: integer
-          title: Succeeded Rules
-          description: Number of rules that completed successfully.
-        failed_rules:
-          type: integer
-          title: Failed Rules
-          description: Number of rules that completed with a failure.
-      additionalProperties: false
-      type: object
-      required:
-      - requested_rules
-      - started_rules
-      - succeeded_rules
-      - failed_rules
-      title: RuleExecutionProgress
-      description: Rule status breakdown for an execution.
     RuleExecutionTiming:
       properties:
         first_event_at:
@@ -750,6 +706,59 @@ components:
       - duration_seconds
       title: RuleExecutionTiming
       description: Timing metrics for an execution.
+    RuleExecutionAlerts:
+      properties:
+        total_alerts_received:
+          anyOf:
+          - type: integer
+            title: Execution Finished
+          - type: 'null'
+            title: Execution In Progress
+          title: Total Alerts Received
+          description: Total number of alerts received across all rules in this execution. Null when the execution is still in progress and no alert data has been indexed yet; 0 when the execution is complete but no alerts were generated.
+        unique_alerts_after_deduplication:
+          anyOf:
+          - type: integer
+            title: Execution Finished
+          - type: 'null'
+            title: Execution In Progress
+          title: Unique Alerts After Deduplication
+          description: Number of unique alerts remaining after deduplication. Null when the execution is still in progress and no alert data has been indexed yet; 0 when the execution is complete but no alerts were generated.
+      additionalProperties: false
+      type: object
+      title: RuleExecutionAlerts
+      description: 'Aggregated alert counts for an execution.
+
+
+        Fields are nullable when the execution is still in progress and no alert data
+
+        has been indexed yet. They are 0 when the execution is complete but generated
+
+        no alerts (failed or succeeded with no triggers).'
+    RuleExecutionsByDateResponse:
+      properties:
+        requested_run_date:
+          type: string
+          title: Requested Run Date
+          description: Date for which the rules were executed, in YYYY-MM-DD format.
+        count:
+          type: integer
+          title: Count
+          description: Number of rule executions on this date.
+        rules:
+          items:
+            $ref: '#/components/schemas/RuleExecutionDetail'
+          type: array
+          title: Rules
+          description: List of rule execution details for this date.
+      additionalProperties: false
+      type: object
+      required:
+      - requested_run_date
+      - count
+      - rules
+      title: RuleExecutionsByDateResponse
+      description: Model for rule executions grouped by run date.
     RuleExecutionByExecutionIDSummary:
       properties:
         execution_id:
@@ -816,30 +825,17 @@ components:
       - timing
       title: RuleExecutionByExecutionIDSummary
       description: Execution-level summary returned when filtering by execution_id.
-    RuleExecutionsByDateResponse:
-      properties:
-        requested_run_date:
-          type: string
-          title: Requested Run Date
-          description: Date for which the rules were executed, in YYYY-MM-DD format.
-        count:
-          type: integer
-          title: Count
-          description: Number of rule executions on this date.
-        rules:
-          items:
-            $ref: '#/components/schemas/RuleExecutionDetail'
-          type: array
-          title: Rules
-          description: List of rule execution details for this date.
-      additionalProperties: false
-      type: object
-      required:
-      - requested_run_date
-      - count
-      - rules
-      title: RuleExecutionsByDateResponse
-      description: Model for rule executions grouped by run date.
+    RuleExecutionOverallStatus:
+      type: string
+      enum:
+      - requested
+      - in_progress
+      - in_progress_with_failures
+      - succeeded
+      - failed
+      - partially_failed
+      title: RuleExecutionOverallStatus
+      description: "Execution-level status derived from the aggregate of per-rule statuses.\n\nTerminal states (is_complete=True):\n    SUCCEEDED              – every rule finished successfully.\n    FAILED                 – every rule that ran finished with a failure.\n    PARTIALLY_FAILED       – execution is done, but at least one rule failed\n                             and at least one succeeded.\n\nNon-terminal states (is_complete=False):\n    REQUESTED              – no rule has started yet; all are still queued.\n    IN_PROGRESS            – at least one rule is running; no failures so far.\n    IN_PROGRESS_WITH_FAILURES – at least one rule is still running (or\n                             pending) AND at least one rule has already\n                             failed mid-flight."
     RuleExecutionRuleDetail:
       properties:
         rule_id:
@@ -891,6 +887,23 @@ components:
 
 
         Omits execution_id and rule_effective_date — those are at the parent summary level.'
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    RuleExecutionStatus:
+      type: string
+      enum:
+      - requested
+      - started
+      - succeeded
+      - failed
+      title: RuleExecutionStatus
     ValidationError:
       properties:
         loc:
@@ -917,46 +930,33 @@ components:
       - msg
       - type
       title: ValidationError
-    RuleExecutionAlerts:
+    RuleExecutionProgress:
       properties:
-        total_alerts_received:
-          anyOf:
-          - type: integer
-            title: Execution Finished
-          - type: 'null'
-            title: Execution In Progress
-          title: Total Alerts Received
-          description: Total number of alerts received across all rules in this execution. Null when the execution is still in progress and no alert data has been indexed yet; 0 when the execution is complete but no alerts were generated.
-        unique_alerts_after_deduplication:
-          anyOf:
-          - type: integer
-            title: Execution Finished
-          - type: 'null'
-            title: Execution In Progress
-          title: Unique Alerts After Deduplication
-          description: Number of unique alerts remaining after deduplication. Null when the execution is still in progress and no alert data has been indexed yet; 0 when the execution is complete but no alerts were generated.
+        requested_rules:
+          type: integer
+          title: Requested Rules
+          description: Number of rules that have been queued but not yet started.
+        started_rules:
+          type: integer
+          title: Started Rules
+          description: Number of rules that have started but not yet reached a terminal state.
+        succeeded_rules:
+          type: integer
+          title: Succeeded Rules
+          description: Number of rules that completed successfully.
+        failed_rules:
+          type: integer
+          title: Failed Rules
+          description: Number of rules that completed with a failure.
       additionalProperties: false
       type: object
-      title: RuleExecutionAlerts
-      description: 'Aggregated alert counts for an execution.
-
-
-        Fields are nullable when the execution is still in progress and no alert data
-
-        has been indexed yet. They are 0 when the execution is complete but generated
-
-        no alerts (failed or succeeded with no triggers).'
-    RuleExecutionOverallStatus:
-      type: string
-      enum:
-      - requested
-      - in_progress
-      - in_progress_with_failures
-      - succeeded
-      - failed
-      - partially_failed
-      title: RuleExecutionOverallStatus
-      description: "Execution-level status derived from the aggregate of per-rule statuses.\n\nTerminal states (is_complete=True):\n    SUCCEEDED              – every rule finished successfully.\n    FAILED                 – every rule that ran finished with a failure.\n    PARTIALLY_FAILED       – execution is done, but at least one rule failed\n                             and at least one succeeded.\n\nNon-terminal states (is_complete=False):\n    REQUESTED              – no rule has started yet; all are still queued.\n    IN_PROGRESS            – at least one rule is running; no failures so far.\n    IN_PROGRESS_WITH_FAILURES – at least one rule is still running (or\n                             pending) AND at least one rule has already\n                             failed mid-flight."
+      required:
+      - requested_rules
+      - started_rules
+      - succeeded_rules
+      - failed_rules
+      title: RuleExecutionProgress
+      description: Rule status breakdown for an execution.
     RuleExecutionDetail:
       properties:
         rule_id:
@@ -1012,6 +1012,71 @@ components:
       - execution_id
       title: RuleExecutionDetail
       description: Model for detailed rule execution information.
+    ExecuteRuleGroupsJsonResponse:
+      properties:
+        status_code:
+          type: integer
+          title: Status Code
+        content:
+          items:
+            $ref: '#/components/schemas/ExecuteRuleGroupsResponseContent'
+          type: array
+          title: Content
+      type: object
+      required:
+      - status_code
+      - content
+      title: ExecuteRuleGroupsJsonResponse
+    ExecuteRulesRequestPayload:
+      properties:
+        execution_date:
+          type: string
+          format: date
+          title: Execution Date
+          description: Date for which to execute the rules in the format YYYY-MM-DD.
+        rule_ids:
+          anyOf:
+          - items:
+              type: string
+              pattern: ^BR\d+$
+            type: array
+          - type: 'null'
+          title: Rule Ids
+          description: List of rule IDs to execute. If not provided and rule_group_ids not provided, all rules will be executed. Mutually exclusive of rule_group_ids, both cannot be provided.
+        rule_group_ids:
+          anyOf:
+          - items:
+              type: string
+              pattern: ^RG\d+$
+            type: array
+            minItems: 1
+          - type: 'null'
+          title: Rule Group Ids
+          description: List of rule group IDs to execute. Mutually exclusive of rule_ids - both cannot be provided.
+        force:
+          type: boolean
+          title: Force
+          description: Flag to force rule execution for specified date regardless of previous executions.
+          default: false
+      additionalProperties: false
+      type: object
+      required:
+      - execution_date
+      title: ExecuteRulesRequestPayload
+      description: "Request payload for the rule execution endpoint.\n\nAttributes:\n    execution_date: The date for which rules should be executed (YYYY-MM-DD).\n    rule_ids: Optional list of specific rule IDs to execute. All rules are executed if absent.\n    rule_group_ids: Optional list of rule group IDs to execute. Mutually exclusive of rule_ids.\n    force: If True, run rules even if they have previously run for this date."
+    RejectedRulesResponse:
+      properties:
+        rule_id:
+          type: string
+          title: Rule Id
+        reason:
+          type: string
+          title: Reason
+      type: object
+      required:
+      - rule_id
+      - reason
+      title: RejectedRulesResponse
     ExecuteRulesResponseContent:
       properties:
         message:
@@ -1034,68 +1099,17 @@ components:
           default: []
       type: object
       title: ExecuteRulesResponseContent
-    ExecuteRuleGroupsResponseContent:
-      properties:
-        rule_group_id:
-          type: string
-          title: Rule Group Id
-        execution_id:
-          type: string
-          title: Execution Id
-        accepted_rules:
-          items:
-            type: string
-          type: array
-          title: Accepted Rules
-          default: []
-        rejected_rules:
-          items:
-            type: string
-          type: array
-          title: Rejected Rules
-          default: []
-      type: object
-      required:
-      - rule_group_id
-      - execution_id
-      title: ExecuteRuleGroupsResponseContent
-    ErrorResponse:
-      properties:
-        message:
-          type: string
-          title: Message
-      type: object
-      required:
-      - message
-      title: ErrorResponse
-    RejectedRulesResponse:
-      properties:
-        rule_id:
-          type: string
-          title: Rule Id
-        reason:
-          type: string
-          title: Reason
-      type: object
-      required:
-      - rule_id
-      - reason
-      title: RejectedRulesResponse
-    ExecuteRuleGroupsJsonResponse:
-      properties:
-        status_code:
-          type: integer
-          title: Status Code
-        content:
-          items:
-            $ref: '#/components/schemas/ExecuteRuleGroupsResponseContent'
-          type: array
-          title: Content
-      type: object
-      required:
-      - status_code
-      - content
-      title: ExecuteRuleGroupsJsonResponse
+    RuleExecutionOverallStatus_2:
+      type: string
+      enum:
+      - requested
+      - in_progress
+      - in_progress_with_failures
+      - succeeded
+      - failed
+      - partially_failed
+      title: RuleExecutionOverallStatus
+      description: "Execution-level status derived from the aggregate of per-rule statuses.\n\nTerminal states (is_complete=true):\n  succeeded              — every rule finished successfully.\n  failed                 — every rule that ran finished with a failure.\n  partially_failed       — execution is done, but at least one rule failed and at least one succeeded.\n\nNon-terminal states (is_complete=false):\n  requested              — no rule has started yet; all are still queued.\n  in_progress            — at least one rule is running; no failures so far.\n  in_progress_with_failures — at least one rule is still running (or pending) AND at least one rule has already failed mid-flight."
     RuleExecutionSummary:
       properties:
         execution_id:
@@ -1156,43 +1170,43 @@ components:
       - timing
       title: RuleExecutionSummary
       description: Execution-level summary returned when filtering by execution_id.
-    ExecuteRulesRequestPayload:
+    ExecuteRuleGroupsResponseContent:
       properties:
-        execution_date:
+        rule_group_id:
           type: string
-          format: date
-          title: Execution Date
-          description: Date for which to execute the rules in the format YYYY-MM-DD.
-        rule_ids:
-          anyOf:
-          - items:
-              type: string
-              pattern: ^BR\d+$
-            type: array
-          - type: 'null'
-          title: Rule Ids
-          description: List of rule IDs to execute. If not provided and rule_group_ids not provided, all rules will be executed. Mutually exclusive of rule_group_ids, both cannot be provided.
-        rule_group_ids:
-          anyOf:
-          - items:
-              type: string
-              pattern: ^RG\d+$
-            type: array
-            minItems: 1
-          - type: 'null'
-          title: Rule Group Ids
-          description: List of rule group IDs to execute. Mutually exclusive of rule_ids - both cannot be provided.
-        force:
-          type: boolean
-          title: Force
-          description: Flag to force rule execution for specified date regardless of previous executions.
-          default: false
-      additionalProperties: false
+          title: Rule Group Id
+        execution_id:
+          type: string
+          title: Execution Id
+        accepted_rules:
+          items:
+            type: string
+          type: array
+          title: Accepted Rules
+          default: []
+        rejected_rules:
+          items:
+            type: string
+          type: array
+          title: Rejected Rules
+          default: []
       type: object
       required:
-      - execution_date
-      title: ExecuteRulesRequestPayload
-      description: "Request payload for the rule execution endpoint.\n\nAttributes:\n    execution_date: The date for which rules should be executed (YYYY-MM-DD).\n    rule_ids: Optional list of specific rule IDs to execute. All rules are executed if absent.\n    rule_group_ids: Optional list of rule group IDs to execute. Mutually exclusive of rule_ids.\n    force: If True, run rules even if they have previously run for this date."
+      - rule_group_id
+      - execution_id
+      title: ExecuteRuleGroupsResponseContent
+    ExecuteRulesJsonResponse:
+      properties:
+        status_code:
+          type: integer
+          title: Status Code
+        content:
+          $ref: '#/components/schemas/ExecuteRulesResponseContent'
+      type: object
+      required:
+      - status_code
+      - content
+      title: ExecuteRulesJsonResponse
     ValidationError_2:
       properties:
         loc:
@@ -1214,29 +1228,15 @@ components:
       - msg
       - type
       title: ValidationError
-    RuleExecutionOverallStatus_2:
-      type: string
-      enum:
-      - requested
-      - in_progress
-      - in_progress_with_failures
-      - succeeded
-      - failed
-      - partially_failed
-      title: RuleExecutionOverallStatus
-      description: "Execution-level status derived from the aggregate of per-rule statuses.\n\nTerminal states (is_complete=true):\n  succeeded              — every rule finished successfully.\n  failed                 — every rule that ran finished with a failure.\n  partially_failed       — execution is done, but at least one rule failed and at least one succeeded.\n\nNon-terminal states (is_complete=false):\n  requested              — no rule has started yet; all are still queued.\n  in_progress            — at least one rule is running; no failures so far.\n  in_progress_with_failures — at least one rule is still running (or pending) AND at least one rule has already failed mid-flight."
-    ExecuteRulesJsonResponse:
+    ErrorResponse:
       properties:
-        status_code:
-          type: integer
-          title: Status Code
-        content:
-          $ref: '#/components/schemas/ExecuteRulesResponseContent'
+        message:
+          type: string
+          title: Message
       type: object
       required:
-      - status_code
-      - content
-      title: ExecuteRulesJsonResponse
+      - message
+      title: ErrorResponse
     RerunRulesRequestPayload:
       properties:
         execution_date:
@@ -1278,6 +1278,62 @@ components:
       - msg
       - type
       title: ValidationError
+    RuleScheduleItem:
+      type: object
+      properties:
+        rule_id:
+          type: string
+          title: Rule Id
+          description: Unique identifier of the rule
+        rule_alias:
+          type: string
+          title: Rule Alias
+          description: Human-readable name of the rule
+        rule_description:
+          type: string
+          title: Rule Description
+          description: Description of what the rule monitors
+        execution_frequency:
+          type: string
+          title: Execution Frequency
+          description: Human-readable description of when the rule executes (e.g. 'At 02:00')
+        last_execution_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Execution Date
+          description: ISO-8601 datetime of the rule's most recent execution
+      required:
+      - rule_id
+      - rule_alias
+      - rule_description
+      - execution_frequency
+      title: RuleScheduleItem
+    RuleScheduleByDateResponse:
+      type: object
+      properties:
+        date:
+          type: string
+          title: Date
+          description: The queried date in YYYY-MM-DD format
+          examples:
+          - '2023-10-15'
+        total_rules_scheduled:
+          type: integer
+          title: Total Rules Scheduled
+          description: Total number of live rules scheduled to run on this date
+        rules_scheduled:
+          type: array
+          title: Rules Scheduled
+          description: List of rules scheduled to execute on the given date
+          items:
+            $ref: '#/components/schemas/RuleScheduleItem'
+      required:
+      - date
+      - total_rules_scheduled
+      - rules_scheduled
+      title: RuleScheduleByDateResponse
     RuleScheduleByRuleIdResponse:
       type: object
       properties:
@@ -1318,62 +1374,6 @@ components:
       - execution_frequency
       - scheduled_dates
       title: RuleScheduleByRuleIdResponse
-    RuleScheduleByDateResponse:
-      type: object
-      properties:
-        date:
-          type: string
-          title: Date
-          description: The queried date in YYYY-MM-DD format
-          examples:
-          - '2023-10-15'
-        total_rules_scheduled:
-          type: integer
-          title: Total Rules Scheduled
-          description: Total number of live rules scheduled to run on this date
-        rules_scheduled:
-          type: array
-          title: Rules Scheduled
-          description: List of rules scheduled to execute on the given date
-          items:
-            $ref: '#/components/schemas/RuleScheduleItem'
-      required:
-      - date
-      - total_rules_scheduled
-      - rules_scheduled
-      title: RuleScheduleByDateResponse
-    RuleScheduleItem:
-      type: object
-      properties:
-        rule_id:
-          type: string
-          title: Rule Id
-          description: Unique identifier of the rule
-        rule_alias:
-          type: string
-          title: Rule Alias
-          description: Human-readable name of the rule
-        rule_description:
-          type: string
-          title: Rule Description
-          description: Description of what the rule monitors
-        execution_frequency:
-          type: string
-          title: Execution Frequency
-          description: Human-readable description of when the rule executes (e.g. 'At 02:00')
-        last_execution_date:
-          anyOf:
-          - type: string
-            format: date-time
-          - type: 'null'
-          title: Last Execution Date
-          description: ISO-8601 datetime of the rule's most recent execution
-      required:
-      - rule_id
-      - rule_alias
-      - rule_description
-      - execution_frequency
-      title: RuleScheduleItem
     ValidationError_4:
       properties:
         loc:

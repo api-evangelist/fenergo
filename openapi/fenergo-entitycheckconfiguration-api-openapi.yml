@@ -1327,64 +1327,92 @@ paths:
     - url: /dataprotectioncommand
 components:
   schemas:
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-          description: The message
-          example: Success
-        type:
-          type:
-          - string
-          - 'null'
-          description: 'Type of the message
-
-            One of Info, Warning, Error, Forbidden'
-          example: Info
-        errorCode:
-          type:
-          - string
-          - 'null'
-          description: Error Code
-          example: INTERNAL_SERVER_ERROR
-      additionalProperties: false
-      description: The message associated to the service response
-    ServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    UpdateEntityCheckConfigurationVersionDtoServiceRequest:
+    CloneEntityCheckConfigurationVersionDtoServiceRequest:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/UpdateEntityCheckConfigurationVersionDto'
+          - $ref: '#/components/schemas/CloneEntityCheckConfigurationVersionDto'
           description: The service request DTO
       additionalProperties: false
       description: Service request data
-    StringServiceResponse:
+    Signee:
       type: object
       properties:
-        data:
+        subject:
           type:
           - string
           - 'null'
+        successor:
+          allOf:
+          - $ref: '#/components/schemas/Approver'
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
+      additionalProperties: false
+    EntityCheckConfigurationDto:
+      type: object
+      properties:
+        parentId:
+          type: string
+          format: uuid
+        name:
+          type:
+          - string
+          - 'null'
+        conditions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDto'
+        process:
+          allOf:
+          - $ref: '#/components/schemas/ProcessBaseDto'
+        versionNumber:
+          type: integer
+          format: int32
+        effectiveFrom:
+          type: string
+          format: date-time
+        signees:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/Signee'
+        notes:
+          type:
+          - string
+          - 'null'
+        created:
+          type: string
+          format: date-time
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+        type:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    CloneEntityCheckConfigurationVersionDto:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    CreateEntityCheckConfigurationVersionFromParentIdResponseServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateEntityCheckConfigurationVersionFromParentIdResponse'
           description: The service response DTO
         messages:
           type:
@@ -1395,20 +1423,6 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    ValueField:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          description: Value of DataSource used to filter field values
-        field:
-          type:
-          - string
-          - 'null'
-          description: Field value used to validate conditional value
-      additionalProperties: false
     UpdateEntityCheckConfigurationVersionDto:
       type: object
       properties:
@@ -1449,6 +1463,150 @@ components:
           format: int32
           default: -1
       additionalProperties: false
+    ConditionDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the condition
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        name:
+          type:
+          - string
+          - 'null'
+          description: The name of the condition
+          example: Company-type only
+        description:
+          type:
+          - string
+          - 'null'
+          description: The description of the condition
+          example: Applicable only when EntityType=Company
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
+          example: AND
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto'
+          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
+      additionalProperties: false
+      description: Represents condition root
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    ValueField:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          description: Value of DataSource used to filter field values
+        field:
+          type:
+          - string
+          - 'null'
+          description: Field value used to validate conditional value
+      additionalProperties: false
+    CloneEntityCheckConfigurationVersionResponseServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CloneEntityCheckConfigurationVersionResponse'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    CloneEntityCheckConfigurationVersionResponse:
+      type: object
+      properties:
+        entityCheckConfigurationId:
+          type: string
+          format: uuid
+      additionalProperties: false
+    Decision:
+      enum:
+      - Approve
+      - Reject
+      type: string
+    EntityCheckConfigurationVersionSignResponse:
+      type: object
+      properties:
+        configurationId:
+          type: string
+          format: uuid
+        versionNumber:
+          type: integer
+          format: int32
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+      additionalProperties: false
+    CreateEntityCheckConfigurationVersionFromParentIdResponse:
+      type: object
+      properties:
+        parentId:
+          type: string
+          format: uuid
+        versionNumber:
+          type: integer
+          format: int32
+      additionalProperties: false
+    EntityCheckConfigurationDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/EntityCheckConfigurationDto'
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
+    UpdateEntityCheckConfigurationVersionDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UpdateEntityCheckConfigurationVersionDto'
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
+    ApproveActionServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
     ObjectServiceResponse:
       type: object
       properties:
@@ -1463,12 +1621,13 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    CloneEntityCheckConfigurationVersionResponseServiceResponse:
+    StringServiceResponse:
       type: object
       properties:
         data:
-          allOf:
-          - $ref: '#/components/schemas/CloneEntityCheckConfigurationVersionResponse'
+          type:
+          - string
+          - 'null'
           description: The service response DTO
         messages:
           type:
@@ -1496,6 +1655,22 @@ components:
           type: boolean
           readOnly: true
       additionalProperties: false
+    EntityCheckConfigurationDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/EntityCheckConfigurationDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
     ConditionDefinitionDto:
       type: object
       properties:
@@ -1556,190 +1731,6 @@ components:
           description: Field value used for conditional limit validation
       additionalProperties: false
       description: Represents condition
-    EntityCheckConfigurationDto:
-      type: object
-      properties:
-        parentId:
-          type: string
-          format: uuid
-        name:
-          type:
-          - string
-          - 'null'
-        conditions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDto'
-        process:
-          allOf:
-          - $ref: '#/components/schemas/ProcessBaseDto'
-        versionNumber:
-          type: integer
-          format: int32
-        effectiveFrom:
-          type: string
-          format: date-time
-        signees:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/Signee'
-        notes:
-          type:
-          - string
-          - 'null'
-        created:
-          type: string
-          format: date-time
-        status:
-          allOf:
-          - $ref: '#/components/schemas/VersionStatus'
-        type:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    Signee:
-      type: object
-      properties:
-        subject:
-          type:
-          - string
-          - 'null'
-        successor:
-          allOf:
-          - $ref: '#/components/schemas/Approver'
-        action:
-          allOf:
-          - $ref: '#/components/schemas/ApproveAction'
-        hasProcessedRequest:
-          type: boolean
-          readOnly: true
-      additionalProperties: false
-    Decision:
-      enum:
-      - Approve
-      - Reject
-      type: string
-    ConditionDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The ID of the condition
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        name:
-          type:
-          - string
-          - 'null'
-          description: The name of the condition
-          example: Company-type only
-        description:
-          type:
-          - string
-          - 'null'
-          description: The description of the condition
-          example: Applicable only when EntityType=Company
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
-          example: AND
-        operands:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto'
-          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
-      additionalProperties: false
-      description: Represents condition root
-    CloneEntityCheckConfigurationVersionDto:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    CloneEntityCheckConfigurationVersionResponse:
-      type: object
-      properties:
-        entityCheckConfigurationId:
-          type: string
-          format: uuid
-      additionalProperties: false
-    EntityCheckConfigurationDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/EntityCheckConfigurationDto'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    EntityCheckConfigurationVersionSignResponseServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/EntityCheckConfigurationVersionSignResponse'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    ApproveActionServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ApproveAction'
-          description: The service request DTO
-      additionalProperties: false
-      description: Service request data
-    VersionStatus:
-      enum:
-      - Draft
-      - Pending
-      - Rejected
-      - Published
-      - Archived
-      - Deleted
-      type: string
-    CreateEntityCheckConfigurationVersionFromParentIdResponseServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateEntityCheckConfigurationVersionFromParentIdResponse'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
     ProcessBaseDto:
       type: object
       properties:
@@ -1758,25 +1749,56 @@ components:
           - 'null'
           format: int32
       additionalProperties: false
-    CloneEntityCheckConfigurationVersionDtoServiceRequest:
+    VersionStatus:
+      enum:
+      - Draft
+      - Pending
+      - Rejected
+      - Published
+      - Archived
+      - Deleted
+      type: string
+    EntityCheckConfigurationVersionSignResponseServiceResponse:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/CloneEntityCheckConfigurationVersionDto'
-          description: The service request DTO
+          - $ref: '#/components/schemas/EntityCheckConfigurationVersionSignResponse'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
-      description: Service request data
-    CreateEntityCheckConfigurationVersionFromParentIdResponse:
+      description: Service response data
+    ServiceResponseMessage:
       type: object
       properties:
-        parentId:
-          type: string
-          format: uuid
-        versionNumber:
-          type: integer
-          format: int32
+        message:
+          type:
+          - string
+          - 'null'
+          description: The message
+          example: Success
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
       additionalProperties: false
+      description: The message associated to the service response
     ApproveAction:
       type: object
       properties:
@@ -1791,28 +1813,46 @@ components:
           type: string
           format: date-time
       additionalProperties: false
-    EntityCheckConfigurationVersionSignResponse:
-      type: object
-      properties:
-        configurationId:
-          type: string
-          format: uuid
-        versionNumber:
-          type: integer
-          format: int32
-        status:
-          allOf:
-          - $ref: '#/components/schemas/VersionStatus'
-      additionalProperties: false
-    EntityCheckConfigurationDtoServiceRequest:
+    EntityCheckConfigurationVersionDtoServiceResponse:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/EntityCheckConfigurationDto'
-          description: The service request DTO
+          - $ref: '#/components/schemas/EntityCheckConfigurationVersionDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
-      description: Service request data
+      description: Service response data
+    EntityCheckConfigurationDto_2:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        versions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/EntityCheckConfigurationVersionDto'
+        version:
+          type: integer
+          format: int32
+        status:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
     ProcessBaseDto_2:
       type: object
       properties:
@@ -1830,49 +1870,6 @@ components:
           - 'null'
           format: int32
       additionalProperties: false
-    EntityCheckConfigurationDtoIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/EntityCheckConfigurationDto_2'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    EntityCheckAction:
-      enum:
-      - ShowEntitiesOnDashboard
-      - InitiateFullOffboarding
-      - JourneyCreated
-      - AutomatedOffboarding
-      - AutomaticallyDeleted
-      type: string
-    EntityCheckConfigurationVersionDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/EntityCheckConfigurationVersionDto'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
     EntityCheckConfigurationVersionDto:
       type: object
       properties:
@@ -1942,30 +1939,33 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    EntityCheckConfigurationDto_2:
+    EntityCheckAction:
+      enum:
+      - ShowEntitiesOnDashboard
+      - InitiateFullOffboarding
+      - JourneyCreated
+      - AutomatedOffboarding
+      - AutomaticallyDeleted
+      type: string
+    EntityCheckConfigurationDtoIEnumerableServiceResponse:
       type: object
       properties:
-        id:
-          type: string
-          format: uuid
-        versions:
+        data:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/EntityCheckConfigurationVersionDto'
-        version:
-          type: integer
-          format: int32
-        status:
+            $ref: '#/components/schemas/EntityCheckConfigurationDto_2'
+          description: The service response DTO
+        messages:
           type:
-          - string
+          - array
           - 'null'
-        type:
-          type:
-          - string
-          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
+      description: Service response data
   securitySchemes:
     Bearer:
       type: apiKey

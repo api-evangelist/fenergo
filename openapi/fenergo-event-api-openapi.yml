@@ -131,19 +131,20 @@ paths:
       - Event
 components:
   schemas:
-    OnboardingStatus:
-      type: string
-      enum:
-      - new
-      - pending
-      - live
-      - terminated
-      - suspended
-      - blocked
-      - review
-      title: OnboardingStatus
-      description: An enumeration.
-    Business:
+    EntityMatchResult:
+      properties:
+        score:
+          type: number
+          title: Score
+          example: 0.88
+        data:
+          $ref: '#/components/schemas/EntityMatchEntity'
+      type: object
+      required:
+      - score
+      - data
+      title: EntityMatchResult
+    Unknown:
       properties:
         external_id:
           type: string
@@ -202,144 +203,86 @@ components:
             type: string
           type: array
           title: Entity Groups External
-        name:
-          type: string
-          title: Name
-          description: Name of the organisational unit or sub-organisation for the business
-          example: Global corp
-        name_aliases:
-          items:
-            type: string
-          type: array
-          title: Name Aliases
-          description: Self-chosen trading names for the business
-          example:
-          - GC
-          - Globco
-        website:
-          type: string
-          title: Website
-          description: The organisation's website URL
-          example: www.globcorp.com
-        legal_form:
-          type: string
-          title: Legal Form
-          description: Legal form of the business
-          example: Private limited company/ BV
-        sector:
-          type: string
-          title: Sector
-          description: Sector the business is active in
-          example: Agriculture
-        registration_name:
-          type: string
-          title: Registration Name
-          description: Chamber of Commerce registration name for business
-          example: Globco
-        registration_date:
-          type: string
-          format: date
-          title: Registration Date
-          description: Official registration date to Chamber of Commerce of the business, ISO-8601
-          example: '2019-09-26'
-        registration_country:
-          type: string
-          maxLength: 2
-          minLength: 2
-          title: Registration Country
-          description: ISO-3166 alpha-2 country code for country of registration
-          example: NL
-        registration_id:
-          type: string
-          title: Registration Id
-          description: Chamber of Commerce registration ID for business
-          example: '1234567890'
-        enabled_payment_methods:
-          items:
-            type: string
-          type: array
-          title: Enabled Payment Methods
-          description: Array of enabled payment methods
-          example:
-          - Paypal
-          - Creditcard
-        sign_up_at:
-          type: string
-          format: date-time
-          title: Sign Up At
-          description: Timestamp for Business sign up at Client side. ISO-8601 timestamp in the format of "yyyy-MM-dd'T'HH:mm:ss.SSSZ".
-          example: '2022-12-23T17:59:59.678Z'
-        sign_up_approved_at:
-          type: string
-          format: date-time
-          title: Sign Up Approved At
-          description: 'Timestamp for Business sign up approval at Client side. ISO-8601 timestamp in the format of "yyyy-MM-dd''T''HH:mm:ss.SSSZ". '
-          example: '2022-12-23T17:59:59.678Z'
-        operational_at:
-          type: string
-          format: date-time
-          title: Operational At
-          description: 'Timestamp for Business operational start at Client side. ISO-8601 timestamp in the format of "yyyy-MM-dd''T''HH:mm:ss.SSSZ". '
-          example: '2022-12-23T17:59:59.678Z'
-        last_updated_at:
-          type: string
-          format: date-time
-          title: Last Updated At
-          description: 'Timestamp for Business last update at Client side. ISO-8601 timestamp in the format of "yyyy-MM-dd''T''HH:mm:ss.SSSZ". '
-          example: '2022-12-23T17:59:59.678Z'
-        offboarded_at:
-          type: string
-          format: date-time
-          title: Offboarded At
-          description: 'Timestamp for moment where Business account was closed. ISO-8601 timestamp in the format of "yyyy-MM-dd''T''HH:mm:ss.SSSZ". '
-          example: '2022-12-23T17:59:59.678Z'
-        onboarding_status:
-          allOf:
-          - $ref: '#/components/schemas/OnboardingStatus'
-          description: Client status for business, such as 'pending', 'active', 'blocked'
-          example: live
-        has_known_peps:
-          type: boolean
-          title: Has Known Peps
-          description: Whether this Business has Politically Exposed Person (PEP) shareholders
-          example: true
-        is_public_benefit_organisation:
-          type: boolean
-          title: Is Public Benefit Organisation
-          description: Whether this individual is a Public Benefit Organisation (PBO)
-          example: true
       type: object
       required:
       - external_id
-      title: Business
-    EntityMatchListVersion:
+      title: Unknown
+    ValidationError:
       properties:
-        owner_id:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
           type: string
-          pattern: ^[a-z0-9\.\-_]+$
-          title: Owner Id
-          example: sentinels
-        list_name:
+          title: Message
+        type:
           type: string
-          pattern: ^[a-z0-9\.\-_]+$
-          title: List Name
-          example: info4c-sanctions
-        list_version:
-          type: string
-          pattern: ^[a-z0-9\.\-_]+$
-          title: List Version
-          example: v1
-        last_modified:
-          type: string
-          format: date-time
-          title: Last Modified
-      additionalProperties: false
+          title: Error Type
       type: object
       required:
-      - owner_id
-      - list_name
-      - list_version
-      title: EntityMatchListVersion
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    Gender:
+      type: string
+      enum:
+      - M
+      - F
+      - O
+      title: Gender
+      description: An enumeration.
+    PaymentType:
+      type: string
+      enum:
+      - payin
+      - payout
+      - ledger
+      title: PaymentType
+      description: An enumeration.
+    IdentificationDocument:
+      properties:
+        id:
+          type: integer
+          title: Id
+          maximum: 2147483647
+          minimum: -2147483648
+          description: 32-bit integer identifier
+        id_type:
+          allOf:
+          - $ref: '#/components/schemas/IdType'
+          description: Type of identification document
+          example: Drivers license
+        id_number:
+          type: string
+          title: Id Number
+          description: Registration number of the identification document
+          example: string
+        issue_date:
+          type: string
+          format: date
+          title: Issue Date
+          description: Date on which the id document was issued. ISO-8601 date in the format 'YYYY-MM-DD'
+          example: '2022-03-17'
+        expiry_date:
+          type: string
+          format: date
+          title: Expiry Date
+          description: Date on which the id document expires. ISO-8601 date in the format 'YYYY-MM-DD'
+          example: '2022-03-17'
+        issuer_country:
+          type: string
+          title: Issuer Country
+          description: Country that issued the identification document
+          example: string
+      type: object
+      required:
+      - id_type
+      title: IdentificationDocument
     TransactionEventResponse:
       properties:
         request_uuid:
@@ -381,6 +324,155 @@ components:
       - transaction_external_id
       - modification_guid
       title: TransactionEventResponse
+    Address:
+      properties:
+        id:
+          type: integer
+          title: Id
+          maximum: 2147483647
+          minimum: -2147483648
+          description: 32-bit integer identifier
+        label:
+          type: string
+          title: Label
+          description: Label of the address
+          example: Home
+        first_name:
+          type: string
+          title: First Name
+          description: First name for the address contact
+          example: Jane
+        last_name:
+          type: string
+          title: Last Name
+          description: Last name for the address contact
+          example: Doe
+        name_prefix:
+          type: string
+          title: Name Prefix
+          description: Prefix for the address contact
+          example: von
+        address:
+          type: string
+          title: Address
+          description: contact's full address (street_name house_number-house_number_additional)
+          example: abc road 6-b
+        company_name:
+          type: string
+          title: Company Name
+          description: Company name in case of business contact
+          example: company A
+        company_tax_id:
+          type: string
+          title: Company Tax Id
+          description: Tax / VAT ID for the billing contact's company
+          example: string
+        postal_code:
+          type: string
+          title: Postal Code
+          description: Postal code for Entity's address
+          example: '97214'
+        city:
+          type: string
+          title: City
+          description: City name for Entity's address
+          example: string
+        state:
+          type: string
+          title: State
+          description: State name for Entity's address
+          example: Oregon
+        country_code:
+          type: string
+          maxLength: 2
+          minLength: 2
+          title: Country Code
+          description: ISO-3166 alpha-2 country code for Entity's address
+          example: US
+      type: object
+      title: Address
+    OnboardingStatus:
+      type: string
+      enum:
+      - new
+      - pending
+      - live
+      - terminated
+      - suspended
+      - blocked
+      - review
+      title: OnboardingStatus
+      description: An enumeration.
+    PaymentOption:
+      properties:
+        id:
+          type: integer
+          title: Id
+          maximum: 2147483647
+          minimum: -2147483648
+          description: 32-bit integer identifier
+        bank_account_number:
+          type: string
+          maxLength: 34
+          title: Bank Account Number
+          description: IBAN for the entity in case of SEPA payment. Max length 34
+          example: NL00BANK0123456789
+        bank_account_bic:
+          type: string
+          maxLength: 11
+          minLength: 8
+          title: Bank Account Bic
+          description: BIC code for entity's bank in case of SEPA payment. Length 8-11
+          example: BANK00NLSEC
+        account_number:
+          type: string
+          title: Account Number
+          description: entity account number as given by issuer bank (UK)
+          example: string
+        sort_code:
+          type: string
+          title: Sort Code
+          description: Issuer bank identification number (UK)
+          example: string
+        card_token:
+          type: string
+          title: Card Token
+          description: PCI compliant card token hash
+          example: string
+        card_bin:
+          type: string
+          title: Card Bin
+          description: Bank Identification Number for card
+          example: string
+        bank_country_code:
+          type: string
+          maxLength: 2
+          minLength: 2
+          title: Bank Country Code
+          description: ISO-3166 alpha-2 country code of issuing country for the card
+          example: NL
+        bank_name:
+          type: string
+          title: Bank Name
+          description: Name of the issuing bank
+          example: string
+        card_number:
+          type: integer
+          maximum: 9999.0
+          minimum: 0.0
+          title: Card Number
+          description: Last 4 digits of entity's card as an integer, implying that leading zeros are discarded
+          example: 123
+      type: object
+      title: PaymentOption
+    ExternalEntityType:
+      type: string
+      enum:
+      - individual
+      - business
+      - unknown
+      title: ExternalEntityType
+      description: The external entity type v2 version of DataContracts
     TransactionEventRequest:
       properties:
         request_uuid:
@@ -590,159 +682,6 @@ components:
           individual:
             external_id: d4faf88a-622d-42cd-8d90-9a103954032e
             full_name: John Doe
-    ValidationError:
-      properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
-      type: object
-      required:
-      - loc
-      - msg
-      - type
-      title: ValidationError
-    Label:
-      type: string
-      enum:
-      - sender
-      - receiver
-      - merchant
-      - consumer
-      - merchant_profile
-      title: Label
-      description: An enumeration.
-    Address:
-      properties:
-        id:
-          type: integer
-          title: Id
-          maximum: 2147483647
-          minimum: -2147483648
-          description: 32-bit integer identifier
-        label:
-          type: string
-          title: Label
-          description: Label of the address
-          example: Home
-        first_name:
-          type: string
-          title: First Name
-          description: First name for the address contact
-          example: Jane
-        last_name:
-          type: string
-          title: Last Name
-          description: Last name for the address contact
-          example: Doe
-        name_prefix:
-          type: string
-          title: Name Prefix
-          description: Prefix for the address contact
-          example: von
-        address:
-          type: string
-          title: Address
-          description: contact's full address (street_name house_number-house_number_additional)
-          example: abc road 6-b
-        company_name:
-          type: string
-          title: Company Name
-          description: Company name in case of business contact
-          example: company A
-        company_tax_id:
-          type: string
-          title: Company Tax Id
-          description: Tax / VAT ID for the billing contact's company
-          example: string
-        postal_code:
-          type: string
-          title: Postal Code
-          description: Postal code for Entity's address
-          example: '97214'
-        city:
-          type: string
-          title: City
-          description: City name for Entity's address
-          example: string
-        state:
-          type: string
-          title: State
-          description: State name for Entity's address
-          example: Oregon
-        country_code:
-          type: string
-          maxLength: 2
-          minLength: 2
-          title: Country Code
-          description: ISO-3166 alpha-2 country code for Entity's address
-          example: US
-      type: object
-      title: Address
-    EntityMatchSourceResult:
-      properties:
-        source:
-          $ref: '#/components/schemas/EntityMatchListVersion'
-        matches:
-          items:
-            $ref: '#/components/schemas/EntityMatchResult'
-          type: array
-          title: Matches
-      type: object
-      required:
-      - source
-      - matches
-      title: EntityMatchSourceResult
-    EntityMatchAddress:
-      properties:
-        street:
-          type: string
-          title: Street
-        postal_code:
-          type: string
-          title: Postal Code
-        city:
-          type: string
-          title: City
-        state:
-          type: string
-          title: State
-        country:
-          type: string
-          title: Country
-      type: object
-      title: EntityMatchAddress
-    HTTPValidationError:
-      properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    RuleExecutionError:
-      properties:
-        status:
-          type: string
-          title: Status
-          description: Error status
-        reason:
-          type: string
-          title: Reason
-          description: Error message per rule execution
-      additionalProperties: false
-      type: object
-      title: RuleExecutionError
     Type:
       type: string
       enum:
@@ -755,278 +694,6 @@ components:
       - chargeback
       title: Type
       description: An enumeration.
-    EntityMatchResult:
-      properties:
-        score:
-          type: number
-          title: Score
-          example: 0.88
-        data:
-          $ref: '#/components/schemas/EntityMatchEntity'
-      type: object
-      required:
-      - score
-      - data
-      title: EntityMatchResult
-    ExternalEntityType:
-      type: string
-      enum:
-      - individual
-      - business
-      - unknown
-      title: ExternalEntityType
-      description: The external entity type v2 version of DataContracts
-    PaymentOption:
-      properties:
-        id:
-          type: integer
-          title: Id
-          maximum: 2147483647
-          minimum: -2147483648
-          description: 32-bit integer identifier
-        bank_account_number:
-          type: string
-          maxLength: 34
-          title: Bank Account Number
-          description: IBAN for the entity in case of SEPA payment. Max length 34
-          example: NL00BANK0123456789
-        bank_account_bic:
-          type: string
-          maxLength: 11
-          minLength: 8
-          title: Bank Account Bic
-          description: BIC code for entity's bank in case of SEPA payment. Length 8-11
-          example: BANK00NLSEC
-        account_number:
-          type: string
-          title: Account Number
-          description: entity account number as given by issuer bank (UK)
-          example: string
-        sort_code:
-          type: string
-          title: Sort Code
-          description: Issuer bank identification number (UK)
-          example: string
-        card_token:
-          type: string
-          title: Card Token
-          description: PCI compliant card token hash
-          example: string
-        card_bin:
-          type: string
-          title: Card Bin
-          description: Bank Identification Number for card
-          example: string
-        bank_country_code:
-          type: string
-          maxLength: 2
-          minLength: 2
-          title: Bank Country Code
-          description: ISO-3166 alpha-2 country code of issuing country for the card
-          example: NL
-        bank_name:
-          type: string
-          title: Bank Name
-          description: Name of the issuing bank
-          example: string
-        card_number:
-          type: integer
-          maximum: 9999.0
-          minimum: 0.0
-          title: Card Number
-          description: Last 4 digits of entity's card as an integer, implying that leading zeros are discarded
-          example: 123
-      type: object
-      title: PaymentOption
-    TransactionModification:
-      properties:
-        external_id:
-          type: string
-          title: External Id
-          description: Modification external id uniquely identifying this modification
-        type:
-          allOf:
-          - $ref: '#/components/schemas/Type'
-          description: Modification type for this transaction
-          example: refund
-        reason:
-          type: string
-          title: Reason
-        amount:
-          type: number
-          title: Amount
-          description: Amount that was requested for the modification
-          example: 1.234
-        monitoring_amount:
-          type: number
-          title: Monitoring Amount
-          description: Amount that was requested for the modification in the monitoring currency
-          example: 1.234
-        original_amount:
-          type: number
-          title: Original Amount
-          description: Amount that was requested for the modification in the original currency
-          example: 1.234
-        currency:
-          type: string
-          maxLength: 3
-          minLength: 3
-          title: Currency
-          description: (Deprecated) Currency for the payment in case of modification such as refund. ISO 4217 currency code (3-letter uppercase). TM supports only one currency per tenant.
-          example: EUR
-        monitoring_currency:
-          type: string
-          maxLength: 3
-          minLength: 3
-          title: Monitoring Currency
-          description: Monitoring currency for the payment in case of modification such as refund. ISO 4217 currency code (3-letter uppercase). TM supports only one currency per tenant.
-          example: EUR
-        original_currency:
-          type: string
-          maxLength: 3
-          minLength: 3
-          title: Original Currency
-          description: Original currency for the payment in case of modification such as refund. ISO 4217 currency code (3-letter uppercase). TM supports only one currency per tenant.
-          example: EUR
-        created_at:
-          type: string
-          format: date-time
-          title: Created At
-          description: Timestamp for this modification event creation at Client side. ISO-8601 timestamp in the format of "yyyy-MM-dd'T'HH:mm:ss.SSSZ". Special validation is applied. [See date range validation details](/api-docs/transaction-monitoring-apis/transactions/transaction-api#modification-created-at-validation).
-        settled_at:
-          type: string
-          format: date-time
-          title: Settled At
-          description: 'Timestamp for the settled  modification event creation at Client side. ISO-8601 timestamp in the format of "yyyy-MM-dd''T''HH:mm:ss.SSSZ". '
-          example: '2022-12-23T17:59:59.678Z'
-      type: object
-      required:
-      - external_id
-      - type
-      - amount
-      - currency
-      - created_at
-      title: TransactionModification
-    Unknown:
-      properties:
-        external_id:
-          type: string
-          title: External Id
-          description: external id of the entity
-          example: client_123
-        label:
-          allOf:
-          - $ref: '#/components/schemas/Label'
-          description: label of the entity
-          example: merchant
-        email:
-          type: string
-          title: Email
-          description: E-mail address for the entity (not validated)
-          example: someone@sentinels.ai
-        phone_number:
-          type: string
-          title: Phone Number
-          description: Phone number of the entity (not validated)
-          example: '+31612345678'
-        risk_assessment:
-          type: string
-          title: Risk Assessment
-          description: Business specific risk assessment information
-          example: High
-        full_name:
-          type: string
-          title: Full Name
-          description: Full name of the entity if no other naming specifics are given
-          example: John Doe
-        additional_fields:
-          type: object
-          title: Additional Fields
-          example:
-            some_attribute: high
-            another_attribute: 100
-          description: Arbitrary indexed data for this transaction. Special validation is applied. [See additional_fields validation details](/api-docs/transaction-monitoring-apis/transactions/transaction-api#additional-fields-validations).
-        peer_group_external_id:
-          type: string
-          title: Peer Group External Id
-          description: Peer group id as given by the Client
-          example: PG-CRY-ALL
-        addresses:
-          items:
-            $ref: '#/components/schemas/Address'
-          type: array
-          title: Addresses
-        payment_options:
-          items:
-            $ref: '#/components/schemas/PaymentOption'
-          type: array
-          title: Payment Options
-        entity_groups_external:
-          items:
-            type: string
-          type: array
-          title: Entity Groups External
-      type: object
-      required:
-      - external_id
-      title: Unknown
-    Response3dSecure:
-      type: string
-      enum:
-      - Y
-      - N
-      - U
-      - A
-      - E
-      title: Response3dSecure
-      description: An enumeration.
-    Gender:
-      type: string
-      enum:
-      - M
-      - F
-      - O
-      title: Gender
-      description: An enumeration.
-    IdentificationDocument:
-      properties:
-        id:
-          type: integer
-          title: Id
-          maximum: 2147483647
-          minimum: -2147483648
-          description: 32-bit integer identifier
-        id_type:
-          allOf:
-          - $ref: '#/components/schemas/IdType'
-          description: Type of identification document
-          example: Drivers license
-        id_number:
-          type: string
-          title: Id Number
-          description: Registration number of the identification document
-          example: string
-        issue_date:
-          type: string
-          format: date
-          title: Issue Date
-          description: Date on which the id document was issued. ISO-8601 date in the format 'YYYY-MM-DD'
-          example: '2022-03-17'
-        expiry_date:
-          type: string
-          format: date
-          title: Expiry Date
-          description: Date on which the id document expires. ISO-8601 date in the format 'YYYY-MM-DD'
-          example: '2022-03-17'
-        issuer_country:
-          type: string
-          title: Issuer Country
-          description: Country that issued the identification document
-          example: string
-      type: object
-      required:
-      - id_type
-      title: IdentificationDocument
     EntityMatchSourceResults:
       properties:
         sender:
@@ -1056,33 +723,6 @@ components:
       additionalProperties: false
       type: object
       title: EntityMatchSourceResults
-    EntityType:
-      properties:
-        by_external_id:
-          type: string
-          title: By External Id
-          description: UUID of the entity as registered in CLM. Must be a valid UUID v4 format and must correspond to an entity that already exists in CLM. Mutually exclusive with providing inline entity details (`external_entity_type` + sub-object). [See entity specification details](/api-docs/transaction-monitoring-apis/transactions/transaction-api#entity-specification--by_external_id).
-        by_uuid:
-          type: string
-          title: By Uuid
-          description: uuid of the entity
-        external_entity_type:
-          allOf:
-          - $ref: '#/components/schemas/ExternalEntityType'
-          description: Type of entity
-          example: individual
-        individual:
-          $ref: '#/components/schemas/Individual'
-        business:
-          $ref: '#/components/schemas/Business'
-        unknown:
-          $ref: '#/components/schemas/Unknown'
-      additionalProperties: false
-      type: object
-      title: EntityType
-      description: 'EntityType is in deprecation process and will be removed in the future.
-
-        The new type can be found in data_contracts named EmbeddedEntity.'
     Individual:
       properties:
         external_id:
@@ -1211,6 +851,175 @@ components:
       required:
       - external_id
       title: Individual
+    Business:
+      properties:
+        external_id:
+          type: string
+          title: External Id
+          description: external id of the entity
+          example: client_123
+        label:
+          allOf:
+          - $ref: '#/components/schemas/Label'
+          description: label of the entity
+          example: merchant
+        email:
+          type: string
+          title: Email
+          description: E-mail address for the entity (not validated)
+          example: someone@sentinels.ai
+        phone_number:
+          type: string
+          title: Phone Number
+          description: Phone number of the entity (not validated)
+          example: '+31612345678'
+        risk_assessment:
+          type: string
+          title: Risk Assessment
+          description: Business specific risk assessment information
+          example: High
+        full_name:
+          type: string
+          title: Full Name
+          description: Full name of the entity if no other naming specifics are given
+          example: John Doe
+        additional_fields:
+          type: object
+          title: Additional Fields
+          example:
+            some_attribute: high
+            another_attribute: 100
+          description: Arbitrary indexed data for this transaction. Special validation is applied. [See additional_fields validation details](/api-docs/transaction-monitoring-apis/transactions/transaction-api#additional-fields-validations).
+        peer_group_external_id:
+          type: string
+          title: Peer Group External Id
+          description: Peer group id as given by the Client
+          example: PG-CRY-ALL
+        addresses:
+          items:
+            $ref: '#/components/schemas/Address'
+          type: array
+          title: Addresses
+        payment_options:
+          items:
+            $ref: '#/components/schemas/PaymentOption'
+          type: array
+          title: Payment Options
+        entity_groups_external:
+          items:
+            type: string
+          type: array
+          title: Entity Groups External
+        name:
+          type: string
+          title: Name
+          description: Name of the organisational unit or sub-organisation for the business
+          example: Global corp
+        name_aliases:
+          items:
+            type: string
+          type: array
+          title: Name Aliases
+          description: Self-chosen trading names for the business
+          example:
+          - GC
+          - Globco
+        website:
+          type: string
+          title: Website
+          description: The organisation's website URL
+          example: www.globcorp.com
+        legal_form:
+          type: string
+          title: Legal Form
+          description: Legal form of the business
+          example: Private limited company/ BV
+        sector:
+          type: string
+          title: Sector
+          description: Sector the business is active in
+          example: Agriculture
+        registration_name:
+          type: string
+          title: Registration Name
+          description: Chamber of Commerce registration name for business
+          example: Globco
+        registration_date:
+          type: string
+          format: date
+          title: Registration Date
+          description: Official registration date to Chamber of Commerce of the business, ISO-8601
+          example: '2019-09-26'
+        registration_country:
+          type: string
+          maxLength: 2
+          minLength: 2
+          title: Registration Country
+          description: ISO-3166 alpha-2 country code for country of registration
+          example: NL
+        registration_id:
+          type: string
+          title: Registration Id
+          description: Chamber of Commerce registration ID for business
+          example: '1234567890'
+        enabled_payment_methods:
+          items:
+            type: string
+          type: array
+          title: Enabled Payment Methods
+          description: Array of enabled payment methods
+          example:
+          - Paypal
+          - Creditcard
+        sign_up_at:
+          type: string
+          format: date-time
+          title: Sign Up At
+          description: Timestamp for Business sign up at Client side. ISO-8601 timestamp in the format of "yyyy-MM-dd'T'HH:mm:ss.SSSZ".
+          example: '2022-12-23T17:59:59.678Z'
+        sign_up_approved_at:
+          type: string
+          format: date-time
+          title: Sign Up Approved At
+          description: 'Timestamp for Business sign up approval at Client side. ISO-8601 timestamp in the format of "yyyy-MM-dd''T''HH:mm:ss.SSSZ". '
+          example: '2022-12-23T17:59:59.678Z'
+        operational_at:
+          type: string
+          format: date-time
+          title: Operational At
+          description: 'Timestamp for Business operational start at Client side. ISO-8601 timestamp in the format of "yyyy-MM-dd''T''HH:mm:ss.SSSZ". '
+          example: '2022-12-23T17:59:59.678Z'
+        last_updated_at:
+          type: string
+          format: date-time
+          title: Last Updated At
+          description: 'Timestamp for Business last update at Client side. ISO-8601 timestamp in the format of "yyyy-MM-dd''T''HH:mm:ss.SSSZ". '
+          example: '2022-12-23T17:59:59.678Z'
+        offboarded_at:
+          type: string
+          format: date-time
+          title: Offboarded At
+          description: 'Timestamp for moment where Business account was closed. ISO-8601 timestamp in the format of "yyyy-MM-dd''T''HH:mm:ss.SSSZ". '
+          example: '2022-12-23T17:59:59.678Z'
+        onboarding_status:
+          allOf:
+          - $ref: '#/components/schemas/OnboardingStatus'
+          description: Client status for business, such as 'pending', 'active', 'blocked'
+          example: live
+        has_known_peps:
+          type: boolean
+          title: Has Known Peps
+          description: Whether this Business has Politically Exposed Person (PEP) shareholders
+          example: true
+        is_public_benefit_organisation:
+          type: boolean
+          title: Is Public Benefit Organisation
+          description: Whether this individual is a Public Benefit Organisation (PBO)
+          example: true
+      type: object
+      required:
+      - external_id
+      title: Business
     RuleExecution:
       properties:
         name:
@@ -1235,15 +1044,144 @@ components:
       - name
       - score
       title: RuleExecution
-    IdType:
-      type: string
-      enum:
-      - National ID card
-      - Drivers license
-      - Passport
-      - Social security card
-      title: IdType
-      description: An enumeration.
+    EntityType:
+      properties:
+        by_external_id:
+          type: string
+          title: By External Id
+          description: UUID of the entity as registered in CLM. Must be a valid UUID v4 format and must correspond to an entity that already exists in CLM. Mutually exclusive with providing inline entity details (`external_entity_type` + sub-object). [See entity specification details](/api-docs/transaction-monitoring-apis/transactions/transaction-api#entity-specification--by_external_id).
+        by_uuid:
+          type: string
+          title: By Uuid
+          description: uuid of the entity
+        external_entity_type:
+          allOf:
+          - $ref: '#/components/schemas/ExternalEntityType'
+          description: Type of entity
+          example: individual
+        individual:
+          $ref: '#/components/schemas/Individual'
+        business:
+          $ref: '#/components/schemas/Business'
+        unknown:
+          $ref: '#/components/schemas/Unknown'
+      additionalProperties: false
+      type: object
+      title: EntityType
+      description: 'EntityType is in deprecation process and will be removed in the future.
+
+        The new type can be found in data_contracts named EmbeddedEntity.'
+    TransactionModification:
+      properties:
+        external_id:
+          type: string
+          title: External Id
+          description: Modification external id uniquely identifying this modification
+        type:
+          allOf:
+          - $ref: '#/components/schemas/Type'
+          description: Modification type for this transaction
+          example: refund
+        reason:
+          type: string
+          title: Reason
+        amount:
+          type: number
+          title: Amount
+          description: Amount that was requested for the modification
+          example: 1.234
+        monitoring_amount:
+          type: number
+          title: Monitoring Amount
+          description: Amount that was requested for the modification in the monitoring currency
+          example: 1.234
+        original_amount:
+          type: number
+          title: Original Amount
+          description: Amount that was requested for the modification in the original currency
+          example: 1.234
+        currency:
+          type: string
+          maxLength: 3
+          minLength: 3
+          title: Currency
+          description: (Deprecated) Currency for the payment in case of modification such as refund. ISO 4217 currency code (3-letter uppercase). TM supports only one currency per tenant.
+          example: EUR
+        monitoring_currency:
+          type: string
+          maxLength: 3
+          minLength: 3
+          title: Monitoring Currency
+          description: Monitoring currency for the payment in case of modification such as refund. ISO 4217 currency code (3-letter uppercase). TM supports only one currency per tenant.
+          example: EUR
+        original_currency:
+          type: string
+          maxLength: 3
+          minLength: 3
+          title: Original Currency
+          description: Original currency for the payment in case of modification such as refund. ISO 4217 currency code (3-letter uppercase). TM supports only one currency per tenant.
+          example: EUR
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+          description: Timestamp for this modification event creation at Client side. ISO-8601 timestamp in the format of "yyyy-MM-dd'T'HH:mm:ss.SSSZ". Special validation is applied. [See date range validation details](/api-docs/transaction-monitoring-apis/transactions/transaction-api#modification-created-at-validation).
+        settled_at:
+          type: string
+          format: date-time
+          title: Settled At
+          description: 'Timestamp for the settled  modification event creation at Client side. ISO-8601 timestamp in the format of "yyyy-MM-dd''T''HH:mm:ss.SSSZ". '
+          example: '2022-12-23T17:59:59.678Z'
+      type: object
+      required:
+      - external_id
+      - type
+      - amount
+      - currency
+      - created_at
+      title: TransactionModification
+    EntityMatchSourceResult:
+      properties:
+        source:
+          $ref: '#/components/schemas/EntityMatchListVersion'
+        matches:
+          items:
+            $ref: '#/components/schemas/EntityMatchResult'
+          type: array
+          title: Matches
+      type: object
+      required:
+      - source
+      - matches
+      title: EntityMatchSourceResult
+    EntityMatchListVersion:
+      properties:
+        owner_id:
+          type: string
+          pattern: ^[a-z0-9\.\-_]+$
+          title: Owner Id
+          example: sentinels
+        list_name:
+          type: string
+          pattern: ^[a-z0-9\.\-_]+$
+          title: List Name
+          example: info4c-sanctions
+        list_version:
+          type: string
+          pattern: ^[a-z0-9\.\-_]+$
+          title: List Version
+          example: v1
+        last_modified:
+          type: string
+          format: date-time
+          title: Last Modified
+      additionalProperties: false
+      type: object
+      required:
+      - owner_id
+      - list_name
+      - list_version
+      title: EntityMatchListVersion
     EntityMatchEntity:
       properties:
         entity_id:
@@ -1285,13 +1223,75 @@ components:
       - other_names
       - date_of_birth
       title: EntityMatchEntity
-    PaymentType:
+    Response3dSecure:
       type: string
       enum:
-      - payin
-      - payout
-      - ledger
-      title: PaymentType
+      - Y
+      - N
+      - U
+      - A
+      - E
+      title: Response3dSecure
+      description: An enumeration.
+    EntityMatchAddress:
+      properties:
+        street:
+          type: string
+          title: Street
+        postal_code:
+          type: string
+          title: Postal Code
+        city:
+          type: string
+          title: City
+        state:
+          type: string
+          title: State
+        country:
+          type: string
+          title: Country
+      type: object
+      title: EntityMatchAddress
+    RuleExecutionError:
+      properties:
+        status:
+          type: string
+          title: Status
+          description: Error status
+        reason:
+          type: string
+          title: Reason
+          description: Error message per rule execution
+      additionalProperties: false
+      type: object
+      title: RuleExecutionError
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    Label:
+      type: string
+      enum:
+      - sender
+      - receiver
+      - merchant
+      - consumer
+      - merchant_profile
+      title: Label
+      description: An enumeration.
+    IdType:
+      type: string
+      enum:
+      - National ID card
+      - Drivers license
+      - Passport
+      - Social security card
+      title: IdType
       description: An enumeration.
   securitySchemes:
     OAuth2_Client_Credentials:

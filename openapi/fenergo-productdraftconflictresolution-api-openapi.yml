@@ -320,29 +320,61 @@ paths:
                   errorCode: OBSOLETE_ENDPOINT
 components:
   schemas:
-    DraftConflictDtoServiceRequest:
+    ValidationErrorModelListServiceResponse:
       type: object
       properties:
         data:
-          allOf:
-          - $ref: '#/components/schemas/DraftConflictDto'
-          description: Request DTO representing the conflict resolution data
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    ServiceResponseMessage:
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    PropertyType:
+      enum:
+      - Single
+      - Custom
+      - Collection
+      type: string
+    CompleteInaccessibleConflictsDto:
       type: object
       properties:
-        message:
+        productCategory:
           type:
-          - string
+          - array
           - 'null'
-        type:
+          items:
+            type: string
+          description: 'Journey task product categories for which conflicted fields should default to the verified record value.
+
+            Fields whose category is NOT in this list will default to the new (draft) value.
+
+            If null or empty, all conflicts default to the new (draft) value.'
+        fieldCategories:
           type:
-          - string
+          - object
           - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
+          additionalProperties:
+            type:
+            - string
+            - 'null'
+          description: Map of field data key to its product category, used to determine the category of each conflicted field.
       additionalProperties: false
     BulkDraftConflictDtoListServiceRequest:
       type: object
@@ -353,6 +385,31 @@ components:
           - 'null'
           items:
             $ref: '#/components/schemas/BulkDraftConflictDto'
+      additionalProperties: false
+    DraftConflictDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/DraftConflictDto'
+          description: Request DTO representing the conflict resolution data
+      additionalProperties: false
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
     DraftConflictDto:
       type: object
@@ -397,92 +454,6 @@ components:
                     street: Carrer de Girona
       additionalProperties: false
       description: Request DTO representing the conflict resolution data
-    PropertyType:
-      enum:
-      - Single
-      - Custom
-      - Collection
-      type: string
-    PropertyDto:
-      required:
-      - discriminator
-      - type
-      type: object
-      properties:
-        type:
-          allOf:
-          - $ref: '#/components/schemas/PropertyType'
-          readOnly: true
-        discriminator:
-          allOf:
-          - $ref: '#/components/schemas/PropertyType'
-          readOnly: true
-        isValid:
-          type:
-          - boolean
-          - 'null'
-      additionalProperties: false
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    CompleteInaccessibleConflictsDto:
-      type: object
-      properties:
-        productCategory:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: 'Journey task product categories for which conflicted fields should default to the verified record value.
-
-            Fields whose category is NOT in this list will default to the new (draft) value.
-
-            If null or empty, all conflicts default to the new (draft) value.'
-        fieldCategories:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type:
-            - string
-            - 'null'
-          description: Map of field data key to its product category, used to determine the category of each conflicted field.
-      additionalProperties: false
-    ValidationErrorModelListServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
     BulkDraftConflictDto:
       type: object
       properties:
@@ -533,6 +504,52 @@ components:
           description: The Product Draft Id
           format: uuid
       additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    PropertyDto:
+      required:
+      - discriminator
+      - type
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        discriminator:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        isValid:
+          type:
+          - boolean
+          - 'null'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
     StringServiceResponse:
       type: object
       properties:
@@ -546,23 +563,6 @@ components:
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ValidationErrorModel:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-        attemptedValue: {}
-        errorCode:
-          type:
-          - string
-          - 'null'
       additionalProperties: false
   securitySchemes:
     Bearer:

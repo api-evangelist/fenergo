@@ -426,22 +426,6 @@ paths:
     - url: /collateralquery
 components:
   schemas:
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
     ServiceResponse:
       type: object
       properties:
@@ -462,6 +446,38 @@ components:
       - Custom
       - Collection
       type: string
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    PropertyDto:
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        discriminator:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        isValid:
+          type:
+          - boolean
+          - 'null'
+      additionalProperties: false
     AssetDto:
       type: object
       properties:
@@ -523,32 +539,13 @@ components:
           example: e1809731-77df-4e72-98e7-0d314b7a5151
       additionalProperties: false
       description: "Class to represent the Asset uploaded. \nContains all properties needed to fill the metadata of the Asset being uploaded."
-    PropertyDto:
+    AssetDtoServiceRequest:
       type: object
       properties:
-        type:
+        data:
           allOf:
-          - $ref: '#/components/schemas/PropertyType'
-          readOnly: true
-        discriminator:
-          allOf:
-          - $ref: '#/components/schemas/PropertyType'
-          readOnly: true
-        isValid:
-          type:
-          - boolean
-          - 'null'
-      additionalProperties: false
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+          - $ref: '#/components/schemas/AssetDto'
+          description: "Class to represent the Asset uploaded. \nContains all properties needed to fill the metadata of the Asset being uploaded."
       additionalProperties: false
     AssetDtoServiceResponse:
       type: object
@@ -557,6 +554,17 @@ components:
           allOf:
           - $ref: '#/components/schemas/AssetDto'
           description: "Class to represent the Asset uploaded. \nContains all properties needed to fill the metadata of the Asset being uploaded."
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
         messages:
           type:
           - array
@@ -578,30 +586,6 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    AssetDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/AssetDto'
-          description: "Class to represent the Asset uploaded. \nContains all properties needed to fill the metadata of the Asset being uploaded."
-      additionalProperties: false
-    AssetDtoListServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/AssetDto_2'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
     AssetSnapshotDtoServiceResponse:
       type: object
       properties:
@@ -616,46 +600,6 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    AssetDto_2:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The Asset Id
-          format: uuid
-          example: e1809731-77df-4e72-98e7-0d314b7a5151
-        type:
-          type:
-          - string
-          - 'null'
-          description: The Asset Type
-          example: Financial Asset
-        alternateId:
-          type:
-          - string
-          - 'null'
-          description: Asset Id from data migration
-        collateralId:
-          type: string
-          description: The id of a linked collateral
-          format: uuid
-          example: e1809731-77df-4e72-98e7-0d314b7a5151
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-          description: 'List of custom properties for an Asset separate from the standard
-
-            out of the box properties.'
-        lifecycleStatus:
-          type:
-          - string
-          - 'null'
-          description: The lifecycle status of the Asset
-      additionalProperties: false
-      description: "Class to represent the Asset uploaded. \nContains all properties needed to fill the metadata of the Asset being uploaded."
     AssetQueryDto:
       type: object
       properties:
@@ -730,13 +674,6 @@ components:
           format: date-time
       additionalProperties: false
       description: "An Asset object. \nContains all properties needed to fill the metadata of the Asset."
-    AssetQueryDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/AssetQueryDto'
-      additionalProperties: false
     AssetSnapshotDto:
       type: object
       properties:
@@ -756,6 +693,69 @@ components:
           description: List of Asset drafts
       additionalProperties: false
       description: An Asset snapshot object
+    AssetDto_2:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The Asset Id
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        type:
+          type:
+          - string
+          - 'null'
+          description: The Asset Type
+          example: Financial Asset
+        alternateId:
+          type:
+          - string
+          - 'null'
+          description: Asset Id from data migration
+        collateralId:
+          type: string
+          description: The id of a linked collateral
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+          description: 'List of custom properties for an Asset separate from the standard
+
+            out of the box properties.'
+        lifecycleStatus:
+          type:
+          - string
+          - 'null'
+          description: The lifecycle status of the Asset
+      additionalProperties: false
+      description: "Class to represent the Asset uploaded. \nContains all properties needed to fill the metadata of the Asset being uploaded."
+    AssetDtoListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AssetDto_2'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AssetQueryDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/AssetQueryDto'
+      additionalProperties: false
   securitySchemes:
     Bearer:
       type: apiKey

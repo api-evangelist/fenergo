@@ -96,7 +96,7 @@ paths:
       description: 'This method will handle adapters responses.
 
         Processes Adapter Responses'
-      operationId: Callback
+      operationId: postReceptorCallback
       parameters:
       - name: Compression-Algorithm
         in: header
@@ -1084,6 +1084,8 @@ paths:
                 $ref: '#/components/schemas/ServiceResponse'
         '500':
           description: Internal server error
+      x-operation-id-source: normalized
+      x-operation-id-original: Callback
     servers:
     - url: /externaldatareceptor
   /receptor/getPresignedUrl:
@@ -2201,47 +2203,6 @@ paths:
     - url: /screeningreceptor
 components:
   schemas:
-    ProblemDetails:
-      type: object
-      properties:
-        type:
-          type:
-          - string
-          - 'null'
-        title:
-          type:
-          - string
-          - 'null'
-        status:
-          type:
-          - integer
-          - 'null'
-          format: int32
-        detail:
-          type:
-          - string
-          - 'null'
-        instance:
-          type:
-          - string
-          - 'null'
-      additionalProperties: {}
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
     AdapterResponseDto:
       type: object
       properties:
@@ -2284,6 +2245,47 @@ components:
           - 'null'
           additionalProperties: {}
       additionalProperties: false
+    ProblemDetails:
+      type: object
+      properties:
+        type:
+          type:
+          - string
+          - 'null'
+        title:
+          type:
+          - string
+          - 'null'
+        status:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        detail:
+          type:
+          - string
+          - 'null'
+        instance:
+          type:
+          - string
+          - 'null'
+      additionalProperties: {}
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
     ObjectServiceResponse:
       type: object
       properties:
@@ -2309,6 +2311,268 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
+    GetRequestSchemaDto:
+      type: object
+      properties:
+        requestData:
+          $ref: '#/components/schemas/SchemaEntryDto'
+      additionalProperties: false
+      description: Schema for the "get" request.
+    GetResponseDto:
+      type: object
+      properties:
+        client:
+          $ref: '#/components/schemas/ObjectClientDto'
+        hierarchy:
+          $ref: '#/components/schemas/ObjectObjectHierarchyDto'
+        documents:
+          $ref: '#/components/schemas/ObjectDocumentsDto'
+      additionalProperties: false
+    SchemaEntryDto:
+      type: object
+      properties:
+        fields:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/FieldDto'
+      additionalProperties: false
+      description: This class represents single schema information from external data.
+    ObjectSearchResultDto:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+          description: Id of the entity.
+          example: 76ce4f1a-8676-4d4f-be0f-ae57b99b7e27
+        entityType:
+          enum:
+          - Company
+          - Individual
+          type:
+          - string
+          - 'null'
+          description: Type of the entity
+        fullName:
+          type:
+          - string
+          - 'null'
+          description: Full name of the entity
+          example: My Entity Name
+        matchHint:
+          type:
+          - string
+          - 'null'
+          description: Hint how entity is matching search (exact or partial).
+          example: Selected
+        matchScore:
+          type:
+          - number
+          - 'null'
+          description: Score how much entity matches the search request.
+          format: double
+          example: 25
+        data: {}
+      additionalProperties: false
+    ObjectObjectHierarchyDto:
+      type: object
+      properties:
+        associatedEntities:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ObjectAssociatedPartyDto'
+        associations:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ObjectAssociationDto'
+      additionalProperties: false
+    ObjectDocumentsDto:
+      type: object
+      properties:
+        entityDocuments:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ObjectDocumentDto'
+      additionalProperties: false
+    GetResponseSchemaDto:
+      type: object
+      properties:
+        clientData:
+          $ref: '#/components/schemas/SchemaEntryDto'
+        associatedEntitiesCompanyData:
+          $ref: '#/components/schemas/SchemaEntryDto'
+        associatedEntitiesIndividualData:
+          $ref: '#/components/schemas/SchemaEntryDto'
+        associationsData:
+          $ref: '#/components/schemas/SchemaEntryDto'
+      additionalProperties: false
+      description: Schema for the "get" response.
+    PurchasedDocumentsDto:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+        name:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        status:
+          type:
+          - string
+          - 'null'
+        fileLocation:
+          type:
+          - string
+          - 'null'
+        errorDetails:
+          $ref: '#/components/schemas/AdapterResponseErrorDetails'
+      additionalProperties: false
+    SchemaDto:
+      type: object
+      properties:
+        searchRequest:
+          $ref: '#/components/schemas/SearchRequestSchemaDto'
+        searchResponse:
+          $ref: '#/components/schemas/SearchResponseSchemaDto'
+        getRequest:
+          $ref: '#/components/schemas/GetRequestSchemaDto'
+        getResponse:
+          $ref: '#/components/schemas/GetResponseSchemaDto'
+      additionalProperties: false
+      description: Schema of the external data adapter.
+    ObjectAssociatedPartyDto:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+        entityType:
+          type:
+          - string
+          - 'null'
+        fullName:
+          type:
+          - string
+          - 'null'
+        uboType:
+          type:
+          - string
+          - 'null'
+        isActive:
+          type:
+          - boolean
+          - 'null'
+        data: {}
+      additionalProperties: false
+    SearchResponseSchemaDto:
+      type: object
+      properties:
+        searchResultsData:
+          $ref: '#/components/schemas/SchemaEntryDto'
+      additionalProperties: false
+      description: Schema for the "search" response.
+    TestResponseDto:
+      type: object
+      properties:
+        adapterSchema:
+          $ref: '#/components/schemas/AdapterSchemaDto'
+        adapterSchemaIndividual:
+          $ref: '#/components/schemas/AdapterSchemaDto'
+      additionalProperties: false
+      description: 'Response for the "Test" request type.
+
+        It contains updated adapter schema for the provider.'
+    DocumentData:
+      type: object
+      properties:
+        extension:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ObjectDocumentResultDto:
+      type: object
+      properties:
+        documentId:
+          type:
+          - string
+          - 'null'
+          description: Document Id
+          example: d046f87e-2f26-41d4-833a-ed57fb897ee6
+        fileLocation:
+          type:
+          - string
+          - 'null'
+          description: File Location in the Doc Storage
+          example: //path/file
+        status:
+          $ref: '#/components/schemas/DocumentResultStatus'
+        errorDetails:
+          $ref: '#/components/schemas/AdapterResponseErrorDetails'
+        data:
+          description: Generic data depending on the external provider, can contain specifics about the document.
+        receiveDate:
+          type:
+          - string
+          - 'null'
+          description: Receive date
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+      additionalProperties: false
+    AdapterResponseErrorDetails:
+      type: object
+      properties:
+        source:
+          type:
+          - string
+          - 'null'
+          description: Source of the error.
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error code specifying type of the error.
+        message:
+          type:
+          - string
+          - 'null'
+          description: Error message
+      additionalProperties: false
+      description: This class contains the error details if ther was an error with adapter request.
+    ObjectDocumentDto:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+        name:
+          type:
+          - string
+          - 'null'
+        date:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        data: {}
+      additionalProperties: false
     CreateSignedUrlResponseDtoListServiceResponse:
       type: object
       properties:
@@ -2325,6 +2589,50 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    SearchRequestSchemaDto:
+      type: object
+      properties:
+        searchCriteria:
+          $ref: '#/components/schemas/SchemaEntryDto'
+      additionalProperties: false
+      description: Schema for the "search" request.
+    LookupDto:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+          description: Name of the lookup
+        values:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Values of the lookup that can be used.
+      additionalProperties: false
+    UltimateBeneficialOwnerResponseDto:
+      type: object
+      properties:
+        results:
+          $ref: '#/components/schemas/ObjectObjectUltimateBeneficialOwnerResultDto'
+      additionalProperties: false
+      description: Response from the external data adapter with ultimate beneficial owners information.
     ObjectObjectUltimateBeneficialOwnerResultDto:
       type: object
       properties:
@@ -2358,52 +2666,49 @@ components:
         errorDetails:
           $ref: '#/components/schemas/AdapterResponseErrorDetails'
       additionalProperties: false
-    OngoingMonitoringNotificationResponseDto:
+    ObjectAssociationDto:
       type: object
       properties:
-        entityId:
+        parentId:
           type:
           - string
           - 'null'
-          description: Entity ID for which notification was sent.
-          example: bb8cd902-1aa8-456e-a22d-a4fc470e8386
-        eventType:
+        childId:
           type:
           - string
           - 'null'
-          description: Event Type of the notification.
-        eventSubtype:
+        ownershipPercentage:
+          type:
+          - number
+          - 'null'
+          format: double
+        associationType:
           type:
           - string
           - 'null'
-          description: Subtype of the notification.
-        data:
-          description: Generic data depending on the external provider, can contain specifics about the entity change.
+        data: {}
       additionalProperties: false
-      description: This class represents the response for ongoing monitoring notification.
-    CreateSignedUrlRequestDto:
+    CreateSignedUrlResponseDto:
       type: object
       properties:
-        documentData:
+        url:
+          type:
+          - string
+          - 'null'
+        fileName:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    DocumentResponseDto:
+      type: object
+      properties:
+        results:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/DocumentData'
-      additionalProperties: false
-    ServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+            $ref: '#/components/schemas/ObjectDocumentResultDto'
       additionalProperties: false
     FieldDto:
       type: object
@@ -2454,301 +2759,6 @@ components:
           description: Collection of internal fields, if field is of type "datagroup" or "multidatagroup".
       additionalProperties: false
       description: This class represents single field information.
-    ObjectClientDto:
-      type: object
-      properties:
-        id:
-          type:
-          - string
-          - 'null'
-        entityType:
-          type:
-          - string
-          - 'null'
-        fullName:
-          type:
-          - string
-          - 'null'
-        data: {}
-      additionalProperties: false
-    PurchasedDocumentsDto:
-      type: object
-      properties:
-        id:
-          type:
-          - string
-          - 'null'
-        name:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        status:
-          type:
-          - string
-          - 'null'
-        fileLocation:
-          type:
-          - string
-          - 'null'
-        errorDetails:
-          $ref: '#/components/schemas/AdapterResponseErrorDetails'
-      additionalProperties: false
-    DocumentData:
-      type: object
-      properties:
-        extension:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    LookupDto:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-          description: Name of the lookup
-        values:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: Values of the lookup that can be used.
-      additionalProperties: false
-    AdapterResponseErrorDetails:
-      type: object
-      properties:
-        source:
-          type:
-          - string
-          - 'null'
-          description: Source of the error.
-        errorCode:
-          type:
-          - string
-          - 'null'
-          description: Error code specifying type of the error.
-        message:
-          type:
-          - string
-          - 'null'
-          description: Error message
-      additionalProperties: false
-      description: This class contains the error details if ther was an error with adapter request.
-    ObjectDocumentDto:
-      type: object
-      properties:
-        id:
-          type:
-          - string
-          - 'null'
-        name:
-          type:
-          - string
-          - 'null'
-        date:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        data: {}
-      additionalProperties: false
-    ObjectAssociationDto:
-      type: object
-      properties:
-        parentId:
-          type:
-          - string
-          - 'null'
-        childId:
-          type:
-          - string
-          - 'null'
-        ownershipPercentage:
-          type:
-          - number
-          - 'null'
-          format: double
-        associationType:
-          type:
-          - string
-          - 'null'
-        data: {}
-      additionalProperties: false
-    GetResponseDto:
-      type: object
-      properties:
-        client:
-          $ref: '#/components/schemas/ObjectClientDto'
-        hierarchy:
-          $ref: '#/components/schemas/ObjectObjectHierarchyDto'
-        documents:
-          $ref: '#/components/schemas/ObjectDocumentsDto'
-      additionalProperties: false
-    DocumentResultStatus:
-      enum:
-      - DocumentReceived
-      - DocumentFailed
-      type: string
-      description: 'Represents the status of a document result.
-
-        Allowed values: DocumentReceived, DocumentFailed'
-    TestResponseDto:
-      type: object
-      properties:
-        adapterSchema:
-          $ref: '#/components/schemas/AdapterSchemaDto'
-        adapterSchemaIndividual:
-          $ref: '#/components/schemas/AdapterSchemaDto'
-      additionalProperties: false
-      description: 'Response for the "Test" request type.
-
-        It contains updated adapter schema for the provider.'
-    ObjectSearchResultDto:
-      type: object
-      properties:
-        id:
-          type:
-          - string
-          - 'null'
-          description: Id of the entity.
-          example: 76ce4f1a-8676-4d4f-be0f-ae57b99b7e27
-        entityType:
-          enum:
-          - Company
-          - Individual
-          type:
-          - string
-          - 'null'
-          description: Type of the entity
-        fullName:
-          type:
-          - string
-          - 'null'
-          description: Full name of the entity
-          example: My Entity Name
-        matchHint:
-          type:
-          - string
-          - 'null'
-          description: Hint how entity is matching search (exact or partial).
-          example: Selected
-        matchScore:
-          type:
-          - number
-          - 'null'
-          description: Score how much entity matches the search request.
-          format: double
-          example: 25
-        data: {}
-      additionalProperties: false
-    DocumentResponseDto:
-      type: object
-      properties:
-        results:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ObjectDocumentResultDto'
-      additionalProperties: false
-    ObjectDocumentsDto:
-      type: object
-      properties:
-        entityDocuments:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ObjectDocumentDto'
-      additionalProperties: false
-    SchemaDto:
-      type: object
-      properties:
-        searchRequest:
-          $ref: '#/components/schemas/SearchRequestSchemaDto'
-        searchResponse:
-          $ref: '#/components/schemas/SearchResponseSchemaDto'
-        getRequest:
-          $ref: '#/components/schemas/GetRequestSchemaDto'
-        getResponse:
-          $ref: '#/components/schemas/GetResponseSchemaDto'
-      additionalProperties: false
-      description: Schema of the external data adapter.
-    SearchRequestSchemaDto:
-      type: object
-      properties:
-        searchCriteria:
-          $ref: '#/components/schemas/SchemaEntryDto'
-      additionalProperties: false
-      description: Schema for the "search" request.
-    GetResponseSchemaDto:
-      type: object
-      properties:
-        clientData:
-          $ref: '#/components/schemas/SchemaEntryDto'
-        associatedEntitiesCompanyData:
-          $ref: '#/components/schemas/SchemaEntryDto'
-        associatedEntitiesIndividualData:
-          $ref: '#/components/schemas/SchemaEntryDto'
-        associationsData:
-          $ref: '#/components/schemas/SchemaEntryDto'
-      additionalProperties: false
-      description: Schema for the "get" response.
-    SearchResponseSchemaDto:
-      type: object
-      properties:
-        searchResultsData:
-          $ref: '#/components/schemas/SchemaEntryDto'
-      additionalProperties: false
-      description: Schema for the "search" response.
-    AdapterSchemaDto:
-      type: object
-      properties:
-        lookups:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/LookupDto'
-          description: 'Collection of lookup information for the external data adapter schema.
-
-            Those lookups are used for the mapping of the external data to the Fenergo data model.'
-        schema:
-          $ref: '#/components/schemas/SchemaDto'
-      additionalProperties: false
-      description: Root entity for the external data adapter schema.
-    SchemaEntryDto:
-      type: object
-      properties:
-        fields:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/FieldDto'
-      additionalProperties: false
-      description: This class represents single schema information from external data.
-    GetRequestSchemaDto:
-      type: object
-      properties:
-        requestData:
-          $ref: '#/components/schemas/SchemaEntryDto'
-      additionalProperties: false
-      description: Schema for the "get" request.
-    UltimateBeneficialOwnerResponseDto:
-      type: object
-      properties:
-        results:
-          $ref: '#/components/schemas/ObjectObjectUltimateBeneficialOwnerResultDto'
-      additionalProperties: false
-      description: Response from the external data adapter with ultimate beneficial owners information.
     OngoingMonitoringUnsubscriptionResponseDto:
       type: object
       properties:
@@ -2762,88 +2772,18 @@ components:
           description: Generic data, depending on the external provider, can contain specifics of the entity to be unsubscribed.
       additionalProperties: false
       description: Response for ongoing monitoring unsubscription request.
-    ObjectObjectHierarchyDto:
+    SearchResponseDto:
       type: object
       properties:
-        associatedEntities:
+        results:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ObjectAssociatedPartyDto'
-        associations:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ObjectAssociationDto'
+            $ref: '#/components/schemas/ObjectSearchResultDto'
+          description: List of results for the search request.
       additionalProperties: false
-    ObjectAssociatedPartyDto:
-      type: object
-      properties:
-        id:
-          type:
-          - string
-          - 'null'
-        entityType:
-          type:
-          - string
-          - 'null'
-        fullName:
-          type:
-          - string
-          - 'null'
-        uboType:
-          type:
-          - string
-          - 'null'
-        isActive:
-          type:
-          - boolean
-          - 'null'
-        data: {}
-      additionalProperties: false
-    OngoingMonitoringSubscriptionResponseDto:
-      type: object
-      properties:
-        subscriptionId:
-          type:
-          - string
-          - 'null'
-          description: Id of subscription confirming the monitoring of the entity.
-        data:
-          description: Generic data, depending on the external provider, can contain specifics of the entity to be monitored.
-      additionalProperties: false
-      description: Response of the ongoing monitoring subscription.
-    ObjectDocumentResultDto:
-      type: object
-      properties:
-        documentId:
-          type:
-          - string
-          - 'null'
-          description: Document Id
-          example: d046f87e-2f26-41d4-833a-ed57fb897ee6
-        fileLocation:
-          type:
-          - string
-          - 'null'
-          description: File Location in the Doc Storage
-          example: //path/file
-        status:
-          $ref: '#/components/schemas/DocumentResultStatus'
-        errorDetails:
-          $ref: '#/components/schemas/AdapterResponseErrorDetails'
-        data:
-          description: Generic data depending on the external provider, can contain specifics about the document.
-        receiveDate:
-          type:
-          - string
-          - 'null'
-          description: Receive date
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-      additionalProperties: false
+      description: Response for the "Search" request type.
     AdapterResponseDto_2:
       type: object
       properties:
@@ -2901,90 +2841,198 @@ components:
           - $ref: '#/components/schemas/OngoingMonitoringNotificationResponseDto'
           - $ref: '#/components/schemas/OngoingMonitoringUnsubscriptionResponseDto'
       additionalProperties: false
-    CreateSignedUrlResponseDto:
+    OngoingMonitoringNotificationResponseDto:
       type: object
       properties:
-        url:
+        entityId:
           type:
           - string
           - 'null'
-        fileName:
+          description: Entity ID for which notification was sent.
+          example: bb8cd902-1aa8-456e-a22d-a4fc470e8386
+        eventType:
           type:
           - string
           - 'null'
+          description: Event Type of the notification.
+        eventSubtype:
+          type:
+          - string
+          - 'null'
+          description: Subtype of the notification.
+        data:
+          description: Generic data depending on the external provider, can contain specifics about the entity change.
       additionalProperties: false
-    SearchResponseDto:
+      description: This class represents the response for ongoing monitoring notification.
+    OngoingMonitoringSubscriptionResponseDto:
       type: object
       properties:
-        results:
+        subscriptionId:
+          type:
+          - string
+          - 'null'
+          description: Id of subscription confirming the monitoring of the entity.
+        data:
+          description: Generic data, depending on the external provider, can contain specifics of the entity to be monitored.
+      additionalProperties: false
+      description: Response of the ongoing monitoring subscription.
+    ObjectClientDto:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+        entityType:
+          type:
+          - string
+          - 'null'
+        fullName:
+          type:
+          - string
+          - 'null'
+        data: {}
+      additionalProperties: false
+    DocumentResultStatus:
+      enum:
+      - DocumentReceived
+      - DocumentFailed
+      type: string
+      description: 'Represents the status of a document result.
+
+        Allowed values: DocumentReceived, DocumentFailed'
+    AdapterSchemaDto:
+      type: object
+      properties:
+        lookups:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ObjectSearchResultDto'
-          description: List of results for the search request.
+            $ref: '#/components/schemas/LookupDto'
+          description: 'Collection of lookup information for the external data adapter schema.
+
+            Those lookups are used for the mapping of the external data to the Fenergo data model.'
+        schema:
+          $ref: '#/components/schemas/SchemaDto'
       additionalProperties: false
-      description: Response for the "Search" request type.
-    CategoryDetailDto:
+      description: Root entity for the external data adapter schema.
+    CreateSignedUrlRequestDto:
       type: object
       properties:
-        kind:
-          enum:
-          - Pep
-          - Sanction
-          - Enforcement
-          - AdverseMedia
-          - Soe
-          - Registration
-          - Other
-          type:
-          - string
-          - 'null'
-          description: The category this table's rows belong to
-          example: Pep
-        rows:
+        documentData:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/CategoryDetailRowDto'
-          description: The rows of this category's table
+            $ref: '#/components/schemas/DocumentData'
       additionalProperties: false
-      description: One category's worth of structured detail rows (e.g. every PEP hit for this match)
-    CategoryDetailFieldDto:
+    ScreenResponseDto:
+      required:
+      - entities
       type: object
       properties:
-        label:
+        batchExternalIds:
           type:
-          - string
+          - array
           - 'null'
-          description: The display label for this field
-          example: Status
-        value:
-          type:
-          - string
-          - 'null'
-          description: The value of this field
-          example: Inactive
+          items:
+            $ref: '#/components/schemas/BatchExternalIdDto'
+          description: List of Batch-level external ids (i.e. IDs that are specific to the underlying providers and are equivalent to the "Batch" concept in Screening)
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScreenResponseEntityDto'
+          description: List of entities screened
       additionalProperties: false
-      description: One labelled field within a category detail row (e.g. Label="Status", Value="Inactive")
-    MatchDataAliasDto:
+      description: Response for the "Screen" request type
+    AdditionalInfoDto:
       type: object
       properties:
-        value:
+        title:
           type:
           - string
           - 'null'
-          description: The value of the alias
-          example: TE
+          description: Type of information
+          example: Last Updated
+        content:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Content of the additional information
+          example:
+          - 7/5/2022 12:00:00 AM +01:00
+      additionalProperties: false
+      description: Class to represent additional information returned by the providers
+    IdDetails:
+      type: object
+      properties:
         type:
           type:
           - string
           - 'null'
-          description: The type of alias
-          example: Acronym
+          description: The Type of Id of the entity
+          example: Passport, Driving License
+        value:
+          type:
+          - string
+          - 'null'
+          description: This is the Value of the ID of the entity
+          example: D0999971, 000012ABCD
+        country:
+          type:
+          - string
+          - 'null'
+          description: ID Issuing Country
+          example: Ireland, USA
+        label:
+          type:
+          - string
+          - 'null'
+          description: The human-readable name of the ID scheme, as reported by the underlying provider (e.g. the name of a registry or identifier scheme)
+          example: National Registry of Legal Entities (CNPJ)
+        issueDate:
+          type:
+          - string
+          - 'null'
+          description: Date on which Id is Issued.
+          example: 31/12/1989
+        expiryDate:
+          type:
+          - string
+          - 'null'
+          description: Date on which ID expires
+          example: 31/12/1989
       additionalProperties: false
-      description: Class to represent the alias of an entity
+    TestResponseDto_2:
+      type: object
+      additionalProperties: false
+      description: "Response for the \"Test\" request type. \n\nThere are no properties in this class because no additional data is required to process it."
+    CategoryDetailRowDto:
+      type: object
+      properties:
+        fields:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/CategoryDetailFieldDto'
+          description: The labelled fields for this row
+        subRows:
+          type:
+          - array
+          - 'null'
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/CategoryDetailFieldDto'
+          description: 'Per-row sub-table, e.g. SOE''s per-country ownership breakdown. Null/empty for every
+
+            category kind that has no such breakdown.'
+      additionalProperties: false
+      description: One row of a category detail table - one PEP hit, one Sanction hit, etc.
     OngoingScreeningGetResultsResponseEntityDto:
       required:
       - legalEntityId
@@ -3023,140 +3071,6 @@ components:
           format: uuid
       additionalProperties: false
       description: Class to represent the screening results of an entity
-    ObjectAdapterResponseDto:
-      required:
-      - id
-      - providerId
-      - status
-      - tenant
-      - type
-      type: object
-      properties:
-        id:
-          minLength: 1
-          type: string
-          description: 'Field used to uniquely identify the request. It''s value is different depending on the response type:
-
-            <ul><li>For the "Screen" and "ResolveMatches" types, it should be the Screening BatchId</li><li>For the "Test" type, it should be the Screening ConfigurationId</li><li>For the "OngoingScreeningGetResults" type, the BatchId is not available, so it should be an unique string
-
-            that hasn''t been used before. For example, "ogs-{auto-generated Guid}"</li></ul>'
-          example: fd23f474-eff9-425f-a776-78e2176b36e4
-        tenant:
-          minLength: 1
-          type: string
-          description: The tenant of the client
-          example: 095d6a21-b5cf-4369-9491-0de90438e26c
-        providerId:
-          minLength: 1
-          type: string
-          description: The Screening internal ID of the provider. Must match the ID of the provider in the configuration
-          example: MyProviderId
-        type:
-          minLength: 1
-          enum:
-          - Screen
-          - ResolveMatches
-          - Test
-          - OngoingScreening
-          - OngoingScreeningUpdate
-          - OngoingScreeningGetResults
-          type: string
-          description: The type of the request
-          example: Screen
-        status:
-          minLength: 1
-          enum:
-          - Success
-          - Error
-          type: string
-          description: Property used to specify the status of the request
-          example: Success
-        errorDetails:
-          $ref: '#/components/schemas/AdapterResponseErrorDetails_2'
-        response:
-          oneOf:
-          - $ref: '#/components/schemas/ScreenResponseDto'
-          - $ref: '#/components/schemas/ResolveMatchesResponseDto'
-          - $ref: '#/components/schemas/TestResponseDto_2'
-          - $ref: '#/components/schemas/OngoingScreeningResponseDto'
-          - $ref: '#/components/schemas/OngoingScreeningUpdateResponseDto'
-          - $ref: '#/components/schemas/OngoingScreeningGetResultsResponseDto'
-          description: "Generic property that represents the data of the response. \n\nThe type to used will be determined by the type of response specified in the field \"type\". \n\nMust be `null` when !:UploadId is set — the receptor will download the\nresponse payload from S3 using the upload ID instead of reading it from this field."
-      additionalProperties: false
-      description: Class to represent a response from a Screening adapter
-    AdapterResponseErrorDetails_2:
-      required:
-      - source
-      type: object
-      properties:
-        source:
-          minLength: 1
-          type: string
-          description: Property to specify where the error is coming from
-          example: Adapter
-        errorCode:
-          type:
-          - string
-          - 'null'
-          description: If available, the error code
-          example: E001
-        message:
-          type:
-          - string
-          - 'null'
-          description: The error message to understand what has failed
-          example: The provider returned an invalid status code (500)
-      additionalProperties: false
-      description: Class to represent the error details of a request to a Screening adapter
-    MatchDataExternalIdDto:
-      type: object
-      properties:
-        entityAliasId:
-          type:
-          - string
-          - 'null'
-          description: What entity Alias this externalId is associated with. Will be "PrimaryName" for the PrimaryName external ids
-          example: e7b8f7c2-3c4a-4b2a-9e2d-1f2a3b4c5d6e
-        value:
-          type:
-          - string
-          - 'null'
-          description: The value of the ID
-          example: '1234'
-      additionalProperties: false
-      description: Class to represent a match external id
-    TestResponseDto_2:
-      type: object
-      additionalProperties: false
-      description: "Response for the \"Test\" request type. \n\nThere are no properties in this class because no additional data is required to process it."
-    BatchExternalIdDto:
-      required:
-      - name
-      - source
-      type: object
-      properties:
-        source:
-          minLength: 1
-          type: string
-          description: The source of this externalId (LN, WCO, etc)
-          example: MyProviderId
-        name:
-          minLength: 1
-          type: string
-          description: The name of the ID in the provider
-          example: FieldInProvider
-        value:
-          type:
-          - string
-          - 'null'
-          description: The value of the ID
-          example: '1234'
-      additionalProperties: false
-      description: Class to represent the batch external IDs fetched from the providers (runId, resultId, etc)
-    ResolveMatchesResponseDto:
-      type: object
-      additionalProperties: false
-      description: "Response for the \"ResolveMatches\" request type \n\nThere are no properties in this class because no additional data is required to process it."
     AddressDto:
       type: object
       properties:
@@ -3224,6 +3138,67 @@ components:
           example: Residential
       additionalProperties: false
       description: Class to represent the address of an entity
+    ObjectAdapterResponseDto:
+      required:
+      - id
+      - providerId
+      - status
+      - tenant
+      - type
+      type: object
+      properties:
+        id:
+          minLength: 1
+          type: string
+          description: 'Field used to uniquely identify the request. It''s value is different depending on the response type:
+
+            <ul><li>For the "Screen" and "ResolveMatches" types, it should be the Screening BatchId</li><li>For the "Test" type, it should be the Screening ConfigurationId</li><li>For the "OngoingScreeningGetResults" type, the BatchId is not available, so it should be an unique string
+
+            that hasn''t been used before. For example, "ogs-{auto-generated Guid}"</li></ul>'
+          example: fd23f474-eff9-425f-a776-78e2176b36e4
+        tenant:
+          minLength: 1
+          type: string
+          description: The tenant of the client
+          example: 095d6a21-b5cf-4369-9491-0de90438e26c
+        providerId:
+          minLength: 1
+          type: string
+          description: The Screening internal ID of the provider. Must match the ID of the provider in the configuration
+          example: MyProviderId
+        type:
+          minLength: 1
+          enum:
+          - Screen
+          - ResolveMatches
+          - Test
+          - OngoingScreening
+          - OngoingScreeningUpdate
+          - OngoingScreeningGetResults
+          type: string
+          description: The type of the request
+          example: Screen
+        status:
+          minLength: 1
+          enum:
+          - Success
+          - Error
+          type: string
+          description: Property used to specify the status of the request
+          example: Success
+        errorDetails:
+          $ref: '#/components/schemas/AdapterResponseErrorDetails_2'
+        response:
+          oneOf:
+          - $ref: '#/components/schemas/ScreenResponseDto'
+          - $ref: '#/components/schemas/ResolveMatchesResponseDto'
+          - $ref: '#/components/schemas/TestResponseDto_2'
+          - $ref: '#/components/schemas/OngoingScreeningResponseDto'
+          - $ref: '#/components/schemas/OngoingScreeningUpdateResponseDto'
+          - $ref: '#/components/schemas/OngoingScreeningGetResultsResponseDto'
+          description: "Generic property that represents the data of the response. \n\nThe type to used will be determined by the type of response specified in the field \"type\". \n\nMust be `null` when !:UploadId is set — the receptor will download the\nresponse payload from S3 using the upload ID instead of reading it from this field."
+      additionalProperties: false
+      description: Class to represent a response from a Screening adapter
     OngoingScreeningGetResultsResponseDto:
       type: object
       properties:
@@ -3243,26 +3218,6 @@ components:
           description: List of entities screened
       additionalProperties: false
       description: Response for the "OngoingScreeningGetResults" request type
-    AdditionalInfoDto:
-      type: object
-      properties:
-        title:
-          type:
-          - string
-          - 'null'
-          description: Type of information
-          example: Last Updated
-        content:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: Content of the additional information
-          example:
-          - 7/5/2022 12:00:00 AM +01:00
-      additionalProperties: false
-      description: Class to represent additional information returned by the providers
     ProviderSourceLinkDto:
       type: object
       properties:
@@ -3286,6 +3241,112 @@ components:
           example: e7b8f7c2-3c4a-4b2a-9e2d-1f2a3b4c5d6e
       additionalProperties: false
       description: Represents a URL link to the match on the provider's side, with an optional label.
+    AdapterResponseErrorDetails_2:
+      required:
+      - source
+      type: object
+      properties:
+        source:
+          minLength: 1
+          type: string
+          description: Property to specify where the error is coming from
+          example: Adapter
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: If available, the error code
+          example: E001
+        message:
+          type:
+          - string
+          - 'null'
+          description: The error message to understand what has failed
+          example: The provider returned an invalid status code (500)
+      additionalProperties: false
+      description: Class to represent the error details of a request to a Screening adapter
+    OngoingScreeningUpdateResponseDto:
+      type: object
+      additionalProperties: false
+      description: "Response for the \"OngoingScreeningUpdate\" request type \n\nThere are no properties in this class because no additional data is required to process it."
+    CategoryDetailFieldDto:
+      type: object
+      properties:
+        label:
+          type:
+          - string
+          - 'null'
+          description: The display label for this field
+          example: Status
+        value:
+          type:
+          - string
+          - 'null'
+          description: The value of this field
+          example: Inactive
+      additionalProperties: false
+      description: One labelled field within a category detail row (e.g. Label="Status", Value="Inactive")
+    AssociationDto:
+      type: object
+      properties:
+        externalId:
+          type:
+          - string
+          - 'null'
+          description: 'The unique identifier of the Associated Entity outside of Fen-X (i.e. in the underlying provider).
+
+            Used to query the underlying provider for more information about the associated entity.'
+          example: e_tr_wco_2256753
+        category:
+          type:
+          - string
+          - 'null'
+          description: Category of additional information
+          example: Enforcements,AdverseMedia:CORPORATE
+        fullName:
+          type:
+          - string
+          - 'null'
+          description: The name of the associated party
+          example: Test Entity
+        relationship:
+          type:
+          - string
+          - 'null'
+          description: How the entity and the associated party are related i.e shareholder, director
+          example: AFFILIATED_COMPANY
+        relationshipGroup:
+          type:
+          - string
+          - 'null'
+          description: The relationship group as reported by the underlying provider (e.g. Family, Associations)
+          example: Family
+        ownershipPercentage:
+          type:
+          - number
+          - 'null'
+          description: The ownership percentage of the associated party, as reported by the underlying provider
+          format: double
+          example: 19.74
+      additionalProperties: false
+      description: Class to represent a relationship with another entity
+    MatchDataAliasDto:
+      type: object
+      properties:
+        value:
+          type:
+          - string
+          - 'null'
+          description: The value of the alias
+          example: TE
+        type:
+          type:
+          - string
+          - 'null'
+          description: The type of alias
+          example: Acronym
+      additionalProperties: false
+      description: Class to represent the alias of an entity
     ScreenResponseEntityDto:
       required:
       - entityId
@@ -3312,7 +3373,11 @@ components:
           description: List of matches of the entity
       additionalProperties: false
       description: Class to represent the screening results of an entity
-    ExternalIdDto:
+    OngoingScreeningResponseDto:
+      type: object
+      additionalProperties: false
+      description: "Response for the \"OngoingScreening\" request type \n\nThere are no properties in this class because no additional data is required to process it."
+    BatchExternalIdDto:
       required:
       - name
       - source
@@ -3323,12 +3388,6 @@ components:
           type: string
           description: The source of this externalId (LN, WCO, etc)
           example: MyProviderId
-        entityAliasId:
-          type:
-          - string
-          - 'null'
-          description: What entity Alias this externalId is associated with. Will be null or "PrimaryName" for the PrimaryName external ids
-          example: e7b8f7c2-3c4a-4b2a-9e2d-1f2a3b4c5d6e
         name:
           minLength: 1
           type: string
@@ -3341,74 +3400,50 @@ components:
           description: The value of the ID
           example: '1234'
       additionalProperties: false
-      description: Class to represent the external IDs fetched from the providers (runId, resultId, etc)
-    OngoingScreeningResponseDto:
-      type: object
-      additionalProperties: false
-      description: "Response for the \"OngoingScreening\" request type \n\nThere are no properties in this class because no additional data is required to process it."
-    IdDetails:
+      description: Class to represent the batch external IDs fetched from the providers (runId, resultId, etc)
+    CategoryDetailDto:
       type: object
       properties:
-        type:
+        kind:
+          enum:
+          - Pep
+          - Sanction
+          - Enforcement
+          - AdverseMedia
+          - Soe
+          - Registration
+          - Other
           type:
           - string
           - 'null'
-          description: The Type of Id of the entity
-          example: Passport, Driving License
-        value:
-          type:
-          - string
-          - 'null'
-          description: This is the Value of the ID of the entity
-          example: D0999971, 000012ABCD
-        country:
-          type:
-          - string
-          - 'null'
-          description: ID Issuing Country
-          example: Ireland, USA
-        label:
-          type:
-          - string
-          - 'null'
-          description: The human-readable name of the ID scheme, as reported by the underlying provider (e.g. the name of a registry or identifier scheme)
-          example: National Registry of Legal Entities (CNPJ)
-        issueDate:
-          type:
-          - string
-          - 'null'
-          description: Date on which Id is Issued.
-          example: 31/12/1989
-        expiryDate:
-          type:
-          - string
-          - 'null'
-          description: Date on which ID expires
-          example: 31/12/1989
-      additionalProperties: false
-    ScreenResponseDto:
-      required:
-      - entities
-      type: object
-      properties:
-        batchExternalIds:
+          description: The category this table's rows belong to
+          example: Pep
+        rows:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/BatchExternalIdDto'
-          description: List of Batch-level external ids (i.e. IDs that are specific to the underlying providers and are equivalent to the "Batch" concept in Screening)
-        entities:
-          type: array
-          items:
-            $ref: '#/components/schemas/ScreenResponseEntityDto'
-          description: List of entities screened
+            $ref: '#/components/schemas/CategoryDetailRowDto'
+          description: The rows of this category's table
       additionalProperties: false
-      description: Response for the "Screen" request type
-    OngoingScreeningUpdateResponseDto:
+      description: One category's worth of structured detail rows (e.g. every PEP hit for this match)
+    MatchDataExternalIdDto:
       type: object
+      properties:
+        entityAliasId:
+          type:
+          - string
+          - 'null'
+          description: What entity Alias this externalId is associated with. Will be "PrimaryName" for the PrimaryName external ids
+          example: e7b8f7c2-3c4a-4b2a-9e2d-1f2a3b4c5d6e
+        value:
+          type:
+          - string
+          - 'null'
+          description: The value of the ID
+          example: '1234'
       additionalProperties: false
-      description: "Response for the \"OngoingScreeningUpdate\" request type \n\nThere are no properties in this class because no additional data is required to process it."
+      description: Class to represent a match external id
     MatchDataDto:
       required:
       - providerId
@@ -3718,73 +3753,40 @@ components:
             Can be left null/empty for every other provider that don''t need to provide structured category data.'
       additionalProperties: false
       description: Class to represent the details of a Screening match
-    AssociationDto:
+    ExternalIdDto:
+      required:
+      - name
+      - source
       type: object
       properties:
-        externalId:
+        source:
+          minLength: 1
+          type: string
+          description: The source of this externalId (LN, WCO, etc)
+          example: MyProviderId
+        entityAliasId:
           type:
           - string
           - 'null'
-          description: 'The unique identifier of the Associated Entity outside of Fen-X (i.e. in the underlying provider).
-
-            Used to query the underlying provider for more information about the associated entity.'
-          example: e_tr_wco_2256753
-        category:
+          description: What entity Alias this externalId is associated with. Will be null or "PrimaryName" for the PrimaryName external ids
+          example: e7b8f7c2-3c4a-4b2a-9e2d-1f2a3b4c5d6e
+        name:
+          minLength: 1
+          type: string
+          description: The name of the ID in the provider
+          example: FieldInProvider
+        value:
           type:
           - string
           - 'null'
-          description: Category of additional information
-          example: Enforcements,AdverseMedia:CORPORATE
-        fullName:
-          type:
-          - string
-          - 'null'
-          description: The name of the associated party
-          example: Test Entity
-        relationship:
-          type:
-          - string
-          - 'null'
-          description: How the entity and the associated party are related i.e shareholder, director
-          example: AFFILIATED_COMPANY
-        relationshipGroup:
-          type:
-          - string
-          - 'null'
-          description: The relationship group as reported by the underlying provider (e.g. Family, Associations)
-          example: Family
-        ownershipPercentage:
-          type:
-          - number
-          - 'null'
-          description: The ownership percentage of the associated party, as reported by the underlying provider
-          format: double
-          example: 19.74
+          description: The value of the ID
+          example: '1234'
       additionalProperties: false
-      description: Class to represent a relationship with another entity
-    CategoryDetailRowDto:
+      description: Class to represent the external IDs fetched from the providers (runId, resultId, etc)
+    ResolveMatchesResponseDto:
       type: object
-      properties:
-        fields:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/CategoryDetailFieldDto'
-          description: The labelled fields for this row
-        subRows:
-          type:
-          - array
-          - 'null'
-          items:
-            type: array
-            items:
-              $ref: '#/components/schemas/CategoryDetailFieldDto'
-          description: 'Per-row sub-table, e.g. SOE''s per-country ownership breakdown. Null/empty for every
-
-            category kind that has no such breakdown.'
       additionalProperties: false
-      description: One row of a category detail table - one PEP hit, one Sanction hit, etc.
+      description: "Response for the \"ResolveMatches\" request type \n\nThere are no properties in this class because no additional data is required to process it."
 x-refined-from:
 - fenergo-creditscreeningreceptor-v1-0-openapi.json
 - fenergo-externaldatareceptor-v1-0-openapi.json

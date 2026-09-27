@@ -318,7 +318,7 @@ paths:
       description: 'Required permissions:
 
         Following permissions are required: ESignatureConfigurationAccess'
-      operationId: SaveProviderStatus
+      operationId: putApiV2EsignatureconfigurationProviderByProviderIdStatus
       parameters:
       - name: providerId
         in: path
@@ -406,6 +406,8 @@ paths:
                 - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
                   type: Error
                   errorCode: OBSOLETE_ENDPOINT
+      x-operation-id-source: normalized
+      x-operation-id-original: SaveProviderStatus
     servers:
     - url: /documentmanagementcommand
   /api/v2/esignatureconfiguration/provider/{providerId}/configuration:
@@ -416,7 +418,7 @@ paths:
       description: 'Required permissions:
 
         Following permissions are required: ESignatureConfigurationAccess'
-      operationId: SaveProviderConfiguration
+      operationId: putApiV2EsignatureconfigurationProviderByProviderIdConfiguration
       parameters:
       - name: providerId
         in: path
@@ -514,6 +516,8 @@ paths:
                 - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
                   type: Error
                   errorCode: OBSOLETE_ENDPOINT
+      x-operation-id-source: normalized
+      x-operation-id-original: SaveProviderConfiguration
     servers:
     - url: /documentmanagementcommand
   /api/v2/esignatureconfiguration/provider/{providerId}/refreshLookups:
@@ -524,7 +528,7 @@ paths:
       description: 'Required permissions:
 
         Following permissions are required: ESignatureConfigurationAccess'
-      operationId: refreshLookups
+      operationId: putApiV2EsignatureconfigurationProviderByProviderIdRefreshLookups
       parameters:
       - name: providerId
         in: path
@@ -607,6 +611,8 @@ paths:
                 - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
                   type: Error
                   errorCode: OBSOLETE_ENDPOINT
+      x-operation-id-source: normalized
+      x-operation-id-original: refreshLookups
     servers:
     - url: /documentmanagementcommand
   /api/esignatureconfiguration:
@@ -908,21 +914,19 @@ components:
           - 'null'
         value: {}
       additionalProperties: false
-    ServiceResponseMessage:
+    ServiceResponse:
       type: object
       properties:
-        message:
+        data:
           type:
           - string
           - 'null'
-        type:
+        messages:
           type:
-          - string
+          - array
           - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
     ESignatureLookup:
       type: object
@@ -938,13 +942,13 @@ components:
           items:
             $ref: '#/components/schemas/ESignatureLookupValue'
       additionalProperties: false
-    ServiceResponse:
+    SaveProviderConfigurationLookupsResponseDtoServiceResponse:
       type: object
       properties:
         data:
-          type:
-          - string
-          - 'null'
+          allOf:
+          - $ref: '#/components/schemas/SaveProviderConfigurationLookupsResponseDto'
+          description: DTO representing response after saving the provider configuration
         messages:
           type:
           - array
@@ -952,24 +956,26 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    SaveProviderConfigurationResponseDto:
+    SaveProviderConfigurationResponseDtoServiceResponse:
       type: object
       properties:
-        status:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/SaveProviderConfigurationResponseDto'
+          description: DTO representing response after saving the provider configuration
+        messages:
           type:
-          - string
+          - array
           - 'null'
-          description: Provider Status
-        enabled:
-          type: boolean
-          description: Is Provider Enabled
-        errorMessage:
-          type:
-          - string
-          - 'null'
-          description: Optional user readable error message
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-      description: DTO representing response after saving the provider configuration
+    BooleanServiceRequest:
+      type: object
+      properties:
+        data:
+          type: boolean
+      additionalProperties: false
     SaveProviderConfigurationLookupsResponseDto:
       type: object
       properties:
@@ -994,36 +1000,21 @@ components:
             $ref: '#/components/schemas/ESignatureLookup'
       additionalProperties: false
       description: DTO representing response after saving the provider configuration
-    SaveProviderConfigurationResponseDtoServiceResponse:
+    ServiceResponseMessage:
       type: object
       properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/SaveProviderConfigurationResponseDto'
-          description: DTO representing response after saving the provider configuration
-        messages:
+        message:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    BooleanServiceRequest:
-      type: object
-      properties:
-        data:
-          type: boolean
-      additionalProperties: false
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
-        messages:
+        type:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+        errorCode:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
     ProviderConfigurationDto:
       type: object
@@ -1039,13 +1030,36 @@ components:
           description: Dictionary with provider configuration settings
       additionalProperties: false
       description: DTO representing provider configuration
-    SaveProviderConfigurationLookupsResponseDtoServiceResponse:
+    SaveProviderConfigurationResponseDto:
+      type: object
+      properties:
+        status:
+          type:
+          - string
+          - 'null'
+          description: Provider Status
+        enabled:
+          type: boolean
+          description: Is Provider Enabled
+        errorMessage:
+          type:
+          - string
+          - 'null'
+          description: Optional user readable error message
+      additionalProperties: false
+      description: DTO representing response after saving the provider configuration
+    ProviderConfigurationDtoServiceRequest:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/SaveProviderConfigurationLookupsResponseDto'
-          description: DTO representing response after saving the provider configuration
+          - $ref: '#/components/schemas/ProviderConfigurationDto'
+          description: DTO representing provider configuration
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
         messages:
           type:
           - array
@@ -1067,14 +1081,6 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    ProviderConfigurationDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ProviderConfigurationDto'
-          description: DTO representing provider configuration
-      additionalProperties: false
     ValueType:
       enum:
       - StringMultiline
@@ -1084,30 +1090,6 @@ components:
       - List
       - MultiSelect
       type: string
-    SchemaEntry:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-        friendlyName:
-          type:
-          - string
-          - 'null'
-        value: {}
-        type:
-          allOf:
-          - $ref: '#/components/schemas/ValueType'
-        masked:
-          type: boolean
-        nullable:
-          type: boolean
-        mandatory:
-          type: boolean
-        readOnly:
-          type: boolean
-      additionalProperties: false
     DocuSignGenericProviderDto:
       type: object
       properties:
@@ -1150,6 +1132,54 @@ components:
           description: Collection of configured providers
       additionalProperties: false
       description: Class which representing configuration providers
+    SignatureProviderRefreshResponse:
+      type: object
+      properties:
+        providers:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/DocuSignGenericProviderDto'
+      additionalProperties: false
+    SchemaEntry:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+        friendlyName:
+          type:
+          - string
+          - 'null'
+        value: {}
+        type:
+          allOf:
+          - $ref: '#/components/schemas/ValueType'
+        masked:
+          type: boolean
+        nullable:
+          type: boolean
+        mandatory:
+          type: boolean
+        readOnly:
+          type: boolean
+      additionalProperties: false
+    ProviderConfigurationDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ProviderConfigurationDto_2'
+          description: DTO representing provider configuration
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
     ProviderConfigurationDto_2:
       type: object
       properties:
@@ -1206,30 +1236,6 @@ components:
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ProviderConfigurationDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ProviderConfigurationDto_2'
-          description: DTO representing provider configuration
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    SignatureProviderRefreshResponse:
-      type: object
-      properties:
-        providers:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/DocuSignGenericProviderDto'
       additionalProperties: false
   securitySchemes:
     Bearer:

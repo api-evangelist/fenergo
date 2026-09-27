@@ -98,7 +98,7 @@ paths:
         Required permissions:
 
         Following permissions are required: EntityDataAccessAndSearch'
-      operationId: GetIndexedEntityProperties
+      operationId: getApiV2EntityIndexConfiguration
       parameters:
       - name: X-TENANT-ID
         in: header
@@ -162,10 +162,99 @@ paths:
                 - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
                   type: Error
                   errorCode: OBSOLETE_ENDPOINT
+      x-operation-id-source: normalized
+      x-operation-id-original: GetIndexedEntityProperties
     servers:
     - url: /entitydataquery
 components:
   schemas:
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    EntityIndexConfigurationDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Indexed Entity Property id
+          format: uuid
+          example: 8d631fde-505e-4101-a7cd-83ab6c054a5a
+        entityType:
+          type:
+          - string
+          - 'null'
+          description: Entity type
+          example: Individual
+        propertyName:
+          type:
+          - string
+          - 'null'
+          description: Indexed Entity Property name
+          example: lastName
+        reindexingStatus:
+          allOf:
+          - $ref: '#/components/schemas/PropertyReindexingStatus'
+          description: Indexed Entity Property operation status (InProgress, Complete)
+          example: Complete
+        jurisdiction:
+          type:
+          - string
+          - 'null'
+          description: Jurisdiction name
+          example: Global
+      additionalProperties: false
+      description: Response DTO representing entity index configuration
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+          description: Name of the property
+          example: data
+        errorMessage:
+          type:
+          - string
+          - 'null'
+          description: User friendly error message
+          example: Data is required
+        attemptedValue:
+          description: Invalid value
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Internal error code
+          example: NotNullValidator
+      additionalProperties: false
+      description: Represents the details of validation error
     ServiceResponseMessage:
       type: object
       properties:
@@ -210,39 +299,11 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    EntityIndexConfigurationDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Indexed Entity Property id
-          format: uuid
-          example: 8d631fde-505e-4101-a7cd-83ab6c054a5a
-        entityType:
-          type:
-          - string
-          - 'null'
-          description: Entity type
-          example: Individual
-        propertyName:
-          type:
-          - string
-          - 'null'
-          description: Indexed Entity Property name
-          example: lastName
-        reindexingStatus:
-          allOf:
-          - $ref: '#/components/schemas/PropertyReindexingStatus'
-          description: Indexed Entity Property operation status (InProgress, Complete)
-          example: Complete
-        jurisdiction:
-          type:
-          - string
-          - 'null'
-          description: Jurisdiction name
-          example: Global
-      additionalProperties: false
-      description: Response DTO representing entity index configuration
+    PropertyReindexingStatus:
+      enum:
+      - InProgress
+      - Complete
+      type: string
     ObjectServiceResponse:
       type: object
       properties:
@@ -257,40 +318,6 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    PropertyReindexingStatus:
-      enum:
-      - InProgress
-      - Complete
-      type: string
-    ValidationErrorModelListServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
     StringServiceResponse:
       type: object
       properties:
@@ -308,31 +335,6 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    ValidationErrorModel:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-          description: Name of the property
-          example: data
-        errorMessage:
-          type:
-          - string
-          - 'null'
-          description: User friendly error message
-          example: Data is required
-        attemptedValue:
-          description: Invalid value
-        errorCode:
-          type:
-          - string
-          - 'null'
-          description: Internal error code
-          example: NotNullValidator
-      additionalProperties: false
-      description: Represents the details of validation error
   securitySchemes:
     Bearer:
       type: apiKey

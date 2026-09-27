@@ -1846,22 +1846,14 @@ paths:
     - url: /policyquery
 components:
   schemas:
-    CreateDraftFromVersionRequestDtoServiceRequest:
+    ServiceResponse:
       type: object
       properties:
         data:
-          allOf:
-          - $ref: '#/components/schemas/CreateDraftFromVersionRequestDto'
-          description: Request to create a new draft from an older published/archived version of a policy.
-      additionalProperties: false
-      description: Service request data
-    CreateEntityPolicyResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateEntityPolicyResponseDto'
-          description: Response DTO representing created Policy
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
         messages:
           type:
           - array
@@ -1871,57 +1863,139 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    ServiceResponseMessage:
+    UpdateEntityPolicyDetailsRequestDto:
       type: object
       properties:
-        message:
+        versionNotes:
+          maxLength: 2000
           type:
           - string
           - 'null'
-          description: The message
-          example: Success
-        type:
-          type:
-          - string
-          - 'null'
-          description: 'Type of the message
-
-            One of Info, Warning, Error, Forbidden'
-          example: Info
-        errorCode:
-          type:
-          - string
-          - 'null'
-          description: Error Code
-          example: INTERNAL_SERVER_ERROR
+          description: Version notes for the policy.
+          example: Updated Date Of Birth field
       additionalProperties: false
-      description: The message associated to the service response
-    ProblemDetails:
+      description: Update policy details request
+    CreateDraftFromVersionRequestDto:
+      required:
+      - sourceVersionNumber
+      - workspaceId
       type: object
       properties:
-        type:
-          type:
-          - string
-          - 'null'
-        title:
-          type:
-          - string
-          - 'null'
-        status:
-          type:
-          - integer
-          - 'null'
+        sourceVersionNumber:
+          type: integer
+          description: The published/archived version number to create the draft from.
           format: int32
-        detail:
+          example: 3
+        workspaceId:
+          type: string
+          description: The workspace the draft changes are applied in.
+          format: uuid
+          example: 46b34a29-d426-407e-b1cc-98d727ed4883
+        versionNote:
+          maxLength: 2000
           type:
           - string
           - 'null'
-        instance:
+          description: Optional version notes for the new draft. When omitted a default note is generated.
+          example: Restoring configuration from version 3
+      additionalProperties: false
+      description: Request to create a new draft from an older published/archived version of a policy.
+    CreateEntityPolicyRequestDto:
+      required:
+      - entityType
+      type: object
+      properties:
+        entityType:
+          minLength: 1
+          enum:
+          - Individual
+          - Company
+          - Other
+          - Entity Group
+          - Managed Relationship
+          - Financial Crime Report
+          - Team Metadata
+          - Transaction Monitoring Case
+          type: string
+          description: Related type of the entity
+          example: Company
+      additionalProperties: false
+      description: Create policy request
+    CreateDraftFromVersionRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateDraftFromVersionRequestDto'
+          description: Request to create a new draft from an older published/archived version of a policy.
+      additionalProperties: false
+      description: Service request data
+    ArchiveEntityPolicyRequestDto:
+      type: object
+      properties:
+        reason:
+          maxLength: 100
           type:
           - string
           - 'null'
-      additionalProperties: {}
+          description: Represents the reason provided for archiving a policy entity
+          example: Archived due to invalid KYC field configuration.
+      additionalProperties: false
     CreateEntityPolicyResponseDto:
+      required:
+      - entityPolicyId
+      - entityType
+      - status
+      - versionNumber
+      type: object
+      properties:
+        entityPolicyId:
+          type: string
+          description: Unique identifier of Policy
+          format: uuid
+          example: 46b34a29-d426-407e-b1cc-98d727ed4883
+        versionNumber:
+          type: integer
+          description: Version of created Policy
+          format: int32
+          example: 1
+        entityType:
+          enum:
+          - Individual
+          - Company
+          - Other
+          - Entity Group
+          - Managed Relationship
+          - Financial Crime Report
+          - Team Metadata
+          - Transaction Monitoring Case
+          type:
+          - string
+          - 'null'
+          description: Related type of the entity
+          example: Company
+        status:
+          enum:
+          - Draft
+          - Published
+          - Archived
+          type:
+          - string
+          - 'null'
+          description: Status of created Policy
+          example: Draft
+      additionalProperties: false
+      description: Response DTO representing created Policy
+    CreateEntityPolicyRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateEntityPolicyRequestDto'
+          description: Create policy request
+      additionalProperties: false
+      description: Service request data
+    CreateEntityPolicyDraftResponseDto:
       required:
       - entityPolicyId
       - entityType
@@ -1976,13 +2050,103 @@ components:
           type: integer
           format: int32
       additionalProperties: false
-    ServiceResponse:
+    ServiceResponseMessage:
       type: object
       properties:
-        data:
+        message:
           type:
           - string
           - 'null'
+          description: The message
+          example: Success
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
+      additionalProperties: false
+      description: The message associated to the service response
+    ArchiveEntityPolicyRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ArchiveEntityPolicyRequestDto'
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
+    CreateEntityPolicyDraftResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateEntityPolicyDraftResponseDto'
+          description: Response DTO representing created Policy
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    ProblemDetails:
+      type: object
+      properties:
+        type:
+          type:
+          - string
+          - 'null'
+        title:
+          type:
+          - string
+          - 'null'
+        status:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        detail:
+          type:
+          - string
+          - 'null'
+        instance:
+          type:
+          - string
+          - 'null'
+      additionalProperties: {}
+    CreateEntityPolicyResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateEntityPolicyResponseDto'
+          description: Response DTO representing created Policy
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    ArchiveEntityPolicyResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ArchiveEntityPolicyResponseDto'
           description: The service response DTO
         messages:
           type:
@@ -2002,203 +2166,6 @@ components:
           description: Update policy details request
       additionalProperties: false
       description: Service request data
-    CreateDraftFromVersionRequestDto:
-      required:
-      - sourceVersionNumber
-      - workspaceId
-      type: object
-      properties:
-        sourceVersionNumber:
-          type: integer
-          description: The published/archived version number to create the draft from.
-          format: int32
-          example: 3
-        workspaceId:
-          type: string
-          description: The workspace the draft changes are applied in.
-          format: uuid
-          example: 46b34a29-d426-407e-b1cc-98d727ed4883
-        versionNote:
-          maxLength: 2000
-          type:
-          - string
-          - 'null'
-          description: Optional version notes for the new draft. When omitted a default note is generated.
-          example: Restoring configuration from version 3
-      additionalProperties: false
-      description: Request to create a new draft from an older published/archived version of a policy.
-    ArchiveEntityPolicyRequestDto:
-      type: object
-      properties:
-        reason:
-          maxLength: 100
-          type:
-          - string
-          - 'null'
-          description: Represents the reason provided for archiving a policy entity
-          example: Archived due to invalid KYC field configuration.
-      additionalProperties: false
-    ArchiveEntityPolicyRequestDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ArchiveEntityPolicyRequestDto'
-          description: The service request DTO
-      additionalProperties: false
-      description: Service request data
-    CreateEntityPolicyRequestDto:
-      required:
-      - entityType
-      type: object
-      properties:
-        entityType:
-          minLength: 1
-          enum:
-          - Individual
-          - Company
-          - Other
-          - Entity Group
-          - Managed Relationship
-          - Financial Crime Report
-          - Team Metadata
-          - Transaction Monitoring Case
-          type: string
-          description: Related type of the entity
-          example: Company
-      additionalProperties: false
-      description: Create policy request
-    CreateEntityPolicyDraftResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateEntityPolicyDraftResponseDto'
-          description: Response DTO representing created Policy
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    CreateEntityPolicyRequestDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateEntityPolicyRequestDto'
-          description: Create policy request
-      additionalProperties: false
-      description: Service request data
-    ArchiveEntityPolicyResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ArchiveEntityPolicyResponseDto'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    CreateEntityPolicyDraftResponseDto:
-      required:
-      - entityPolicyId
-      - entityType
-      - status
-      - versionNumber
-      type: object
-      properties:
-        entityPolicyId:
-          type: string
-          description: Unique identifier of Policy
-          format: uuid
-          example: 46b34a29-d426-407e-b1cc-98d727ed4883
-        versionNumber:
-          type: integer
-          description: Version of created Policy
-          format: int32
-          example: 1
-        entityType:
-          enum:
-          - Individual
-          - Company
-          - Other
-          - Entity Group
-          - Managed Relationship
-          - Financial Crime Report
-          - Team Metadata
-          - Transaction Monitoring Case
-          type:
-          - string
-          - 'null'
-          description: Related type of the entity
-          example: Company
-        status:
-          enum:
-          - Draft
-          - Published
-          - Archived
-          type:
-          - string
-          - 'null'
-          description: Status of created Policy
-          example: Draft
-      additionalProperties: false
-      description: Response DTO representing created Policy
-    UpdateEntityPolicyDetailsRequestDto:
-      type: object
-      properties:
-        versionNotes:
-          maxLength: 2000
-          type:
-          - string
-          - 'null'
-          description: Version notes for the policy.
-          example: Updated Date Of Birth field
-      additionalProperties: false
-      description: Update policy details request
-    TagSuggestionResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/TagSuggestionResponseDto'
-          description: Tag suggestion response
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    EntityPolicyVersionListItemViewModelDtoItemsPage:
-      type: object
-      properties:
-        items:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/EntityPolicyVersionListItemViewModelDto'
-          description: The items result set
-        paginationToken:
-          type:
-          - string
-          - 'null'
-          description: The token for retrieving the next page of results
-      additionalProperties: false
-      description: Query Result Page
     GetWorkspaceChangeSummaryResponseDtoServiceResponse:
       type: object
       properties:
@@ -2215,52 +2182,7 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    GetMigrationStatusResponseServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/GetMigrationStatusResponse'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    TagSuggestionResponseDto:
-      type: object
-      properties:
-        tags:
-          uniqueItems: true
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: List of suggested tags
-          example:
-          - PII
-      additionalProperties: false
-      description: Tag suggestion response
-    WorkspaceChangedResourceDto:
-      type: object
-      properties:
-        resourceType:
-          enum:
-          - Jurisdiction
-          - Field
-          - Document
-          - eSignature Document
-          - Related Party
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    EntityPolicyViewModelDto:
+    EntityPolicyListItemViewModelDto:
       type: object
       properties:
         entityPolicyId:
@@ -2312,54 +2234,33 @@ components:
           description: Date when the policy was last published
           format: date-time
           example: '2025-02-12T14:49:20.979Z'
-      additionalProperties: false
-      description: Entity Policy
-    EntityPolicyViewModelDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/EntityPolicyViewModelDto'
-          description: Entity Policy
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    GetMigrationStatusResponse:
-      required:
-      - direction
-      - status
-      type: object
-      properties:
-        status:
+        archiveReason:
           type:
           - string
           - 'null'
-        direction:
+          description: The reason provided for archiving the entity policy version
+          example: Archived due to invalid KYC field configuration.
+        versionNotes:
           type:
           - string
           - 'null'
-        message:
-          type:
-          - string
-          - 'null'
+          description: Version notes for the policy. Available for published policies only
+          example: Updated Date Of Birth field
       additionalProperties: false
-    GetWorkspaceChangeSummaryResponseDto:
+      description: Entity Policy List Item
+    WorkspaceChangedResourceDto:
       type: object
       properties:
-        containsChanges:
-          type: boolean
-        changedResources:
+        resourceType:
+          enum:
+          - Jurisdiction
+          - Field
+          - Document
+          - eSignature Document
+          - Related Party
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/WorkspaceChangedResourceDto'
       additionalProperties: false
     EntityPolicyVersionViewModelDto:
       type: object
@@ -2454,121 +2355,6 @@ components:
           example: false
       additionalProperties: false
       description: Entity Policy Version
-    EntityPolicyVersionViewModelDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/EntityPolicyVersionViewModelDto'
-          description: Entity Policy Version
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    EntityPolicyListItemViewModelDto:
-      type: object
-      properties:
-        entityPolicyId:
-          type: string
-          description: Unique identifier of policy
-          format: uuid
-          example: 0e5a0bae-bd18-474f-8da7-0afcb3eb987b
-        entityType:
-          enum:
-          - Individual
-          - Company
-          - Other
-          - Entity Group
-          - Managed Relationship
-          - Financial Crime Report
-          - Team Metadata
-          - Transaction Monitoring Case
-          type:
-          - string
-          - 'null'
-          description: Type of the entity that the policy is applied to
-          example: Company
-        status:
-          enum:
-          - Draft
-          - Published
-          - Archived
-          type:
-          - string
-          - 'null'
-          description: Status of the policy
-          example: Published
-        versionNumber:
-          type: integer
-          description: Version of the policy
-          format: int32
-          example: 1
-        publishedVersionNumber:
-          type:
-          - integer
-          - 'null'
-          description: Published version of the policy
-          format: int32
-          example: 1
-        lastPublishedOn:
-          type:
-          - string
-          - 'null'
-          description: Date when the policy was last published
-          format: date-time
-          example: '2025-02-12T14:49:20.979Z'
-        archiveReason:
-          type:
-          - string
-          - 'null'
-          description: The reason provided for archiving the entity policy version
-          example: Archived due to invalid KYC field configuration.
-        versionNotes:
-          type:
-          - string
-          - 'null'
-          description: Version notes for the policy. Available for published policies only
-          example: Updated Date Of Birth field
-      additionalProperties: false
-      description: Entity Policy List Item
-    EntityPolicyListItemViewModelDtoItemsPageServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/EntityPolicyListItemViewModelDtoItemsPage'
-          description: Query Result Page
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    EntityPolicyListItemViewModelDtoItemsPage:
-      type: object
-      properties:
-        items:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/EntityPolicyListItemViewModelDto'
-          description: The items result set
-        paginationToken:
-          type:
-          - string
-          - 'null'
-          description: The token for retrieving the next page of results
-      additionalProperties: false
-      description: Query Result Page
     EntityPolicyVersionListItemViewModelDto:
       type: object
       properties:
@@ -2640,6 +2426,208 @@ components:
           example: Updated Date Of Birth field
       additionalProperties: false
       description: Entity Policy Version
+    EntityPolicyViewModelDto:
+      type: object
+      properties:
+        entityPolicyId:
+          type: string
+          description: Unique identifier of policy
+          format: uuid
+          example: 0e5a0bae-bd18-474f-8da7-0afcb3eb987b
+        entityType:
+          enum:
+          - Individual
+          - Company
+          - Other
+          - Entity Group
+          - Managed Relationship
+          - Financial Crime Report
+          - Team Metadata
+          - Transaction Monitoring Case
+          type:
+          - string
+          - 'null'
+          description: Type of the entity that the policy is applied to
+          example: Company
+        status:
+          enum:
+          - Draft
+          - Published
+          - Archived
+          type:
+          - string
+          - 'null'
+          description: Status of the policy
+          example: Published
+        versionNumber:
+          type: integer
+          description: Version of the policy
+          format: int32
+          example: 1
+        publishedVersionNumber:
+          type:
+          - integer
+          - 'null'
+          description: Published version of the policy
+          format: int32
+          example: 1
+        lastPublishedOn:
+          type:
+          - string
+          - 'null'
+          description: Date when the policy was last published
+          format: date-time
+          example: '2025-02-12T14:49:20.979Z'
+      additionalProperties: false
+      description: Entity Policy
+    GetMigrationStatusResponse:
+      required:
+      - direction
+      - status
+      type: object
+      properties:
+        status:
+          type:
+          - string
+          - 'null'
+        direction:
+          type:
+          - string
+          - 'null'
+        message:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    EntityPolicyVersionViewModelDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/EntityPolicyVersionViewModelDto'
+          description: Entity Policy Version
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    TagSuggestionResponseDto:
+      type: object
+      properties:
+        tags:
+          uniqueItems: true
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of suggested tags
+          example:
+          - PII
+      additionalProperties: false
+      description: Tag suggestion response
+    TagSuggestionResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/TagSuggestionResponseDto'
+          description: Tag suggestion response
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    EntityPolicyListItemViewModelDtoItemsPageServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/EntityPolicyListItemViewModelDtoItemsPage'
+          description: Query Result Page
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    EntityPolicyVersionListItemViewModelDtoItemsPage:
+      type: object
+      properties:
+        items:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/EntityPolicyVersionListItemViewModelDto'
+          description: The items result set
+        paginationToken:
+          type:
+          - string
+          - 'null'
+          description: The token for retrieving the next page of results
+      additionalProperties: false
+      description: Query Result Page
+    GetMigrationStatusResponseServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetMigrationStatusResponse'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    EntityPolicyViewModelDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/EntityPolicyViewModelDto'
+          description: Entity Policy
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    EntityPolicyListItemViewModelDtoItemsPage:
+      type: object
+      properties:
+        items:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/EntityPolicyListItemViewModelDto'
+          description: The items result set
+        paginationToken:
+          type:
+          - string
+          - 'null'
+          description: The token for retrieving the next page of results
+      additionalProperties: false
+      description: Query Result Page
     EntityPolicyVersionListItemViewModelDtoItemsPageServiceResponse:
       type: object
       properties:
@@ -2656,6 +2644,18 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
+    GetWorkspaceChangeSummaryResponseDto:
+      type: object
+      properties:
+        containsChanges:
+          type: boolean
+        changedResources:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/WorkspaceChangedResourceDto'
+      additionalProperties: false
   securitySchemes:
     Bearer:
       type: apiKey

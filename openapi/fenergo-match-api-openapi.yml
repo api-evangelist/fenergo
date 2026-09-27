@@ -229,7 +229,7 @@ paths:
         Required permissions:
 
         Following permissions are required: ScreeningAccess'
-      operationId: GetMatchesByEntityId
+      operationId: getApiV2BatchByBatchIdEntityByEntityIdMatch
       parameters:
       - name: entityId
         in: path
@@ -315,6 +315,8 @@ paths:
                 - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
                   type: Error
                   errorCode: OBSOLETE_ENDPOINT
+      x-operation-id-source: normalized
+      x-operation-id-original: GetMatchesByEntityId
     servers:
     - url: /screeningquery
   /api/v2/batch/{batchId}/entity/{entityId}/match/{matchId}:
@@ -331,7 +333,7 @@ paths:
         Required permissions:
 
         Following permissions are required: ScreeningAccess'
-      operationId: GetMatchById
+      operationId: getApiV2BatchByBatchIdEntityByEntityIdMatchByMatchId
       parameters:
       - name: entityId
         in: path
@@ -418,6 +420,8 @@ paths:
                 - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
                   type: Error
                   errorCode: OBSOLETE_ENDPOINT
+      x-operation-id-source: normalized
+      x-operation-id-original: GetMatchById
     servers:
     - url: /screeningquery
   /api/v3/batch/{batchId}/entity/{entityId}/match:
@@ -434,7 +438,7 @@ paths:
         Required permissions:
 
         Following permissions are required: ScreeningAccess'
-      operationId: GetMatchesByEntityId
+      operationId: getApiV3BatchByBatchIdEntityByEntityIdMatch
       parameters:
       - name: entityId
         in: path
@@ -520,6 +524,8 @@ paths:
                 - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
                   type: Error
                   errorCode: OBSOLETE_ENDPOINT
+      x-operation-id-source: normalized
+      x-operation-id-original: GetMatchesByEntityId
     servers:
     - url: /screeningquery
   /api/v3/batch/{batchId}/entity/{entityId}/match/{matchId}:
@@ -536,7 +542,7 @@ paths:
         Required permissions:
 
         Following permissions are required: ScreeningAccess'
-      operationId: GetMatchById
+      operationId: getApiV3BatchByBatchIdEntityByEntityIdMatchByMatchId
       parameters:
       - name: entityId
         in: path
@@ -623,6 +629,8 @@ paths:
                 - message: This endpoint is obsolete and was terminated on yyyy-MM-dd
                   type: Error
                   errorCode: OBSOLETE_ENDPOINT
+      x-operation-id-source: normalized
+      x-operation-id-original: GetMatchById
     servers:
     - url: /screeningquery
   /api/v4/batch/{batchId}/entity/{entityId}/match:
@@ -832,55 +840,6 @@ paths:
     - url: /screeningquery
 components:
   schemas:
-    MatchDtoIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/MatchDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    MatchDataExternalIdDto:
-      type: object
-      properties:
-        entityAliasId:
-          type:
-          - string
-          - 'null'
-          description: What entity Alias this externalId is associated with. Will be "PrimaryName" for the PrimaryName external ids
-          example: e7b8f7c2-3c4a-4b2a-9e2d-1f2a3b4c5d6e
-        value:
-          type:
-          - string
-          - 'null'
-          description: The value of the ID
-          example: '1234'
-      additionalProperties: false
-      description: Class to represent a match external id
     ServiceResponse:
       type: object
       properties:
@@ -895,51 +854,50 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    MatchDto:
+    AssociationDto:
       type: object
       properties:
-        id:
-          type: string
-          description: The unique ID for the match on a Legal Entity. A single entity can have no matches or more than one match.
-          format: uuid
-          example: 6fbfa5f9-124f-4159-b947-d9294ad48370
-        entityAliasIds:
+        externalId:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            type: string
-          description: 'List of the Entity AliasIds that this match is associated with. When it''s associated with the primary name of the entity, one of them will be "PrimaryName".
+          description: 'The unique identifier of the Associated Entity outside of Fen-X (i.e. in the underlying provider).
 
-            If the array is null or empty, it means that the match only belongs to the PrimaryName of the entity.'
-        status:
+            Used to query the underlying provider for more information about the associated entity.'
+          example: e_tr_wco_2256753
+        category:
           type:
           - string
           - 'null'
-          description: The match status. This will be match/no match/unresolved
-          example: No Match
-        reason:
+          description: Category of additional information
+          example: Enforcement:Antitrust Violations
+        fullName:
           type:
           - string
           - 'null'
-          description: Connected to the match status
-          example: No Name Match
-        comments:
+          description: The name of the associated party
+          example: Alphabet Inc.
+        relationship:
           type:
           - string
           - 'null'
-          description: Any additional comments
-          example: Additional comments
-        matchData:
-          allOf:
-          - $ref: '#/components/schemas/MatchDataDto'
-          description: Data related to the match
-        lastActionedBy:
-          allOf:
-          - $ref: '#/components/schemas/LastActionedByDto'
-          description: User/System who actioned the match
+          description: How the entity and the associated party are related i.e shareholder, director
+          example: Co-Defendant
+        relationshipGroup:
+          type:
+          - string
+          - 'null'
+          description: The relationship group as reported by the underlying provider (e.g. Family, Associations)
+          example: Family
+        ownershipPercentage:
+          type:
+          - number
+          - 'null'
+          description: The ownership percentage of the associated party, as reported by the underlying provider
+          format: double
+          example: 19.74
       additionalProperties: false
-      description: Represents a Screening Match
+      description: Represents a relationship with another entity
     MatchDataDto:
       required:
       - providerId
@@ -1113,6 +1071,23 @@ components:
           description: An optional property to store additional details about the match in rich text format
       additionalProperties: false
       description: Represents the details of a screening match
+    MatchDataAliasDto:
+      type: object
+      properties:
+        value:
+          type:
+          - string
+          - 'null'
+          description: The value
+          example: TE
+        type:
+          type:
+          - string
+          - 'null'
+          description: The type
+          example: Acronym
+      additionalProperties: false
+      description: Represent the alias of an entity
     AddressDto:
       type: object
       properties:
@@ -1178,263 +1153,7 @@ components:
           example: Residential
       additionalProperties: false
       description: Represents the address of an entity
-    LastActionedByDto:
-      type: object
-      properties:
-        id:
-          type:
-          - string
-          - 'null'
-          description: The id of the user taht actioned the resolution of the match
-          example: 42fc9261-6343-4fb0-aea1-6023645ff84f
-        type:
-          type:
-          - string
-          - 'null'
-          description: The type of the user that actioned the resolution of the match
-          example: User
-        reusedFromPreviousBatch:
-          type: boolean
-          description: Used to identify if the user that actioned the resolution of the match is reused from a previous batch
-        actionedOn:
-          type:
-          - string
-          - 'null'
-          description: 'The date and time when the match was last actioned (server-generated, UTC).
-
-            Null for matches actioned before this field was introduced (March 2026).'
-          format: date-time
-      additionalProperties: false
-      description: Represents the details of a screening match
-    AssociationDto:
-      type: object
-      properties:
-        externalId:
-          type:
-          - string
-          - 'null'
-          description: 'The unique identifier of the Associated Entity outside of Fen-X (i.e. in the underlying provider).
-
-            Used to query the underlying provider for more information about the associated entity.'
-          example: e_tr_wco_2256753
-        category:
-          type:
-          - string
-          - 'null'
-          description: Category of additional information
-          example: Enforcement:Antitrust Violations
-        fullName:
-          type:
-          - string
-          - 'null'
-          description: The name of the associated party
-          example: Alphabet Inc.
-        relationship:
-          type:
-          - string
-          - 'null'
-          description: How the entity and the associated party are related i.e shareholder, director
-          example: Co-Defendant
-        relationshipGroup:
-          type:
-          - string
-          - 'null'
-          description: The relationship group as reported by the underlying provider (e.g. Family, Associations)
-          example: Family
-        ownershipPercentage:
-          type:
-          - number
-          - 'null'
-          description: The ownership percentage of the associated party, as reported by the underlying provider
-          format: double
-          example: 19.74
-      additionalProperties: false
-      description: Represents a relationship with another entity
-    AdditionalInfoDto:
-      type: object
-      properties:
-        title:
-          type:
-          - string
-          - 'null'
-          description: Title of additional information
-          example: Title
-        content:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: Content  of additional information
-      additionalProperties: false
-      description: Represents the additional info about the matching entity
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    MatchDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/MatchDto'
-          description: Represents a Screening Match
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    MatchDataAliasDto:
-      type: object
-      properties:
-        value:
-          type:
-          - string
-          - 'null'
-          description: The value
-          example: TE
-        type:
-          type:
-          - string
-          - 'null'
-          description: The type
-          example: Acronym
-      additionalProperties: false
-      description: Represent the alias of an entity
-    CategoryDetailDto:
-      type: object
-      properties:
-        kind:
-          type:
-          - string
-          - 'null'
-          description: The category this table's rows belong to
-          example: Pep
-        rows:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/CategoryDetailRowDto'
-          description: The rows of this category's table
-      additionalProperties: false
-      description: One category's worth of structured detail rows (e.g. every PEP hit for this match)
-    CategoryDetailFieldDto:
-      type: object
-      properties:
-        label:
-          type:
-          - string
-          - 'null'
-          description: The label of the field
-          example: Status
-        value:
-          type:
-          - string
-          - 'null'
-          description: The value of the field
-          example: Active
-      additionalProperties: false
-      description: One labelled field within a structured category detail row
-    MatchDtoV4IEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/MatchDtoV4'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ClassificationDataSinglePropertyDto:
-      type: object
-      properties:
-        value:
-          type:
-          - string
-          - 'null'
-        label:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    MatchDtoV4ServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/MatchDtoV4'
-          description: Represents a Screening Match
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ClassificationDataDto:
-      type: object
-      properties:
-        singleProperties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/ClassificationDataSinglePropertyDto'
-      additionalProperties: false
-    ProviderSourceLinkDto:
-      type: object
-      properties:
-        url:
-          type:
-          - string
-          - 'null'
-          description: URL of the match on the provider side.
-          example: https://myprovider.com/match/1
-        label:
-          type:
-          - string
-          - 'null'
-          description: Label for the URL link.
-          example: View in MyProvider
-        entityAliasId:
-          type:
-          - string
-          - 'null'
-          description: What entity Alias this ProviderSourceLink is associated with.
-          example: e7b8f7c2-3c4a-4b2a-9e2d-1f2a3b4c5d6e
-      additionalProperties: false
-      description: Represents a URL link to the match on the provider's side, with an optional label.
-    MatchDtoV4:
+    MatchDto:
       type: object
       properties:
         id:
@@ -1471,34 +1190,285 @@ components:
           example: Additional comments
         matchData:
           allOf:
-          - $ref: '#/components/schemas/MatchDataDtoV4'
+          - $ref: '#/components/schemas/MatchDataDto'
           description: Data related to the match
         lastActionedBy:
           allOf:
           - $ref: '#/components/schemas/LastActionedByDto'
           description: User/System who actioned the match
-        classificationData:
-          allOf:
-          - $ref: '#/components/schemas/ClassificationDataDto'
-          description: Classification data for matched result.
-        classificationDataReviewed:
-          type:
-          - boolean
-          - 'null'
-          description: 'Indicates whether the classification data for this match has been reviewed/confirmed.
-
-            Null or false means not yet reviewed.'
-        entityUniqueId:
+      additionalProperties: false
+      description: Represents a Screening Match
+    LastActionedByDto:
+      type: object
+      properties:
+        id:
           type:
           - string
           - 'null'
-          description: 'The unique ID of the match returned by the Screening provider.
+          description: The id of the user taht actioned the resolution of the match
+          example: 42fc9261-6343-4fb0-aea1-6023645ff84f
+        type:
+          type:
+          - string
+          - 'null'
+          description: The type of the user that actioned the resolution of the match
+          example: User
+        reusedFromPreviousBatch:
+          type: boolean
+          description: Used to identify if the user that actioned the resolution of the match is reused from a previous batch
+        actionedOn:
+          type:
+          - string
+          - 'null'
+          description: 'The date and time when the match was last actioned (server-generated, UTC).
 
-            This will be null for any matches that were created before April 2024.
-
-            For matches created before April 2024, fallback to MatchData.IdsList to get the unique entity ID, which is stored under the type "EntityUniqueId" (or "EntityUniqueID" for WCO).'
+            Null for matches actioned before this field was introduced (March 2026).'
+          format: date-time
       additionalProperties: false
-      description: Represents a Screening Match
+      description: Represents the details of a screening match
+    AdditionalInfoDto:
+      type: object
+      properties:
+        title:
+          type:
+          - string
+          - 'null'
+          description: Title of additional information
+          example: Title
+        content:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Content  of additional information
+      additionalProperties: false
+      description: Represents the additional info about the matching entity
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    MatchDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/MatchDto'
+          description: Represents a Screening Match
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    MatchDataExternalIdDto:
+      type: object
+      properties:
+        entityAliasId:
+          type:
+          - string
+          - 'null'
+          description: What entity Alias this externalId is associated with. Will be "PrimaryName" for the PrimaryName external ids
+          example: e7b8f7c2-3c4a-4b2a-9e2d-1f2a3b4c5d6e
+        value:
+          type:
+          - string
+          - 'null'
+          description: The value of the ID
+          example: '1234'
+      additionalProperties: false
+      description: Class to represent a match external id
+    MatchDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/MatchDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ClassificationDataDto:
+      type: object
+      properties:
+        singleProperties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/ClassificationDataSinglePropertyDto'
+      additionalProperties: false
+    IdDetails:
+      type: object
+      properties:
+        type:
+          type:
+          - string
+          - 'null'
+          description: The Type of Id of the entity
+          example: Passport, Driving License
+        value:
+          type:
+          - string
+          - 'null'
+          description: This is the Value of the ID of the entity
+          example: D0999971, 000012ABCD
+        country:
+          type:
+          - string
+          - 'null'
+          description: ID Issuing Country
+          example: Ireland, USA
+        label:
+          type:
+          - string
+          - 'null'
+          description: The human-readable name of the ID scheme, as reported by the underlying provider (e.g. the name of a registry or identifier scheme)
+          example: National Registry of Legal Entities (CNPJ)
+        issueDate:
+          type:
+          - string
+          - 'null'
+          description: Date on which Id is Issued.
+          example: 31/12/1989
+        expiryDate:
+          type:
+          - string
+          - 'null'
+          description: Date on which ID expires
+          example: 31/12/1989
+      additionalProperties: false
+    ClassificationDataSinglePropertyDto:
+      type: object
+      properties:
+        value:
+          type:
+          - string
+          - 'null'
+        label:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    CategoryDetailRowDto:
+      type: object
+      properties:
+        fields:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/CategoryDetailFieldDto'
+          description: The fields of this row
+        subRows:
+          type:
+          - array
+          - 'null'
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/CategoryDetailFieldDto'
+          description: An optional per-row nested table (e.g. SOE's per-country ownership breakdown)
+      additionalProperties: false
+      description: One row of a structured category detail table
+    MatchDtoV4ServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/MatchDtoV4'
+          description: Represents a Screening Match
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ProviderSourceLinkDto:
+      type: object
+      properties:
+        url:
+          type:
+          - string
+          - 'null'
+          description: URL of the match on the provider side.
+          example: https://myprovider.com/match/1
+        label:
+          type:
+          - string
+          - 'null'
+          description: Label for the URL link.
+          example: View in MyProvider
+        entityAliasId:
+          type:
+          - string
+          - 'null'
+          description: What entity Alias this ProviderSourceLink is associated with.
+          example: e7b8f7c2-3c4a-4b2a-9e2d-1f2a3b4c5d6e
+      additionalProperties: false
+      description: Represents a URL link to the match on the provider's side, with an optional label.
+    CategoryDetailFieldDto:
+      type: object
+      properties:
+        label:
+          type:
+          - string
+          - 'null'
+          description: The label of the field
+          example: Status
+        value:
+          type:
+          - string
+          - 'null'
+          description: The value of the field
+          example: Active
+      additionalProperties: false
+      description: One labelled field within a structured category detail row
     MatchDataDtoV4:
       required:
       - providerId
@@ -1676,67 +1646,105 @@ components:
             Registration, Other), one entry per populated category kind that has at least one row.'
       additionalProperties: false
       description: Represents the details of a screening match
-    IdDetails:
+    CategoryDetailDto:
       type: object
       properties:
-        type:
+        kind:
           type:
           - string
           - 'null'
-          description: The Type of Id of the entity
-          example: Passport, Driving License
-        value:
-          type:
-          - string
-          - 'null'
-          description: This is the Value of the ID of the entity
-          example: D0999971, 000012ABCD
-        country:
-          type:
-          - string
-          - 'null'
-          description: ID Issuing Country
-          example: Ireland, USA
-        label:
-          type:
-          - string
-          - 'null'
-          description: The human-readable name of the ID scheme, as reported by the underlying provider (e.g. the name of a registry or identifier scheme)
-          example: National Registry of Legal Entities (CNPJ)
-        issueDate:
-          type:
-          - string
-          - 'null'
-          description: Date on which Id is Issued.
-          example: 31/12/1989
-        expiryDate:
-          type:
-          - string
-          - 'null'
-          description: Date on which ID expires
-          example: 31/12/1989
-      additionalProperties: false
-    CategoryDetailRowDto:
-      type: object
-      properties:
-        fields:
+          description: The category this table's rows belong to
+          example: Pep
+        rows:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/CategoryDetailFieldDto'
-          description: The fields of this row
-        subRows:
+            $ref: '#/components/schemas/CategoryDetailRowDto'
+          description: The rows of this category's table
+      additionalProperties: false
+      description: One category's worth of structured detail rows (e.g. every PEP hit for this match)
+    MatchDtoV4:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique ID for the match on a Legal Entity. A single entity can have no matches or more than one match.
+          format: uuid
+          example: 6fbfa5f9-124f-4159-b947-d9294ad48370
+        entityAliasIds:
           type:
           - array
           - 'null'
           items:
-            type: array
-            items:
-              $ref: '#/components/schemas/CategoryDetailFieldDto'
-          description: An optional per-row nested table (e.g. SOE's per-country ownership breakdown)
+            type: string
+          description: 'List of the Entity AliasIds that this match is associated with. When it''s associated with the primary name of the entity, one of them will be "PrimaryName".
+
+            If the array is null or empty, it means that the match only belongs to the PrimaryName of the entity.'
+        status:
+          type:
+          - string
+          - 'null'
+          description: The match status. This will be match/no match/unresolved
+          example: No Match
+        reason:
+          type:
+          - string
+          - 'null'
+          description: Connected to the match status
+          example: No Name Match
+        comments:
+          type:
+          - string
+          - 'null'
+          description: Any additional comments
+          example: Additional comments
+        matchData:
+          allOf:
+          - $ref: '#/components/schemas/MatchDataDtoV4'
+          description: Data related to the match
+        lastActionedBy:
+          allOf:
+          - $ref: '#/components/schemas/LastActionedByDto'
+          description: User/System who actioned the match
+        classificationData:
+          allOf:
+          - $ref: '#/components/schemas/ClassificationDataDto'
+          description: Classification data for matched result.
+        classificationDataReviewed:
+          type:
+          - boolean
+          - 'null'
+          description: 'Indicates whether the classification data for this match has been reviewed/confirmed.
+
+            Null or false means not yet reviewed.'
+        entityUniqueId:
+          type:
+          - string
+          - 'null'
+          description: 'The unique ID of the match returned by the Screening provider.
+
+            This will be null for any matches that were created before April 2024.
+
+            For matches created before April 2024, fallback to MatchData.IdsList to get the unique entity ID, which is stored under the type "EntityUniqueId" (or "EntityUniqueID" for WCO).'
       additionalProperties: false
-      description: One row of a structured category detail table
+      description: Represents a Screening Match
+    MatchDtoV4IEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/MatchDtoV4'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
   securitySchemes:
     Bearer:
       type: apiKey

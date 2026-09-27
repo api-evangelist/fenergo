@@ -1626,48 +1626,58 @@ paths:
     - url: /reportsquery
 components:
   schemas:
-    EditCustomTableSchemaDtoServiceRequest:
+    SetCustomTableTypeDtoServiceRequest:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/EditCustomTableSchemaDto'
-          description: Payload for replacing the column schema of an existing custom table.
+          - $ref: '#/components/schemas/SetCustomTableTypeDto'
       additionalProperties: false
-    ServiceResponseMessage:
+    EditCustomTableSchemaDto:
       type: object
       properties:
-        message:
+        columns:
           type:
-          - string
+          - array
           - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
+          items:
+            $ref: '#/components/schemas/CustomTableColumn'
+          description: New column definitions. Must contain at least one column.
       additionalProperties: false
-    UpdateCustomTableDescriptionDtoServiceRequest:
+      description: Payload for replacing the column schema of an existing custom table.
+    DuplicateCustomTableDto:
       type: object
       properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/UpdateCustomTableDescriptionDto'
-          description: Payload for updating a custom table's description.
-      additionalProperties: false
-    UpdateCustomTableDescriptionDto:
-      type: object
-      properties:
-        newDescription:
+        name:
           type:
           - string
           - 'null'
-          description: Replacement description (nullable to allow clearing).
+          description: Raw user-supplied name for the new table.
+        description:
+          type:
+          - string
+          - 'null'
+          description: Optional human-readable description for the new table.
       additionalProperties: false
-      description: Payload for updating a custom table's description.
+      description: Payload for duplicating a custom table.
+    CustomTableColumn:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+        glueType:
+          type:
+          - string
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+        nullable:
+          type: boolean
+      additionalProperties: false
     CreatedCustomTableDtoServiceResponse:
       type: object
       properties:
@@ -1682,62 +1692,39 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    EditCustomTableSchemaDto:
+    UpdateCustomTableRowDto:
       type: object
       properties:
-        columns:
+        values:
           type:
-          - array
+          - object
           - 'null'
-          items:
-            $ref: '#/components/schemas/CustomTableColumn'
-          description: New column definitions. Must contain at least one column.
+          additionalProperties:
+            type:
+            - string
+            - 'null'
+          description: New column values keyed by column name.
       additionalProperties: false
-      description: Payload for replacing the column schema of an existing custom table.
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    PreviewImportCustomTableDataDto:
-      type: object
-      properties:
-        columns:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/CustomTableColumn'
-        rowCount:
-          type: integer
-          format: int32
-      additionalProperties: false
-      description: 'Response DTO returned by the CSV preview endpoint.
-
-        Contains the proposed column schema (name + suggested Glue type) and the
-
-        sampled row count, so the caller can confirm or override types before committing.'
-    RenameCustomTableDtoServiceRequest:
+      description: Payload for replacing values on a specific row in a custom table.
+    CreateCustomTableDtoServiceRequest:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/RenameCustomTableDto'
-          description: Payload for renaming an existing custom table.
+          - $ref: '#/components/schemas/CreateCustomTableDto'
+          description: Payload for creating a new custom table.
       additionalProperties: false
-    ObjectServiceResponse:
+    PreviewImportCustomTableDataDtoServiceResponse:
       type: object
       properties:
-        data: {}
+        data:
+          allOf:
+          - $ref: '#/components/schemas/PreviewImportCustomTableDataDto'
+          description: 'Response DTO returned by the CSV preview endpoint.
+
+            Contains the proposed column schema (name + suggested Glue type) and the
+
+            sampled row count, so the caller can confirm or override types before committing.'
         messages:
           type:
           - array
@@ -1752,6 +1739,14 @@ components:
           allOf:
           - $ref: '#/components/schemas/DuplicateCustomTableDto'
           description: Payload for duplicating a custom table.
+      additionalProperties: false
+    RenameCustomTableDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/RenameCustomTableDto'
+          description: Payload for renaming an existing custom table.
       additionalProperties: false
     CreateCustomTableDto:
       type: object
@@ -1779,20 +1774,6 @@ components:
           description: Optional column definitions to pre-define at creation time.
       additionalProperties: false
       description: Payload for creating a new custom table.
-    UpdateCustomTableRowDto:
-      type: object
-      properties:
-        values:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type:
-            - string
-            - 'null'
-          description: New column values keyed by column name.
-      additionalProperties: false
-      description: Payload for replacing values on a specific row in a custom table.
     AddCustomTableRowDtoServiceRequest:
       type: object
       properties:
@@ -1801,16 +1782,49 @@ components:
           - $ref: '#/components/schemas/AddCustomTableRowDto'
           description: Payload for appending a single row to a custom table.
       additionalProperties: false
-    CustomTableType:
-      enum:
-      - 0
-      - 1
-      type: integer
-      description: 0 = Reference, 1 = Operational
-      format: int32
-      x-enumNames:
-      - Reference
-      - Operational
+    EditCustomTableSchemaDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/EditCustomTableSchemaDto'
+          description: Payload for replacing the column schema of an existing custom table.
+      additionalProperties: false
+    RenameCustomTableDto:
+      type: object
+      properties:
+        newName:
+          type:
+          - string
+          - 'null'
+          description: Replacement raw name.
+      additionalProperties: false
+      description: Payload for renaming an existing custom table.
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
     CreatedCustomTableDto:
       type: object
       properties:
@@ -1847,111 +1861,6 @@ components:
             $ref: '#/components/schemas/CustomTableColumn'
       additionalProperties: false
       description: Response returned after a custom table is successfully created.
-    ValidationErrorModel:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-        attemptedValue: {}
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    CustomTableColumn:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-        glueType:
-          type:
-          - string
-          - 'null'
-        description:
-          type:
-          - string
-          - 'null'
-        nullable:
-          type: boolean
-      additionalProperties: false
-    PreviewImportCustomTableDataDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/PreviewImportCustomTableDataDto'
-          description: 'Response DTO returned by the CSV preview endpoint.
-
-            Contains the proposed column schema (name + suggested Glue type) and the
-
-            sampled row count, so the caller can confirm or override types before committing.'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    SetCustomTableTypeDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/SetCustomTableTypeDto'
-      additionalProperties: false
-    UpdateCustomTableRowDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/UpdateCustomTableRowDto'
-          description: Payload for replacing values on a specific row in a custom table.
-      additionalProperties: false
-    CreateCustomTableDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateCustomTableDto'
-          description: Payload for creating a new custom table.
-      additionalProperties: false
-    DuplicateCustomTableDto:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-          description: Raw user-supplied name for the new table.
-        description:
-          type:
-          - string
-          - 'null'
-          description: Optional human-readable description for the new table.
-      additionalProperties: false
-      description: Payload for duplicating a custom table.
-    AddCustomTableRowDto:
-      type: object
-      properties:
-        values:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type:
-            - string
-            - 'null'
-          description: Column values keyed by column name.
-      additionalProperties: false
-      description: Payload for appending a single row to a custom table.
     ValidationErrorModelListServiceResponse:
       type: object
       properties:
@@ -1978,16 +1887,16 @@ components:
         - message: Data is required
           type: Error
           errorCode: Error Code
-    RenameCustomTableDto:
+    UpdateCustomTableDescriptionDto:
       type: object
       properties:
-        newName:
+        newDescription:
           type:
           - string
           - 'null'
-          description: Replacement raw name.
+          description: Replacement description (nullable to allow clearing).
       additionalProperties: false
-      description: Payload for renaming an existing custom table.
+      description: Payload for updating a custom table's description.
     SetCustomTableTypeDto:
       type: object
       properties:
@@ -1999,33 +1908,96 @@ components:
           - Reference
           - Operational
       additionalProperties: false
-    GetCustomTableByIdDtoServiceResponse:
+    PreviewImportCustomTableDataDto:
       type: object
       properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/GetCustomTableByIdDto'
-          description: Detailed custom table response returned by `GET /api/v2/customtable/{id}`.
-        messages:
+        columns:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+            $ref: '#/components/schemas/CustomTableColumn'
+        rowCount:
+          type: integer
+          format: int32
       additionalProperties: false
-    GetCustomTableRowsDtoServiceResponse:
+      description: 'Response DTO returned by the CSV preview endpoint.
+
+        Contains the proposed column schema (name + suggested Glue type) and the
+
+        sampled row count, so the caller can confirm or override types before committing.'
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    AddCustomTableRowDto:
+      type: object
+      properties:
+        values:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type:
+            - string
+            - 'null'
+          description: Column values keyed by column name.
+      additionalProperties: false
+      description: Payload for appending a single row to a custom table.
+    UpdateCustomTableDescriptionDtoServiceRequest:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/GetCustomTableRowsDto'
-          description: Paginated data preview response for `GET /api/v2/customtable/{id}/rows`.
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+          - $ref: '#/components/schemas/UpdateCustomTableDescriptionDto'
+          description: Payload for updating a custom table's description.
+      additionalProperties: false
+    CustomTableType:
+      enum:
+      - 0
+      - 1
+      type: integer
+      description: 0 = Reference, 1 = Operational
+      format: int32
+      x-enumNames:
+      - Reference
+      - Operational
+    UpdateCustomTableRowDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UpdateCustomTableRowDto'
+          description: Payload for replacing values on a specific row in a custom table.
       additionalProperties: false
     ServiceResponse:
       type: object
@@ -2041,188 +2013,6 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    CustomTableLimitsDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CustomTableLimitsDto'
-          description: DTO exposing the configured limits for custom table operations.
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    GetAllCustomTablesItemDtoIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/GetAllCustomTablesItemDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    GetCustomTableRowsDto:
-      type: object
-      properties:
-        headers:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: Column header names in CSV order.
-        rows:
-          type:
-          - array
-          - 'null'
-          items:
-            type: array
-            items:
-              type: string
-          description: Page slice of (filtered) data rows.
-        totalFilteredCount:
-          type: integer
-          description: 'Total number of rows that matched the filter (or the total row count when no filter is active).
-
-            Use for client-side pagination calculation.'
-          format: int64
-        totalRowCount:
-          type: integer
-          description: Total number of rows before any filter is applied (from the aggregate metadata).
-          format: int64
-      additionalProperties: false
-      description: Paginated data preview response for `GET /api/v2/customtable/{id}/rows`.
-    GetAllCustomTablesItemDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Unique identifier of the custom table.
-          format: uuid
-        name:
-          type:
-          - string
-          - 'null'
-          description: Display name of the custom table.
-        description:
-          type:
-          - string
-          - 'null'
-          description: Optional description.
-        columnCount:
-          type: integer
-          description: Number of columns in the schema (0 when never imported).
-          format: int32
-        rowCount:
-          type:
-          - integer
-          - 'null'
-          description: Total number of data rows; null when never imported.
-          format: int64
-        byteSize:
-          type:
-          - integer
-          - 'null'
-          description: Size of the stored CSV in bytes; null when never imported.
-          format: int64
-        createdBy:
-          type:
-          - string
-          - 'null'
-          description: User who created the table.
-        createdAtUtc:
-          type: string
-          description: UTC timestamp when the table was created.
-          format: date-time
-        updatedAtUtc:
-          type: string
-          description: UTC timestamp of the most recent update.
-          format: date-time
-        updatedBy:
-          type:
-          - string
-          - 'null'
-          description: User who last updated the table.
-        lastImportedAtUtc:
-          type:
-          - string
-          - 'null'
-          description: UTC timestamp of the most recent successful data import; null when never imported.
-          format: date-time
-        lastImportedBy:
-          type:
-          - string
-          - 'null'
-          description: User who performed the most recent successful data import; null when never imported.
-        tableType:
-          allOf:
-          - $ref: '#/components/schemas/CustomTableType_2'
-          description: Classification of the table.
-      additionalProperties: false
-      description: Custom table item returned in the list response.
-    CustomTableColumnDto:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-          description: Column name as it appears in the CSV header.
-        type:
-          type:
-          - string
-          - 'null'
-          description: 'Raw Glue physical column type (e.g. `"string"`, `"int"`, `"bigint"`,
-
-            `"double"`, `"decimal"`, `"date"`, `"timestamp"`, `"boolean"`).
-
-            The UI maps this to a friendly label.'
-        nullable:
-          type: boolean
-          description: Whether the column accepts null values.
-        description:
-          type:
-          - string
-          - 'null'
-          description: Optional human-readable description of the column.
-      additionalProperties: false
-      description: DTO representing a single column in a custom table schema.
-    CustomTableLimitsDto:
-      type: object
-      properties:
-        maxRowsPerUpload:
-          type: integer
-          description: Maximum number of data rows allowed in a single CSV upload.
-          format: int32
-        maxBytesPerUpload:
-          type: integer
-          description: Maximum file size in bytes for a single CSV upload.
-          format: int64
-        maxRowsPerTable:
-          type: integer
-          description: Maximum total number of data rows per custom table.
-          format: int64
-        maxTablesPerTenant:
-          type: integer
-          description: Maximum number of non-deleted custom tables per tenant.
-          format: int32
-      additionalProperties: false
-      description: DTO exposing the configured limits for custom table operations.
-    CustomTableType_2:
-      enum:
-      - Reference
-      - Operational
-      type: string
     GetCustomTableByIdDto:
       type: object
       properties:
@@ -2298,6 +2088,216 @@ components:
           description: Classification of the table.
       additionalProperties: false
       description: Detailed custom table response returned by `GET /api/v2/customtable/{id}`.
+    GetCustomTableRowsDto:
+      type: object
+      properties:
+        headers:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Column header names in CSV order.
+        rows:
+          type:
+          - array
+          - 'null'
+          items:
+            type: array
+            items:
+              type: string
+          description: Page slice of (filtered) data rows.
+        totalFilteredCount:
+          type: integer
+          description: 'Total number of rows that matched the filter (or the total row count when no filter is active).
+
+            Use for client-side pagination calculation.'
+          format: int64
+        totalRowCount:
+          type: integer
+          description: Total number of rows before any filter is applied (from the aggregate metadata).
+          format: int64
+      additionalProperties: false
+      description: Paginated data preview response for `GET /api/v2/customtable/{id}/rows`.
+    CustomTableLimitsDto:
+      type: object
+      properties:
+        maxRowsPerUpload:
+          type: integer
+          description: Maximum number of data rows allowed in a single CSV upload.
+          format: int32
+        maxBytesPerUpload:
+          type: integer
+          description: Maximum file size in bytes for a single CSV upload.
+          format: int64
+        maxRowsPerTable:
+          type: integer
+          description: Maximum total number of data rows per custom table.
+          format: int64
+        maxTablesPerTenant:
+          type: integer
+          description: Maximum number of non-deleted custom tables per tenant.
+          format: int32
+      additionalProperties: false
+      description: DTO exposing the configured limits for custom table operations.
+    CustomTableLimitsDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CustomTableLimitsDto'
+          description: DTO exposing the configured limits for custom table operations.
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    GetAllCustomTablesItemDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the custom table.
+          format: uuid
+        name:
+          type:
+          - string
+          - 'null'
+          description: Display name of the custom table.
+        description:
+          type:
+          - string
+          - 'null'
+          description: Optional description.
+        columnCount:
+          type: integer
+          description: Number of columns in the schema (0 when never imported).
+          format: int32
+        rowCount:
+          type:
+          - integer
+          - 'null'
+          description: Total number of data rows; null when never imported.
+          format: int64
+        byteSize:
+          type:
+          - integer
+          - 'null'
+          description: Size of the stored CSV in bytes; null when never imported.
+          format: int64
+        createdBy:
+          type:
+          - string
+          - 'null'
+          description: User who created the table.
+        createdAtUtc:
+          type: string
+          description: UTC timestamp when the table was created.
+          format: date-time
+        updatedAtUtc:
+          type: string
+          description: UTC timestamp of the most recent update.
+          format: date-time
+        updatedBy:
+          type:
+          - string
+          - 'null'
+          description: User who last updated the table.
+        lastImportedAtUtc:
+          type:
+          - string
+          - 'null'
+          description: UTC timestamp of the most recent successful data import; null when never imported.
+          format: date-time
+        lastImportedBy:
+          type:
+          - string
+          - 'null'
+          description: User who performed the most recent successful data import; null when never imported.
+        tableType:
+          allOf:
+          - $ref: '#/components/schemas/CustomTableType_2'
+          description: Classification of the table.
+      additionalProperties: false
+      description: Custom table item returned in the list response.
+    GetCustomTableRowsDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetCustomTableRowsDto'
+          description: Paginated data preview response for `GET /api/v2/customtable/{id}/rows`.
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CustomTableColumnDto:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+          description: Column name as it appears in the CSV header.
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Raw Glue physical column type (e.g. `"string"`, `"int"`, `"bigint"`,
+
+            `"double"`, `"decimal"`, `"date"`, `"timestamp"`, `"boolean"`).
+
+            The UI maps this to a friendly label.'
+        nullable:
+          type: boolean
+          description: Whether the column accepts null values.
+        description:
+          type:
+          - string
+          - 'null'
+          description: Optional human-readable description of the column.
+      additionalProperties: false
+      description: DTO representing a single column in a custom table schema.
+    GetAllCustomTablesItemDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/GetAllCustomTablesItemDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    GetCustomTableByIdDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetCustomTableByIdDto'
+          description: Detailed custom table response returned by `GET /api/v2/customtable/{id}`.
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CustomTableType_2:
+      enum:
+      - Reference
+      - Operational
+      type: string
   securitySchemes:
     Bearer:
       type: apiKey

@@ -491,82 +491,6 @@ paths:
                   errorCode: INTERNAL_SERVER_ERROR
 components:
   schemas:
-    DeliveryItemStatus:
-      enum:
-      - Successful
-      - Failed
-      - TimedOut
-      type: string
-    EventNotificationTypeDto:
-      type: object
-      properties:
-        eventType:
-          type:
-          - string
-          - 'null'
-        title:
-          type:
-          - string
-          - 'null'
-        example: {}
-      additionalProperties: false
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    GetWebhookResponse:
-      type: object
-      properties:
-        webhook:
-          allOf:
-          - $ref: '#/components/schemas/Webhook'
-          description: The Webhook information.
-      additionalProperties: false
-      description: Represents the response when getting a sepecific webhook.
-    DeliveryTestResult:
-      type: object
-      properties:
-        status:
-          allOf:
-          - $ref: '#/components/schemas/DeliveryItemStatus'
-        httpStatusCode:
-          type:
-          - integer
-          - 'null'
-          format: int32
-      additionalProperties: false
-    TestWebhookResponse:
-      type: object
-      properties:
-        delivery:
-          allOf:
-          - $ref: '#/components/schemas/DeliveryTestResult'
-          description: Information about delivery.
-      additionalProperties: false
-      description: Represents a response when testing webhook.
-    AddWebhookResponse:
-      type: object
-      properties:
-        webhookId:
-          type:
-          - string
-          - 'null'
-          description: The identifier of the added webhook.
-          example: e23494fc-1095-48eb-8c10-eb46228883f6
-      additionalProperties: false
-      description: The reponse when adding a webhook.
     BasicWebhook:
       type: object
       properties:
@@ -622,11 +546,17 @@ components:
           format: int32
           example: 50
       additionalProperties: false
-    WebhookType:
-      enum:
-      - Single
-      - Batch
-      type: string
+    AddWebhookResponse:
+      type: object
+      properties:
+        webhookId:
+          type:
+          - string
+          - 'null'
+          description: The identifier of the added webhook.
+          example: e23494fc-1095-48eb-8c10-eb46228883f6
+      additionalProperties: false
+      description: The reponse when adding a webhook.
     WebhookStatus:
       enum:
       - UserDisabled
@@ -634,22 +564,26 @@ components:
       - SystemDisabled
       - Retrying
       type: string
-    ListWebhooksResponse:
+    ListEventNotificationTypesResponse:
       type: object
       properties:
-        webHooks:
+        eventTypes:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/BasicWebhook'
-          description: The collection of webhooks.
+            $ref: '#/components/schemas/EventNotificationTypeDto'
       additionalProperties: false
-      description: Represents a response when listing webhooks.
-    UpdateWebhookRequest:
+    WebhookType:
+      enum:
+      - Single
+      - Batch
+      type: string
+    AddWebhookRequest:
       required:
       - enabled
       - eventTypes
+      - secret
       - url
       type: object
       properties:
@@ -669,12 +603,9 @@ components:
           example: https://www.example.com
         secret:
           maxLength: 128
-          type:
-          - string
-          - 'null'
-          description: 'The webhook secret. If not specified or empty string, then the
-
-            existing secret is retained.'
+          minLength: 1
+          type: string
+          description: The webhook secret.
           example: secret
         enabled:
           type: boolean
@@ -713,28 +644,38 @@ components:
           format: int32
           example: 50
       additionalProperties: false
-      description: Represents a request to update a webhook.
-    ListEventNotificationTypesResponse:
+      description: Add a webhook.
+    EventNotificationTypeDto:
       type: object
       properties:
-        eventTypes:
+        eventType:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/EventNotificationTypeDto'
+        title:
+          type:
+          - string
+          - 'null'
+        example: {}
       additionalProperties: false
-    ObjectServiceResponse:
+    TestWebhookResponse:
       type: object
       properties:
-        data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+        delivery:
+          allOf:
+          - $ref: '#/components/schemas/DeliveryTestResult'
+          description: Information about delivery.
       additionalProperties: false
+      description: Represents a response when testing webhook.
+    GetWebhookResponse:
+      type: object
+      properties:
+        webhook:
+          allOf:
+          - $ref: '#/components/schemas/Webhook'
+          description: The Webhook information.
+      additionalProperties: false
+      description: Represents the response when getting a sepecific webhook.
     Webhook:
       type: object
       properties:
@@ -806,37 +747,26 @@ components:
           example:
           - someone@example.com
       additionalProperties: false
-    DeliveryAttempt:
+    ServiceResponseMessage:
       type: object
       properties:
-        when:
-          type: string
-          description: Timestamp of the delivery
-          format: date-time
-        notificationId:
+        message:
           type:
           - string
           - 'null'
-          description: Id of notification used in delivery attempt
-          example: e23494fc-1095-48eb-8c10-eb46228883f6
-        status:
-          allOf:
-          - $ref: '#/components/schemas/DeliveryItemStatus'
-          description: Status of the delivery
-          example: Succeeded
-        httpStatusCode:
+        type:
           type:
-          - integer
+          - string
           - 'null'
-          description: Http status code of delivery request
-          format: int32
-          example: 200
+        errorCode:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
-    AddWebhookRequest:
+    UpdateWebhookRequest:
       required:
       - enabled
       - eventTypes
-      - secret
       - url
       type: object
       properties:
@@ -856,9 +786,12 @@ components:
           example: https://www.example.com
         secret:
           maxLength: 128
-          minLength: 1
-          type: string
-          description: The webhook secret.
+          type:
+          - string
+          - 'null'
+          description: 'The webhook secret. If not specified or empty string, then the
+
+            existing secret is retained.'
           example: secret
         enabled:
           type: boolean
@@ -897,7 +830,74 @@ components:
           format: int32
           example: 50
       additionalProperties: false
-      description: Add a webhook.
+      description: Represents a request to update a webhook.
+    DeliveryAttempt:
+      type: object
+      properties:
+        when:
+          type: string
+          description: Timestamp of the delivery
+          format: date-time
+        notificationId:
+          type:
+          - string
+          - 'null'
+          description: Id of notification used in delivery attempt
+          example: e23494fc-1095-48eb-8c10-eb46228883f6
+        status:
+          allOf:
+          - $ref: '#/components/schemas/DeliveryItemStatus'
+          description: Status of the delivery
+          example: Succeeded
+        httpStatusCode:
+          type:
+          - integer
+          - 'null'
+          description: Http status code of delivery request
+          format: int32
+          example: 200
+      additionalProperties: false
+    DeliveryItemStatus:
+      enum:
+      - Successful
+      - Failed
+      - TimedOut
+      type: string
+    ListWebhooksResponse:
+      type: object
+      properties:
+        webHooks:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/BasicWebhook'
+          description: The collection of webhooks.
+      additionalProperties: false
+      description: Represents a response when listing webhooks.
+    DeliveryTestResult:
+      type: object
+      properties:
+        status:
+          allOf:
+          - $ref: '#/components/schemas/DeliveryItemStatus'
+        httpStatusCode:
+          type:
+          - integer
+          - 'null'
+          format: int32
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
   securitySchemes:
     Bearer:
       type: apiKey

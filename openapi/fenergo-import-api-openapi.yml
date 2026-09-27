@@ -707,30 +707,45 @@ paths:
     - url: /financialanalysisquery
 components:
   schemas:
-    ServiceResponseMessage:
+    ValidationErrorModelListServiceResponse:
       type: object
       properties:
-        message:
+        data:
           type:
-          - string
+          - array
           - 'null'
-        type:
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
           type:
-          - string
+          - array
           - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    BundleStatus:
-      enum:
-      - Draft
-      - Pending
-      - Failed
-      - Published
-      - Deleted
-      type: string
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    BundleVersionDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/BundleVersionDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
     BundleVersionDto:
       type: object
       properties:
@@ -785,6 +800,47 @@ components:
           allOf:
           - $ref: '#/components/schemas/CreateBundleImportSessionRequestDto'
       additionalProperties: false
+    BundleStatus:
+      enum:
+      - Draft
+      - Pending
+      - Failed
+      - Published
+      - Deleted
+      type: string
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
     CreateBundleImportSessionRequestDto:
       type: object
       properties:
@@ -808,45 +864,6 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    BundleVersionDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/BundleVersionDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ValidationErrorModelListServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
     StringServiceResponse:
       type: object
       properties:
@@ -861,84 +878,6 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    ValidationErrorModel:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-        attemptedValue: {}
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ServiceResponseMessage_2:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-          description: The message
-          example: Success
-        type:
-          type:
-          - string
-          - 'null'
-          description: 'Type of the message
-
-            One of Info, Warning, Error, Forbidden'
-          example: Info
-        errorCode:
-          type:
-          - string
-          - 'null'
-          description: Error Code
-          example: INTERNAL_SERVER_ERROR
-      additionalProperties: false
-      description: The message associated to the service response
-    AssociatedPartyDeduplicationHeaderDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/AssociatedPartyDeduplicationHeaderDto'
-          description: The service request DTO
-      additionalProperties: false
-      description: Service request data
-    ImportRequestCreatedDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ImportRequestCreatedDto'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_2'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    ImportRequestCreatedDto:
-      type: object
-      properties:
-        importRequestId:
-          type:
-          - string
-          - 'null'
-          description: ID of the created Import request
-          example: 86fa2093-f161-4231-b1f5-8d6fd6049f96
-      additionalProperties: false
-      description: Response DTO representing the created Import request
     ServiceResponse:
       type: object
       properties:
@@ -956,106 +895,25 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    ImportRequestDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ImportRequestDto'
-          description: The service request DTO
-      additionalProperties: false
-      description: Service request data
-    ImportRequestDto:
+    AssociatedPartyDeduplicationHeaderDto:
       required:
-      - entityName
-      - externalId
-      - providerId
+      - importId
       type: object
       properties:
-        externalId:
+        importId:
+          minLength: 1
           type: string
-          description: Id of the entity in External Data system
-          example: PL610188202
-        journeyId:
-          type:
-          - string
-          - 'null'
-          description: Id of the Journey instance that will be connected to this Import request
-          example: c0c7b87d-1fc3-4127-b87d-c5b76a13d159
-        taskId:
-          type:
-          - string
-          - 'null'
-          description: Id of the Task connected to this Journey instance
-          example: 2c4e5dce-0ac1-4f24-8e21-9b0a4b8070f5
-        providerId:
-          type: string
-          description: Id of the provider from which we want to Import the data from
-          example: f47b539d-ffb8-4cf2-bf68-1af79e3b0040
-        entityName:
-          type: string
-          description: Name of Imported entity
-          example: Example entity
-        additionalRequestData:
-          description: Additional fields for Import request
-        entityType:
-          enum:
-          - Company
-          - Individual
-          type:
-          - string
-          - 'null'
-          description: Entity Type
-          example: Company
-      additionalProperties: false
-      description: Request DTO Class create Import request
-    PropertyDto:
-      type: object
-      properties:
-        value:
-          type:
-          - string
-          - 'null'
-          description: Value of the property
-          example: Example value
-        type:
-          type:
-          - string
-          - 'null'
-          description: Type of property
-          example: Single
-        customTypeId:
-          type: string
-          description: Id of custom type
-          format: uuid
-          example: bf8488ac-dcc9-42ba-97f1-471f4f735572
-        isValid:
-          type: boolean
-          description: The is valid flag
-          example: true
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-          description: Dictionary of properties
-      additionalProperties: false
-      description: Abstraction that represents properties
-    ObjectServiceResponse_2:
-      type: object
-      properties:
-        data:
-          description: The service response DTO
-        messages:
+          description: ID of the created Import request
+          example: 300e2046-f78c-49d2-b326-afba28dc301c
+        associatedPartyDeduplicationList:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ServiceResponseMessage_2'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+            $ref: '#/components/schemas/AssociatedPartyDeduplicationDto'
+          description: List of Associations with Deduplication statuses
       additionalProperties: false
-      description: Service response data
+      description: Class to represent deduplication statuses for all Associations
     AssociatedPartyDeduplicationDto:
       required:
       - deduplicationState
@@ -1109,6 +967,153 @@ components:
           description: List of Duplication Search Results
       additionalProperties: false
       description: Class to represent deduplication state of Association
+    AssociatedPartyDeduplicationHeaderDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/AssociatedPartyDeduplicationHeaderDto'
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
+    ServiceResponseMessage_2:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+          description: The message
+          example: Success
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
+      additionalProperties: false
+      description: The message associated to the service response
+    ImportRequestCreatedDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ImportRequestCreatedDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_2'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    PropertyDto:
+      type: object
+      properties:
+        value:
+          type:
+          - string
+          - 'null'
+          description: Value of the property
+          example: Example value
+        type:
+          type:
+          - string
+          - 'null'
+          description: Type of property
+          example: Single
+        customTypeId:
+          type: string
+          description: Id of custom type
+          format: uuid
+          example: bf8488ac-dcc9-42ba-97f1-471f4f735572
+        isValid:
+          type: boolean
+          description: The is valid flag
+          example: true
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+          description: Dictionary of properties
+      additionalProperties: false
+      description: Abstraction that represents properties
+    ImportRequestCreatedDto:
+      type: object
+      properties:
+        importRequestId:
+          type:
+          - string
+          - 'null'
+          description: ID of the created Import request
+          example: 86fa2093-f161-4231-b1f5-8d6fd6049f96
+      additionalProperties: false
+      description: Response DTO representing the created Import request
+    ImportRequestDto:
+      required:
+      - entityName
+      - externalId
+      - providerId
+      type: object
+      properties:
+        externalId:
+          type: string
+          description: Id of the entity in External Data system
+          example: PL610188202
+        journeyId:
+          type:
+          - string
+          - 'null'
+          description: Id of the Journey instance that will be connected to this Import request
+          example: c0c7b87d-1fc3-4127-b87d-c5b76a13d159
+        taskId:
+          type:
+          - string
+          - 'null'
+          description: Id of the Task connected to this Journey instance
+          example: 2c4e5dce-0ac1-4f24-8e21-9b0a4b8070f5
+        providerId:
+          type: string
+          description: Id of the provider from which we want to Import the data from
+          example: f47b539d-ffb8-4cf2-bf68-1af79e3b0040
+        entityName:
+          type: string
+          description: Name of Imported entity
+          example: Example entity
+        additionalRequestData:
+          description: Additional fields for Import request
+        entityType:
+          enum:
+          - Company
+          - Individual
+          type:
+          - string
+          - 'null'
+          description: Entity Type
+          example: Company
+      additionalProperties: false
+      description: Request DTO Class create Import request
+    ImportRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ImportRequestDto'
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
     DuplicationSearchResultDto:
       type: object
       properties:
@@ -1138,25 +1143,20 @@ components:
           description: Search result values
       additionalProperties: false
       description: Class to represent deduplication search result
-    AssociatedPartyDeduplicationHeaderDto:
-      required:
-      - importId
+    ObjectServiceResponse_2:
       type: object
       properties:
-        importId:
-          minLength: 1
-          type: string
-          description: ID of the created Import request
-          example: 300e2046-f78c-49d2-b326-afba28dc301c
-        associatedPartyDeduplicationList:
+        data:
+          description: The service response DTO
+        messages:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/AssociatedPartyDeduplicationDto'
-          description: List of Associations with Deduplication statuses
+            $ref: '#/components/schemas/ServiceResponseMessage_2'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
-      description: Class to represent deduplication statuses for all Associations
+      description: Service response data
     StringServiceResponse_2:
       type: object
       properties:
@@ -1174,200 +1174,46 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    ServiceResponseMessage_3:
+    EntityProfileDataDto:
       type: object
       properties:
-        message:
+        rootEntity:
+          allOf:
+          - $ref: '#/components/schemas/RootEntityDto'
+          description: Root Legal Entity details returned by the External Data Provider
+        relatedEntities:
           type:
-          - string
+          - array
           - 'null'
-          description: The message
-          example: Success
-        type:
-          type:
-          - string
-          - 'null'
-          description: 'Type of the message
+          items:
+            $ref: '#/components/schemas/RelatedEntityDto'
+          description: 'List of Associated Parties returned by the External Data Provider.
 
-            One of Info, Warning, Error, Forbidden'
-          example: Info
-        errorCode:
+            Null when Fenergo.Nebula.ExternalData.Query.Application.Dto.EntityProfileDataDto.RelatedEntitiesUrl is set (payload too large to inline).'
+        relatedEntitiesUrl:
           type:
           - string
           - 'null'
-          description: Error Code
-          example: INTERNAL_SERVER_ERROR
-      additionalProperties: false
-      description: The message associated to the service response
-    ImportIdentifierDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ImportIdentifierDto'
-          description: The service response DTO
-        messages:
+          description: 'Pre-signed S3 URL to download the full related entities list when the payload exceeds
+
+            the inline size limit. The URL is valid for 1 hour. Null when
+
+            Fenergo.Nebula.ExternalData.Query.Application.Dto.EntityProfileDataDto.RelatedEntities is populated.'
+        associations:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ServiceResponseMessage_3'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    ServiceResponse_2:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-          description: The service response DTO
-        messages:
+            $ref: '#/components/schemas/RelatedEntityAssociationDto'
+          description: List of Associations returned by the External Data Provider
+        documents:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ServiceResponseMessage_3'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+            $ref: '#/components/schemas/RelatedDocumentsDto'
+          description: List of Documents returned by the External Data Provider
       additionalProperties: false
-      description: Service response data
-    AccessLayerDto:
-      type: object
-      properties:
-        geographic:
-          uniqueItems: true
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: Geographic Access Layers
-        businessRelated:
-          uniqueItems: true
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: Business Related Access Layers
-      additionalProperties: false
-    UltimateBeneficialOwnerResultsDto:
-      type: object
-      properties:
-        status:
-          type:
-          - string
-          - 'null'
-          description: Ultimate Business Owner Discovery Status
-          example: Requested
-        fileLocation:
-          type:
-          - string
-          - 'null'
-          description: Ultimate Business Owner Discovery Report
-          example: Requested
-        errorDetails:
-          allOf:
-          - $ref: '#/components/schemas/AdapterResponseErrorDetails'
-          description: Detailed error message
-        entityId:
-          type:
-          - string
-          - 'null'
-          description: EntityId
-          example: d046f87e-2f26-41d4-833a-ed57fb897ee6
-        hierarchy:
-          allOf:
-          - $ref: '#/components/schemas/ObjectObjectHierarchyDto'
-          description: Result of Ultimate Beneficial Owner Discovery
-        purchasedDocuments:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/DocumentResultsDto'
-          description: Document purchased with UBO Discovery process
-      additionalProperties: false
-    AssociatedPartyDeduplicationDto_2:
-      type: object
-      properties:
-        providerId:
-          type:
-          - string
-          - 'null'
-          description: ID of the added External Data Provider
-          example: f47b539d-ffb8-4cf2-bf68-1af79e3b0040
-        externalId:
-          type:
-          - string
-          - 'null'
-          description: Id of the entity in External Data system
-          example: PL610188202
-        deduplicationState:
-          enum:
-          - Rejected
-          - NewEntity
-          - ReviewMatches
-          - DismissAllMatches
-          - LinkedToExisting
-          type:
-          - string
-          - 'null'
-          description: Deduplication state of Association.
-          example: LinkedToExisting
-        linkedLegalEntityId:
-          type:
-          - string
-          - 'null'
-          description: Id of Entity, to which Association is linked
-          example: dc443c9f-55f3-4c7e-aa11-3d7ef472c49a
-        deduplicationRejectMethod:
-          enum:
-          - Manual
-          - Auto
-          - InvalidAssociation
-          type:
-          - string
-          - 'null'
-          description: Information, how Association was rejected.
-          example: Auto
-        duplicateSearchResults:
-          type:
-          - array
-          - 'null'
-          items: {}
-          description: Search result values
-      additionalProperties: false
-      description: Class to represent deduplication state of Association
-    ValidationError:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          allOf:
-          - $ref: '#/components/schemas/ValidationErrorType'
-      additionalProperties: false
-    StringServiceResponse_3:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_3'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
     ImportedDataDto:
       type: object
       properties:
@@ -1460,142 +1306,84 @@ components:
           description: Entity Profile Data
       additionalProperties: false
       description: Class to represent imported data
-    AdapterResponseErrorDetails:
+    ObjectObjectHierarchyDto:
       type: object
       properties:
-        source:
-          type:
-          - string
-          - 'null'
-          description: Source of the error.
-        errorCode:
-          type:
-          - string
-          - 'null'
-          description: Error code specifying type of the error.
-        message:
-          type:
-          - string
-          - 'null'
-          description: Error message
-      additionalProperties: false
-      description: This class contains the error details if ther was an error with adapter request.
-    ObjectAssociationDto:
-      type: object
-      properties:
-        parentId:
-          type:
-          - string
-          - 'null'
-        childId:
-          type:
-          - string
-          - 'null'
-        ownershipPercentage:
-          type:
-          - number
-          - 'null'
-          format: double
-        associationType:
-          type:
-          - string
-          - 'null'
-        data: {}
-      additionalProperties: false
-    ObjectServiceResponse_3:
-      type: object
-      properties:
-        data:
-          description: The service response DTO
-        messages:
+        associatedEntities:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ServiceResponseMessage_3'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+            $ref: '#/components/schemas/ObjectAssociatedPartyDto'
+        associations:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ObjectAssociationDto'
       additionalProperties: false
-      description: Service response data
-    RelatedDocumentsDto:
+    RelatedEntityDto:
       type: object
       properties:
         id:
           type:
           - string
           - 'null'
-        name:
+        entityType:
           type:
           - string
           - 'null'
-        date:
+        fullName:
           type:
           - string
           - 'null'
-          format: date-time
-        data: {}
-      additionalProperties: false
-    EntityProfileDataDto:
-      type: object
-      properties:
-        rootEntity:
-          allOf:
-          - $ref: '#/components/schemas/RootEntityDto'
-          description: Root Legal Entity details returned by the External Data Provider
-        relatedEntities:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/RelatedEntityDto'
-          description: 'List of Associated Parties returned by the External Data Provider.
-
-            Null when Fenergo.Nebula.ExternalData.Query.Application.Dto.EntityProfileDataDto.RelatedEntitiesUrl is set (payload too large to inline).'
-        relatedEntitiesUrl:
+        uboType:
           type:
           - string
           - 'null'
-          description: 'Pre-signed S3 URL to download the full related entities list when the payload exceeds
-
-            the inline size limit. The URL is valid for 1 hour. Null when
-
-            Fenergo.Nebula.ExternalData.Query.Application.Dto.EntityProfileDataDto.RelatedEntities is populated.'
-        associations:
+        isActive:
           type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/RelatedEntityAssociationDto'
-          description: List of Associations returned by the External Data Provider
-        documents:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/RelatedDocumentsDto'
-          description: List of Documents returned by the External Data Provider
-      additionalProperties: false
-    RelatedEntityAssociationDto:
-      type: object
-      properties:
-        parentId:
-          type:
-          - string
-          - 'null'
-        childId:
-          type:
-          - string
-          - 'null'
-        ownershipPercentage:
-          type:
-          - number
-          - 'null'
-          format: double
-        associationType:
-          type:
-          - string
+          - boolean
           - 'null'
         data: {}
       additionalProperties: false
+    AccessLayerDto:
+      type: object
+      properties:
+        geographic:
+          uniqueItems: true
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Geographic Access Layers
+        businessRelated:
+          uniqueItems: true
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Business Related Access Layers
+      additionalProperties: false
+    ImportIdentifierDto:
+      type: object
+      properties:
+        externalId:
+          type:
+          - string
+          - 'null'
+          description: Id of the entity in External Data system
+          example: f47b539d-ffb8-4cf2-bf68-1af79e3b0040
+        providerId:
+          type:
+          - string
+          - 'null'
+          description: ID of the added External Data Provider
+          example: PL610188202
+      additionalProperties: false
+      description: Class to represent information about Imported Entity
     DocumentResultsDto:
       type: object
       properties:
@@ -1645,47 +1433,6 @@ components:
           - $ref: '#/components/schemas/AdapterResponseErrorDetails'
           description: Detailed error message
       additionalProperties: false
-    RelatedEntityDto:
-      type: object
-      properties:
-        id:
-          type:
-          - string
-          - 'null'
-        entityType:
-          type:
-          - string
-          - 'null'
-        fullName:
-          type:
-          - string
-          - 'null'
-        uboType:
-          type:
-          - string
-          - 'null'
-        isActive:
-          type:
-          - boolean
-          - 'null'
-        data: {}
-      additionalProperties: false
-    ObjectObjectHierarchyDto:
-      type: object
-      properties:
-        associatedEntities:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ObjectAssociatedPartyDto'
-        associations:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ObjectAssociationDto'
-      additionalProperties: false
     ObjectAssociatedPartyDto:
       type: object
       properties:
@@ -1711,6 +1458,59 @@ components:
           - 'null'
         data: {}
       additionalProperties: false
+    ImportedDataDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ImportedDataDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_3'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    AdapterResponseErrorDetails:
+      type: object
+      properties:
+        source:
+          type:
+          - string
+          - 'null'
+          description: Source of the error.
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error code specifying type of the error.
+        message:
+          type:
+          - string
+          - 'null'
+          description: Error message
+      additionalProperties: false
+      description: This class contains the error details if ther was an error with adapter request.
+    ServiceResponse_2:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_3'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
     RootEntityDto:
       type: object
       properties:
@@ -1728,35 +1528,111 @@ components:
           - 'null'
         data: {}
       additionalProperties: false
-    ImportIdentifierDto:
-      type: object
-      properties:
-        externalId:
-          type:
-          - string
-          - 'null'
-          description: Id of the entity in External Data system
-          example: f47b539d-ffb8-4cf2-bf68-1af79e3b0040
-        providerId:
-          type:
-          - string
-          - 'null'
-          description: ID of the added External Data Provider
-          example: PL610188202
-      additionalProperties: false
-      description: Class to represent information about Imported Entity
     ValidationErrorType:
       enum:
       - 0
       - 1
       type: integer
       format: int32
-    ImportedDataDtoServiceResponse:
+    ObjectAssociationDto:
+      type: object
+      properties:
+        parentId:
+          type:
+          - string
+          - 'null'
+        childId:
+          type:
+          - string
+          - 'null'
+        ownershipPercentage:
+          type:
+          - number
+          - 'null'
+          format: double
+        associationType:
+          type:
+          - string
+          - 'null'
+        data: {}
+      additionalProperties: false
+    AssociatedPartyDeduplicationDto_2:
+      type: object
+      properties:
+        providerId:
+          type:
+          - string
+          - 'null'
+          description: ID of the added External Data Provider
+          example: f47b539d-ffb8-4cf2-bf68-1af79e3b0040
+        externalId:
+          type:
+          - string
+          - 'null'
+          description: Id of the entity in External Data system
+          example: PL610188202
+        deduplicationState:
+          enum:
+          - Rejected
+          - NewEntity
+          - ReviewMatches
+          - DismissAllMatches
+          - LinkedToExisting
+          type:
+          - string
+          - 'null'
+          description: Deduplication state of Association.
+          example: LinkedToExisting
+        linkedLegalEntityId:
+          type:
+          - string
+          - 'null'
+          description: Id of Entity, to which Association is linked
+          example: dc443c9f-55f3-4c7e-aa11-3d7ef472c49a
+        deduplicationRejectMethod:
+          enum:
+          - Manual
+          - Auto
+          - InvalidAssociation
+          type:
+          - string
+          - 'null'
+          description: Information, how Association was rejected.
+          example: Auto
+        duplicateSearchResults:
+          type:
+          - array
+          - 'null'
+          items: {}
+          description: Search result values
+      additionalProperties: false
+      description: Class to represent deduplication state of Association
+    RelatedEntityAssociationDto:
+      type: object
+      properties:
+        parentId:
+          type:
+          - string
+          - 'null'
+        childId:
+          type:
+          - string
+          - 'null'
+        ownershipPercentage:
+          type:
+          - number
+          - 'null'
+          format: double
+        associationType:
+          type:
+          - string
+          - 'null'
+        data: {}
+      additionalProperties: false
+    ObjectServiceResponse_3:
       type: object
       properties:
         data:
-          allOf:
-          - $ref: '#/components/schemas/ImportedDataDto'
           description: The service response DTO
         messages:
           type:
@@ -1767,14 +1643,129 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    ErrorDto:
+    StringServiceResponse_3:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_3'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    RelatedDocumentsDto:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+        name:
+          type:
+          - string
+          - 'null'
+        date:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        data: {}
+      additionalProperties: false
+    ImportIdentifierDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ImportIdentifierDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_3'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    UltimateBeneficialOwnerResultsDto:
+      type: object
+      properties:
+        status:
+          type:
+          - string
+          - 'null'
+          description: Ultimate Business Owner Discovery Status
+          example: Requested
+        fileLocation:
+          type:
+          - string
+          - 'null'
+          description: Ultimate Business Owner Discovery Report
+          example: Requested
+        errorDetails:
+          allOf:
+          - $ref: '#/components/schemas/AdapterResponseErrorDetails'
+          description: Detailed error message
+        entityId:
+          type:
+          - string
+          - 'null'
+          description: EntityId
+          example: d046f87e-2f26-41d4-833a-ed57fb897ee6
+        hierarchy:
+          allOf:
+          - $ref: '#/components/schemas/ObjectObjectHierarchyDto'
+          description: Result of Ultimate Beneficial Owner Discovery
+        purchasedDocuments:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/DocumentResultsDto'
+          description: Document purchased with UBO Discovery process
+      additionalProperties: false
+    ServiceResponseMessage_3:
       type: object
       properties:
         message:
           type:
           - string
           - 'null'
-          description: Error message
+          description: The message
+          example: Success
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
+      additionalProperties: false
+      description: The message associated to the service response
+    ValidationError:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          allOf:
+          - $ref: '#/components/schemas/ValidationErrorType'
       additionalProperties: false
     ServiceResponse_3:
       type: object
@@ -1789,6 +1780,49 @@ components:
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CreateImportResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/CreateImportResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CreateImportResponseDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/CreateImportResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ErrorDto:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+          description: Error message
+      additionalProperties: false
+    CreateImportDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/CreateImportDto'
       additionalProperties: false
     CreateImportDto:
       type: object
@@ -1810,40 +1844,6 @@ components:
           example: 2c3c8433-efc3-493b-9b14-70b7681c7342
         importParameters:
           description: Parameters that is used to issue import request
-      additionalProperties: false
-    CreateImportResponseDtoIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/CreateImportResponseDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    CreateImportResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/CreateImportResponseDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    CreateImportDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/CreateImportDto'
       additionalProperties: false
     CreateImportResponseDto:
       type: object
@@ -1888,29 +1888,6 @@ components:
           items:
             $ref: '#/components/schemas/ErrorDto'
           description: List of objects contain error information
-      additionalProperties: false
-    ResultDto:
-      type: object
-      properties:
-        importResult:
-          type:
-          - object
-          - 'null'
-          additionalProperties: {}
-          description: Mapped imported result
-      additionalProperties: false
-    ImportDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ImportDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
     ImportDto:
       type: object
@@ -1979,6 +1956,19 @@ components:
             $ref: '#/components/schemas/ErrorDto'
           description: List of error information of the import
       additionalProperties: false
+    ImportDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ImportDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
     ImportDtoIEnumerableServiceResponse:
       type: object
       properties:
@@ -1994,6 +1984,16 @@ components:
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ResultDto:
+      type: object
+      properties:
+        importResult:
+          type:
+          - object
+          - 'null'
+          additionalProperties: {}
+          description: Mapped imported result
       additionalProperties: false
   securitySchemes:
     Bearer:

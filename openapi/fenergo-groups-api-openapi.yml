@@ -684,27 +684,39 @@ paths:
                 $ref: '#/components/schemas/ErrorResponseDto'
 components:
   schemas:
-    GroupsPatchRequestOperationDto:
+    GroupsCreateUpdateRequestDto:
       type: object
       properties:
-        op:
+        displayName:
           type:
           - string
           - 'null'
-          description: 'Indicates the operation to perform. <br />
-
-            Possible values: "add", "remove", or "replace"'
-          example: add
-        path:
+          description: The name of the Group
+          example: Test Group with FenXGroup extension
+        urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group:
+          $ref: '#/components/schemas/FenxGroupExtensionSchema'
+        externalId:
           type:
           - string
           - 'null'
-          description: 'Describes the attribute path that wants to be updated. <br />
+          description: A String that is an identifier for the group in the external system
+          example: '1234'
+        schemas:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />
 
-            The "path" attribute is OPTIONAL for "add" and "replace" and is REQUIRED for "remove" operations'
-          example: name.familyName
-        value:
-          description: The new value for the attribute. REQUIRED for "add" and "replace" operations
+            Example: [ "urn:ietf:params:scim:schemas:core:2.0:Group", "urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group" ]'
+        members:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/GroupMemberBaseDto'
+          description: The list of users that belong to the group
       additionalProperties: false
     ListGroupsResponseDto:
       type: object
@@ -741,116 +753,27 @@ components:
             $ref: '#/components/schemas/GroupsResponseDto'
           description: A list of all groups. This MAY be a subset of the full set of groups if pagination is requested
       additionalProperties: false
-    GroupMemberDto:
+    FenxGroupExtensionSchema:
       type: object
       properties:
-        value:
+        fenxTeamIds:
           type:
-          - string
+          - array
           - 'null'
-          description: The ID of the user that belongs to the group
-        type:
+          items:
+            type: string
+          description: List of Fen-X team IDs that are linked to the group. Leave empty if no teams are linked.
+        fenxAccessLayerIds:
           type:
-          - string
+          - array
           - 'null'
-          description: The type of the member, usually "User"
-        $ref:
-          type:
-          - string
-          - 'null'
-          description: A reference link to the user
+          items:
+            type: string
+          description: List of Fen-X access layer IDs that are linked to the group. Leave empty if no access layers are linked.
       additionalProperties: false
-      description: Class representing a group member
-    SearchSCIMRepresentationOrders:
-      enum:
-      - 0
-      - 1
-      type: integer
-      format: int32
-    SortOrders:
-      enum:
-      - 0
-      - 1
-      type: integer
-      format: int32
-    GroupsSearchRequestDto:
-      type: object
-      properties:
-        attributes:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: "A multi-valued list of strings indicating the names of resource attributes to return in the response, \noverriding the set of attributes that would be returned by default. <br />\nExample: [ \"displayName\", \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:Groups:fenxTeamIds\"]"
-        excludedAttributes:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: 'A multi-valued list of strings indicating the names of resource attributes to be removed from the default set of attributes to return. <br />
+      description: 'Extension schema to be able to link a SCIM group with Fen-X teams and/or access layers.
 
-            Example: [ "fenxTeamIds", "fenxAccessLayerIds" ]'
-        sortBy:
-          type:
-          - string
-          - 'null'
-          description: A string indicating the attribute whose value SHALL be used to order the returned responses
-          example: displayName
-        sortOrder:
-          $ref: '#/components/schemas/SortOrders'
-        startIndex:
-          type: integer
-          description: An integer indicating the 1-based index of the first query result
-          format: int32
-          example: 1
-        count:
-          type: integer
-          description: An integer indicating the desired maximum number of query results per page
-          format: int32
-          example: 20
-        filter:
-          type:
-          - string
-          - 'null'
-          description: A string indicating the filter expression that will return only the resources that matches it
-          example: displayName pr
-      additionalProperties: false
-    GroupsCreateUpdateRequestDto:
-      type: object
-      properties:
-        displayName:
-          type:
-          - string
-          - 'null'
-          description: The name of the Group
-          example: Test Group with FenXGroup extension
-        urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group:
-          $ref: '#/components/schemas/FenxGroupExtensionSchema'
-        externalId:
-          type:
-          - string
-          - 'null'
-          description: A String that is an identifier for the group in the external system
-          example: '1234'
-        schemas:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: 'List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />
-
-            Example: [ "urn:ietf:params:scim:schemas:core:2.0:Group", "urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group" ]'
-        members:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/GroupMemberBaseDto'
-          description: The list of users that belong to the group
-      additionalProperties: false
+        To be able to specify values for this property, it is required to add the following schema to the schemas list: "urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group"'
     GroupsPatchRequestDto:
       type: object
       properties:
@@ -913,27 +836,12 @@ components:
             $ref: '#/components/schemas/GroupMemberDto'
           description: Groups members
       additionalProperties: false
-    FenxGroupExtensionSchema:
-      type: object
-      properties:
-        fenxTeamIds:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: List of Fen-X team IDs that are linked to the group. Leave empty if no teams are linked.
-        fenxAccessLayerIds:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: List of Fen-X access layer IDs that are linked to the group. Leave empty if no access layers are linked.
-      additionalProperties: false
-      description: 'Extension schema to be able to link a SCIM group with Fen-X teams and/or access layers.
-
-        To be able to specify values for this property, it is required to add the following schema to the schemas list: "urn:ietf:params:scim:schemas:extension:fenxgroup:2.0:Group"'
+    SearchSCIMRepresentationOrders:
+      enum:
+      - 0
+      - 1
+      type: integer
+      format: int32
     MetaDto:
       type: object
       properties:
@@ -968,7 +876,7 @@ components:
           example: 0
       additionalProperties: false
       description: A complex attribute containing resource metadata, assigned by the service provider
-    GroupMemberBaseDto:
+    GroupMemberDto:
       type: object
       properties:
         value:
@@ -976,8 +884,40 @@ components:
           - string
           - 'null'
           description: The ID of the user that belongs to the group
+        type:
+          type:
+          - string
+          - 'null'
+          description: The type of the member, usually "User"
+        $ref:
+          type:
+          - string
+          - 'null'
+          description: A reference link to the user
       additionalProperties: false
       description: Class representing a group member
+    GroupsPatchRequestOperationDto:
+      type: object
+      properties:
+        op:
+          type:
+          - string
+          - 'null'
+          description: 'Indicates the operation to perform. <br />
+
+            Possible values: "add", "remove", or "replace"'
+          example: add
+        path:
+          type:
+          - string
+          - 'null'
+          description: 'Describes the attribute path that wants to be updated. <br />
+
+            The "path" attribute is OPTIONAL for "add" and "replace" and is REQUIRED for "remove" operations'
+          example: name.familyName
+        value:
+          description: The new value for the attribute. REQUIRED for "add" and "replace" operations
+      additionalProperties: false
     ErrorResponseDto:
       type: object
       properties:
@@ -1009,6 +949,66 @@ components:
           description: The summary of the error
           example: The request is not well-formatted
       additionalProperties: false
+    GroupsSearchRequestDto:
+      type: object
+      properties:
+        attributes:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: "A multi-valued list of strings indicating the names of resource attributes to return in the response, \noverriding the set of attributes that would be returned by default. <br />\nExample: [ \"displayName\", \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:Groups:fenxTeamIds\"]"
+        excludedAttributes:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'A multi-valued list of strings indicating the names of resource attributes to be removed from the default set of attributes to return. <br />
+
+            Example: [ "fenxTeamIds", "fenxAccessLayerIds" ]'
+        sortBy:
+          type:
+          - string
+          - 'null'
+          description: A string indicating the attribute whose value SHALL be used to order the returned responses
+          example: displayName
+        sortOrder:
+          $ref: '#/components/schemas/SortOrders'
+        startIndex:
+          type: integer
+          description: An integer indicating the 1-based index of the first query result
+          format: int32
+          example: 1
+        count:
+          type: integer
+          description: An integer indicating the desired maximum number of query results per page
+          format: int32
+          example: 20
+        filter:
+          type:
+          - string
+          - 'null'
+          description: A string indicating the filter expression that will return only the resources that matches it
+          example: displayName pr
+      additionalProperties: false
+    GroupMemberBaseDto:
+      type: object
+      properties:
+        value:
+          type:
+          - string
+          - 'null'
+          description: The ID of the user that belongs to the group
+      additionalProperties: false
+      description: Class representing a group member
+    SortOrders:
+      enum:
+      - 0
+      - 1
+      type: integer
+      format: int32
   securitySchemes:
     Bearer:
       type: apiKey

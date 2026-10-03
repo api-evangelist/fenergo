@@ -2931,21 +2931,76 @@ paths:
     - url: /documentmanagementquery
 components:
   schemas:
-    CreateDocReqMetadataSetResponseDto:
+    UpdateDocReqMetadataSetVersionDto:
       type: object
       properties:
         setId:
           type: string
-          description: The UiD of the Document Requirement Metadata Set that the version belongs to
+          description: The UiD of the Document Requirement Metadata set
           format: uuid
-          example: 3e1c5137-453a-48df-8d26-c70ee8059b4a
-        versionNumber:
-          type: integer
-          description: The version number
-          format: int32
-          example: 2
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        signees:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/Signee'
+          description: The defined list of signees for the version
+        notes:
+          type:
+          - string
+          - 'null'
+          description: Optional description of changes made that will be visible to all users who can access the version. It's assumed that version notes won't contain 'personal identifiable information'. Please note that having many versions with very long notes could hurt API performance in the long term.
+          example: Example Notes
       additionalProperties: false
-      description: Response DTO representing Document Requirement Metadata Set Version data
+      description: Request DTO representing set of properties which define a new version of DocumentRequirementMetadata set
+    Decision:
+      enum:
+      - Approve
+      - Reject
+      type: string
+    BasicRuleDto:
+      type: object
+      properties:
+        active:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        message:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+      additionalProperties: false
+    ValueLimitRuleDto:
+      type: object
+      properties:
+        active:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        message:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+        minValue:
+          type:
+          - integer
+          - 'null'
+          description: Minimum value
+          format: int32
+          example: 1
+        maxValue:
+          type:
+          - integer
+          - 'null'
+          description: Maximum value
+          format: int32
+          example: 10
+      additionalProperties: false
     SpecialCharactersRuleDto:
       type: object
       properties:
@@ -2966,6 +3021,82 @@ components:
           items:
             type: string
           description: Array of special characters, which will be ignored by validation e.g. ["!","@","#"]
+      additionalProperties: false
+    CreateDocReqMetadataSetResponseDto:
+      type: object
+      properties:
+        setId:
+          type: string
+          description: The UiD of the Document Requirement Metadata Set that the version belongs to
+          format: uuid
+          example: 3e1c5137-453a-48df-8d26-c70ee8059b4a
+        versionNumber:
+          type: integer
+          description: The version number
+          format: int32
+          example: 2
+      additionalProperties: false
+      description: Response DTO representing Document Requirement Metadata Set Version data
+    BaseDocumentRequirementMetadataDto:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+          description: The name of the property
+          example: Pre-Status
+        databaseFieldName:
+          type:
+          - string
+          - 'null'
+          description: The database field name of the property
+          example: preStatus
+        type:
+          type:
+          - string
+          - 'null'
+          description: The type of the property
+          example: text
+        lookup:
+          type:
+          - string
+          - 'null'
+          description: The Lookup name if the property type is a dropdown
+          example: PreStatusList
+        defaultValue:
+          type:
+          - string
+          - 'null'
+          description: The default value of the property
+          example: Pending
+        value:
+          type:
+          - string
+          - 'null'
+          description: The value of the property
+          example: Approved
+        validationData:
+          allOf:
+          - $ref: '#/components/schemas/ValidationDataDto'
+          description: Validation Data - set of validation rules specific to document requirement metadata field
+      additionalProperties: false
+    Signee:
+      type: object
+      properties:
+        subject:
+          type:
+          - string
+          - 'null'
+        successor:
+          allOf:
+          - $ref: '#/components/schemas/Approver'
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
       additionalProperties: false
     CreateDocReqMetadataSetVersionDto:
       type: object
@@ -2990,31 +3121,6 @@ components:
           example: Example Notes
       additionalProperties: false
       description: Request DTO representing set of properties which define a new version of DocumentRequirementMetadata set
-    Signee:
-      type: object
-      properties:
-        subject:
-          type:
-          - string
-          - 'null'
-        successor:
-          allOf:
-          - $ref: '#/components/schemas/Approver'
-        action:
-          allOf:
-          - $ref: '#/components/schemas/ApproveAction'
-        hasProcessedRequest:
-          type: boolean
-          readOnly: true
-      additionalProperties: false
-    UpdateDocReqMetadataSetVersionDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/UpdateDocReqMetadataSetVersionDto'
-          description: Request DTO representing set of properties which define a new version of DocumentRequirementMetadata set
-      additionalProperties: false
     ValidationDataDto:
       type: object
       properties:
@@ -3073,6 +3179,97 @@ components:
           - $ref: '#/components/schemas/ValueLimitRuleDto'
           description: Validation rule that allows to set selection range
       additionalProperties: false
+    RegexRuleDto:
+      type: object
+      properties:
+        active:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        message:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+        isCaseSensitive:
+          type: boolean
+          description: Flag that indicate if regex is case sensitive
+          example: false
+        regexValue:
+          type:
+          - string
+          - 'null'
+          description: Regex expression
+          example: ^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$
+      additionalProperties: false
+    DateLimitRuleDto:
+      type: object
+      properties:
+        active:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        message:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+        minDate:
+          type:
+          - string
+          - 'null'
+          description: Minimum date
+          format: date-time
+          example: '2020-01-01T14:48:00.000Z'
+        maxDate:
+          type:
+          - string
+          - 'null'
+          description: Maximum date
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+      additionalProperties: false
+    CreateDocReqMetadataResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateDocReqMetadataResponseDto'
+          description: Response DTO representing Document Requirement Metadata Set Version data
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    UpdateDocReqMetadataSetVersionDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UpdateDocReqMetadataSetVersionDto'
+          description: Request DTO representing set of properties which define a new version of DocumentRequirementMetadata set
+      additionalProperties: false
+    Approver:
+      type: object
+      properties:
+        subject:
+          type:
+          - string
+          - 'null'
+        successor:
+          allOf:
+          - $ref: '#/components/schemas/Approver'
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
+      additionalProperties: false
     CreateDocReqMetadataSetVersionDtoServiceRequest:
       type: object
       properties:
@@ -3081,29 +3278,23 @@ components:
           - $ref: '#/components/schemas/CreateDocReqMetadataSetVersionDto'
           description: Request DTO representing set of properties which define a new version of DocumentRequirementMetadata set
       additionalProperties: false
-    UpdateDocReqMetadataSetVersionDto:
+    CreateDocReqMetadataResponseDto:
       type: object
       properties:
-        setId:
+        id:
           type: string
-          description: The UiD of the Document Requirement Metadata set
+          description: Id of the document requirement metadata
           format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        signees:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/Signee'
-          description: The defined list of signees for the version
-        notes:
-          type:
-          - string
-          - 'null'
-          description: Optional description of changes made that will be visible to all users who can access the version. It's assumed that version notes won't contain 'personal identifiable information'. Please note that having many versions with very long notes could hurt API performance in the long term.
-          example: Example Notes
+          example: dc30fd5b-120b-4aaa-bed7-8d8508e24de5
       additionalProperties: false
-      description: Request DTO representing set of properties which define a new version of DocumentRequirementMetadata set
+      description: Response DTO representing Document Requirement Metadata Set Version data
+    DocumentRequirementMetadataDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/DocumentRequirementMetadataDto'
+      additionalProperties: false
     DocumentRequirementMetadataDto:
       type: object
       properties:
@@ -3153,14 +3344,156 @@ components:
           format: uuid
           example: dc30fd5b-120b-4aaa-bed7-8d8508e24de5
       additionalProperties: false
-    DocumentRequirementMetadataDtoServiceRequest:
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ApproveAction:
+      type: object
+      properties:
+        comment:
+          type:
+          - string
+          - 'null'
+        decision:
+          allOf:
+          - $ref: '#/components/schemas/Decision'
+        created:
+          type: string
+          format: date-time
+      additionalProperties: false
+    ApproveActionServiceRequest:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/DocumentRequirementMetadataDto'
+          - $ref: '#/components/schemas/ApproveAction'
       additionalProperties: false
-    ValueLimitRuleDto:
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    BaseDocumentRequirementMetadataDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/BaseDocumentRequirementMetadataDto'
+      additionalProperties: false
+    CreateDocReqMetadataSetResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateDocReqMetadataSetResponseDto'
+          description: Response DTO representing Document Requirement Metadata Set Version data
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    DocumentRequirementMetadataDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/DocumentRequirementMetadataDto_2'
+          description: Response DTO representing Document Requirement Metadata data
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    BasicRuleDto_2:
+      type: object
+      properties:
+        active:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        message:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+      additionalProperties: false
+      description: Request DTO representing basic validation rule metadata
+    DocumentRequirementMetadataSetVersionDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/DocumentRequirementMetadataSetVersionDto'
+          description: Response DTO representing Document Requirement Metadata Set Version data
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    VersionStatus:
+      enum:
+      - Draft
+      - Pending
+      - Rejected
+      - Published
+      - Archived
+      - Deleted
+      type: string
+    ValueLimitRuleDto_2:
       type: object
       properties:
         active:
@@ -3188,259 +3521,7 @@ components:
           format: int32
           example: 10
       additionalProperties: false
-    BasicRuleDto:
-      type: object
-      properties:
-        active:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        message:
-          type:
-          - string
-          - 'null'
-          description: Validation rule error message
-          example: Validation error occurred
-      additionalProperties: false
-    CreateDocReqMetadataResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateDocReqMetadataResponseDto'
-          description: Response DTO representing Document Requirement Metadata Set Version data
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    CreateDocReqMetadataSetResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateDocReqMetadataSetResponseDto'
-          description: Response DTO representing Document Requirement Metadata Set Version data
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    Decision:
-      enum:
-      - Approve
-      - Reject
-      type: string
-    DateLimitRuleDto:
-      type: object
-      properties:
-        active:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        message:
-          type:
-          - string
-          - 'null'
-          description: Validation rule error message
-          example: Validation error occurred
-        minDate:
-          type:
-          - string
-          - 'null'
-          description: Minimum date
-          format: date-time
-          example: '2020-01-01T14:48:00.000Z'
-        maxDate:
-          type:
-          - string
-          - 'null'
-          description: Maximum date
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-      additionalProperties: false
-    ApproveActionServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ApproveAction'
-      additionalProperties: false
-    BaseDocumentRequirementMetadataDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/BaseDocumentRequirementMetadataDto'
-      additionalProperties: false
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    Approver:
-      type: object
-      properties:
-        subject:
-          type:
-          - string
-          - 'null'
-        successor:
-          allOf:
-          - $ref: '#/components/schemas/Approver'
-        action:
-          allOf:
-          - $ref: '#/components/schemas/ApproveAction'
-        hasProcessedRequest:
-          type: boolean
-          readOnly: true
-      additionalProperties: false
-    CreateDocReqMetadataResponseDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Id of the document requirement metadata
-          format: uuid
-          example: dc30fd5b-120b-4aaa-bed7-8d8508e24de5
-      additionalProperties: false
-      description: Response DTO representing Document Requirement Metadata Set Version data
-    RegexRuleDto:
-      type: object
-      properties:
-        active:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        message:
-          type:
-          - string
-          - 'null'
-          description: Validation rule error message
-          example: Validation error occurred
-        isCaseSensitive:
-          type: boolean
-          description: Flag that indicate if regex is case sensitive
-          example: false
-        regexValue:
-          type:
-          - string
-          - 'null'
-          description: Regex expression
-          example: ^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$
-      additionalProperties: false
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    BaseDocumentRequirementMetadataDto:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-          description: The name of the property
-          example: Pre-Status
-        databaseFieldName:
-          type:
-          - string
-          - 'null'
-          description: The database field name of the property
-          example: preStatus
-        type:
-          type:
-          - string
-          - 'null'
-          description: The type of the property
-          example: text
-        lookup:
-          type:
-          - string
-          - 'null'
-          description: The Lookup name if the property type is a dropdown
-          example: PreStatusList
-        defaultValue:
-          type:
-          - string
-          - 'null'
-          description: The default value of the property
-          example: Pending
-        value:
-          type:
-          - string
-          - 'null'
-          description: The value of the property
-          example: Approved
-        validationData:
-          allOf:
-          - $ref: '#/components/schemas/ValidationDataDto'
-          description: Validation Data - set of validation rules specific to document requirement metadata field
-      additionalProperties: false
-    ApproveAction:
-      type: object
-      properties:
-        comment:
-          type:
-          - string
-          - 'null'
-        decision:
-          allOf:
-          - $ref: '#/components/schemas/Decision'
-        created:
-          type: string
-          format: date-time
-      additionalProperties: false
+      description: Request DTO representing value limit rule metadata
     SpecialCharactersRuleDto_2:
       type: object
       properties:
@@ -3463,34 +3544,6 @@ components:
           description: Array of special characters, which will be ignored by validation e.g. ["!","@","#"]
       additionalProperties: false
       description: Request DTO representing special characters rule metadata
-    DocumentRequirementMetadataDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/DocumentRequirementMetadataDto_2'
-          description: Response DTO representing Document Requirement Metadata data
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    DocumentRequirementMetadataSetDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/DocumentRequirementMetadataSetDto'
-          description: Response DTO representing Document Requirement Metadata Set data
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
     ValidationDataDto_2:
       type: object
       properties:
@@ -3550,67 +3603,7 @@ components:
           description: Validation rule that allows to set selection range
       additionalProperties: false
       description: Request DTO representing validation data metadata
-    DocumentRequirementMetadataDto_2:
-      type: object
-      properties:
-        setId:
-          type: string
-          description: The UiD of the parent set
-          format: uuid
-          example: 84ec28e2-d786-417b-850f-96321dd849dd
-        versionNumber:
-          type: integer
-          description: The version number of the parent set
-          format: int32
-          example: 1
-        id:
-          type: string
-          description: The Id of the property
-          format: uuid
-          example: Pre-Status
-        name:
-          type:
-          - string
-          - 'null'
-          description: The name of the property
-          example: Pre-Status
-        databaseFieldName:
-          type:
-          - string
-          - 'null'
-          description: The database field name of the property
-          example: preStatus
-        type:
-          type:
-          - string
-          - 'null'
-          description: The type of the property
-          example: text
-        lookup:
-          type:
-          - string
-          - 'null'
-          description: The Lookup name if the property type is a dropdown
-          example: PreStatusList
-        defaultValue:
-          type:
-          - string
-          - 'null'
-          description: The default value of the property
-          example: Pending
-        value:
-          type:
-          - string
-          - 'null'
-          description: The value of the property
-          example: Approved
-        validationData:
-          allOf:
-          - $ref: '#/components/schemas/ValidationDataDto_2'
-          description: Document requirement metadata validation data
-      additionalProperties: false
-      description: Response DTO representing Document Requirement Metadata data
-    ValueLimitRuleDto_2:
+    RegexRuleDto_2:
       type: object
       properties:
         active:
@@ -3623,68 +3616,18 @@ components:
           - 'null'
           description: Validation rule error message
           example: Validation error occurred
-        minValue:
-          type:
-          - integer
-          - 'null'
-          description: Minimum value
-          format: int32
-          example: 1
-        maxValue:
-          type:
-          - integer
-          - 'null'
-          description: Maximum value
-          format: int32
-          example: 10
-      additionalProperties: false
-      description: Request DTO representing value limit rule metadata
-    BasicRuleDto_2:
-      type: object
-      properties:
-        active:
+        isCaseSensitive:
           type: boolean
-          description: Validation rule active flag
-          example: true
-        message:
+          description: Flag that indicate if regex is case sensitive
+          example: false
+        regexValue:
           type:
           - string
           - 'null'
-          description: Validation rule error message
-          example: Validation error occurred
+          description: Regex expression
+          example: ^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$
       additionalProperties: false
-      description: Request DTO representing basic validation rule metadata
-    DocumentRequirementMetadataSetDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The UiD of the Document Requirement Metadata Set
-          format: uuid
-          example: cd1b619f-be96-45e2-ab6a-0f7597c4b811
-        versions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/DocumentRequirementMetadataSetVersionDto'
-          description: Versions associated to this Document Requirement Metadata Set
-      additionalProperties: false
-      description: Response DTO representing Document Requirement Metadata Set data
-    DocumentRequirementMetadataSetVersionDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/DocumentRequirementMetadataSetVersionDto'
-          description: Response DTO representing Document Requirement Metadata Set Version data
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
+      description: Request DTO representing regex rule metadata
     DateLimitRuleDto_2:
       type: object
       properties:
@@ -3808,40 +3751,97 @@ components:
           example: Example Notes
       additionalProperties: false
       description: Response DTO representing Document Requirement Metadata Set Version data
-    RegexRuleDto_2:
+    DocumentRequirementMetadataDto_2:
       type: object
       properties:
-        active:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        message:
+        setId:
+          type: string
+          description: The UiD of the parent set
+          format: uuid
+          example: 84ec28e2-d786-417b-850f-96321dd849dd
+        versionNumber:
+          type: integer
+          description: The version number of the parent set
+          format: int32
+          example: 1
+        id:
+          type: string
+          description: The Id of the property
+          format: uuid
+          example: Pre-Status
+        name:
           type:
           - string
           - 'null'
-          description: Validation rule error message
-          example: Validation error occurred
-        isCaseSensitive:
-          type: boolean
-          description: Flag that indicate if regex is case sensitive
-          example: false
-        regexValue:
+          description: The name of the property
+          example: Pre-Status
+        databaseFieldName:
           type:
           - string
           - 'null'
-          description: Regex expression
-          example: ^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$
+          description: The database field name of the property
+          example: preStatus
+        type:
+          type:
+          - string
+          - 'null'
+          description: The type of the property
+          example: text
+        lookup:
+          type:
+          - string
+          - 'null'
+          description: The Lookup name if the property type is a dropdown
+          example: PreStatusList
+        defaultValue:
+          type:
+          - string
+          - 'null'
+          description: The default value of the property
+          example: Pending
+        value:
+          type:
+          - string
+          - 'null'
+          description: The value of the property
+          example: Approved
+        validationData:
+          allOf:
+          - $ref: '#/components/schemas/ValidationDataDto_2'
+          description: Document requirement metadata validation data
       additionalProperties: false
-      description: Request DTO representing regex rule metadata
-    VersionStatus:
-      enum:
-      - Draft
-      - Pending
-      - Rejected
-      - Published
-      - Archived
-      - Deleted
-      type: string
+      description: Response DTO representing Document Requirement Metadata data
+    DocumentRequirementMetadataSetDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/DocumentRequirementMetadataSetDto'
+          description: Response DTO representing Document Requirement Metadata Set data
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    DocumentRequirementMetadataSetDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The UiD of the Document Requirement Metadata Set
+          format: uuid
+          example: cd1b619f-be96-45e2-ab6a-0f7597c4b811
+        versions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/DocumentRequirementMetadataSetVersionDto'
+          description: Versions associated to this Document Requirement Metadata Set
+      additionalProperties: false
+      description: Response DTO representing Document Requirement Metadata Set data
   securitySchemes:
     Bearer:
       type: apiKey

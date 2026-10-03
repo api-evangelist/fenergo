@@ -109,6 +109,35 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
+    OutreachApprovals:
+      type: object
+      properties:
+        amendmentApprovals:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/OutreachAmendmentApproval'
+          description: 'Per-entity, per-field amendment approvals. Only the listed fields are written to
+
+            entity drafts; fields absent from the list are left unchanged.'
+        associations:
+          allOf:
+          - $ref: '#/components/schemas/ExternalDataOutreach'
+          description: Association-level approval decisions (removals and new associations).
+      additionalProperties: false
+      description: 'Outreach-review approval decisions carried with a publish message (AB#545441).
+
+        Null when the publish was not triggered from an outreach review context.'
+    PublishOrchestratorDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/PublishOrchestratorDto'
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
     ServiceResponse:
       type: object
       properties:
@@ -126,15 +155,36 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    PublishOrchestratorDtoServiceRequest:
+    OutreachAmendmentApproval:
+      type: object
+      properties:
+        entityId:
+          type: string
+          format: uuid
+        approvedFieldKeys:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+      additionalProperties: false
+    StringServiceResponse:
       type: object
       properties:
         data:
-          allOf:
-          - $ref: '#/components/schemas/PublishOrchestratorDto'
-          description: The service request DTO
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
-      description: Service request data
+      description: Service response data
     PublishOrchestratorDto:
       required:
       - draftId
@@ -227,19 +277,22 @@ components:
             outreach review context (AB#545441).'
       additionalProperties: false
       description: Class to represent the publish external data process
-    OutreachAmendmentApproval:
+    ApprovedNewAssociation:
       type: object
       properties:
-        entityId:
+        parentId:
           type: string
           format: uuid
-        approvedFieldKeys:
+        associationType:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            type: string
       additionalProperties: false
+      description: 'Identifies a specific non-snapshot association proposed by Outreach that the reviewer has
+
+        approved for creation. Both ParentId and AssociationType must match for the
+
+        association to be created during import.'
     ServiceResponseMessage:
       type: object
       properties:
@@ -265,43 +318,6 @@ components:
           example: INTERNAL_SERVER_ERROR
       additionalProperties: false
       description: The message associated to the service response
-    OutreachApprovals:
-      type: object
-      properties:
-        amendmentApprovals:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/OutreachAmendmentApproval'
-          description: 'Per-entity, per-field amendment approvals. Only the listed fields are written to
-
-            entity drafts; fields absent from the list are left unchanged.'
-        associations:
-          allOf:
-          - $ref: '#/components/schemas/ExternalDataOutreach'
-          description: Association-level approval decisions (removals and new associations).
-      additionalProperties: false
-      description: 'Outreach-review approval decisions carried with a publish message (AB#545441).
-
-        Null when the publish was not triggered from an outreach review context.'
-    JurisdictionDto:
-      type: object
-      properties:
-        jurisdiction:
-          type:
-          - string
-          - 'null'
-          description: Name of the Jurisdiction
-          example: Global
-        jurisdictionVersion:
-          type:
-          - string
-          - 'null'
-          description: Version of the Jurisdiction
-          format: uuid
-          example: 8fd3739b-555c-49d8-9ab4-eb442480d852
-      additionalProperties: false
     ExternalDataOutreach:
       type: object
       properties:
@@ -338,43 +354,27 @@ components:
             created during import; all others are silently skipped.'
       additionalProperties: false
       description: Association-level approval decisions within an outreach review publish (AB#545441).
-    ApprovedNewAssociation:
+    JurisdictionDto:
       type: object
       properties:
-        parentId:
-          type: string
-          format: uuid
-        associationType:
+        jurisdiction:
           type:
           - string
           - 'null'
+          description: Name of the Jurisdiction
+          example: Global
+        jurisdictionVersion:
+          type:
+          - string
+          - 'null'
+          description: Version of the Jurisdiction
+          format: uuid
+          example: 8fd3739b-555c-49d8-9ab4-eb442480d852
       additionalProperties: false
-      description: 'Identifies a specific non-snapshot association proposed by Outreach that the reviewer has
-
-        approved for creation. Both ParentId and AssociationType must match for the
-
-        association to be created during import.'
     ObjectServiceResponse:
       type: object
       properties:
         data:
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
           description: The service response DTO
         messages:
           type:

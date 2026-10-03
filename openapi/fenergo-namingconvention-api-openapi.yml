@@ -1201,17 +1201,6 @@ paths:
     - url: /docgenquery
 components:
   schemas:
-    CreateGlobalNamingConventionSetResponseDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Id of the global naming convention set created
-          format: uuid
-        version:
-          $ref: '#/components/schemas/NamingConventionVersionDto'
-      additionalProperties: false
-      description: Create a new Global Naming Convention Set response model
     VersionSignResponse:
       type: object
       properties:
@@ -1226,23 +1215,17 @@ components:
         status:
           $ref: '#/components/schemas/VersionStatus'
       additionalProperties: false
-    NamingConventionGroupDto:
-      type: object
-      properties:
-        lineItems:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/NamingConventionLineItemDto'
-          description: List of the naming convention item elements
-      additionalProperties: false
-      description: Naming Convention Group Model. The group model is created per data source, e.g. EntityData, CreditScreening, etc.
-    VersionSignResponseServiceResponse:
+    UpdateNamingConventionVersionRequestDtoServiceRequest:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/VersionSignResponse'
+          $ref: '#/components/schemas/UpdateNamingConventionVersionRequestDto'
+      additionalProperties: false
+    NamingConventionVersionDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/NamingConventionVersionDto'
         messages:
           type:
           - array
@@ -1250,56 +1233,20 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    UpdateNamingConventionVersionRequestDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Id of the version to update
-          format: uuid
-        setId:
-          type: string
-          description: Id of the global naming convention set that the version belongs to
-          format: uuid
-        name:
-          type:
-          - string
-          - 'null'
-          description: Name of the version
-        description:
-          type:
-          - string
-          - 'null'
-          description: Description for the version
-        entityDataNamingConventionGroup:
-          $ref: '#/components/schemas/NamingConventionGroupDto'
-        productsNamingConventionGroup:
-          $ref: '#/components/schemas/NamingConventionGroupDto'
-        versionNumber:
-          type: integer
-          description: The version number of the version to update
-          format: int32
-        effectiveFrom:
-          type: string
-          description: The date that the version takes effect when published
-          format: date-time
-          example: '2021-12-12T00:00:00.000Z'
-      additionalProperties: false
-      description: Update Naming Convention Version request model
-    ServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
+    Decision:
+      enum:
+      - Approve
+      - Reject
+      type: string
+    VersionStatus:
+      enum:
+      - Draft
+      - Pending
+      - Rejected
+      - Published
+      - Archived
+      - Deleted
+      type: string
     CreateGlobalNamingConventionSetRequestDto:
       type: object
       properties:
@@ -1315,89 +1262,6 @@ components:
           description: Description for the naming convention
       additionalProperties: false
       description: Create a new Global Naming Convention Set request model
-    NamingConventionLineItemDto:
-      type: object
-      properties:
-        dataKey:
-          type:
-          - string
-          - 'null'
-          description: data key value
-          example: firstName
-        value:
-          type:
-          - string
-          - 'null'
-          description: display value for the datakey
-          example: First Name
-        type:
-          type:
-          - string
-          - 'null'
-          description: type of the data key
-          example: text/date/number
-      additionalProperties: false
-      description: Naming Convention Line Item model
-    UpdateNamingConventionVersionRequestDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/UpdateNamingConventionVersionRequestDto'
-      additionalProperties: false
-    Decision:
-      enum:
-      - Approve
-      - Reject
-      type: string
-    CreateGlobalNamingConventionSetResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/CreateGlobalNamingConventionSetResponseDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ApproveActionServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/ApproveAction'
-      additionalProperties: false
-    CreateGlobalNamingConventionSetRequestDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/CreateGlobalNamingConventionSetRequestDto'
-      additionalProperties: false
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
     ValidationErrorModelListServiceResponse:
       type: object
       properties:
@@ -1424,18 +1288,6 @@ components:
         - message: Data is required
           type: Error
           errorCode: Error Code
-    NamingConventionVersionDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/NamingConventionVersionDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
     NamingConventionVersionDto:
       type: object
       properties:
@@ -1480,6 +1332,105 @@ components:
           example: '2021-12-12T15:55:00.000Z'
       additionalProperties: false
       description: The version model of Naming Convention
+    UpdateNamingConventionVersionRequestDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Id of the version to update
+          format: uuid
+        setId:
+          type: string
+          description: Id of the global naming convention set that the version belongs to
+          format: uuid
+        name:
+          type:
+          - string
+          - 'null'
+          description: Name of the version
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description for the version
+        entityDataNamingConventionGroup:
+          $ref: '#/components/schemas/NamingConventionGroupDto'
+        productsNamingConventionGroup:
+          $ref: '#/components/schemas/NamingConventionGroupDto'
+        versionNumber:
+          type: integer
+          description: The version number of the version to update
+          format: int32
+        effectiveFrom:
+          type: string
+          description: The date that the version takes effect when published
+          format: date-time
+          example: '2021-12-12T00:00:00.000Z'
+      additionalProperties: false
+      description: Update Naming Convention Version request model
+    CreateGlobalNamingConventionSetRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/CreateGlobalNamingConventionSetRequestDto'
+      additionalProperties: false
+    NamingConventionGroupDto:
+      type: object
+      properties:
+        lineItems:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/NamingConventionLineItemDto'
+          description: List of the naming convention item elements
+      additionalProperties: false
+      description: Naming Convention Group Model. The group model is created per data source, e.g. EntityData, CreditScreening, etc.
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ApproveActionServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ApproveAction'
+      additionalProperties: false
+    ApproveAction:
+      type: object
+      properties:
+        comment:
+          type:
+          - string
+          - 'null'
+        decision:
+          $ref: '#/components/schemas/Decision'
+        created:
+          type: string
+          format: date-time
+      additionalProperties: false
+    VersionSignResponseServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/VersionSignResponse'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
     ValidationErrorModel:
       type: object
       properties:
@@ -1497,15 +1448,43 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    VersionStatus:
-      enum:
-      - Draft
-      - Pending
-      - Rejected
-      - Published
-      - Archived
-      - Deleted
-      type: string
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CreateGlobalNamingConventionSetResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Id of the global naming convention set created
+          format: uuid
+        version:
+          $ref: '#/components/schemas/NamingConventionVersionDto'
+      additionalProperties: false
+      description: Create a new Global Naming Convention Set response model
+    CreateGlobalNamingConventionSetResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/CreateGlobalNamingConventionSetResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
     ServiceResponseMessage:
       type: object
       properties:
@@ -1522,59 +1501,33 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    ApproveAction:
+    NamingConventionLineItemDto:
       type: object
       properties:
-        comment:
+        dataKey:
           type:
           - string
           - 'null'
-        decision:
-          $ref: '#/components/schemas/Decision'
-        created:
-          type: string
-          format: date-time
-      additionalProperties: false
-    Approver:
-      type: object
-      properties:
-        subject:
+          description: data key value
+          example: firstName
+        value:
           type:
           - string
           - 'null'
-        successor:
-          allOf:
-          - $ref: '#/components/schemas/Approver'
-        action:
-          allOf:
-          - $ref: '#/components/schemas/ApproveAction_2'
-        hasProcessedRequest:
-          type: boolean
-          readOnly: true
+          description: display value for the datakey
+          example: First Name
+        type:
+          type:
+          - string
+          - 'null'
+          description: type of the data key
+          example: text/date/number
       additionalProperties: false
-    GlobalNamingConventionSetDtoIEnumerableServiceResponse:
+      description: Naming Convention Line Item model
+    ObjectServiceResponse:
       type: object
       properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/GlobalNamingConventionSetDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    NamingConventionVersionDtoServiceResponse_2:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/NamingConventionVersionDto_2'
-          description: The version model of Naming Convention
+        data: {}
         messages:
           type:
           - array
@@ -1594,6 +1547,83 @@ components:
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    Signee:
+      type: object
+      properties:
+        subject:
+          type:
+          - string
+          - 'null'
+        successor:
+          allOf:
+          - $ref: '#/components/schemas/Approver'
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction_2'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
+      additionalProperties: false
+    GlobalNamingConventionSetDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Global Naming Convention Set Id
+          format: uuid
+        versions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/NamingConventionLiteVersionDto'
+          description: List of naming convention versions of the set
+      additionalProperties: false
+    ApproveAction_2:
+      type: object
+      properties:
+        comment:
+          type:
+          - string
+          - 'null'
+        decision:
+          allOf:
+          - $ref: '#/components/schemas/Decision'
+        created:
+          type: string
+          format: date-time
+      additionalProperties: false
+    NamingConventionVersionDtoServiceResponse_2:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/NamingConventionVersionDto_2'
+          description: The version model of Naming Convention
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    Approver:
+      type: object
+      properties:
+        subject:
+          type:
+          - string
+          - 'null'
+        successor:
+          allOf:
+          - $ref: '#/components/schemas/Approver'
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction_2'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
       additionalProperties: false
     NamingConventionVersionDto_2:
       type: object
@@ -1670,21 +1700,6 @@ components:
           description: The defined list of signees for the version
       additionalProperties: false
       description: The version model of Naming Convention
-    GlobalNamingConventionSetDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Global Naming Convention Set Id
-          format: uuid
-        versions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/NamingConventionLiteVersionDto'
-          description: List of naming convention versions of the set
-      additionalProperties: false
     NamingConventionLiteVersionDto:
       type: object
       properties:
@@ -1745,36 +1760,21 @@ components:
           example: '2021-12-12T15:55:00.000Z'
       additionalProperties: false
       description: The lite model of Naming Convention Version
-    Signee:
+    GlobalNamingConventionSetDtoIEnumerableServiceResponse:
       type: object
       properties:
-        subject:
+        data:
           type:
-          - string
+          - array
           - 'null'
-        successor:
-          allOf:
-          - $ref: '#/components/schemas/Approver'
-        action:
-          allOf:
-          - $ref: '#/components/schemas/ApproveAction_2'
-        hasProcessedRequest:
-          type: boolean
-          readOnly: true
-      additionalProperties: false
-    ApproveAction_2:
-      type: object
-      properties:
-        comment:
+          items:
+            $ref: '#/components/schemas/GlobalNamingConventionSetDto'
+        messages:
           type:
-          - string
+          - array
           - 'null'
-        decision:
-          allOf:
-          - $ref: '#/components/schemas/Decision'
-        created:
-          type: string
-          format: date-time
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
   securitySchemes:
     Bearer:

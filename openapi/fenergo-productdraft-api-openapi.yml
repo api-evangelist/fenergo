@@ -1561,6 +1561,18 @@ paths:
     - url: /productquery
 components:
   schemas:
+    ProductDraftSavedDto:
+      type: object
+      properties:
+        version:
+          type: integer
+          description: The version of the saved draft
+          format: int32
+        success:
+          type: boolean
+          description: Indicates if the save was successful
+      additionalProperties: false
+      description: Response for product draft saved without validation
     ProductDraftDto:
       type: object
       properties:
@@ -1669,25 +1681,6 @@ components:
           format: date-time
       additionalProperties: false
       description: "Class to represent the product uploaded. \nContains all properties needed to fill the metadata of the product being uploaded."
-    PropertyDto:
-      required:
-      - discriminator
-      - type
-      type: object
-      properties:
-        type:
-          allOf:
-          - $ref: '#/components/schemas/PropertyType'
-          readOnly: true
-        discriminator:
-          allOf:
-          - $ref: '#/components/schemas/PropertyType'
-          readOnly: true
-        isValid:
-          type:
-          - boolean
-          - 'null'
-      additionalProperties: false
     ProductAccessLayerDetailsDto:
       type: object
       properties:
@@ -1696,105 +1689,12 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    ProductDraftDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ProductDraftDto'
-          description: "Class to represent the product uploaded. \nContains all properties needed to fill the metadata of the product being uploaded."
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ProductAccessLayerDto:
-      type: object
-      properties:
-        geographic:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-        businessRelated:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-        geographicDetails:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ProductAccessLayerDetailsDto'
-        businessRelatedDetails:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ProductAccessLayerDetailsDto'
-      additionalProperties: false
-    ServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ProductDraftUpdatedDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ProductDraftUpdatedDto'
-          description: Response DTO representing updated product draft
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ProductDraftUpdatedDto:
-      type: object
-      properties:
-        version:
-          type: integer
-          description: Version of product draft after update
-          format: int32
-          example: 4
-      additionalProperties: false
-      description: Response DTO representing updated product draft
-    VersionedJurisdictionDto:
-      type: object
-      properties:
-        jurisdiction:
-          type:
-          - string
-          - 'null'
-        versionId:
-          type: string
-          format: uuid
-      additionalProperties: false
-    UpdateProductDraftWithoutValidationDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/UpdateProductDraftWithoutValidationDto'
-          description: DTO for updating product draft without validation (auto-save)
-      additionalProperties: false
+    PropertyType:
+      enum:
+      - Single
+      - Custom
+      - Collection
+      type: string
     ValidationErrorModelListServiceResponse:
       type: object
       properties:
@@ -1821,90 +1721,6 @@ components:
         - message: Data is required
           type: Error
           errorCode: Error Code
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    PropertyType:
-      enum:
-      - Single
-      - Custom
-      - Collection
-      type: string
-    UpdateProductDraftDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/UpdateProductDraftDto'
-          description: "Class to represent the product uploaded. \nContains all properties needed to fill the metadata of the product being uploaded."
-      additionalProperties: false
-    ProductDraftSavedDto:
-      type: object
-      properties:
-        version:
-          type: integer
-          description: The version of the saved draft
-          format: int32
-        success:
-          type: boolean
-          description: Indicates if the save was successful
-      additionalProperties: false
-      description: Response for product draft saved without validation
-    ValidationErrorModel:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-        attemptedValue: {}
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
     UpdateProductDraftWithoutValidationDto:
       type: object
       properties:
@@ -2015,6 +1831,66 @@ components:
           description: Product access layers
       additionalProperties: false
       description: DTO for updating product draft without validation (auto-save)
+    ProductDraftUpdatedDto:
+      type: object
+      properties:
+        version:
+          type: integer
+          description: Version of product draft after update
+          format: int32
+          example: 4
+      additionalProperties: false
+      description: Response DTO representing updated product draft
+    ProductDraftDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ProductDraftDto'
+          description: "Class to represent the product uploaded. \nContains all properties needed to fill the metadata of the product being uploaded."
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    UpdateProductDraftWithoutValidationDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UpdateProductDraftWithoutValidationDto'
+          description: DTO for updating product draft without validation (auto-save)
+      additionalProperties: false
+    ProductAccessLayerDto:
+      type: object
+      properties:
+        geographic:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        businessRelated:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        geographicDetails:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ProductAccessLayerDetailsDto'
+        businessRelatedDetails:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ProductAccessLayerDetailsDto'
+      additionalProperties: false
     UpdateProductDraftDto:
       type: object
       properties:
@@ -2241,6 +2117,130 @@ components:
           description: Product access layers
       additionalProperties: false
       description: "Class to represent the product uploaded. \nContains all properties needed to fill the metadata of the product being uploaded."
+    VersionedJurisdictionDto:
+      type: object
+      properties:
+        jurisdiction:
+          type:
+          - string
+          - 'null'
+        versionId:
+          type: string
+          format: uuid
+      additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    UpdateProductDraftDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UpdateProductDraftDto'
+          description: "Class to represent the product uploaded. \nContains all properties needed to fill the metadata of the product being uploaded."
+      additionalProperties: false
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    PropertyDto:
+      required:
+      - discriminator
+      - type
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        discriminator:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        isValid:
+          type:
+          - boolean
+          - 'null'
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ProductDraftUpdatedDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ProductDraftUpdatedDto'
+          description: Response DTO representing updated product draft
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
     ProductDraftSavedDtoServiceResponse:
       type: object
       properties:
@@ -2255,20 +2255,16 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    GetProductSummariesRequestDto:
+    RiskAssessmentLinkDto:
       type: object
       properties:
-        secondaryIdentifierPropertyNames:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: 'Optional list of property names to include as secondary identifiers in the response.
-
-            Only these properties will be extracted from each product for display in the side panel.'
+        taskId:
+          type: string
+          format: uuid
+        productDraftId:
+          type: string
+          format: uuid
       additionalProperties: false
-      description: Request DTO for getting product summaries with optional secondary identifier filter.
     ProductDraftDto_2:
       allOf:
       - $ref: '#/components/schemas/ProductDraftLiteDto'
@@ -2285,6 +2281,158 @@ components:
               out of the box properties.'
         additionalProperties: false
       description: "A Product object. \nContains all properties needed to fill the metadata of the product."
+    SpecialCharactersRule:
+      type: object
+      properties:
+        active:
+          type: boolean
+        message:
+          type:
+          - string
+          - 'null'
+        excludedCharacters:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+      additionalProperties: false
+    AutoClearedFieldDto:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        parentPropertyName:
+          type:
+          - string
+          - 'null'
+        collectionItemKey:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    CustomPropertyValidationResponseDto:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        propertyValue:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ProductSummaryDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The Product Draft Id
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        sourceProductId:
+          type: string
+          description: The Product Id
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        type:
+          type:
+          - string
+          - 'null'
+          description: The Product Type
+          example: Loans
+        family:
+          type:
+          - string
+          - 'null'
+          description: The Product Family
+          example: Trading
+        status:
+          type:
+          - string
+          - 'null'
+          description: The Product Draft Status
+          example: Active
+        currentLifecycleStatus:
+          type:
+          - string
+          - 'null'
+          description: UI Status of draft within journey
+          example: In Review
+        transferedJourneyId:
+          type:
+          - string
+          - 'null'
+          description: The Id of the Journey the draft was transferred to
+          format: uuid
+        secondaryIdentifiers:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto_2'
+          description: 'Secondary identifier properties for display in the side panel.
+
+            Only includes properties marked as secondary identifiers in requirements.'
+        onboardedDate:
+          type:
+          - string
+          - 'null'
+          description: Date when product was first successfully verified (onboarded)
+          format: date-time
+        offboardedDate:
+          type:
+          - string
+          - 'null'
+          description: Date when product was successfully verified as offboarded
+          format: date-time
+        lastUpdatedDate:
+          type:
+          - string
+          - 'null'
+          description: Most recent date when product was successfully verified after modification
+          format: date-time
+      additionalProperties: false
+      description: 'A lightweight Product summary object for side panel display.
+
+        Contains only the properties needed to render the product list.'
+    GetProductSummariesRequestDto:
+      type: object
+      properties:
+        secondaryIdentifierPropertyNames:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'Optional list of property names to include as secondary identifiers in the response.
+
+            Only these properties will be extracted from each product for display in the side panel.'
+      additionalProperties: false
+      description: Request DTO for getting product summaries with optional secondary identifier filter.
+    AccessLayerDto:
+      type: object
+      properties:
+        geographic:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        businessRelated:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+      additionalProperties: false
     ProductDraftLiteDto:
       type: object
       properties:
@@ -2391,15 +2539,63 @@ components:
           format: date-time
       additionalProperties: false
       description: "A Product object. \nContains all properties needed to fill the metadata of the product."
-    RiskAssessmentLinkDto:
+    ValidationData:
       type: object
       properties:
-        taskId:
-          type: string
-          format: uuid
-        productDraftId:
-          type: string
-          format: uuid
+        isMandatory:
+          allOf:
+          - $ref: '#/components/schemas/BasicRule'
+        specialCharacters:
+          allOf:
+          - $ref: '#/components/schemas/SpecialCharactersRule'
+        noNumbers:
+          allOf:
+          - $ref: '#/components/schemas/BasicRule'
+        onlyInteger:
+          allOf:
+          - $ref: '#/components/schemas/BasicRule'
+        noNegative:
+          allOf:
+          - $ref: '#/components/schemas/BasicRule'
+        onlyDecimal:
+          allOf:
+          - $ref: '#/components/schemas/BasicRule'
+        regex:
+          allOf:
+          - $ref: '#/components/schemas/RegexRule'
+        characterLimit:
+          allOf:
+          - $ref: '#/components/schemas/ValueLimitRule'
+        numberLimit:
+          allOf:
+          - $ref: '#/components/schemas/ValueLimitRule'
+        noFutureDates:
+          allOf:
+          - $ref: '#/components/schemas/BasicRule'
+        noPastDates:
+          allOf:
+          - $ref: '#/components/schemas/BasicRule'
+        multiSelectLimit:
+          allOf:
+          - $ref: '#/components/schemas/ValueLimitRule'
+        collectionMinimumCount:
+          allOf:
+          - $ref: '#/components/schemas/CollectionMinimumCountRule'
+        collectionMaximumCount:
+          allOf:
+          - $ref: '#/components/schemas/CollectionMaximumCountRule'
+        externalProvider:
+          allOf:
+          - $ref: '#/components/schemas/ExternalProviderRule'
+        externalDataGroupProvider:
+          allOf:
+          - $ref: '#/components/schemas/ExternalProviderRule'
+        disallowTodaysDate:
+          allOf:
+          - $ref: '#/components/schemas/BasicRule'
+        dateLimit:
+          allOf:
+          - $ref: '#/components/schemas/DateLimitRule'
       additionalProperties: false
     ProductDraftDtoItemsPageServiceResponse:
       type: object
@@ -2414,137 +2610,6 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    AccessLayerDto:
-      type: object
-      properties:
-        geographic:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-        businessRelated:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-      additionalProperties: false
-    PropertyDto_2:
-      required:
-      - discriminator
-      - type
-      type: object
-      properties:
-        discriminator:
-          allOf:
-          - $ref: '#/components/schemas/PropertyType'
-          readOnly: true
-        type:
-          allOf:
-          - $ref: '#/components/schemas/PropertyType'
-          readOnly: true
-        isValid:
-          type:
-          - boolean
-          - 'null'
-      additionalProperties: false
-      discriminator:
-        propertyName: discriminator
-        mapping:
-          Collection: '#/components/schemas/CollectionPropertyDto'
-          Custom: '#/components/schemas/CustomPropertyDto'
-          Single: '#/components/schemas/SinglePropertyDto'
-    CustomPropertyValidationResponseDto:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-        propertyValue:
-          type:
-          - string
-          - 'null'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ProductSummaryDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The Product Draft Id
-          format: uuid
-          example: e1809731-77df-4e72-98e7-0d314b7a5151
-        sourceProductId:
-          type: string
-          description: The Product Id
-          format: uuid
-          example: e1809731-77df-4e72-98e7-0d314b7a5151
-        type:
-          type:
-          - string
-          - 'null'
-          description: The Product Type
-          example: Loans
-        family:
-          type:
-          - string
-          - 'null'
-          description: The Product Family
-          example: Trading
-        status:
-          type:
-          - string
-          - 'null'
-          description: The Product Draft Status
-          example: Active
-        currentLifecycleStatus:
-          type:
-          - string
-          - 'null'
-          description: UI Status of draft within journey
-          example: In Review
-        transferedJourneyId:
-          type:
-          - string
-          - 'null'
-          description: The Id of the Journey the draft was transferred to
-          format: uuid
-        secondaryIdentifiers:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto_2'
-          description: 'Secondary identifier properties for display in the side panel.
-
-            Only includes properties marked as secondary identifiers in requirements.'
-        onboardedDate:
-          type:
-          - string
-          - 'null'
-          description: Date when product was first successfully verified (onboarded)
-          format: date-time
-        offboardedDate:
-          type:
-          - string
-          - 'null'
-          description: Date when product was successfully verified as offboarded
-          format: date-time
-        lastUpdatedDate:
-          type:
-          - string
-          - 'null'
-          description: Most recent date when product was successfully verified after modification
-          format: date-time
-      additionalProperties: false
-      description: 'A lightweight Product summary object for side panel display.
-
-        Contains only the properties needed to render the product list.'
     ProductDraftDtoServiceResponse_2:
       type: object
       properties:
@@ -2558,6 +2623,230 @@ components:
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    GetDraftsByJourneyAndProductIdsDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetDraftsByJourneyAndProductIdsDto'
+      additionalProperties: false
+    GetDraftsByJourneyAndProductIdsDto:
+      type: object
+      properties:
+        productIds:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: The list of Product Ids to fetch
+        pageOptions:
+          allOf:
+          - $ref: '#/components/schemas/PageOptions'
+      additionalProperties: false
+    DataChangesDtoListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/DataChangesDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    BasicRule:
+      type: object
+      properties:
+        active:
+          type: boolean
+        message:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ValueLimitRule:
+      type: object
+      properties:
+        active:
+          type: boolean
+        message:
+          type:
+          - string
+          - 'null'
+        minValue:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        maxValue:
+          type:
+          - integer
+          - 'null'
+          format: int32
+      additionalProperties: false
+    PropertiesValidatorResponse:
+      required:
+      - discriminator
+      type: object
+      properties:
+        discriminator:
+          type: string
+        usedJurisdictions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/VersionedJurisdictionDto'
+        version:
+          type: integer
+          format: int32
+        isValid:
+          type: boolean
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+        propertyValidationResponse:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/CustomPropertyValidationResponseDto'
+        productId:
+          type: string
+          format: uuid
+        evaluatedDataRequirements:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/EvaluatedDataRequirementDto'
+        autoClearedFields:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AutoClearedFieldDto'
+      additionalProperties: false
+      discriminator:
+        propertyName: discriminator
+        mapping:
+          PropertiesValidatorResponse: '#/components/schemas/PropertiesValidatorResponse'
+          LookupValidatorResponse: '#/components/schemas/LookupValidatorResponse'
+    DataChangesDto:
+      type: object
+      properties:
+        dataKey:
+          type:
+          - string
+          - 'null'
+          description: Property Datakey
+        existingValue:
+          allOf:
+          - $ref: '#/components/schemas/PropertyDto_2'
+          description: Existing value
+        newValue:
+          allOf:
+          - $ref: '#/components/schemas/PropertyDto_2'
+          description: New value
+        changeType:
+          type:
+          - string
+          - 'null'
+          description: "Type of change \nOne of Add, Delete, Edit, Indentical"
+      additionalProperties: false
+      description: Class to represent data conflicts
+    ProductDraftDtoItemsPage:
+      type: object
+      properties:
+        items:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ProductDraftDto_2'
+        paginationToken:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ProductDraftDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ProductDraftDto_2'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ExternalProviderRule:
+      type: object
+      properties:
+        active:
+          type: boolean
+        message:
+          type:
+          - string
+          - 'null'
+        providerId:
+          type: string
+          format: uuid
+      additionalProperties: false
+    DateLimitRangeData:
+      type: object
+      properties:
+        type:
+          type:
+          - string
+          - 'null'
+        relativeTo:
+          type:
+          - string
+          - 'null'
+        source:
+          type:
+          - string
+          - 'null'
+        field:
+          type:
+          - string
+          - 'null'
+        offset:
+          type:
+          - string
+          - 'null'
+        periodType:
+          type:
+          - string
+          - 'null'
+        offsetPeriod:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    GetProductSummariesRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetProductSummariesRequestDto'
+          description: Request DTO for getting product summaries with optional secondary identifier filter.
       additionalProperties: false
     EvaluatedDataRequirementDto:
       type: object
@@ -2643,121 +2932,19 @@ components:
           allOf:
           - $ref: '#/components/schemas/AccessLayerDto'
       additionalProperties: false
-    ValueLimitRule:
+    PageOptions:
       type: object
       properties:
-        active:
-          type: boolean
-        message:
+        paginationToken:
           type:
           - string
           - 'null'
-        minValue:
-          type:
-          - integer
-          - 'null'
-          format: int32
-        maxValue:
-          type:
-          - integer
-          - 'null'
-          format: int32
-      additionalProperties: false
-    ExternalProviderRule:
-      type: object
-      properties:
-        active:
-          type: boolean
-        message:
-          type:
-          - string
-          - 'null'
-        providerId:
-          type: string
-          format: uuid
-      additionalProperties: false
-    DataChangesDtoListServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/DataChangesDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    PropertiesValidatorResponse:
-      required:
-      - discriminator
-      type: object
-      properties:
-        discriminator:
-          type: string
-        usedJurisdictions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/VersionedJurisdictionDto'
-        version:
+        pageSize:
           type: integer
           format: int32
-        isValid:
-          type: boolean
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-        propertyValidationResponse:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/CustomPropertyValidationResponseDto'
-        productId:
-          type: string
-          format: uuid
-        evaluatedDataRequirements:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/EvaluatedDataRequirementDto'
-        autoClearedFields:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/AutoClearedFieldDto'
-      additionalProperties: false
-      discriminator:
-        propertyName: discriminator
-        mapping:
-          PropertiesValidatorResponse: '#/components/schemas/PropertiesValidatorResponse'
-          LookupValidatorResponse: '#/components/schemas/LookupValidatorResponse'
-    ProductDraftValidationResultDtoListServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ProductDraftValidationResultDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+        sortOrder:
+          allOf:
+          - $ref: '#/components/schemas/SortOrder'
       additionalProperties: false
     ProductSummaryDtoIEnumerableServiceResponse:
       type: object
@@ -2774,246 +2961,6 @@ components:
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    GetProductSummariesRequestDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/GetProductSummariesRequestDto'
-          description: Request DTO for getting product summaries with optional secondary identifier filter.
-      additionalProperties: false
-    GetDraftsByJourneyAndProductIdsDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/GetDraftsByJourneyAndProductIdsDto'
-      additionalProperties: false
-    ValidationData:
-      type: object
-      properties:
-        isMandatory:
-          allOf:
-          - $ref: '#/components/schemas/BasicRule'
-        specialCharacters:
-          allOf:
-          - $ref: '#/components/schemas/SpecialCharactersRule'
-        noNumbers:
-          allOf:
-          - $ref: '#/components/schemas/BasicRule'
-        onlyInteger:
-          allOf:
-          - $ref: '#/components/schemas/BasicRule'
-        noNegative:
-          allOf:
-          - $ref: '#/components/schemas/BasicRule'
-        onlyDecimal:
-          allOf:
-          - $ref: '#/components/schemas/BasicRule'
-        regex:
-          allOf:
-          - $ref: '#/components/schemas/RegexRule'
-        characterLimit:
-          allOf:
-          - $ref: '#/components/schemas/ValueLimitRule'
-        numberLimit:
-          allOf:
-          - $ref: '#/components/schemas/ValueLimitRule'
-        noFutureDates:
-          allOf:
-          - $ref: '#/components/schemas/BasicRule'
-        noPastDates:
-          allOf:
-          - $ref: '#/components/schemas/BasicRule'
-        multiSelectLimit:
-          allOf:
-          - $ref: '#/components/schemas/ValueLimitRule'
-        collectionMinimumCount:
-          allOf:
-          - $ref: '#/components/schemas/CollectionMinimumCountRule'
-        collectionMaximumCount:
-          allOf:
-          - $ref: '#/components/schemas/CollectionMaximumCountRule'
-        externalProvider:
-          allOf:
-          - $ref: '#/components/schemas/ExternalProviderRule'
-        externalDataGroupProvider:
-          allOf:
-          - $ref: '#/components/schemas/ExternalProviderRule'
-        disallowTodaysDate:
-          allOf:
-          - $ref: '#/components/schemas/BasicRule'
-        dateLimit:
-          allOf:
-          - $ref: '#/components/schemas/DateLimitRule'
-      additionalProperties: false
-    SpecialCharactersRule:
-      type: object
-      properties:
-        active:
-          type: boolean
-        message:
-          type:
-          - string
-          - 'null'
-        excludedCharacters:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-      additionalProperties: false
-    PageOptions:
-      type: object
-      properties:
-        paginationToken:
-          type:
-          - string
-          - 'null'
-        pageSize:
-          type: integer
-          format: int32
-        sortOrder:
-          allOf:
-          - $ref: '#/components/schemas/SortOrder'
-      additionalProperties: false
-    DateLimitRule:
-      type: object
-      properties:
-        active:
-          type: boolean
-        message:
-          type:
-          - string
-          - 'null'
-        minDate:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        maxDate:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        rangeFrom:
-          allOf:
-          - $ref: '#/components/schemas/DateLimitRangeData'
-        rangeTo:
-          allOf:
-          - $ref: '#/components/schemas/DateLimitRangeData'
-      additionalProperties: false
-    SortOrder:
-      enum:
-      - Ascending
-      - Descending
-      type: string
-    RegexRule:
-      type: object
-      properties:
-        active:
-          type: boolean
-        message:
-          type:
-          - string
-          - 'null'
-        isCaseSensitive:
-          type: boolean
-        regexValue:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ProductDraftDtoItemsPage:
-      type: object
-      properties:
-        items:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ProductDraftDto_2'
-        paginationToken:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    AutoClearedFieldDto:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-        parentPropertyName:
-          type:
-          - string
-          - 'null'
-        collectionItemKey:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    DataChangesDto:
-      type: object
-      properties:
-        dataKey:
-          type:
-          - string
-          - 'null'
-          description: Property Datakey
-        existingValue:
-          allOf:
-          - $ref: '#/components/schemas/PropertyDto_2'
-          description: Existing value
-        newValue:
-          allOf:
-          - $ref: '#/components/schemas/PropertyDto_2'
-          description: New value
-        changeType:
-          type:
-          - string
-          - 'null'
-          description: "Type of change \nOne of Add, Delete, Edit, Indentical"
-      additionalProperties: false
-      description: Class to represent data conflicts
-    ProductDraftListQueryDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ProductDraftListQueryDto'
-      additionalProperties: false
-    CollectionMinimumCountRule:
-      type: object
-      properties:
-        active:
-          type: boolean
-        message:
-          type:
-          - string
-          - 'null'
-        requiredTypesMinCount:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type: integer
-            format: int32
-        overallMinimumCount:
-          type: integer
-          format: int32
-      additionalProperties: false
-    BasicRule:
-      type: object
-      properties:
-        active:
-          type: boolean
-        message:
-          type:
-          - string
-          - 'null'
       additionalProperties: false
     ProductDraftValidationResultDto:
       type: object
@@ -3046,6 +2993,132 @@ components:
           description: Validation result
       additionalProperties: false
       description: Represents validation result for a single product draft
+    PropertyDto_2:
+      required:
+      - discriminator
+      - type
+      type: object
+      properties:
+        discriminator:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        type:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        isValid:
+          type:
+          - boolean
+          - 'null'
+      additionalProperties: false
+      discriminator:
+        propertyName: discriminator
+        mapping:
+          Collection: '#/components/schemas/CollectionPropertyDto'
+          Custom: '#/components/schemas/CustomPropertyDto'
+          Single: '#/components/schemas/SinglePropertyDto'
+    ProductDraftListQueryDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ProductDraftListQueryDto'
+      additionalProperties: false
+    ProductDraftValidationResultDtoListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ProductDraftValidationResultDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ProductDraftListQueryDto:
+      type: object
+      properties:
+        ids:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: The list of Product Draft Ids to fetch
+      additionalProperties: false
+    SortOrder:
+      enum:
+      - Ascending
+      - Descending
+      type: string
+    DateLimitRule:
+      type: object
+      properties:
+        active:
+          type: boolean
+        message:
+          type:
+          - string
+          - 'null'
+        minDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        maxDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        rangeFrom:
+          allOf:
+          - $ref: '#/components/schemas/DateLimitRangeData'
+        rangeTo:
+          allOf:
+          - $ref: '#/components/schemas/DateLimitRangeData'
+      additionalProperties: false
+    CollectionMinimumCountRule:
+      type: object
+      properties:
+        active:
+          type: boolean
+        message:
+          type:
+          - string
+          - 'null'
+        requiredTypesMinCount:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: integer
+            format: int32
+        overallMinimumCount:
+          type: integer
+          format: int32
+      additionalProperties: false
+    RegexRule:
+      type: object
+      properties:
+        active:
+          type: boolean
+        message:
+          type:
+          - string
+          - 'null'
+        isCaseSensitive:
+          type: boolean
+        regexValue:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
     CollectionMaximumCountRule:
       type: object
       properties:
@@ -3067,79 +3140,6 @@ components:
           - integer
           - 'null'
           format: int32
-      additionalProperties: false
-    DateLimitRangeData:
-      type: object
-      properties:
-        type:
-          type:
-          - string
-          - 'null'
-        relativeTo:
-          type:
-          - string
-          - 'null'
-        source:
-          type:
-          - string
-          - 'null'
-        field:
-          type:
-          - string
-          - 'null'
-        offset:
-          type:
-          - string
-          - 'null'
-        periodType:
-          type:
-          - string
-          - 'null'
-        offsetPeriod:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    GetDraftsByJourneyAndProductIdsDto:
-      type: object
-      properties:
-        productIds:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: The list of Product Ids to fetch
-        pageOptions:
-          allOf:
-          - $ref: '#/components/schemas/PageOptions'
-      additionalProperties: false
-    ProductDraftListQueryDto:
-      type: object
-      properties:
-        ids:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: The list of Product Draft Ids to fetch
-      additionalProperties: false
-    ProductDraftDtoIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ProductDraftDto_2'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
   securitySchemes:
     Bearer:

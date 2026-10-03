@@ -1571,66 +1571,76 @@ paths:
     - url: /identitymanagementcommand
 components:
   schemas:
-    UsersGenericMultiValuedAttributeDto:
+    UsersCustomPropertiesExtensionSchemaDto:
       type: object
       properties:
-        type:
+        customProperties:
           type:
           - string
           - 'null'
-          description: A label indicating the attribute's function
-          example: work
-        primary:
-          type: boolean
-          description: "A Boolean value indicating the 'primary' or preferred attribute value for this attribute, \ne.g., the preferred mailing address or primary email address"
-          example: true
-        value:
-          type:
-          - string
-          - 'null'
-          description: The value of the attribute
-          example: bjensen@example.com
-        display:
-          type:
-          - string
-          - 'null'
-          description: A human-readable name, primarily used for display purposes
-          example: bjensen@example.com
+          description: Serialized JSON object with custom properties
+          example: '{"propertyString": "StringValue", "propertyNumber": 7, "propertyBoolean": true}'
       additionalProperties: false
-    MetaDto:
-      type: object
-      properties:
-        resourceType:
-          type:
-          - string
-          - 'null'
-          description: The name of the resource type of the resource
-          example: User
-        created:
-          type: string
-          description: The "DateTime" that the resource was added to the service provider
-          format: date-time
-          example: '2022-02-02T12:59:59.123456'
-        lastModified:
-          type: string
-          description: 'The most recent "DateTime" that the details of this were updated at the service provider. <br />
+      description: 'Extension schema to be able to specify custom properties for users.
 
-            If this resource has never been modified since its initial creation, the value will be the same as the value of "created"'
-          format: date-time
-          example: '2022-02-02T12:59:59.123456'
-        location:
+        To be able to specify values for this property, it is required to add the following schema to the schemas list: "urn:ietf:params:scim:schemas:extension:custom:1.0:User"'
+    UsersPatchRequestOperationDto:
+      type: object
+      properties:
+        op:
           type:
           - string
           - 'null'
-          description: The URI of the resource being returned
-          example: https://company.com/scim/Users/12345678-1234-1234-1234-123456789011
-        version:
-          type: integer
-          description: The version of the resource being returned
-          format: int32
-          example: 0
+          description: 'Indicates the operation to perform. <br />
+
+            Possible values: "add", "remove", or "replace"'
+          example: add
+        path:
+          type:
+          - string
+          - 'null'
+          description: 'Describes the attribute path that wants to be updated. <br />
+
+            The "path" attribute is OPTIONAL for "add" and "replace" and is REQUIRED for "remove" operations'
+          example: name.familyName
+        value:
+          description: The new value for the attribute. REQUIRED for "add" and "replace" operations
       additionalProperties: false
-      description: A complex attribute containing resource metadata, assigned by the service provider
+    ListUsersResponseDto:
+      type: object
+      properties:
+        schemas:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />
+
+            Example: [ "urn:ietf:params:scim:api:messages:2.0:ListResponse" ]'
+        totalResults:
+          type: integer
+          description: The total number of results returned by the list or query operation
+          format: int32
+          example: 1
+        itemsPerPage:
+          type: integer
+          description: The number of resources returned in a list response page
+          format: int32
+          example: 1
+        startIndex:
+          type: integer
+          description: The 1-based index of the first result in the current set of list results
+          format: int32
+          example: 1
+        Resources:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UsersResponseDto'
+          description: A list of all the users. This MAY be a subset of the full set of users if pagination is requested
+      additionalProperties: false
     UsersNameDto:
       type: object
       properties:
@@ -1672,149 +1682,141 @@ components:
           example: III
       additionalProperties: false
       description: "The components of the user's name. <br />\nProviders MAY return just the full name as a single string in the formatted sub-attribute, or they MAY return just the individual \ncomponent attributes using the other sub-attributes, or they MAY return both. If both variants are returned, they SHOULD be \ndescribing the same name, with the formatted name indicating how the component attributes should be combined."
+    UsersSearchRequestDto:
+      type: object
+      properties:
+        attributes:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: "A multi-valued list of strings indicating the names of resource attributes to return in the response, \noverriding the set of attributes that would be returned by default. <br />\nExample: [ \"userName\", \"displayName\", \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:employeeNumber\"]"
+        excludedAttributes:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'A multi-valued list of strings indicating the names of resource attributes to be removed from the default set of attributes to return. <br />
+
+            Example: [ "nickname", "title" ]'
+        sortBy:
+          type:
+          - string
+          - 'null'
+          description: A string indicating the attribute whose value SHALL be used to order the returned responses
+          example: userName
+        sortOrder:
+          $ref: '#/components/schemas/SortOrders'
+        startIndex:
+          type: integer
+          description: An integer indicating the 1-based index of the first query result
+          format: int32
+          example: 1
+        count:
+          type: integer
+          description: An integer indicating the desired maximum number of query results per page
+          format: int32
+          example: 20
+        filter:
+          type:
+          - string
+          - 'null'
+          description: A string indicating the filter expression that will return only the resources that matches it
+          example: displayName pr
+      additionalProperties: false
     SearchSCIMRepresentationOrders:
       enum:
       - 0
       - 1
       type: integer
       format: int32
-    UsersCreateUpdateRequestDto:
+    UsersAddressMultiValuedAttributeDto:
       type: object
       properties:
-        externalId:
+        type:
           type:
           - string
           - 'null'
-          description: A String that is an identifier for the user as defined by the provisioning client
-          example: '701984'
-        userName:
-          type:
-          - string
-          - 'null'
-          description: 'Unique identifier for the User, typically used by the user to directly authenticate to the service provider. <br />
-
-            Each User MUST include a non-empty userName value. This identifier MUST be unique across the service provider''s entire set of Users.'
-          example: bjensen@example.com
-        name:
-          $ref: '#/components/schemas/UsersNameDto'
-        active:
+          description: A label indicating the attribute's function
+          example: work
+        primary:
           type: boolean
-          description: A Boolean value indicating the user's administrative status
+          description: "A Boolean value indicating the 'primary' or preferred attribute value for this attribute, \ne.g., the preferred mailing address or primary email address"
           example: true
-        displayName:
+        formatted:
           type:
           - string
           - 'null'
-          description: The name of the User, suitable for display to end-users. The name SHOULD be the full name of the User being described, if known
-          example: Babs Jensen
-        nickName:
+          description: The full mailing address, formatted for display or use with a mailing label. This attribute MAY contain newlines.
+          example: 100 Universal City Plaza, Hollywood, CA 91608 USA
+        streetAddress:
           type:
           - string
           - 'null'
-          description: 'The casual way to address the user in real life, e.g., ''Bob'' or ''Bobby'' instead of ''Robert''.
-
-            This attribute SHOULD NOT be used to represent a User''s username (e.g., ''bjensen'' or ''mpepperidge'').'
-          example: Babs
-        profileUrl:
+          description: "The full street address component, which may include house number, street name, P.O. box, and multi-line extended street address information. \nThis attribute MAY contain newlines"
+          example: 100 Universal City Plaza
+        locality:
           type:
           - string
           - 'null'
-          description: A fully qualified URL pointing to a page representing the User's online profile.
-        userType:
+          description: The city or locality component
+          example: Hollywood
+        region:
           type:
           - string
           - 'null'
-          description: 'Used to identify the relationship between the organization and the user. <br />
-
-            Typical values used might be "Contractor", "Employee", "Intern", "Temp", "External", and "Unknown", but any value may be used'
-          example: Employee
-        title:
+          description: The state or region component
+          example: CA
+        postalCode:
           type:
           - string
           - 'null'
-          description: The user's title
-          example: Tour Guide
-        preferredLanguage:
+          description: The zip code or postal code component
+          example: '91608'
+        country:
           type:
           - string
           - 'null'
-          description: 'Indicates the user''s preferred written or spoken languages and is generally used for selecting a localized user interface. <br />
-
-            The format of the value is the same as the HTTP Accept-Language header field'
-          example: en-US
-        locale:
-          type:
-          - string
-          - 'null'
-          description: Used to indicate the User's default location for purposes of localizing such items as currency, date time format, or numerical representations
-          example: en-US
-        timezone:
-          type:
-          - string
-          - 'null'
-          description: The User's time zone, in IANA Time Zone database format
-          example: America/Los_Angeles
-        emails:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
-          description: Email addresses for the User. The values SHOULD be specified according to [RFC5321]
-        phoneNumbers:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
-          description: Phone numbers for the user. The values SHOULD be specified according to the format defined in [RFC3966]
-        ims:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
-          description: 'Instant messaging address for the user. <br />
-
-            Possible types for this attribute: "aim", "gtalk", "icq", "xmpp", "msn", "skype", "qq", "yahoo", or "other"'
-        photos:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
-          description: 'URLs of photos of the User. <br />
-
-            Possible types for this attribute: "photo" and "thumbnail"'
-        addresses:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/UsersAddressMultiValuedAttributeDto'
-          description: 'A list of physical mailing addresses for this User <br />
-
-            Possible types for this attribute: "work", "home", and "other"'
-        x509Certificates:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
-          description: A list of certificates issued to the User
-        urn:ietf:params:scim:schemas:extension:custom:1.0:User:
-          $ref: '#/components/schemas/UsersCustomPropertiesExtensionSchemaDto'
-        schemas:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: 'List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />
-
-            Example: [ "urn:ietf:params:scim:schemas:core:2.0:User", "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User", "urn:ietf:params:scim:schemas:extension:custom:1.0:User" ]'
+          description: The country name component
+          example: USA
       additionalProperties: false
-    ListUsersResponseDto:
+    MetaDto:
+      type: object
+      properties:
+        resourceType:
+          type:
+          - string
+          - 'null'
+          description: The name of the resource type of the resource
+          example: User
+        created:
+          type: string
+          description: The "DateTime" that the resource was added to the service provider
+          format: date-time
+          example: '2022-02-02T12:59:59.123456'
+        lastModified:
+          type: string
+          description: 'The most recent "DateTime" that the details of this were updated at the service provider. <br />
+
+            If this resource has never been modified since its initial creation, the value will be the same as the value of "created"'
+          format: date-time
+          example: '2022-02-02T12:59:59.123456'
+        location:
+          type:
+          - string
+          - 'null'
+          description: The URI of the resource being returned
+          example: https://company.com/scim/Users/12345678-1234-1234-1234-123456789011
+        version:
+          type: integer
+          description: The version of the resource being returned
+          format: int32
+          example: 0
+      additionalProperties: false
+      description: A complex attribute containing resource metadata, assigned by the service provider
+    ErrorResponseDto:
       type: object
       properties:
         schemas:
@@ -1825,51 +1827,51 @@ components:
             type: string
           description: 'List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />
 
-            Example: [ "urn:ietf:params:scim:api:messages:2.0:ListResponse" ]'
-        totalResults:
-          type: integer
-          description: The total number of results returned by the list or query operation
-          format: int32
-          example: 1
-        itemsPerPage:
-          type: integer
-          description: The number of resources returned in a list response page
-          format: int32
-          example: 1
-        startIndex:
-          type: integer
-          description: The 1-based index of the first result in the current set of list results
-          format: int32
-          example: 1
-        Resources:
+            Example: [ "urn:ietf:params:scim:api:messages:2.0:Error" ]'
+        status:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/UsersResponseDto'
-          description: A list of all the users. This MAY be a subset of the full set of users if pagination is requested
+          description: The HTTP status code of the error response
+          example: '400'
+        scimType:
+          type:
+          - string
+          - 'null'
+          description: The type of error
+          example: invalidSyntax
+        detail:
+          type:
+          - string
+          - 'null'
+          description: The summary of the error
+          example: The request is not well-formatted
       additionalProperties: false
-    UsersPatchRequestOperationDto:
+    UsersGenericMultiValuedAttributeDto:
       type: object
       properties:
-        op:
+        type:
           type:
           - string
           - 'null'
-          description: 'Indicates the operation to perform. <br />
-
-            Possible values: "add", "remove", or "replace"'
-          example: add
-        path:
-          type:
-          - string
-          - 'null'
-          description: 'Describes the attribute path that wants to be updated. <br />
-
-            The "path" attribute is OPTIONAL for "add" and "replace" and is REQUIRED for "remove" operations'
-          example: name.familyName
+          description: A label indicating the attribute's function
+          example: work
+        primary:
+          type: boolean
+          description: "A Boolean value indicating the 'primary' or preferred attribute value for this attribute, \ne.g., the preferred mailing address or primary email address"
+          example: true
         value:
-          description: The new value for the attribute. REQUIRED for "add" and "replace" operations
+          type:
+          - string
+          - 'null'
+          description: The value of the attribute
+          example: bjensen@example.com
+        display:
+          type:
+          - string
+          - 'null'
+          description: A human-readable name, primarily used for display purposes
+          example: bjensen@example.com
       additionalProperties: false
     UsersResponseDto:
       type: object
@@ -2015,99 +2017,147 @@ components:
         meta:
           $ref: '#/components/schemas/MetaDto'
       additionalProperties: false
-    UsersAddressMultiValuedAttributeDto:
+    SortOrders:
+      enum:
+      - 0
+      - 1
+      type: integer
+      format: int32
+    UsersCreateUpdateRequestDto:
       type: object
       properties:
-        type:
+        externalId:
           type:
           - string
           - 'null'
-          description: A label indicating the attribute's function
-          example: work
-        primary:
-          type: boolean
-          description: "A Boolean value indicating the 'primary' or preferred attribute value for this attribute, \ne.g., the preferred mailing address or primary email address"
-          example: true
-        formatted:
+          description: A String that is an identifier for the user as defined by the provisioning client
+          example: '701984'
+        userName:
           type:
           - string
           - 'null'
-          description: The full mailing address, formatted for display or use with a mailing label. This attribute MAY contain newlines.
-          example: 100 Universal City Plaza, Hollywood, CA 91608 USA
-        streetAddress:
-          type:
-          - string
-          - 'null'
-          description: "The full street address component, which may include house number, street name, P.O. box, and multi-line extended street address information. \nThis attribute MAY contain newlines"
-          example: 100 Universal City Plaza
-        locality:
-          type:
-          - string
-          - 'null'
-          description: The city or locality component
-          example: Hollywood
-        region:
-          type:
-          - string
-          - 'null'
-          description: The state or region component
-          example: CA
-        postalCode:
-          type:
-          - string
-          - 'null'
-          description: The zip code or postal code component
-          example: '91608'
-        country:
-          type:
-          - string
-          - 'null'
-          description: The country name component
-          example: USA
-      additionalProperties: false
-    UsersSearchRequestDto:
-      type: object
-      properties:
-        attributes:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: "A multi-valued list of strings indicating the names of resource attributes to return in the response, \noverriding the set of attributes that would be returned by default. <br />\nExample: [ \"userName\", \"displayName\", \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:employeeNumber\"]"
-        excludedAttributes:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: 'A multi-valued list of strings indicating the names of resource attributes to be removed from the default set of attributes to return. <br />
+          description: 'Unique identifier for the User, typically used by the user to directly authenticate to the service provider. <br />
 
-            Example: [ "nickname", "title" ]'
-        sortBy:
+            Each User MUST include a non-empty userName value. This identifier MUST be unique across the service provider''s entire set of Users.'
+          example: bjensen@example.com
+        name:
+          $ref: '#/components/schemas/UsersNameDto'
+        active:
+          type: boolean
+          description: A Boolean value indicating the user's administrative status
+          example: true
+        displayName:
           type:
           - string
           - 'null'
-          description: A string indicating the attribute whose value SHALL be used to order the returned responses
-          example: userName
-        sortOrder:
-          $ref: '#/components/schemas/SortOrders'
-        startIndex:
-          type: integer
-          description: An integer indicating the 1-based index of the first query result
-          format: int32
-          example: 1
-        count:
-          type: integer
-          description: An integer indicating the desired maximum number of query results per page
-          format: int32
-          example: 20
-        filter:
+          description: The name of the User, suitable for display to end-users. The name SHOULD be the full name of the User being described, if known
+          example: Babs Jensen
+        nickName:
           type:
           - string
           - 'null'
-          description: A string indicating the filter expression that will return only the resources that matches it
-          example: displayName pr
+          description: 'The casual way to address the user in real life, e.g., ''Bob'' or ''Bobby'' instead of ''Robert''.
+
+            This attribute SHOULD NOT be used to represent a User''s username (e.g., ''bjensen'' or ''mpepperidge'').'
+          example: Babs
+        profileUrl:
+          type:
+          - string
+          - 'null'
+          description: A fully qualified URL pointing to a page representing the User's online profile.
+        userType:
+          type:
+          - string
+          - 'null'
+          description: 'Used to identify the relationship between the organization and the user. <br />
+
+            Typical values used might be "Contractor", "Employee", "Intern", "Temp", "External", and "Unknown", but any value may be used'
+          example: Employee
+        title:
+          type:
+          - string
+          - 'null'
+          description: The user's title
+          example: Tour Guide
+        preferredLanguage:
+          type:
+          - string
+          - 'null'
+          description: 'Indicates the user''s preferred written or spoken languages and is generally used for selecting a localized user interface. <br />
+
+            The format of the value is the same as the HTTP Accept-Language header field'
+          example: en-US
+        locale:
+          type:
+          - string
+          - 'null'
+          description: Used to indicate the User's default location for purposes of localizing such items as currency, date time format, or numerical representations
+          example: en-US
+        timezone:
+          type:
+          - string
+          - 'null'
+          description: The User's time zone, in IANA Time Zone database format
+          example: America/Los_Angeles
+        emails:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
+          description: Email addresses for the User. The values SHOULD be specified according to [RFC5321]
+        phoneNumbers:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
+          description: Phone numbers for the user. The values SHOULD be specified according to the format defined in [RFC3966]
+        ims:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
+          description: 'Instant messaging address for the user. <br />
+
+            Possible types for this attribute: "aim", "gtalk", "icq", "xmpp", "msn", "skype", "qq", "yahoo", or "other"'
+        photos:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
+          description: 'URLs of photos of the User. <br />
+
+            Possible types for this attribute: "photo" and "thumbnail"'
+        addresses:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UsersAddressMultiValuedAttributeDto'
+          description: 'A list of physical mailing addresses for this User <br />
+
+            Possible types for this attribute: "work", "home", and "other"'
+        x509Certificates:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UsersGenericMultiValuedAttributeDto'
+          description: A list of certificates issued to the User
+        urn:ietf:params:scim:schemas:extension:custom:1.0:User:
+          $ref: '#/components/schemas/UsersCustomPropertiesExtensionSchemaDto'
+        schemas:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />
+
+            Example: [ "urn:ietf:params:scim:schemas:core:2.0:User", "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User", "urn:ietf:params:scim:schemas:extension:custom:1.0:User" ]'
       additionalProperties: false
     UsersPatchRequestDto:
       type: object
@@ -2129,80 +2179,6 @@ components:
 
             Examples: [ "urn:ietf:params:scim:api:messages:2.0:BulkRequest" ], [ "urn:ietf:params:scim:api:messages:2.0:PatchOp" ]'
       additionalProperties: false
-    UsersCustomPropertiesExtensionSchemaDto:
-      type: object
-      properties:
-        customProperties:
-          type:
-          - string
-          - 'null'
-          description: Serialized JSON object with custom properties
-          example: '{"propertyString": "StringValue", "propertyNumber": 7, "propertyBoolean": true}'
-      additionalProperties: false
-      description: 'Extension schema to be able to specify custom properties for users.
-
-        To be able to specify values for this property, it is required to add the following schema to the schemas list: "urn:ietf:params:scim:schemas:extension:custom:1.0:User"'
-    SortOrders:
-      enum:
-      - 0
-      - 1
-      type: integer
-      format: int32
-    ErrorResponseDto:
-      type: object
-      properties:
-        schemas:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: 'List of one or more URIs that indicate included SCIM schemas that are used to indicate the attributes contained within a resource. <br />
-
-            Example: [ "urn:ietf:params:scim:api:messages:2.0:Error" ]'
-        status:
-          type:
-          - string
-          - 'null'
-          description: The HTTP status code of the error response
-          example: '400'
-        scimType:
-          type:
-          - string
-          - 'null'
-          description: The type of error
-          example: invalidSyntax
-        detail:
-          type:
-          - string
-          - 'null'
-          description: The summary of the error
-          example: The request is not well-formatted
-      additionalProperties: false
-    UserCreatedDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/UserCreatedDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    UserCreatedDto:
-      required:
-      - userId
-      type: object
-      properties:
-        userId:
-          minLength: 1
-          type: string
-          description: The id of the user created.
-          example: b2e58c3e-d66f-4d02-b40e-c8e6585a72a7
-      additionalProperties: false
-      description: Represents the data transfer object for a user created.
     ServiceResponse:
       type: object
       properties:
@@ -2216,6 +2192,12 @@ components:
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    PatchUserDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/PatchUserDto'
       additionalProperties: false
     UpdateUserDto:
       required:
@@ -2248,18 +2230,6 @@ components:
           description: A flag that indicates if user is active or suspended in current tenant
       additionalProperties: false
       description: Represents the data transfer object for updating a user (PUT).
-    PatchUserDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/PatchUserDto'
-      additionalProperties: false
-    UpdateUserDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/UpdateUserDto'
-      additionalProperties: false
     CreateUserDto:
       required:
       - email
@@ -2292,6 +2262,60 @@ components:
             Example: {"stringProperty": "value", "booleanProperty": false, "numberProperty": 1}'
       additionalProperties: false
       description: Represents the data transfer object for creating a user.
+    UserCreatedDto:
+      required:
+      - userId
+      type: object
+      properties:
+        userId:
+          minLength: 1
+          type: string
+          description: The id of the user created.
+          example: b2e58c3e-d66f-4d02-b40e-c8e6585a72a7
+      additionalProperties: false
+      description: Represents the data transfer object for a user created.
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    UpdateUserDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/UpdateUserDto'
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    CreateUserDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/CreateUserDto'
+      additionalProperties: false
     PatchUserDto:
       type: object
       properties:
@@ -2322,32 +2346,11 @@ components:
           description: A flag that indicates if user is active or suspended in current tenant
       additionalProperties: false
       description: Represents the data transfer object for updating a user (PATCH).
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    CreateUserDtoServiceRequest:
+    UserCreatedDtoServiceResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/CreateUserDto'
-      additionalProperties: false
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
+          $ref: '#/components/schemas/UserCreatedDto'
         messages:
           type:
           - array
@@ -2355,13 +2358,10 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    StringServiceResponse:
+    ObjectServiceResponse:
       type: object
       properties:
-        data:
-          type:
-          - string
-          - 'null'
+        data: {}
         messages:
           type:
           - array
@@ -2438,18 +2438,6 @@ components:
           description: The unique identifier of the user in the Fen-X Identity SCIM system
       additionalProperties: false
       description: Represents the data transfer object for a user.
-    UsersPaginationResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/UsersPaginationResponseDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
     UserDtoServiceResponse:
       type: object
       properties:
@@ -2491,6 +2479,18 @@ components:
             $ref: '#/components/schemas/UserDto'
       additionalProperties: false
       description: Represents the data transfer object for users pagination response.
+    UsersPaginationResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/UsersPaginationResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
   securitySchemes:
     Bearer:
       type: apiKey

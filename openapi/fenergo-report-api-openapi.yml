@@ -1698,31 +1698,20 @@ paths:
     - url: /reportsquery
 components:
   schemas:
-    ProblemDetails:
+    StringServiceResponse:
       type: object
       properties:
-        type:
+        data:
           type:
           - string
           - 'null'
-        title:
+        messages:
           type:
-          - string
+          - array
           - 'null'
-        status:
-          type:
-          - integer
-          - 'null'
-          format: int32
-        detail:
-          type:
-          - string
-          - 'null'
-        instance:
-          type:
-          - string
-          - 'null'
-      additionalProperties: {}
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
     ServiceResponseMessage:
       type: object
       properties:
@@ -1750,13 +1739,110 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    StringServiceResponse:
+    ProblemDetails:
       type: object
       properties:
-        data:
+        type:
           type:
           - string
           - 'null'
+        title:
+          type:
+          - string
+          - 'null'
+        status:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        detail:
+          type:
+          - string
+          - 'null'
+        instance:
+          type:
+          - string
+          - 'null'
+      additionalProperties: {}
+    PreviewReportDto:
+      type: object
+      properties:
+        sqlQuery:
+          type:
+          - string
+          - 'null'
+          description: SQL query of the report
+          example: Select * from entitydata where category='Retail' limit 5
+        parameters:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: string
+          description: Parameter values to substitute into the SQL query placeholders
+        parameterDefinitions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/PreviewParameterDefinitionDto'
+          description: Parameter type definitions for type-aware substitution (e.g. Date → DATE 'yyyy-MM-dd')
+      additionalProperties: false
+      description: A report model to run a simple query
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    PreviewReportDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/PreviewReportDto'
+          description: A report model to run a simple query
+      additionalProperties: false
+    PreviewParameterDefinitionDto:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+          description: Parameter name, matching the {{placeholder}} in the SQL template
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Parameter type: String | Date | Number | Boolean | Select'
+      additionalProperties: false
+      description: Carries the type metadata for a single parameter in a preview request.
+    CreateReportV1DtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateReportV1Dto'
+          description: A report model to run a simple query
+      additionalProperties: false
+    GuidServiceResponse:
+      type: object
+      properties:
+        data:
+          type: string
+          format: uuid
         messages:
           type:
           - array
@@ -1790,14 +1876,6 @@ components:
         - message: Data is required
           type: Error
           errorCode: Error Code
-    CreateReportV1DtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateReportV1Dto'
-          description: A report model to run a simple query
-      additionalProperties: false
     CreateReportV1Dto:
       type: object
       properties:
@@ -1815,83 +1893,62 @@ components:
           example: My Monthly report for active retail clients
       additionalProperties: false
       description: A report model to run a simple query
-    PreviewReportDto:
-      type: object
-      properties:
-        sqlQuery:
-          type:
-          - string
-          - 'null'
-          description: SQL query of the report
-          example: Select * from entitydata where category='Retail' limit 5
-        parameters:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type: string
-          description: Parameter values to substitute into the SQL query placeholders
-        parameterDefinitions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/PreviewParameterDefinitionDto'
-          description: Parameter type definitions for type-aware substitution (e.g. Date → DATE 'yyyy-MM-dd')
-      additionalProperties: false
-      description: A report model to run a simple query
-    PreviewParameterDefinitionDto:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-          description: Parameter name, matching the {{placeholder}} in the SQL template
-        type:
-          type:
-          - string
-          - 'null'
-          description: 'Parameter type: String | Date | Number | Boolean | Select'
-      additionalProperties: false
-      description: Carries the type metadata for a single parameter in a preview request.
-    ValidationErrorModel:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-        attemptedValue: {}
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    PreviewReportDtoServiceRequest:
+    CreateReportInsightsRequestDtoServiceRequest:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/PreviewReportDto'
-          description: A report model to run a simple query
+          - $ref: '#/components/schemas/CreateReportInsightsRequestDto'
+          description: 'API request body for `POST /api/v2/report/insights`.
+
+            Wrapped in `ServiceRequest<CreateReportInsightsRequestDto>` at the controller layer.'
       additionalProperties: false
-    GuidServiceResponse:
+    CreateQueryResponseDtoServiceResponse:
       type: object
       properties:
         data:
-          type: string
-          format: uuid
+          allOf:
+          - $ref: '#/components/schemas/CreateQueryResponseDto'
+          description: Create Query Response DTO
         messages:
           type:
           - array
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CreateReportInsightsRequestDto:
+      type: object
+      properties:
+        reportId:
+          type:
+          - string
+          - 'null'
+          description: 'Identifier of the completed report whose results should be analysed.
+
+            Must be a non-empty string that parses as a GUID.'
+          example: 3df1f622-7c6e-46a6-8b52-987f9142b6fa
+        timeZone:
+          type:
+          - string
+          - 'null'
+          description: 'IANA timezone of the requesting user.
+
+            Defaults to `UTC` when omitted or empty.'
+          example: Europe/Athens
+      additionalProperties: false
+      description: 'API request body for `POST /api/v2/report/insights`.
+
+        Wrapped in `ServiceRequest<CreateReportInsightsRequestDto>` at the controller layer.'
+    SubmitReportInsightFeedbackRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/SubmitReportInsightFeedbackRequestDto'
+          description: 'API request body for `POST /api/v2/report/insights/feedback`.
+
+            Wrapped in `ServiceRequest<SubmitReportInsightFeedbackRequestDto>` at the controller layer.'
       additionalProperties: false
     CreateReportV2DtoServiceRequest:
       type: object
@@ -1915,14 +1972,36 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    UpdateConversationTitleRequestDtoServiceRequest:
+    CreateQueryResponseDto:
       type: object
       properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/UpdateConversationTitleRequestDto'
-          description: Request body for renaming a conversation.
+        title:
+          type:
+          - string
+          - 'null'
+          description: Short title
+        query:
+          type:
+          - string
+          - 'null'
+          description: SQL query
+        description:
+          type:
+          - string
+          - 'null'
+          description: Short description
+        answer:
+          type:
+          - string
+          - 'null'
+          description: Text describing how the query answers the user's question
+        error:
+          type:
+          - string
+          - 'null'
+          description: Error message (if applicable)
       additionalProperties: false
+      description: Create Query Response DTO
     CreateReportV2Dto:
       type: object
       properties:
@@ -1957,71 +2036,6 @@ components:
             to_date: '2026-03-16'
       additionalProperties: false
       description: A report model to run a simple query
-    UpdateConversationTitleRequestDto:
-      type: object
-      properties:
-        title:
-          type:
-          - string
-          - 'null'
-          description: The new title (1-100 chars).
-          example: Q4 Revenue Analysis
-      additionalProperties: false
-      description: Request body for renaming a conversation.
-    CreateReportInsightsResponseDto:
-      type: object
-      properties:
-        conversationId:
-          type:
-          - string
-          - 'null'
-          description: 'Newly generated conversation identifier.
-
-            Subscribe to the report agent WebSocket stream using this value.'
-        status:
-          type:
-          - string
-          - 'null'
-          description: Initial processing status. Always `"Processing"` on a successful 202 response.
-        rowCount:
-          type:
-          - integer
-          - 'null'
-          description: 'Row count from the completed report. Null when the report predates row-count tracking.
-
-            Lets the UI display a row-count badge without waiting for tool execution.'
-          format: int32
-        queryName:
-          type:
-          - string
-          - 'null'
-          description: 'Display name of the saved query associated with this report, when available.
-
-            Used for drawer labels and export filenames.'
-      additionalProperties: false
-      description: 'API response for `POST /api/v2/report/insights`.
-
-        The frontend uses Fenergo.Nebula.Reports.Command.Application.Features.Agent.Insights.CreateReportInsightsResponseDto.ConversationId to subscribe to the existing
-
-        agent WebSocket stream (`/ws/report/agent`).'
-    CreateQueryRequestDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateQueryRequestDto'
-          description: API request to generate AI driven report query
-      additionalProperties: false
-    SubmitReportInsightFeedbackRequestDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/SubmitReportInsightFeedbackRequestDto'
-          description: 'API request body for `POST /api/v2/report/insights/feedback`.
-
-            Wrapped in `ServiceRequest<SubmitReportInsightFeedbackRequestDto>` at the controller layer.'
-      additionalProperties: false
     AgentConversationTurnRequestDto:
       type: object
       properties:
@@ -2055,18 +2069,6 @@ components:
           description: 'Conversation source. Values: "standalone", "query". Used to distinguish conversation origins.'
       additionalProperties: false
       description: API request to trigger an agent conversation turn.
-    SubmitReportInsightFeedbackResponseDto:
-      type: object
-      properties:
-        status:
-          type:
-          - string
-          - 'null'
-          description: 'Always `"Recorded"` on a successful response.
-
-            Indicates the feedback was accepted and published to the analytics/metrics pipeline.'
-      additionalProperties: false
-      description: API response for `POST /api/v2/report/insights/feedback`.
     CreateQueryRequestDto:
       type: object
       properties:
@@ -2104,49 +2106,32 @@ components:
           - $ref: '#/components/schemas/AgentConversationTurnRequestDto'
           description: API request to trigger an agent conversation turn.
       additionalProperties: false
-    AgentConversationTurnResponseDto:
+    CreateReportInsightsResponseDtoServiceResponse:
       type: object
       properties:
-        conversationId:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateReportInsightsResponseDto'
+          description: 'API response for `POST /api/v2/report/insights`.
+
+            The frontend uses Fenergo.Nebula.Reports.Command.Application.Features.Agent.Insights.CreateReportInsightsResponseDto.ConversationId to subscribe to the existing
+
+            agent WebSocket stream (`/ws/report/agent`).'
+        messages:
           type:
-          - string
+          - array
           - 'null'
-        status:
-          type:
-          - string
-          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-      description: API response for an asynchronous agent conversation turn trigger.
-    CreateQueryResponseDto:
+    CreateQueryRequestDtoServiceRequest:
       type: object
       properties:
-        title:
-          type:
-          - string
-          - 'null'
-          description: Short title
-        query:
-          type:
-          - string
-          - 'null'
-          description: SQL query
-        description:
-          type:
-          - string
-          - 'null'
-          description: Short description
-        answer:
-          type:
-          - string
-          - 'null'
-          description: Text describing how the query answers the user's question
-        error:
-          type:
-          - string
-          - 'null'
-          description: Error message (if applicable)
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateQueryRequestDto'
+          description: API request to generate AI driven report query
       additionalProperties: false
-      description: Create Query Response DTO
     SubmitReportInsightFeedbackRequestDto:
       type: object
       properties:
@@ -2220,6 +2205,66 @@ components:
       description: 'API request body for `POST /api/v2/report/insights/feedback`.
 
         Wrapped in `ServiceRequest<SubmitReportInsightFeedbackRequestDto>` at the controller layer.'
+    UpdateConversationTitleRequestDto:
+      type: object
+      properties:
+        title:
+          type:
+          - string
+          - 'null'
+          description: The new title (1-100 chars).
+          example: Q4 Revenue Analysis
+      additionalProperties: false
+      description: Request body for renaming a conversation.
+    AgentConversationTurnResponseDto:
+      type: object
+      properties:
+        conversationId:
+          type:
+          - string
+          - 'null'
+        status:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+      description: API response for an asynchronous agent conversation turn trigger.
+    CreateReportInsightsResponseDto:
+      type: object
+      properties:
+        conversationId:
+          type:
+          - string
+          - 'null'
+          description: 'Newly generated conversation identifier.
+
+            Subscribe to the report agent WebSocket stream using this value.'
+        status:
+          type:
+          - string
+          - 'null'
+          description: Initial processing status. Always `"Processing"` on a successful 202 response.
+        rowCount:
+          type:
+          - integer
+          - 'null'
+          description: 'Row count from the completed report. Null when the report predates row-count tracking.
+
+            Lets the UI display a row-count badge without waiting for tool execution.'
+          format: int32
+        queryName:
+          type:
+          - string
+          - 'null'
+          description: 'Display name of the saved query associated with this report, when available.
+
+            Used for drawer labels and export filenames.'
+      additionalProperties: false
+      description: 'API response for `POST /api/v2/report/insights`.
+
+        The frontend uses Fenergo.Nebula.Reports.Command.Application.Features.Agent.Insights.CreateReportInsightsResponseDto.ConversationId to subscribe to the existing
+
+        agent WebSocket stream (`/ws/report/agent`).'
     AgentConversationTurnResponseDtoServiceResponse:
       type: object
       properties:
@@ -2234,71 +2279,26 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    CreateReportInsightsResponseDtoServiceResponse:
+    UpdateConversationTitleRequestDtoServiceRequest:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/CreateReportInsightsResponseDto'
-          description: 'API response for `POST /api/v2/report/insights`.
-
-            The frontend uses Fenergo.Nebula.Reports.Command.Application.Features.Agent.Insights.CreateReportInsightsResponseDto.ConversationId to subscribe to the existing
-
-            agent WebSocket stream (`/ws/report/agent`).'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+          - $ref: '#/components/schemas/UpdateConversationTitleRequestDto'
+          description: Request body for renaming a conversation.
       additionalProperties: false
-    CreateQueryResponseDtoServiceResponse:
+    SubmitReportInsightFeedbackResponseDto:
       type: object
       properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateQueryResponseDto'
-          description: Create Query Response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    CreateReportInsightsRequestDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateReportInsightsRequestDto'
-          description: 'API request body for `POST /api/v2/report/insights`.
-
-            Wrapped in `ServiceRequest<CreateReportInsightsRequestDto>` at the controller layer.'
-      additionalProperties: false
-    CreateReportInsightsRequestDto:
-      type: object
-      properties:
-        reportId:
+        status:
           type:
           - string
           - 'null'
-          description: 'Identifier of the completed report whose results should be analysed.
+          description: 'Always `"Recorded"` on a successful response.
 
-            Must be a non-empty string that parses as a GUID.'
-          example: 3df1f622-7c6e-46a6-8b52-987f9142b6fa
-        timeZone:
-          type:
-          - string
-          - 'null'
-          description: 'IANA timezone of the requesting user.
-
-            Defaults to `UTC` when omitted or empty.'
-          example: Europe/Athens
+            Indicates the feedback was accepted and published to the analytics/metrics pipeline.'
       additionalProperties: false
-      description: 'API request body for `POST /api/v2/report/insights`.
-
-        Wrapped in `ServiceRequest<CreateReportInsightsRequestDto>` at the controller layer.'
+      description: API response for `POST /api/v2/report/insights/feedback`.
     ServiceResponse:
       type: object
       properties:
@@ -2351,26 +2351,13 @@ components:
           readOnly: true
       additionalProperties: false
       description: A URL of a generated Report which is valid for a small period of time
-    GetReportStatusByIdDto:
-      type: object
-      properties:
-        status:
-          allOf:
-          - $ref: '#/components/schemas/ReportStatusDto'
-          description: ''
-        presignedUrl:
-          allOf:
-          - $ref: '#/components/schemas/PresignedUrlDto'
-          description: ''
-        queryErrorMessages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: ''
-      additionalProperties: false
-      description: ''
+    ReportStatusDto:
+      enum:
+      - InProgress
+      - Completed
+      - Failed
+      type: string
+      description: Report execution status
     GetReportStatusByIdDtoServiceResponse:
       type: object
       properties:
@@ -2431,75 +2418,26 @@ components:
           example: Select * from entitydata where category='Retail'
       additionalProperties: false
       description: A report item as it is returned by GetReportByIdQuery
-    ReportStatusDto:
-      enum:
-      - InProgress
-      - Completed
-      - Failed
-      type: string
-      description: Report execution status
-    GetRecentReportDtoItemsPage:
+    GetReportStatusByIdDto:
       type: object
       properties:
-        items:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/GetRecentReportDto'
-        paginationToken:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    PresignedUrlV2Dto:
-      type: object
-      properties:
-        url:
-          type:
-          - string
-          - 'null'
-          description: Link of the report
-        expirationDate:
-          type:
-          - string
-          - 'null'
-          description: Expiration Datetime
-          format: date-time
-        friendlyName:
-          type:
-          - string
-          - 'null'
-          description: Name of the file to download
-        duration:
-          type: number
-          description: Duration of url validity in milliseconds
-          format: double
-          readOnly: true
-      additionalProperties: false
-      description: A URL of a generated Report which is valid for a small period of time
-    VsLastMonthDto:
-      type: object
-      properties:
-        totalReportsDelta:
-          type: number
-          format: double
-      additionalProperties: false
-      description: Month-over-month delta stats
-    ReportsOverviewStatsDtoServiceResponse:
-      type: object
-      properties:
-        data:
+        status:
           allOf:
-          - $ref: '#/components/schemas/ReportsOverviewStatsDto'
-          description: DTO for the reports overview stats dashboard
-        messages:
+          - $ref: '#/components/schemas/ReportStatusDto'
+          description: ''
+        presignedUrl:
+          allOf:
+          - $ref: '#/components/schemas/PresignedUrlDto'
+          description: ''
+        queryErrorMessages:
           type:
           - array
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
+          description: ''
       additionalProperties: false
+      description: ''
     ConversationSummaryDto:
       type: object
       properties:
@@ -2535,6 +2473,70 @@ components:
           format: date-time
       additionalProperties: false
       description: DTO representing a single conversation in the list.
+    VsLastMonthDto:
+      type: object
+      properties:
+        totalReportsDelta:
+          type: number
+          format: double
+      additionalProperties: false
+      description: Month-over-month delta stats
+    ConversationMessageDtoListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConversationMessageDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    GetReportStatusByIdV2DtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetReportStatusByIdV2Dto'
+          description: ''
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    PresignedUrlV2Dto:
+      type: object
+      properties:
+        url:
+          type:
+          - string
+          - 'null'
+          description: Link of the report
+        expirationDate:
+          type:
+          - string
+          - 'null'
+          description: Expiration Datetime
+          format: date-time
+        friendlyName:
+          type:
+          - string
+          - 'null'
+          description: Name of the file to download
+        duration:
+          type: number
+          description: Duration of url validity in milliseconds
+          format: double
+          readOnly: true
+      additionalProperties: false
+      description: A URL of a generated Report which is valid for a small period of time
     GetReportStatusByIdV2Dto:
       type: object
       properties:
@@ -2555,6 +2557,19 @@ components:
           description: Query error messages
       additionalProperties: false
       description: ''
+    GetRecentReportDtoItemsPageServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetRecentReportDtoItemsPage'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
     GetReportByIdV2Dto:
       type: object
       properties:
@@ -2601,96 +2616,6 @@ components:
           example: Select * from entitydata where category='Retail'
       additionalProperties: false
       description: A report item as it is returned by GetReportByIdQueryV2
-    GetReportByIdV2DtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/GetReportByIdV2Dto'
-          description: A report item as it is returned by GetReportByIdQueryV2
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    GetReportStatusByIdV2DtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/GetReportStatusByIdV2Dto'
-          description: ''
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ConversationMessageDto:
-      type: object
-      properties:
-        order:
-          type: integer
-          description: Zero-based position in the conversation.
-          format: int32
-        role:
-          type:
-          - string
-          - 'null'
-          description: '"user" or "assistant".'
-        content:
-          type:
-          - string
-          - 'null'
-          description: Plain-text content of the message.
-      additionalProperties: false
-      description: A single turn in an agent chat conversation.
-    ConversationSummaryDtoItemsPage:
-      type: object
-      properties:
-        items:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConversationSummaryDto'
-        paginationToken:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ConversationMessageDtoListServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConversationMessageDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ConversationSummaryDtoItemsPageServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ConversationSummaryDtoItemsPage'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
     ReportsOverviewStatsDto:
       type: object
       properties:
@@ -2725,13 +2650,6 @@ components:
           format: int32
       additionalProperties: false
       description: DTO for the reports overview stats dashboard
-    ReportStatusV2Dto:
-      enum:
-      - InProgress
-      - Completed
-      - Failed
-      type: string
-      description: Report execution status
     PresignedUrlV2DtoServiceResponse:
       type: object
       properties:
@@ -2746,6 +2664,53 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
+    GetRecentReportDtoItemsPage:
+      type: object
+      properties:
+        items:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/GetRecentReportDto'
+        paginationToken:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ConversationSummaryDtoItemsPage:
+      type: object
+      properties:
+        items:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConversationSummaryDto'
+        paginationToken:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ConversationMessageDto:
+      type: object
+      properties:
+        order:
+          type: integer
+          description: Zero-based position in the conversation.
+          format: int32
+        role:
+          type:
+          - string
+          - 'null'
+          description: '"user" or "assistant".'
+        content:
+          type:
+          - string
+          - 'null'
+          description: Plain-text content of the message.
+      additionalProperties: false
+      description: A single turn in an agent chat conversation.
     GetRecentReportDto:
       type: object
       properties:
@@ -2789,12 +2754,47 @@ components:
           format: int32
       additionalProperties: false
       description: DTO for a single recent report
-    GetRecentReportDtoItemsPageServiceResponse:
+    ConversationSummaryDtoItemsPageServiceResponse:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/GetRecentReportDtoItemsPage'
+          - $ref: '#/components/schemas/ConversationSummaryDtoItemsPage'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ReportStatusV2Dto:
+      enum:
+      - InProgress
+      - Completed
+      - Failed
+      type: string
+      description: Report execution status
+    GetReportByIdV2DtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetReportByIdV2Dto'
+          description: A report item as it is returned by GetReportByIdQueryV2
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ReportsOverviewStatsDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ReportsOverviewStatsDto'
+          description: DTO for the reports overview stats dashboard
         messages:
           type:
           - array

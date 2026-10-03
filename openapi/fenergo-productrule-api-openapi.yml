@@ -285,6 +285,73 @@ paths:
                   errorCode: OBSOLETE_ENDPOINT
 components:
   schemas:
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    Signee:
+      type: object
+      properties:
+        subject:
+          type:
+          - string
+          - 'null'
+        successor:
+          allOf:
+          - $ref: '#/components/schemas/Approver'
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
+      additionalProperties: false
+    ApproveAction:
+      type: object
+      properties:
+        comment:
+          type:
+          - string
+          - 'null'
+        decision:
+          allOf:
+          - $ref: '#/components/schemas/Decision'
+        created:
+          type: string
+          format: date-time
+      additionalProperties: false
+    ProductRuleDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The UiD of the product rule
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        versions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ProductRuleVersionDto'
+          description: Versions associated to this product rule
+        version:
+          type: integer
+          description: Version number for given Aggregate (concurrency check)
+          format: int32
+          example: 1
+      additionalProperties: false
+      description: Response DTO representing product rule
     Approver:
       type: object
       properties:
@@ -302,13 +369,13 @@ components:
           type: boolean
           readOnly: true
       additionalProperties: false
-    ServiceResponse:
+    ProductRuleVersionDtoServiceResponse:
       type: object
       properties:
         data:
-          type:
-          - string
-          - 'null'
+          allOf:
+          - $ref: '#/components/schemas/ProductRuleVersionDto'
+          description: Response DTO representing product rule version data
         messages:
           type:
           - array
@@ -316,15 +383,13 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    ProductRuleDtoIEnumerableServiceResponse:
+    StringServiceResponse:
       type: object
       properties:
         data:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/ProductRuleDto'
         messages:
           type:
           - array
@@ -406,6 +471,31 @@ components:
             example: '2021-01-01T14:48:00.000Z'
         additionalProperties: false
       description: Response DTO representing product rule version data
+    ConditionDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type:
+          - string
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto'
+      additionalProperties: false
     ValueField:
       type: object
       properties:
@@ -418,13 +508,15 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    ProductRuleVersionDtoServiceResponse:
+    ProductRuleDtoIEnumerableServiceResponse:
       type: object
       properties:
         data:
-          allOf:
-          - $ref: '#/components/schemas/ProductRuleVersionDto'
-          description: Response DTO representing product rule version data
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ProductRuleDto'
         messages:
           type:
           - array
@@ -432,6 +524,11 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
+    Decision:
+      enum:
+      - Approve
+      - Reject
+      type: string
     BaseVersionDto:
       type: object
       properties:
@@ -490,28 +587,22 @@ components:
           example: 1
       additionalProperties: false
       description: Response DTO representing data group version data
-    ProductRuleDto:
+    ServiceResponseMessage:
       type: object
       properties:
-        id:
-          type: string
-          description: The UiD of the product rule
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        versions:
+        message:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/ProductRuleVersionDto'
-          description: Versions associated to this product rule
-        version:
-          type: integer
-          description: Version number for given Aggregate (concurrency check)
-          format: int32
-          example: 1
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
-      description: Response DTO representing product rule
     ConditionDefinitionDto:
       type: object
       properties:
@@ -566,101 +657,10 @@ components:
       - Archived
       - Deleted
       type: string
-    Decision:
-      enum:
-      - Approve
-      - Reject
-      type: string
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ConditionDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type:
-          - string
-          - 'null'
-        description:
-          type:
-          - string
-          - 'null'
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-        operands:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto'
-      additionalProperties: false
-    Signee:
-      type: object
-      properties:
-        subject:
-          type:
-          - string
-          - 'null'
-        successor:
-          allOf:
-          - $ref: '#/components/schemas/Approver'
-        action:
-          allOf:
-          - $ref: '#/components/schemas/ApproveAction'
-        hasProcessedRequest:
-          type: boolean
-          readOnly: true
-      additionalProperties: false
-    ApproveAction:
-      type: object
-      properties:
-        comment:
-          type:
-          - string
-          - 'null'
-        decision:
-          allOf:
-          - $ref: '#/components/schemas/Decision'
-        created:
-          type: string
-          format: date-time
-      additionalProperties: false
     ObjectServiceResponse:
       type: object
       properties:
         data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
         messages:
           type:
           - array

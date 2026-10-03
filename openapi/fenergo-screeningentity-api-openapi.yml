@@ -728,20 +728,6 @@ paths:
     - url: /screeningquery
 components:
   schemas:
-    ScreeningEntityDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ScreeningEntityDto'
-          description: Represent Screening Entity
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
     ServiceResponse:
       type: object
       properties:
@@ -756,13 +742,85 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    GetEntitiesListDtoServiceRequest:
+    ScreeningEntityDtoServiceResponse:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/GetEntitiesListDto'
-          description: Class to represent the request for GetEntitiesList
+          - $ref: '#/components/schemas/ScreeningEntityDto'
+          description: Represent Screening Entity
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ScreeningEntityDto:
+      required:
+      - searchCriteria
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique ID for the entity.
+          format: uuid
+          example: e698cac9-4ecb-47a8-94fa-ad27322dcc26
+        legalEntityId:
+          type:
+          - string
+          - 'null'
+          description: The unique ID for a Legal Entity in Fen-X
+          example: 4b061074-a91c-43fa-9743-906dbdfff689
+        searchCriteria:
+          allOf:
+          - $ref: '#/components/schemas/SearchCriteriaDto'
+          description: The search criteria for the entity
+        entityAliases:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/EntityAliasDto'
+          description: The list of aliases for the entity that will be used to perform screening request
+        providers:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/OngoingScreeningProviderDto'
+          description: The providers used to screen the entity
+      additionalProperties: false
+      description: Represent Screening Entity
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
     AddressDto:
       type: object
@@ -829,103 +887,61 @@ components:
           example: Residential
       additionalProperties: false
       description: Represents the address of an entity
-    OngoingScreeningProviderDto:
-      required:
-      - providerId
-      type: object
-      properties:
-        providerId:
-          minLength: 1
-          type: string
-          description: The provider ID.
-          example: ProviderId
-        ongoingScreeningEnabled:
-          type: boolean
-          description: If the entity is enabled for Ongoing Screening for the provider.
-          example: true
-        configurationSetIds:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-            format: uuid
-          description: 'The list of configuration set IDs where the entity is subscribed to for ongoing screening (applicable for the
-
-            Segregation of Ongoing Screening feature).'
-          example:
-          - 76ce4f1a-8676-4d4f-be0f-ae57b99b7e27
-          - bb8cd902-1aa8-456e-a22d-a4fc470e8386
-      additionalProperties: false
-      description: Represents a provider within the context of an entity
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ScreeningEntityDtoIEnumerableServiceResponse:
+    GetEntitiesListDtoServiceRequest:
       type: object
       properties:
         data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ScreeningEntityDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+          allOf:
+          - $ref: '#/components/schemas/GetEntitiesListDto'
+          description: Class to represent the request for GetEntitiesList
       additionalProperties: false
-    ScreeningEntityDto:
-      required:
-      - searchCriteria
+    EntityAliasDto:
       type: object
       properties:
         id:
-          type: string
-          description: The unique ID for the entity.
-          format: uuid
-          example: e698cac9-4ecb-47a8-94fa-ad27322dcc26
-        legalEntityId:
           type:
           - string
           - 'null'
-          description: The unique ID for a Legal Entity in Fen-X
-          example: 4b061074-a91c-43fa-9743-906dbdfff689
-        searchCriteria:
-          allOf:
-          - $ref: '#/components/schemas/SearchCriteriaDto'
-          description: The search criteria for the entity
-        entityAliases:
+          description: The id of the entity alias, which in FenX is the id of the Alternate Names DataGroup item.
+          example: 12be5a50-66c2-44bb-851e-afc4fc4a28c2
+        aliasType:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/EntityAliasDto'
-          description: The list of aliases for the entity that will be used to perform screening request
-        providers:
+          description: The type of the alias
+          example: Also Known As
+        fullName:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/OngoingScreeningProviderDto'
-          description: The providers used to screen the entity
+          description: The Individual's firstname and surname. Alternatively use FirstName with LastName.
+          example: John Doe
+        firstName:
+          type:
+          - string
+          - 'null'
+          description: The Individual's first name. Alternatively use FullName.
+          example: John
+        middleName:
+          type:
+          - string
+          - 'null'
+          description: The Individual's middle name
+          example: David
+        lastName:
+          type:
+          - string
+          - 'null'
+          description: The Individual's surname. Alternatively use FullName.
+          example: Doe
+        legalEntityName:
+          type:
+          - string
+          - 'null'
+          description: Full Company name
+          example: Fenergo
       additionalProperties: false
-      description: Represent Screening Entity
+      description: Class to represent a Screening entity Alias
     SearchCriteriaDto:
       required:
       - type
@@ -1110,6 +1126,46 @@ components:
           example: 12-3456789
       additionalProperties: false
       description: Represent the Search Criteria to perform a Screen request
+    OngoingScreeningProviderDto:
+      required:
+      - providerId
+      type: object
+      properties:
+        providerId:
+          minLength: 1
+          type: string
+          description: The provider ID.
+          example: ProviderId
+        ongoingScreeningEnabled:
+          type: boolean
+          description: If the entity is enabled for Ongoing Screening for the provider.
+          example: true
+        configurationSetIds:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+            format: uuid
+          description: 'The list of configuration set IDs where the entity is subscribed to for ongoing screening (applicable for the
+
+            Segregation of Ongoing Screening feature).'
+          example:
+          - 76ce4f1a-8676-4d4f-be0f-ae57b99b7e27
+          - bb8cd902-1aa8-456e-a22d-a4fc470e8386
+      additionalProperties: false
+      description: Represents a provider within the context of an entity
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
     GetEntitiesListDto:
       required:
       - legalEntityIds
@@ -1122,71 +1178,15 @@ components:
           description: The list of unique legal entity Ids for which the corresponding screening entities should be returned in the GetEntitiesListRequest
       additionalProperties: false
       description: Class to represent the request for GetEntitiesList
-    EntityAliasDto:
-      type: object
-      properties:
-        id:
-          type:
-          - string
-          - 'null'
-          description: The id of the entity alias, which in FenX is the id of the Alternate Names DataGroup item.
-          example: 12be5a50-66c2-44bb-851e-afc4fc4a28c2
-        aliasType:
-          type:
-          - string
-          - 'null'
-          description: The type of the alias
-          example: Also Known As
-        fullName:
-          type:
-          - string
-          - 'null'
-          description: The Individual's firstname and surname. Alternatively use FirstName with LastName.
-          example: John Doe
-        firstName:
-          type:
-          - string
-          - 'null'
-          description: The Individual's first name. Alternatively use FullName.
-          example: John
-        middleName:
-          type:
-          - string
-          - 'null'
-          description: The Individual's middle name
-          example: David
-        lastName:
-          type:
-          - string
-          - 'null'
-          description: The Individual's surname. Alternatively use FullName.
-          example: Doe
-        legalEntityName:
-          type:
-          - string
-          - 'null'
-          description: Full Company name
-          example: Fenergo
-      additionalProperties: false
-      description: Class to represent a Screening entity Alias
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    StringServiceResponse:
+    ScreeningEntityDtoIEnumerableServiceResponse:
       type: object
       properties:
         data:
           type:
-          - string
+          - array
           - 'null'
+          items:
+            $ref: '#/components/schemas/ScreeningEntityDto'
         messages:
           type:
           - array

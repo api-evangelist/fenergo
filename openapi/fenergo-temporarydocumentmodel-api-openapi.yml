@@ -278,15 +278,55 @@ paths:
     - url: /documentmanagementcommand
 components:
   schemas:
-    ValidationErrorModelListServiceResponse:
+    AccessLayerDto:
       type: object
       properties:
-        data:
+        geographic:
+          uniqueItems: true
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ValidationErrorModel'
+            type: string
+          description: Collection of geographic access layers
+          example:
+          - Global
+        businessRelated:
+          uniqueItems: true
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Collection of business related access layers
+          example:
+          - Enterprise
+      additionalProperties: false
+      description: DTO representing access layers attached
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
         messages:
           type:
           - array
@@ -294,16 +334,69 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
+    DocumentRequirementDto:
+      type: object
+      properties:
+        Id:
+          type: string
+          description: The Id of the requirement the document requirement belongs to
+          format: uuid
+          example: dc30fd5b-120b-4aaa-bed7-8d8508e24de5
+        RequirementId:
+          type: string
+          description: 'Alternative JSON property name for RequirementId to support internal generic lambda client implementations.
+
+            Maps to the same underlying value as RequirementId.'
+          format: uuid
+        DocumentDataKey:
+          type:
+          - string
+          - 'null'
+          description: The unique identifier of the document requirement defined in policy configuration
+          example: identificationDocuments
+        DataKey:
+          type:
+          - string
+          - 'null'
+          description: 'Alternative JSON property name for DataKey to support internal generic lambda client implementations.
+
+            Maps to the same underlying value as DataKey.'
+        Name:
+          type:
+          - string
+          - 'null'
+          description: The Name of the document requirement defined in policy configuration
+          example: Driver License
+        RequirementName:
+          type:
+          - string
+          - 'null'
+          description: 'Alternative JSON property name for RequirementName to support internal generic lambda client implementations.
+
+            Maps to the same underlying value as RequirementName.'
+        IsMandatory:
+          type: boolean
+          description: IsMandatory attribute of the document requirement defined in policy configuration
+          example: false
+        DocumentAccessLayers:
+          allOf:
+          - $ref: '#/components/schemas/AccessLayerDto'
+          description: Policy set access layers
+        requirementModelId:
+          type:
+          - string
+          - 'null'
+          description: Id of the requirement aggregate model the document is linked to
+          format: uuid
+          example: 4719bcc0-9a73-46ea-9857-5fe5edb97d63
+        targetEntity:
+          type:
+          - string
+          - 'null'
+          description: The target entity of the requirement
+          example: Client
+      additionalProperties: false
+      description: Contains document requirement attributes need to be deserialized as input of Initialize Lambda
     CreateSignedUrlToUploadTemporaryFileMultipleRequirementsRequest:
       required:
       - entityId
@@ -403,158 +496,6 @@ components:
       description: 'Metadata needed to create Temporary Document models to fulfill multiple requirements and generate signed Url to upload file.
 
         Contains all properties needed to fill the metadata of the document being uploaded.'
-    CreateSignedUrlToUploadFileMultipleRequirementsResponse:
-      type: object
-      properties:
-        DocumentRequirements:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/DocumentRequirementBulkDto'
-          description: List of Document Requirement properties that the document Models are linked to
-        documentType:
-          type:
-          - string
-          - 'null'
-          description: The type of the document
-          example: Driver license
-        status:
-          type:
-          - string
-          - 'null'
-          description: The status of the uploaded document
-          example: Complete
-        signedUrlToUpload:
-          type:
-          - string
-          - 'null'
-          description: 'Presigned URL to upload the file into S3 bucket.
-
-            When this response originates from the temporary document endpoint, the URL''s signature includes
-
-            the `x-amz-tagging` header. The caller must include `x-amz-tagging: TTL=enabled` as an
-
-            HTTP header in the PUT request, otherwise the upload will fail with a 403 error.'
-        warnings:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: List of warnings generated during document upload (e.g., DocuSign size limit warnings)
-      additionalProperties: false
-      description: Basic information from the upload document api for multiple requirements
-    CreateSignedUrlToUploadFileMultipleRequirementsResponseServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateSignedUrlToUploadFileMultipleRequirementsResponse'
-          description: Basic information from the upload document api for multiple requirements
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ValidationErrorModel:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-        attemptedValue: {}
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    DocumentRequirementDto:
-      type: object
-      properties:
-        Id:
-          type: string
-          description: The Id of the requirement the document requirement belongs to
-          format: uuid
-          example: dc30fd5b-120b-4aaa-bed7-8d8508e24de5
-        RequirementId:
-          type: string
-          description: 'Alternative JSON property name for RequirementId to support internal generic lambda client implementations.
-
-            Maps to the same underlying value as RequirementId.'
-          format: uuid
-        DocumentDataKey:
-          type:
-          - string
-          - 'null'
-          description: The unique identifier of the document requirement defined in policy configuration
-          example: identificationDocuments
-        DataKey:
-          type:
-          - string
-          - 'null'
-          description: 'Alternative JSON property name for DataKey to support internal generic lambda client implementations.
-
-            Maps to the same underlying value as DataKey.'
-        Name:
-          type:
-          - string
-          - 'null'
-          description: The Name of the document requirement defined in policy configuration
-          example: Driver License
-        RequirementName:
-          type:
-          - string
-          - 'null'
-          description: 'Alternative JSON property name for RequirementName to support internal generic lambda client implementations.
-
-            Maps to the same underlying value as RequirementName.'
-        IsMandatory:
-          type: boolean
-          description: IsMandatory attribute of the document requirement defined in policy configuration
-          example: false
-        DocumentAccessLayers:
-          allOf:
-          - $ref: '#/components/schemas/AccessLayerDto'
-          description: Policy set access layers
-        requirementModelId:
-          type:
-          - string
-          - 'null'
-          description: Id of the requirement aggregate model the document is linked to
-          format: uuid
-          example: 4719bcc0-9a73-46ea-9857-5fe5edb97d63
-        targetEntity:
-          type:
-          - string
-          - 'null'
-          description: The target entity of the requirement
-          example: Client
-      additionalProperties: false
-      description: Contains document requirement attributes need to be deserialized as input of Initialize Lambda
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
     PropertyDto:
       type: object
       properties:
@@ -605,35 +546,73 @@ components:
                     street: E Wall Rd
       additionalProperties: false
       description: Contains all the attributes needed in order to add custom fields to the document metadata
-    AccessLayerDto:
+    ServiceResponseMessage:
       type: object
       properties:
-        geographic:
-          uniqueItems: true
+        message:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            type: string
-          description: Collection of geographic access layers
-          example:
-          - Global
-        businessRelated:
-          uniqueItems: true
+        type:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            type: string
-          description: Collection of business related access layers
-          example:
-          - Enterprise
+        errorCode:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
-      description: DTO representing access layers attached
-    ObjectServiceResponse:
+    CreateSignedUrlToUploadFileMultipleRequirementsResponse:
       type: object
       properties:
-        data: {}
+        DocumentRequirements:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/DocumentRequirementBulkDto'
+          description: List of Document Requirement properties that the document Models are linked to
+        documentType:
+          type:
+          - string
+          - 'null'
+          description: The type of the document
+          example: Driver license
+        status:
+          type:
+          - string
+          - 'null'
+          description: The status of the uploaded document
+          example: Complete
+        signedUrlToUpload:
+          type:
+          - string
+          - 'null'
+          description: 'Presigned URL to upload the file into S3 bucket.
+
+            When this response originates from the temporary document endpoint, the URL''s signature includes
+
+            the `x-amz-tagging` header. The caller must include `x-amz-tagging: TTL=enabled` as an
+
+            HTTP header in the PUT request, otherwise the upload will fail with a 403 error.'
+        warnings:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of warnings generated during document upload (e.g., DocuSign size limit warnings)
+      additionalProperties: false
+      description: Basic information from the upload document api for multiple requirements
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
         messages:
           type:
           - array
@@ -641,6 +620,16 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
     DocumentRequirementBulkDto:
       type: object
       properties:
@@ -719,13 +708,24 @@ components:
 
             Contains all properties needed to fill the metadata of the document being uploaded.'
       additionalProperties: false
-    StringServiceResponse:
+    CreateSignedUrlToUploadFileMultipleRequirementsResponseServiceResponse:
       type: object
       properties:
         data:
+          allOf:
+          - $ref: '#/components/schemas/CreateSignedUrlToUploadFileMultipleRequirementsResponse'
+          description: Basic information from the upload document api for multiple requirements
+        messages:
           type:
-          - string
+          - array
           - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
         messages:
           type:
           - array

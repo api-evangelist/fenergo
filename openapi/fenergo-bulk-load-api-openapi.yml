@@ -1397,27 +1397,6 @@ paths:
     - url: /bulkloadquery
 components:
   schemas:
-    UpdateJobRequestServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/UpdateJobRequest'
-      additionalProperties: false
-    ServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
     SignedUrlCommandDto:
       type: object
       properties:
@@ -1449,15 +1428,40 @@ components:
           description: TThe type of the job
           example: Agency
       additionalProperties: false
-    UpdateJobRequest:
+    ServiceResponse:
       type: object
       properties:
-        uploadedFileName:
+        data:
           type:
           - string
           - 'null'
-          description: Uploaded file name
-          example: data.xlsx
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    UpdateJobRequestServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UpdateJobRequest'
       additionalProperties: false
     ServiceResponseMessage:
       type: object
@@ -1506,19 +1510,15 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    StringServiceResponse:
+    UpdateJobRequest:
       type: object
       properties:
-        data:
+        uploadedFileName:
           type:
           - string
           - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: Uploaded file name
+          example: data.xlsx
       additionalProperties: false
     CreateJobRequest_2:
       required:
@@ -1560,46 +1560,99 @@ components:
           - 'null'
           description: Journey type used during the update of entities
       additionalProperties: false
-    EntityDataPolicyReference:
+    SignedUrlQueryDto:
+      type: object
+      properties:
+        url:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    SignedUrlQueryDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/SignedUrlQueryDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    JobDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/JobDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    PreSignedUrlFileType:
+      enum:
+      - 1
+      type: integer
+      format: int32
+    PreSignedUrlExecution:
       type: object
       properties:
         id:
           type: string
           format: uuid
-        jurisdiction:
+        createdDate:
+          type: string
+          format: date-time
+        consumedDate:
           type:
           - string
           - 'null'
-        sourceId:
+          format: date-time
+        createdBy:
+          type:
+          - string
+          - 'null'
+        preSignedUrl:
+          type:
+          - string
+          - 'null'
+        fileType:
+          allOf:
+          - $ref: '#/components/schemas/PreSignedUrlFileType'
+        isExpired:
+          type: boolean
+        jobId:
           type: string
           format: uuid
-        name:
-          type:
-          - string
-          - 'null'
-        versionId:
-          type:
-          - string
-          - 'null'
-          format: uuid
-        versionNumber:
-          type: integer
-          format: int32
+        job:
+          allOf:
+          - $ref: '#/components/schemas/Job'
       additionalProperties: false
-    JobType:
-      enum:
-      - 0
-      - 1
-      type: integer
-      format: int32
-    NebulaDomain:
-      enum:
-      - 1
-      - 2
-      - 3
-      - 4
-      type: integer
-      format: int32
+    JobError:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        message:
+          type:
+          - string
+          - 'null'
+        createdDate:
+          type: string
+          format: date-time
+        jobId:
+          type: string
+          format: uuid
+        job:
+          allOf:
+          - $ref: '#/components/schemas/Job'
+      additionalProperties: false
     UpsertError:
       type: object
       properties:
@@ -1626,6 +1679,245 @@ components:
           allOf:
           - $ref: '#/components/schemas/Upsert'
       additionalProperties: false
+    RequirementSet:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        jobId:
+          type: string
+          format: uuid
+        inputFileId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        entityDataPolicyReferenceId:
+          type: string
+          format: uuid
+        productPolicyReferenceId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        job:
+          allOf:
+          - $ref: '#/components/schemas/Job'
+        inputFile:
+          allOf:
+          - $ref: '#/components/schemas/InputFile'
+        entityDataPolicyReference:
+          allOf:
+          - $ref: '#/components/schemas/EntityDataPolicyReference'
+        productPolicyReference:
+          allOf:
+          - $ref: '#/components/schemas/ProductPolicyReference'
+      additionalProperties: false
+    Upsert:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        referenceId:
+          type:
+          - string
+          - 'null'
+        domain:
+          allOf:
+          - $ref: '#/components/schemas/NebulaDomain'
+        tableName:
+          type:
+          - string
+          - 'null'
+        tags:
+          type:
+          - string
+          - 'null'
+        payload:
+          type:
+          - string
+          - 'null'
+        createdDate:
+          type: string
+          format: date-time
+        fenxId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        stateKey:
+          type:
+          - string
+          - 'null'
+        updatedDate:
+          type: string
+          format: date-time
+        journeyIds:
+          type:
+          - string
+          - 'null'
+        rootEntityId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          deprecated: true
+        rootUpsertId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          deprecated: true
+        jobId:
+          type: string
+          format: uuid
+        job:
+          allOf:
+          - $ref: '#/components/schemas/Job'
+        errors:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UpsertError'
+      additionalProperties: false
+    InputFile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        jobId:
+          type: string
+          format: uuid
+        job:
+          allOf:
+          - $ref: '#/components/schemas/Job'
+      additionalProperties: false
+    JobType:
+      enum:
+      - 0
+      - 1
+      type: integer
+      format: int32
+    StateExecution:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        stateKey:
+          type:
+          - string
+          - 'null'
+        statusKey:
+          type:
+          - string
+          - 'null'
+        startDate:
+          type: string
+          format: date-time
+        stopDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        createdDate:
+          type: string
+          format: date-time
+        updatedDate:
+          type: string
+          format: date-time
+        jobId:
+          type: string
+          format: uuid
+        job:
+          allOf:
+          - $ref: '#/components/schemas/Job'
+      additionalProperties: false
+    GetUpsertsResultServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetUpsertsResult'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    EntityDataPolicyReference:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        jurisdiction:
+          type:
+          - string
+          - 'null'
+        sourceId:
+          type: string
+          format: uuid
+        name:
+          type:
+          - string
+          - 'null'
+        versionId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        versionNumber:
+          type: integer
+          format: int32
+      additionalProperties: false
+    ProductPolicyReference:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        jurisdiction:
+          type:
+          - string
+          - 'null'
+        sourceId:
+          type: string
+          format: uuid
+        name:
+          type:
+          - string
+          - 'null'
+        versionId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        versionNumber:
+          type: integer
+          format: int32
+      additionalProperties: false
+    IngestionReportDtoArrayServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/IngestionReportDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
     JobDtoArrayServiceResponse:
       type: object
       properties:
@@ -1635,19 +1927,6 @@ components:
           - 'null'
           items:
             $ref: '#/components/schemas/JobDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    JobDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/JobDto'
         messages:
           type:
           - array
@@ -1721,142 +2000,26 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    SignedUrlQueryDtoServiceResponse:
+    GetUpsertsResult:
       type: object
       properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/SignedUrlQueryDto'
-        messages:
+        count:
+          type: integer
+          format: int32
+          readOnly: true
+        items:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+            $ref: '#/components/schemas/Upsert'
       additionalProperties: false
-    Upsert:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        referenceId:
-          type:
-          - string
-          - 'null'
-        domain:
-          allOf:
-          - $ref: '#/components/schemas/NebulaDomain'
-        tableName:
-          type:
-          - string
-          - 'null'
-        tags:
-          type:
-          - string
-          - 'null'
-        payload:
-          type:
-          - string
-          - 'null'
-        createdDate:
-          type: string
-          format: date-time
-        fenxId:
-          type:
-          - string
-          - 'null'
-          format: uuid
-        stateKey:
-          type:
-          - string
-          - 'null'
-        updatedDate:
-          type: string
-          format: date-time
-        journeyIds:
-          type:
-          - string
-          - 'null'
-        rootEntityId:
-          type:
-          - string
-          - 'null'
-          format: uuid
-          deprecated: true
-        rootUpsertId:
-          type:
-          - string
-          - 'null'
-          format: uuid
-          deprecated: true
-        jobId:
-          type: string
-          format: uuid
-        job:
-          allOf:
-          - $ref: '#/components/schemas/Job'
-        errors:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/UpsertError'
-      additionalProperties: false
-    StateExecution:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        stateKey:
-          type:
-          - string
-          - 'null'
-        statusKey:
-          type:
-          - string
-          - 'null'
-        startDate:
-          type: string
-          format: date-time
-        stopDate:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        createdDate:
-          type: string
-          format: date-time
-        updatedDate:
-          type: string
-          format: date-time
-        jobId:
-          type: string
-          format: uuid
-        job:
-          allOf:
-          - $ref: '#/components/schemas/Job'
-      additionalProperties: false
-    IngestionReportDtoArrayServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/IngestionReportDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    PreSignedUrlFileType:
+    NebulaDomain:
       enum:
       - 1
+      - 2
+      - 3
+      - 4
       type: integer
       format: int32
     Job:
@@ -1945,147 +2108,6 @@ components:
           items:
             $ref: '#/components/schemas/PreSignedUrlExecution'
       additionalProperties: false
-    RequirementSet:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        jobId:
-          type: string
-          format: uuid
-        inputFileId:
-          type:
-          - string
-          - 'null'
-          format: uuid
-        entityDataPolicyReferenceId:
-          type: string
-          format: uuid
-        productPolicyReferenceId:
-          type:
-          - string
-          - 'null'
-          format: uuid
-        job:
-          allOf:
-          - $ref: '#/components/schemas/Job'
-        inputFile:
-          allOf:
-          - $ref: '#/components/schemas/InputFile'
-        entityDataPolicyReference:
-          allOf:
-          - $ref: '#/components/schemas/EntityDataPolicyReference'
-        productPolicyReference:
-          allOf:
-          - $ref: '#/components/schemas/ProductPolicyReference'
-      additionalProperties: false
-    GetUpsertsResultServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/GetUpsertsResult'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    InputFile:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        jobId:
-          type: string
-          format: uuid
-        job:
-          allOf:
-          - $ref: '#/components/schemas/Job'
-      additionalProperties: false
-    ProductPolicyReference:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        jurisdiction:
-          type:
-          - string
-          - 'null'
-        sourceId:
-          type: string
-          format: uuid
-        name:
-          type:
-          - string
-          - 'null'
-        versionId:
-          type:
-          - string
-          - 'null'
-          format: uuid
-        versionNumber:
-          type: integer
-          format: int32
-      additionalProperties: false
-    JobError:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        message:
-          type:
-          - string
-          - 'null'
-        createdDate:
-          type: string
-          format: date-time
-        jobId:
-          type: string
-          format: uuid
-        job:
-          allOf:
-          - $ref: '#/components/schemas/Job'
-      additionalProperties: false
-    PreSignedUrlExecution:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        createdDate:
-          type: string
-          format: date-time
-        consumedDate:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        createdBy:
-          type:
-          - string
-          - 'null'
-        preSignedUrl:
-          type:
-          - string
-          - 'null'
-        fileType:
-          allOf:
-          - $ref: '#/components/schemas/PreSignedUrlFileType'
-        isExpired:
-          type: boolean
-        jobId:
-          type: string
-          format: uuid
-        job:
-          allOf:
-          - $ref: '#/components/schemas/Job'
-      additionalProperties: false
     IngestionReportDto:
       type: object
       properties:
@@ -2118,28 +2140,6 @@ components:
           - 'null'
           items:
             type: string
-      additionalProperties: false
-    GetUpsertsResult:
-      type: object
-      properties:
-        count:
-          type: integer
-          format: int32
-          readOnly: true
-        items:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/Upsert'
-      additionalProperties: false
-    SignedUrlQueryDto:
-      type: object
-      properties:
-        url:
-          type:
-          - string
-          - 'null'
       additionalProperties: false
   securitySchemes:
     Bearer:

@@ -94,93 +94,6 @@ paths:
                   errorCode: OBSOLETE_ENDPOINT
 components:
   schemas:
-    AuditFieldChangeDto:
-      type: object
-      properties:
-        fieldName:
-          type:
-          - string
-          - 'null'
-          description: Field name
-        oldValue:
-          type:
-          - string
-          - 'null'
-          description: Field old value
-        newValue:
-          type:
-          - string
-          - 'null'
-          description: Field new value
-        itemOrdinal:
-          type:
-          - integer
-          - 'null'
-          description: '1-based position of the collection item this change belongs to. Only set when the
-
-            owning data group holds more than one item, so consumers can tell same-named
-
-            columns apart without exposing the internal item identifier.'
-          format: int32
-      additionalProperties: false
-      description: DTO representing screening audit match field change
-    ValidationErrorModelListServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
-    GetSelfServiceUserManagementAuditEventsRequestDto:
-      allOf:
-      - $ref: '#/components/schemas/ResourceQueryPagedDto'
-      - type: object
-        properties:
-          eventTypes:
-            type:
-            - array
-            - 'null'
-            items:
-              type: string
-        additionalProperties: false
-    PagerDto:
-      type: object
-      properties:
-        size:
-          type: integer
-          format: int32
-          exclusiveMinimum: 0
-        from:
-          minimum: 0
-          type: integer
-          format: int32
-        sortBy:
-          type:
-          - string
-          - 'null'
-        sortOrder:
-          allOf:
-          - $ref: '#/components/schemas/SortOrder'
-      additionalProperties: false
     GetSelfServiceUserManagementAuditEventsRequestDtoServiceRequest:
       required:
       - data
@@ -190,27 +103,31 @@ components:
           allOf:
           - $ref: '#/components/schemas/GetSelfServiceUserManagementAuditEventsRequestDto'
       additionalProperties: false
-    ResourceQueryDto:
-      type: object
-      properties:
-        ids:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: The list of resource IDs for which to fetch Audit Events.
-          example:
-          - 7304b842-769f-4c22-9499-7c5d069ffb8f
-          - ad6cf1b0-0925-4d65-98e7-a4e7901cce46
-          - abb80516-3914-4366-a061-2f10e018fdeb
-      additionalProperties: false
-      description: The request object that contains a list of resource IDs for which to fetch Audit Events.
-    SortOrder:
-      enum:
-      - Ascending
-      - Descending
-      type: string
+    ResourceQueryPagedDto:
+      allOf:
+      - $ref: '#/components/schemas/ResourceQueryDto'
+      - type: object
+        properties:
+          pager:
+            allOf:
+            - $ref: '#/components/schemas/PagerDto'
+            description: A pager object to specify pagination parameters
+            example:
+              size: 10
+              from: 0
+              sortBy: date
+              sortOrder: Descending
+          excludeEventTypes:
+            type:
+            - array
+            - 'null'
+            items:
+              type: string
+            description: 'Optional list of event types to exclude from results.
+
+              When provided, audit events whose `eventType` matches any value in this list are omitted.'
+        additionalProperties: false
+      description: The request object that contains a list of resource IDs for which to fetch Audit Events. Includes a pager object.
     GetSelfServiceUserManagementAuditEventsResultDto:
       type: object
       properties:
@@ -244,59 +161,19 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    GetSelfServiceUserManagementAuditEventsResultDtoServiceResponse:
+    StringServiceResponse:
       type: object
       properties:
         data:
-          allOf:
-          - $ref: '#/components/schemas/GetSelfServiceUserManagementAuditEventsResultDto'
+          type:
+          - string
+          - 'null'
         messages:
           type:
           - array
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ResourceQueryPagedDto:
-      allOf:
-      - $ref: '#/components/schemas/ResourceQueryDto'
-      - type: object
-        properties:
-          pager:
-            allOf:
-            - $ref: '#/components/schemas/PagerDto'
-            description: A pager object to specify pagination parameters
-            example:
-              size: 10
-              from: 0
-              sortBy: date
-              sortOrder: Descending
-          excludeEventTypes:
-            type:
-            - array
-            - 'null'
-            items:
-              type: string
-            description: 'Optional list of event types to exclude from results.
-
-              When provided, audit events whose `eventType` matches any value in this list are omitted.'
-        additionalProperties: false
-      description: The request object that contains a list of resource IDs for which to fetch Audit Events. Includes a pager object.
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
       additionalProperties: false
     SelfServiceUserManagementAuditEventsDto:
       type: object
@@ -335,6 +212,87 @@ components:
             $ref: '#/components/schemas/AuditFieldChangeDto'
           description: Summary of before and after values for fields
       additionalProperties: false
+    PagerDto:
+      type: object
+      properties:
+        size:
+          type: integer
+          format: int32
+          exclusiveMinimum: 0
+        from:
+          minimum: 0
+          type: integer
+          format: int32
+        sortBy:
+          type:
+          - string
+          - 'null'
+        sortOrder:
+          allOf:
+          - $ref: '#/components/schemas/SortOrder'
+      additionalProperties: false
+    AuditFieldChangeDto:
+      type: object
+      properties:
+        fieldName:
+          type:
+          - string
+          - 'null'
+          description: Field name
+        oldValue:
+          type:
+          - string
+          - 'null'
+          description: Field old value
+        newValue:
+          type:
+          - string
+          - 'null'
+          description: Field new value
+        itemOrdinal:
+          type:
+          - integer
+          - 'null'
+          description: '1-based position of the collection item this change belongs to. Only set when the
+
+            owning data group holds more than one item, so consumers can tell same-named
+
+            columns apart without exposing the internal item identifier.'
+          format: int32
+      additionalProperties: false
+      description: DTO representing screening audit match field change
+    ResourceQueryDto:
+      type: object
+      properties:
+        ids:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: The list of resource IDs for which to fetch Audit Events.
+          example:
+          - 7304b842-769f-4c22-9499-7c5d069ffb8f
+          - ad6cf1b0-0925-4d65-98e7-a4e7901cce46
+          - abb80516-3914-4366-a061-2f10e018fdeb
+      additionalProperties: false
+      description: The request object that contains a list of resource IDs for which to fetch Audit Events.
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
     ObjectServiceResponse:
       type: object
       properties:
@@ -346,13 +304,15 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    StringServiceResponse:
+    ValidationErrorModelListServiceResponse:
       type: object
       properties:
         data:
           type:
-          - string
+          - array
           - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
         messages:
           type:
           - array
@@ -360,6 +320,46 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    SortOrder:
+      enum:
+      - Ascending
+      - Descending
+      type: string
+    GetSelfServiceUserManagementAuditEventsResultDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetSelfServiceUserManagementAuditEventsResultDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    GetSelfServiceUserManagementAuditEventsRequestDto:
+      allOf:
+      - $ref: '#/components/schemas/ResourceQueryPagedDto'
+      - type: object
+        properties:
+          eventTypes:
+            type:
+            - array
+            - 'null'
+            items:
+              type: string
+        additionalProperties: false
   securitySchemes:
     Bearer:
       type: apiKey

@@ -1100,25 +1100,61 @@ paths:
     - url: /financialanalysiscommand
 components:
   schemas:
-    AllocationConfigurationClonedResponseDto:
+    AllocationConfigurationClonedResponseDtoServiceResponse:
       type: object
       properties:
-        configurationId:
+        data:
+          $ref: '#/components/schemas/AllocationConfigurationClonedResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ConditionOperatorItemDto:
+      type: object
+      properties:
+        id:
           type: string
-          description: Id of cloned configuration
+          description: Id
           format: uuid
-          example: c18a8634-b259-46fc-90c2-19ff2b24d85e
+          example: 8be001f1-2120-49ff-b4ca-87cb279ae7b7
+        dataSource:
+          type:
+          - string
+          - 'null'
+          description: 'Source of Datakey: currentEntity'
+          example: currentEntity
+        dataKey:
+          type:
+          - string
+          - 'null'
+          description: Datakey
+          example: entityType
+        logicalOperator:
+          type:
+          - string
+          - 'null'
+          description: 'Logical Operator includes: Equals, NotEquals, In, NotIn, Defined, NotDefined'
+          example: Equals
+        value:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Assigned Value
+          example:
+          - Company
+        valueType:
+          type:
+          - string
+          - 'null'
+          description: 'Value Type: text, select, multiselect, number, date'
+          example: text
       additionalProperties: false
-      description: Configuration Clone response data
-    AllocationValidationDataDto:
-      type: object
-      properties:
-        onlyIndividualsCanAllocate:
-          $ref: '#/components/schemas/BasicRuleDto'
-        totalAllocationLimit:
-          $ref: '#/components/schemas/ValueLimitRuleDto'
-      additionalProperties: false
-      description: Request DTO representing business validation data metadata
+      description: Set of properties which define a Condition Operator Item
     AllocationConfigurationVersionDto:
       type: object
       properties:
@@ -1232,51 +1268,26 @@ components:
           description: It holds the configuration of the entity types
       additionalProperties: false
       description: Set of properties which define new version of Capacity to Service Configuration
-    AllocationConfigurationVersionSignedResponseDtoServiceResponse:
+    Decision:
+      enum:
+      - Approve
+      - Reject
+      type: string
+    BasicRuleDto:
       type: object
       properties:
-        data:
-          $ref: '#/components/schemas/AllocationConfigurationVersionSignedResponseDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    AllocationConfigurationVersionDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/AllocationConfigurationVersionDto'
-      additionalProperties: false
-    Signee:
-      type: object
-      properties:
-        subject:
+        active:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        message:
           type:
           - string
           - 'null'
-        successor:
-          $ref: '#/components/schemas/Approver'
-        action:
-          $ref: '#/components/schemas/ApproveAction'
-        hasProcessedRequest:
-          type: boolean
-          readOnly: true
+          description: Validation rule error message
+          example: Validation error occurred
       additionalProperties: false
-    AllocationConfigurationClonedResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/AllocationConfigurationClonedResponseDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
+      description: Request DTO representing basic validation rule metadata
     ValueLimitRuleDto:
       type: object
       properties:
@@ -1306,36 +1317,116 @@ components:
           example: 10
       additionalProperties: false
       description: Request DTO representing value limit rule metadata
-    BasicRuleDto:
+    VersionStatus:
+      enum:
+      - Draft
+      - Pending
+      - Rejected
+      - Published
+      - Archived
+      - Deleted
+      type: string
+    ValidationErrorModelListServiceResponse:
       type: object
       properties:
-        active:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        message:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    AllocationConfigurationClonedResponseDto:
+      type: object
+      properties:
+        configurationId:
+          type: string
+          description: Id of cloned configuration
+          format: uuid
+          example: c18a8634-b259-46fc-90c2-19ff2b24d85e
+      additionalProperties: false
+      description: Configuration Clone response data
+    Signee:
+      type: object
+      properties:
+        subject:
           type:
           - string
           - 'null'
-          description: Validation rule error message
-          example: Validation error occurred
+        successor:
+          $ref: '#/components/schemas/Approver'
+        action:
+          $ref: '#/components/schemas/ApproveAction'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
       additionalProperties: false
-      description: Request DTO representing basic validation rule metadata
-    StandardValidationDataDto:
+    AllocationConfigurationCloneRequestDto:
       type: object
       properties:
-        isMandatory:
+        name:
+          type:
+          - string
+          - 'null'
+          description: Name of cloned configuration
+          example: Configuration Clone
+      additionalProperties: false
+      description: Configuration Clone response data
+    AllocationConfigurationVersionSignedResponseDto:
+      type: object
+      properties:
+        configurationId:
+          type: string
+          description: The Id of the configuration the version belongs to
+          format: uuid
+        versionNumber:
+          type: integer
+          description: The version number that has been signed
+          format: int32
+        status:
+          $ref: '#/components/schemas/VersionStatus'
+      additionalProperties: false
+      description: Contains the new version Status, after a version sign operation
+    AllocationValidationDataDto:
+      type: object
+      properties:
+        onlyIndividualsCanAllocate:
           $ref: '#/components/schemas/BasicRuleDto'
-        onlyInteger:
-          $ref: '#/components/schemas/BasicRuleDto'
-        noNegative:
-          $ref: '#/components/schemas/BasicRuleDto'
-        onlyDecimal:
-          $ref: '#/components/schemas/BasicRuleDto'
-        numberLimit:
+        totalAllocationLimit:
           $ref: '#/components/schemas/ValueLimitRuleDto'
       additionalProperties: false
-      description: Request DTO representing validation data metadata
+      description: Request DTO representing business validation data metadata
+    Approver:
+      type: object
+      properties:
+        subject:
+          type:
+          - string
+          - 'null'
+        successor:
+          $ref: '#/components/schemas/Approver'
+        action:
+          $ref: '#/components/schemas/ApproveAction'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
+      additionalProperties: false
     ConditionOperatorDto:
       type: object
       properties:
@@ -1371,6 +1462,121 @@ components:
           description: Condition Operator Items
       additionalProperties: false
       description: Set of properties which define a Scoping Condition Operator
+    AllocationConfigurationCloneRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/AllocationConfigurationCloneRequestDto'
+      additionalProperties: false
+    AllocationConfigurationVersionDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/AllocationConfigurationVersionDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ApproveAction:
+      type: object
+      properties:
+        comment:
+          type:
+          - string
+          - 'null'
+        decision:
+          $ref: '#/components/schemas/Decision'
+        created:
+          type: string
+          format: date-time
+      additionalProperties: false
+    ApproveActionServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ApproveAction'
+      additionalProperties: false
+    AllocationConfigurationVersionSignedResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/AllocationConfigurationVersionSignedResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    StandardValidationDataDto:
+      type: object
+      properties:
+        isMandatory:
+          $ref: '#/components/schemas/BasicRuleDto'
+        onlyInteger:
+          $ref: '#/components/schemas/BasicRuleDto'
+        noNegative:
+          $ref: '#/components/schemas/BasicRuleDto'
+        onlyDecimal:
+          $ref: '#/components/schemas/BasicRuleDto'
+        numberLimit:
+          $ref: '#/components/schemas/ValueLimitRuleDto'
+      additionalProperties: false
+      description: Request DTO representing validation data metadata
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AllocationConfigurationVersionDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/AllocationConfigurationVersionDto'
+      additionalProperties: false
     AllocationEntityTypeConfigurationDto:
       type: object
       properties:
@@ -1425,211 +1631,6 @@ components:
           - Revenue
           - EBITDA
       additionalProperties: false
-    AllocationConfigurationCloneRequestDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/AllocationConfigurationCloneRequestDto'
-      additionalProperties: false
-    AllocationConfigurationCloneRequestDto:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-          description: Name of cloned configuration
-          example: Configuration Clone
-      additionalProperties: false
-      description: Configuration Clone response data
-    ServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    Decision:
-      enum:
-      - Approve
-      - Reject
-      type: string
-    ApproveActionServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/ApproveAction'
-      additionalProperties: false
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    Approver:
-      type: object
-      properties:
-        subject:
-          type:
-          - string
-          - 'null'
-        successor:
-          $ref: '#/components/schemas/Approver'
-        action:
-          $ref: '#/components/schemas/ApproveAction'
-        hasProcessedRequest:
-          type: boolean
-          readOnly: true
-      additionalProperties: false
-    AllocationConfigurationVersionSignedResponseDto:
-      type: object
-      properties:
-        configurationId:
-          type: string
-          description: The Id of the configuration the version belongs to
-          format: uuid
-        versionNumber:
-          type: integer
-          description: The version number that has been signed
-          format: int32
-        status:
-          $ref: '#/components/schemas/VersionStatus'
-      additionalProperties: false
-      description: Contains the new version Status, after a version sign operation
-    ValidationErrorModelListServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
-    ConditionOperatorItemDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Id
-          format: uuid
-          example: 8be001f1-2120-49ff-b4ca-87cb279ae7b7
-        dataSource:
-          type:
-          - string
-          - 'null'
-          description: 'Source of Datakey: currentEntity'
-          example: currentEntity
-        dataKey:
-          type:
-          - string
-          - 'null'
-          description: Datakey
-          example: entityType
-        logicalOperator:
-          type:
-          - string
-          - 'null'
-          description: 'Logical Operator includes: Equals, NotEquals, In, NotIn, Defined, NotDefined'
-          example: Equals
-        value:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: Assigned Value
-          example:
-          - Company
-        valueType:
-          type:
-          - string
-          - 'null'
-          description: 'Value Type: text, select, multiselect, number, date'
-          example: text
-      additionalProperties: false
-      description: Set of properties which define a Condition Operator Item
-    ValidationErrorModel:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-        attemptedValue: {}
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    VersionStatus:
-      enum:
-      - Draft
-      - Pending
-      - Rejected
-      - Published
-      - Archived
-      - Deleted
-      type: string
-    ApproveAction:
-      type: object
-      properties:
-        comment:
-          type:
-          - string
-          - 'null'
-        decision:
-          $ref: '#/components/schemas/Decision'
-        created:
-          type: string
-          format: date-time
-      additionalProperties: false
     ServiceResponseMessage:
       type: object
       properties:
@@ -1646,11 +1647,10 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    AllocationConfigurationVersionDtoServiceResponse:
+    ObjectServiceResponse:
       type: object
       properties:
-        data:
-          $ref: '#/components/schemas/AllocationConfigurationVersionDto'
+        data: {}
         messages:
           type:
           - array
@@ -1658,19 +1658,6 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    AllocationValidationDataDto_2:
-      type: object
-      properties:
-        onlyIndividualsCanAllocate:
-          allOf:
-          - $ref: '#/components/schemas/BasicRuleDto'
-          description: Allocation Rule - does not allow individuals to receive allocation from non-individuals
-        totalAllocationLimit:
-          allOf:
-          - $ref: '#/components/schemas/ValueLimitRuleDto'
-          description: Allocation Rule - does not allow total allocation outside the range
-      additionalProperties: false
-      description: Request DTO representing business validation data metadata
     AllocationConfigurationVersionDto_2:
       type: object
       properties:
@@ -1821,6 +1808,53 @@ components:
           type: boolean
           readOnly: true
       additionalProperties: false
+    AllocationConfigurationDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Capacity to Service Configuration Id
+          format: uuid
+          example: df484b73-eadb-40af-8f61-2a6ca7e9d6d6
+        versions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AllocationConfigurationVersionDto_2'
+          description: List of available Capacity to Service configuration versions
+      additionalProperties: false
+      description: Capacity to Service Configuration Data
+    AllocationValidationDataDto_2:
+      type: object
+      properties:
+        onlyIndividualsCanAllocate:
+          allOf:
+          - $ref: '#/components/schemas/BasicRuleDto'
+          description: Allocation Rule - does not allow individuals to receive allocation from non-individuals
+        totalAllocationLimit:
+          allOf:
+          - $ref: '#/components/schemas/ValueLimitRuleDto'
+          description: Allocation Rule - does not allow total allocation outside the range
+      additionalProperties: false
+      description: Request DTO representing business validation data metadata
+    Approver_2:
+      type: object
+      properties:
+        subject:
+          type:
+          - string
+          - 'null'
+        successor:
+          allOf:
+          - $ref: '#/components/schemas/Approver_2'
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction_2'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
+      additionalProperties: false
     AllocationConfigurationDtoIEnumerableServiceResponse:
       type: object
       properties:
@@ -1836,6 +1870,34 @@ components:
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AllocationConfigurationVersionDtoServiceResponse_2:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/AllocationConfigurationVersionDto_2'
+          description: Instance of Capacity to Service Configuration Version
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ApproveAction_2:
+      type: object
+      properties:
+        comment:
+          type:
+          - string
+          - 'null'
+        decision:
+          allOf:
+          - $ref: '#/components/schemas/Decision'
+        created:
+          type: string
+          format: date-time
       additionalProperties: false
     StandardValidationDataDto_2:
       type: object
@@ -1904,68 +1966,6 @@ components:
           items:
             type: string
           description: The names of the financial items used to show financial details.
-      additionalProperties: false
-    AllocationConfigurationVersionDtoServiceResponse_2:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/AllocationConfigurationVersionDto_2'
-          description: Instance of Capacity to Service Configuration Version
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    Approver_2:
-      type: object
-      properties:
-        subject:
-          type:
-          - string
-          - 'null'
-        successor:
-          allOf:
-          - $ref: '#/components/schemas/Approver_2'
-        action:
-          allOf:
-          - $ref: '#/components/schemas/ApproveAction_2'
-        hasProcessedRequest:
-          type: boolean
-          readOnly: true
-      additionalProperties: false
-    AllocationConfigurationDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Capacity to Service Configuration Id
-          format: uuid
-          example: df484b73-eadb-40af-8f61-2a6ca7e9d6d6
-        versions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/AllocationConfigurationVersionDto_2'
-          description: List of available Capacity to Service configuration versions
-      additionalProperties: false
-      description: Capacity to Service Configuration Data
-    ApproveAction_2:
-      type: object
-      properties:
-        comment:
-          type:
-          - string
-          - 'null'
-        decision:
-          allOf:
-          - $ref: '#/components/schemas/Decision'
-        created:
-          type: string
-          format: date-time
       additionalProperties: false
   securitySchemes:
     Bearer:

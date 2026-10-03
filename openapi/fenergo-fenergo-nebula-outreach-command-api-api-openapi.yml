@@ -777,27 +777,110 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    PortalAccessEmailResponseDto:
+    NewEmailDomainDto:
       type: object
       properties:
-        id:
+        name:
           type:
           - string
           - 'null'
-          description: Id of the generated portal access link token
-          example: a1b2c3d4-e5f6-4a1b-8c2d-3e4f5a6b7c8d
-        message:
-          type:
-          - string
-          - 'null'
-          description: Message from mailgun
-          example: Queued. Thank you.
+          description: Domain name
+          example: testmail.fenergonebula.com
+        useTenantIdAsDomainId:
+          type: boolean
+          description: Determines if Domain ID should be set to TenantId. True by default.
       additionalProperties: false
-      description: Response DTO representing a portal access link email send response
-    OutreachDataFieldDto:
+      description: Request DTO representing new email domain request
+    EmailSendDto:
       type: object
       properties:
-        fieldName:
+        to:
+          type:
+          - string
+          - 'null'
+          description: Email address of a receipient
+          example: user.name@fenergo.com
+        headerCc:
+          type:
+          - string
+          - 'null'
+          description: (optional) Email address added only to the visible Cc header without routing delivery
+          example: header.cc.user@fenergo.com
+        templateName:
+          type:
+          - string
+          - 'null'
+          description: Name of mailgun template
+          example: journey-template
+        variables:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type:
+            - string
+            - 'null'
+          description: Variables which will be passed to template
+          example:
+            Username: John Doe
+            Logo: https://test-images.com/image
+        domainId:
+          type:
+          - string
+          - 'null'
+          description: (optional) Domain Id of an email domain to be used for sending email. Defaults to domain identified by TenantId
+          format: uuid
+      additionalProperties: false
+      description: Request DTO representing email send request
+    SendingDnsRecord:
+      type: object
+      properties:
+        recordType:
+          type:
+          - string
+          - 'null'
+        name:
+          type:
+          - string
+          - 'null'
+        value:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+      description: DTO representing Sending Dns Record
+    OutreachItemsDto:
+      type: object
+      properties:
+        dataFields:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/OutreachDataFieldDto'
+        dataGroups:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/OutreachDataGroupDto'
+        documents:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/OutreachDocumentDto'
+        relatedParties:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/OutreachRelatedPartyDto'
+      additionalProperties: false
+    OutreachDocumentDto:
+      type: object
+      properties:
+        documentRequirementName:
           type:
           - string
           - 'null'
@@ -813,6 +896,20 @@ components:
           type:
           - string
           - 'null'
+      additionalProperties: false
+    OutreachDraftDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/OutreachDraftDto'
+          description: Response DTO representing an outreach draft
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
     PortalAccessEmailDto:
       type: object
@@ -860,41 +957,110 @@ components:
             Subject: Your secure link
       additionalProperties: false
       description: Request DTO representing a portal access link email send request
-    OutreachItemsDto:
+    EmailSendResponseDto:
       type: object
       properties:
-        dataFields:
+        id:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/OutreachDataFieldDto'
-        dataGroups:
+          description: Message Id in mailgun
+          example: 20230104083737.750bcf084d35a5a2@testmail.fenergonebula.com
+        message:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/OutreachDataGroupDto'
-        documents:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/OutreachDocumentDto'
-        relatedParties:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/OutreachRelatedPartyDto'
+          description: Message from mailgun
+          example: Queued. Thank you.
       additionalProperties: false
-    EmailSendResponseDtoServiceResponse:
+      description: Response DTO representing email send response
+    ReceivingDnsRecord:
+      type: object
+      properties:
+        recordType:
+          type:
+          - string
+          - 'null'
+        value:
+          type:
+          - string
+          - 'null'
+        priority:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+      description: DTO representing Receiving Dns Record
+    OutreachContactDto:
+      type: object
+      properties:
+        fullName:
+          type:
+          - string
+          - 'null'
+        role:
+          type:
+          - string
+          - 'null'
+        selected:
+          type: boolean
+      additionalProperties: false
+    UpdateOutreachDraftDto:
+      type: object
+      properties:
+        summary:
+          type:
+          - string
+          - 'null'
+        items:
+          allOf:
+          - $ref: '#/components/schemas/OutreachItemsDto'
+        contacts:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/OutreachContactDto'
+        outreachChannel:
+          type:
+          - string
+          - 'null'
+        message:
+          allOf:
+          - $ref: '#/components/schemas/OutreachMessageDto'
+      additionalProperties: false
+      description: Request DTO for updating an outreach draft
+    PortalAccessEmailDtoServiceRequest:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/EmailSendResponseDto'
-          description: Response DTO representing email send response
+          - $ref: '#/components/schemas/PortalAccessEmailDto'
+          description: Request DTO representing a portal access link email send request
+      additionalProperties: false
+    NewOutreachDraftDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/NewOutreachDraftDto'
+          description: Request DTO for initialising a new outreach draft
+      additionalProperties: false
+    NewEmailDomainDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/NewEmailDomainDto'
+          description: Request DTO representing new email domain request
+      additionalProperties: false
+    PortalAccessEmailResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/PortalAccessEmailResponseDto'
+          description: Response DTO representing a portal access link email send response
         messages:
           type:
           - array
@@ -958,193 +1124,6 @@ components:
           - $ref: '#/components/schemas/OutreachMessageDto'
       additionalProperties: false
       description: Response DTO representing an outreach draft
-    UpdateOutreachDraftDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/UpdateOutreachDraftDto'
-          description: Request DTO for updating an outreach draft
-      additionalProperties: false
-    OutreachDocumentDto:
-      type: object
-      properties:
-        documentRequirementName:
-          type:
-          - string
-          - 'null'
-        tooltip:
-          type:
-          - string
-          - 'null'
-        category:
-          type:
-          - string
-          - 'null'
-        dataKey:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    NewOutreachDraftDto:
-      type: object
-      properties:
-        journeyId:
-          type:
-          - string
-          - 'null'
-          description: The journey this outreach draft belongs to
-        mainEntityId:
-          type:
-          - string
-          - 'null'
-          description: The main entity (client) this outreach draft targets
-      additionalProperties: false
-      description: Request DTO for initialising a new outreach draft
-    EmailSendDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/EmailSendDto'
-          description: Request DTO representing email send request
-      additionalProperties: false
-    EmailSendResponseDto:
-      type: object
-      properties:
-        id:
-          type:
-          - string
-          - 'null'
-          description: Message Id in mailgun
-          example: 20230104083737.750bcf084d35a5a2@testmail.fenergonebula.com
-        message:
-          type:
-          - string
-          - 'null'
-          description: Message from mailgun
-          example: Queued. Thank you.
-      additionalProperties: false
-      description: Response DTO representing email send response
-    NewOutreachDraftDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/NewOutreachDraftDto'
-          description: Request DTO for initialising a new outreach draft
-      additionalProperties: false
-    SendingDnsRecord:
-      type: object
-      properties:
-        recordType:
-          type:
-          - string
-          - 'null'
-        name:
-          type:
-          - string
-          - 'null'
-        value:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-      description: DTO representing Sending Dns Record
-    EmailDomainDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/EmailDomainDto'
-          description: DTO representing email domain
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    EmailSendDto:
-      type: object
-      properties:
-        to:
-          type:
-          - string
-          - 'null'
-          description: Email address of a receipient
-          example: user.name@fenergo.com
-        headerCc:
-          type:
-          - string
-          - 'null'
-          description: (optional) Email address added only to the visible Cc header without routing delivery
-          example: header.cc.user@fenergo.com
-        templateName:
-          type:
-          - string
-          - 'null'
-          description: Name of mailgun template
-          example: journey-template
-        variables:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type:
-            - string
-            - 'null'
-          description: Variables which will be passed to template
-          example:
-            Username: John Doe
-            Logo: https://test-images.com/image
-        domainId:
-          type:
-          - string
-          - 'null'
-          description: (optional) Domain Id of an email domain to be used for sending email. Defaults to domain identified by TenantId
-          format: uuid
-      additionalProperties: false
-      description: Request DTO representing email send request
-    PortalAccessEmailResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/PortalAccessEmailResponseDto'
-          description: Response DTO representing a portal access link email send response
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
     OutreachRelatedPartyDto:
       type: object
       properties:
@@ -1168,20 +1147,6 @@ components:
           allOf:
           - $ref: '#/components/schemas/OutreachItemsDto'
       additionalProperties: false
-    NewEmailDomainDto:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-          description: Domain name
-          example: testmail.fenergonebula.com
-        useTenantIdAsDomainId:
-          type: boolean
-          description: Determines if Domain ID should be set to TenantId. True by default.
-      additionalProperties: false
-      description: Request DTO representing new email domain request
     OutreachDataGroupDto:
       type: object
       properties:
@@ -1214,35 +1179,86 @@ components:
             type: integer
             format: int32
       additionalProperties: false
-    OutreachContactDto:
-      type: object
-      properties:
-        fullName:
-          type:
-          - string
-          - 'null'
-        role:
-          type:
-          - string
-          - 'null'
-        selected:
-          type: boolean
-      additionalProperties: false
-    PortalAccessEmailDtoServiceRequest:
+    UpdateOutreachDraftDtoServiceRequest:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/PortalAccessEmailDto'
-          description: Request DTO representing a portal access link email send request
+          - $ref: '#/components/schemas/UpdateOutreachDraftDto'
+          description: Request DTO for updating an outreach draft
       additionalProperties: false
-    NewEmailDomainDtoServiceRequest:
+    OutreachDataFieldDto:
+      type: object
+      properties:
+        fieldName:
+          type:
+          - string
+          - 'null'
+        tooltip:
+          type:
+          - string
+          - 'null'
+        category:
+          type:
+          - string
+          - 'null'
+        dataKey:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    EmailSendDtoServiceRequest:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/NewEmailDomainDto'
-          description: Request DTO representing new email domain request
+          - $ref: '#/components/schemas/EmailSendDto'
+          description: Request DTO representing email send request
+      additionalProperties: false
+    PortalAccessEmailResponseDto:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+          description: Id of the generated portal access link token
+          example: a1b2c3d4-e5f6-4a1b-8c2d-3e4f5a6b7c8d
+        message:
+          type:
+          - string
+          - 'null'
+          description: Message from mailgun
+          example: Queued. Thank you.
+      additionalProperties: false
+      description: Response DTO representing a portal access link email send response
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    EmailSendResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/EmailSendResponseDto'
+          description: Response DTO representing email send response
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
     ServiceResponseMessage:
       type: object
@@ -1256,60 +1272,6 @@ components:
           - string
           - 'null'
         errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ReceivingDnsRecord:
-      type: object
-      properties:
-        recordType:
-          type:
-          - string
-          - 'null'
-        value:
-          type:
-          - string
-          - 'null'
-        priority:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-      description: DTO representing Receiving Dns Record
-    UpdateOutreachDraftDto:
-      type: object
-      properties:
-        summary:
-          type:
-          - string
-          - 'null'
-        items:
-          allOf:
-          - $ref: '#/components/schemas/OutreachItemsDto'
-        contacts:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/OutreachContactDto'
-        outreachChannel:
-          type:
-          - string
-          - 'null'
-        message:
-          allOf:
-          - $ref: '#/components/schemas/OutreachMessageDto'
-      additionalProperties: false
-      description: Request DTO for updating an outreach draft
-    OutreachMessageDto:
-      type: object
-      properties:
-        messageSubject:
-          type:
-          - string
-          - 'null'
-        messageTemplate:
           type:
           - string
           - 'null'
@@ -1366,13 +1328,51 @@ components:
             value: v=spf1 include:mailgun.org ~all
       additionalProperties: false
       description: DTO representing email domain
-    OutreachDraftDtoServiceResponse:
+    OutreachMessageDto:
+      type: object
+      properties:
+        messageSubject:
+          type:
+          - string
+          - 'null'
+        messageTemplate:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    EmailDomainDtoServiceResponse:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/OutreachDraftDto'
-          description: Response DTO representing an outreach draft
+          - $ref: '#/components/schemas/EmailDomainDto'
+          description: DTO representing email domain
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    NewOutreachDraftDto:
+      type: object
+      properties:
+        journeyId:
+          type:
+          - string
+          - 'null'
+          description: The journey this outreach draft belongs to
+        mainEntityId:
+          type:
+          - string
+          - 'null'
+          description: The main entity (client) this outreach draft targets
+      additionalProperties: false
+      description: Request DTO for initialising a new outreach draft
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
         messages:
           type:
           - array

@@ -252,20 +252,23 @@ paths:
                 errorCode: OBSOLETE_ENDPOINT
 components:
   schemas:
-    GetAgentMetricsResponseDto:
+    DocClassificationBreakdownItemDto:
+      required:
+      - type
       type: object
       properties:
-        metrics:
+        type:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/AgentMetricsTimestreamResult'
+        count:
+          type: integer
+          format: int32
       additionalProperties: false
-    AgentMetricsQueryParameters:
+      description: A single per-document-type bucket in the document classification breakdown.
+    QueryParameters:
       required:
       - agentType
-      - measureNames
       - queryFromInDays
       type: object
       properties:
@@ -278,44 +281,33 @@ components:
           format: int32
         groupMetricsByMonth:
           type: boolean
-        measureNames:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
       additionalProperties: false
-    TaskAutocompleteTimestreamResult:
+    SignalVerdictBucketDto:
+      required:
+      - count
+      - pct
+      - verdict
       type: object
       properties:
-        taskType:
+        verdict:
           type:
           - string
           - 'null'
-        policyRequirementType:
-          type:
-          - string
-          - 'null'
-        taskName:
-          type:
-          - string
-          - 'null'
-        journeyType:
-          type:
-          - string
-          - 'null'
-        measureValue:
-          type: number
-          format: double
+          description: '"Significant" | "Insignificant" | "Undetermined" (verbatim Verdict dimension value), or "Unknown" when missing.'
         count:
           type: integer
+          description: Count of runs with this verdict.
           format: int32
-        timeBin:
-          type:
-          - string
-          - 'null'
-          format: date-time
+        pct:
+          type: number
+          description: Percentage of all Significance runs with this verdict, rounded to 1dp.
+          format: double
       additionalProperties: false
+      description: 'A single verdict bucket in KYRA:Signal''s verdict distribution (AB#547428), sourced from
+
+        Trust.Run{Verdict} (Significant/Insignificant/Undetermined), filtered to
+
+        AgentName=SignificanceEngine_Evaluation.'
     AgentValueSummaryRequestDto:
       required:
       - from
@@ -330,41 +322,113 @@ components:
           format: date-time
       additionalProperties: false
       description: Request body DTO for the agent value summary endpoint.
-    AgentMetricsTimestreamResult:
+    GetAgentMetricsResponseDto:
       type: object
       properties:
-        taskType:
+        metrics:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AgentMetricsTimestreamResult'
+      additionalProperties: false
+    QueryParametersServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/QueryParameters'
+      additionalProperties: false
+    ProblemDetails:
+      type: object
+      properties:
+        type:
           type:
           - string
           - 'null'
-        journeyType:
+        title:
           type:
           - string
           - 'null'
-        measureName:
+        status:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        detail:
           type:
           - string
           - 'null'
-        measureValue:
-          type: number
-          format: double
-        count:
+        instance:
+          type:
+          - string
+          - 'null'
+      additionalProperties: {}
+    AgentValueSummaryResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/AgentValueSummaryResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AgentValueSummaryPriorPeriodDto:
+      type: object
+      properties:
+        docsClassified:
           type: integer
           format: int32
-        timeBin:
+        hitsAutoResolved:
+          type: integer
+          format: int32
+        suggestionsAccepted:
+          type: integer
+          format: int32
+        reportsGenerated:
+          type: integer
+          format: int32
+        sourcesRetrieved:
+          type: integer
+          format: int32
+        policyChecksRun:
+          type: integer
+          format: int32
+        signalChecksRun:
+          type: integer
+          format: int32
+        docsSplitAcceptanceRate:
           type:
-          - string
+          - number
           - 'null'
-          format: date-time
-        additionalDimensions:
+          description: KYRA:Docs splitting-accuracy % for the prior period. Same null-when-no-activity convention as Fenergo.Nebula.DigitalAgents.Query.Application.Features.GetAgentValueSummary.AgentValueSummaryResponseDto.DocsSplitAcceptanceRate.
+          format: double
+        sourceAutoResolutionRate:
           type:
-          - object
+          - number
           - 'null'
-          additionalProperties:
-            type:
-            - string
-            - 'null'
+          description: KYRA:Source auto-resolution rate for the prior period. Same null-when-no-activity convention as Fenergo.Nebula.DigitalAgents.Query.Application.Features.GetAgentValueSummary.AgentValueSummaryResponseDto.SourceAutoResolutionRate.
+          format: double
+        signalUndeterminedRate:
+          type:
+          - number
+          - 'null'
+          description: KYRA:Signal undetermined-verdict rate for the prior period. Same null-when-no-activity convention as Fenergo.Nebula.DigitalAgents.Query.Application.Features.GetAgentValueSummary.AgentValueSummaryResponseDto.SignalUndeterminedRate.
+          format: double
       additionalProperties: false
+      description: 'Aggregate action counts + accuracy rates for the period immediately preceding the requested
+
+        [From, To] range, of the same length (AB#547471) — lets BusinessMetrics compute a per-agent
+
+        trend direction and a real prior-period action count without a second round-trip. Deliberately
+
+        a flat sibling block, not a duplicate of Fenergo.Nebula.DigitalAgents.Query.Application.Features.GetAgentValueSummary.AgentValueSummaryResponseDto — only the
+
+        counts and rates a trend/prior-count calculation needs, not the full monthly-series/QA-findings
+
+        payload for a comparison period nobody asked for at that granularity.'
     MonthlyAgentBucketDto:
       required:
       - month
@@ -432,11 +496,17 @@ components:
           description: The calendar month represented as "yyyy-MM".
       additionalProperties: false
       description: Per-month aggregate counts for the agent value summary.
-    AgentValueSummaryResponseDtoServiceResponse:
+    AgentValueSummaryRequestDtoServiceRequest:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/AgentValueSummaryResponseDto'
+          $ref: '#/components/schemas/AgentValueSummaryRequestDto'
+      additionalProperties: false
+    GetTaskAutocompletionMetricsResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/GetTaskAutocompletionMetricsResponseDto'
         messages:
           type:
           - array
@@ -444,6 +514,84 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
+    AgentMetricsTimestreamResult:
+      type: object
+      properties:
+        taskType:
+          type:
+          - string
+          - 'null'
+        journeyType:
+          type:
+          - string
+          - 'null'
+        measureName:
+          type:
+          - string
+          - 'null'
+        measureValue:
+          type: number
+          format: double
+        count:
+          type: integer
+          format: int32
+        timeBin:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        additionalDimensions:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type:
+            - string
+            - 'null'
+      additionalProperties: false
+    GetAgentMetricsResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/GetAgentMetricsResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    OperationsCategoryDto:
+      required:
+      - category
+      - interventionCount
+      type: object
+      properties:
+        category:
+          type:
+          - string
+          - 'null'
+          description: Verbatim Trust.Decision.* DecisionType value (e.g. "HitResolution", "FieldExtraction").
+        interventionCount:
+          type: integer
+          description: Count of Trust.Decision.Overridden rows for this category. Uniformly available across all 4 domains.
+          format: int32
+        agreementRate:
+          type:
+          - number
+          - 'null'
+          description: Percentage of reviewed decisions confirmed (not overridden). Null when no review denominator exists for this category.
+          format: double
+        reviewCount:
+          type:
+          - integer
+          - 'null'
+          description: Count of Trust.Decision.Reviewed rows for this category. Null when no review denominator exists for this category.
+          format: int32
+      additionalProperties: false
+      description: 'Per-decision-category intervention count and agreement rate, sourced from Trust.Decision.Overridden
+
+        (all four domains) and Trust.Decision.Reviewed (Screening only today — see AB#546092 Open Question 1).'
     GetTaskAutocompletionMetricsResponseDto:
       type: object
       properties:
@@ -454,44 +602,32 @@ components:
           items:
             $ref: '#/components/schemas/TaskAutocompleteTimestreamResult'
       additionalProperties: false
-    QueryParameters:
+    OperationsOverrideReasonDto:
       required:
-      - agentType
-      - queryFromInDays
+      - count
+      - pct
+      - reason
       type: object
       properties:
-        agentType:
+        reason:
           type:
           - string
           - 'null'
-        queryFromInDays:
+          description: Verbatim Trust.Decision.Overridden OverrideReason value, or "Unspecified" when empty/missing.
+        count:
           type: integer
+          description: Count of overrides with this reason.
           format: int32
-        groupMetricsByMonth:
-          type: boolean
-      additionalProperties: false
-    OperationsMonthlyBucketDto:
-      required:
-      - month
-      type: object
-      properties:
-        month:
-          type:
-          - string
-          - 'null'
-          description: '"yyyy-MM" bucket.'
-        interventionCount:
-          type: integer
-          description: Count of Trust.Decision.Overridden rows for the month, summed across all categories.
-          format: int32
-        agreementRate:
-          type:
-          - number
-          - 'null'
-          description: Percentage of reviewed decisions confirmed this month, summed across categories with a review denominator. Null when none exists.
+        pct:
+          type: number
+          description: Percentage of all overrides (including Unspecified) with this reason, rounded to 1dp.
           format: double
       additionalProperties: false
-      description: Monthly intervention volume and agreement-rate trend, summed across all decision categories.
+      description: 'Override-reason breakdown for Trust.Decision.Overridden, across all 4 domains (AB#546238).
+
+        Rows with an empty/missing OverrideReason (SmartDocs'' Overridden/AcceptedWithChanges paths,
+
+        domains that don''t populate the field) bucket under "Unspecified" rather than being dropped.'
     QaFindingCandidateDto:
       required:
       - agent
@@ -544,106 +680,75 @@ components:
         `QaFinding` (AB#547301). Read-only/point-in-time: DigitalAgents does not track status
 
         (open/in review/resolved) — that''s owned by BusinessMetrics once a finding is persisted.'
-    OperationsOverrideReasonDto:
-      required:
-      - count
-      - pct
-      - reason
+    ServiceResponseMessage:
       type: object
       properties:
-        reason:
+        message:
           type:
           - string
           - 'null'
-          description: Verbatim Trust.Decision.Overridden OverrideReason value, or "Unspecified" when empty/missing.
-        count:
-          type: integer
-          description: Count of overrides with this reason.
-          format: int32
-        pct:
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    TaskAutocompleteTimestreamResult:
+      type: object
+      properties:
+        taskType:
+          type:
+          - string
+          - 'null'
+        policyRequirementType:
+          type:
+          - string
+          - 'null'
+        taskName:
+          type:
+          - string
+          - 'null'
+        journeyType:
+          type:
+          - string
+          - 'null'
+        measureValue:
           type: number
-          description: Percentage of all overrides (including Unspecified) with this reason, rounded to 1dp.
           format: double
-      additionalProperties: false
-      description: 'Override-reason breakdown for Trust.Decision.Overridden, across all 4 domains (AB#546238).
-
-        Rows with an empty/missing OverrideReason (SmartDocs'' Overridden/AcceptedWithChanges paths,
-
-        domains that don''t populate the field) bucket under "Unspecified" rather than being dropped.'
-    QueryParametersServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/QueryParameters'
-      additionalProperties: false
-    GetAgentMetricsResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/GetAgentMetricsResponseDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ProblemDetails:
-      type: object
-      properties:
-        type:
-          type:
-          - string
-          - 'null'
-        title:
-          type:
-          - string
-          - 'null'
-        status:
-          type:
-          - integer
-          - 'null'
-          format: int32
-        detail:
-          type:
-          - string
-          - 'null'
-        instance:
-          type:
-          - string
-          - 'null'
-      additionalProperties: {}
-    GetTaskAutocompletionMetricsResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/GetTaskAutocompletionMetricsResponseDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    DocClassificationBreakdownItemDto:
-      required:
-      - type
-      type: object
-      properties:
-        type:
-          type:
-          - string
-          - 'null'
         count:
           type: integer
           format: int32
+        timeBin:
+          type:
+          - string
+          - 'null'
+          format: date-time
       additionalProperties: false
-      description: A single per-document-type bucket in the document classification breakdown.
-    AgentValueSummaryRequestDtoServiceRequest:
+    AgentMetricsQueryParameters:
+      required:
+      - agentType
+      - measureNames
+      - queryFromInDays
       type: object
       properties:
-        data:
-          $ref: '#/components/schemas/AgentValueSummaryRequestDto'
+        agentType:
+          type:
+          - string
+          - 'null'
+        queryFromInDays:
+          type: integer
+          format: int32
+        groupMetricsByMonth:
+          type: boolean
+        measureNames:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
       additionalProperties: false
     AgentValueSummaryResponseDto:
       type: object
@@ -851,139 +956,34 @@ components:
           $ref: '#/components/schemas/AgentValueSummaryPriorPeriodDto'
       additionalProperties: false
       description: Response DTO for the agent value summary endpoint.
-    AgentValueSummaryPriorPeriodDto:
-      type: object
-      properties:
-        docsClassified:
-          type: integer
-          format: int32
-        hitsAutoResolved:
-          type: integer
-          format: int32
-        suggestionsAccepted:
-          type: integer
-          format: int32
-        reportsGenerated:
-          type: integer
-          format: int32
-        sourcesRetrieved:
-          type: integer
-          format: int32
-        policyChecksRun:
-          type: integer
-          format: int32
-        signalChecksRun:
-          type: integer
-          format: int32
-        docsSplitAcceptanceRate:
-          type:
-          - number
-          - 'null'
-          description: KYRA:Docs splitting-accuracy % for the prior period. Same null-when-no-activity convention as Fenergo.Nebula.DigitalAgents.Query.Application.Features.GetAgentValueSummary.AgentValueSummaryResponseDto.DocsSplitAcceptanceRate.
-          format: double
-        sourceAutoResolutionRate:
-          type:
-          - number
-          - 'null'
-          description: KYRA:Source auto-resolution rate for the prior period. Same null-when-no-activity convention as Fenergo.Nebula.DigitalAgents.Query.Application.Features.GetAgentValueSummary.AgentValueSummaryResponseDto.SourceAutoResolutionRate.
-          format: double
-        signalUndeterminedRate:
-          type:
-          - number
-          - 'null'
-          description: KYRA:Signal undetermined-verdict rate for the prior period. Same null-when-no-activity convention as Fenergo.Nebula.DigitalAgents.Query.Application.Features.GetAgentValueSummary.AgentValueSummaryResponseDto.SignalUndeterminedRate.
-          format: double
-      additionalProperties: false
-      description: 'Aggregate action counts + accuracy rates for the period immediately preceding the requested
-
-        [From, To] range, of the same length (AB#547471) — lets BusinessMetrics compute a per-agent
-
-        trend direction and a real prior-period action count without a second round-trip. Deliberately
-
-        a flat sibling block, not a duplicate of Fenergo.Nebula.DigitalAgents.Query.Application.Features.GetAgentValueSummary.AgentValueSummaryResponseDto — only the
-
-        counts and rates a trend/prior-count calculation needs, not the full monthly-series/QA-findings
-
-        payload for a comparison period nobody asked for at that granularity.'
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    SignalVerdictBucketDto:
-      required:
-      - count
-      - pct
-      - verdict
-      type: object
-      properties:
-        verdict:
-          type:
-          - string
-          - 'null'
-          description: '"Significant" | "Insignificant" | "Undetermined" (verbatim Verdict dimension value), or "Unknown" when missing.'
-        count:
-          type: integer
-          description: Count of runs with this verdict.
-          format: int32
-        pct:
-          type: number
-          description: Percentage of all Significance runs with this verdict, rounded to 1dp.
-          format: double
-      additionalProperties: false
-      description: 'A single verdict bucket in KYRA:Signal''s verdict distribution (AB#547428), sourced from
-
-        Trust.Run{Verdict} (Significant/Insignificant/Undetermined), filtered to
-
-        AgentName=SignificanceEngine_Evaluation.'
-    OperationsCategoryDto:
-      required:
-      - category
-      - interventionCount
-      type: object
-      properties:
-        category:
-          type:
-          - string
-          - 'null'
-          description: Verbatim Trust.Decision.* DecisionType value (e.g. "HitResolution", "FieldExtraction").
-        interventionCount:
-          type: integer
-          description: Count of Trust.Decision.Overridden rows for this category. Uniformly available across all 4 domains.
-          format: int32
-        agreementRate:
-          type:
-          - number
-          - 'null'
-          description: Percentage of reviewed decisions confirmed (not overridden). Null when no review denominator exists for this category.
-          format: double
-        reviewCount:
-          type:
-          - integer
-          - 'null'
-          description: Count of Trust.Decision.Reviewed rows for this category. Null when no review denominator exists for this category.
-          format: int32
-      additionalProperties: false
-      description: 'Per-decision-category intervention count and agreement rate, sourced from Trust.Decision.Overridden
-
-        (all four domains) and Trust.Decision.Reviewed (Screening only today — see AB#546092 Open Question 1).'
     AgentMetricsQueryParametersServiceRequest:
       type: object
       properties:
         data:
           $ref: '#/components/schemas/AgentMetricsQueryParameters'
       additionalProperties: false
+    OperationsMonthlyBucketDto:
+      required:
+      - month
+      type: object
+      properties:
+        month:
+          type:
+          - string
+          - 'null'
+          description: '"yyyy-MM" bucket.'
+        interventionCount:
+          type: integer
+          description: Count of Trust.Decision.Overridden rows for the month, summed across all categories.
+          format: int32
+        agreementRate:
+          type:
+          - number
+          - 'null'
+          description: Percentage of reviewed decisions confirmed this month, summed across categories with a review denominator. Null when none exists.
+          format: double
+      additionalProperties: false
+      description: Monthly intervention volume and agreement-rate trend, summed across all decision categories.
   securitySchemes:
     Bearer:
       type: apiKey

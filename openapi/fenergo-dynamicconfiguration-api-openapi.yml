@@ -799,6 +799,16 @@ paths:
     - url: /authorizationquery
 components:
   schemas:
+    UpdateDynamicConfigurationResponseDto:
+      type: object
+      properties:
+        version:
+          type: integer
+          description: Version of dynamic configuration after update
+          format: int32
+          example: 1
+      additionalProperties: false
+      description: Response DTO representing updated dynamic configuration
     UpdateDynamicConfigurationRequestDtoServiceRequest:
       type: object
       properties:
@@ -806,21 +816,23 @@ components:
           $ref: '#/components/schemas/UpdateDynamicConfigurationRequestDto'
       additionalProperties: false
       description: Service request data
-    CreateDynamicConfigurationResponseDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The UiD of created dynamic configuration
-          format: uuid
-          example: c1009239-898f-41e7-a1cb-3c9513487234
-      additionalProperties: false
-      description: Response DTO representing created dynamic configuration
-    CreateDynamicConfigurationResponseDtoServiceResponse:
+    CloneDynamicConfigurationRequestDtoServiceRequest:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/CreateDynamicConfigurationResponseDto'
+          $ref: '#/components/schemas/CloneDynamicConfigurationRequestDto'
+      additionalProperties: false
+      description: Service request data
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+          description: The service response DTO
         messages:
           type:
           - array
@@ -830,23 +842,72 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    CloneDynamicConfigurationRequestDtoServiceRequest:
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    ValueField:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          description: Value of DataSource used to filter field values
+        field:
+          type:
+          - string
+          - 'null'
+          description: Field value used to validate conditional value
+      additionalProperties: false
+    CloneDynamicConfigurationResponseDtoServiceResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/CloneDynamicConfigurationRequestDto'
+          $ref: '#/components/schemas/CloneDynamicConfigurationResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
-      description: Service request data
-    CloneDynamicConfigurationResponseDto:
+      description: Service response data
+    AccessLayerDataTypeDto:
+      enum:
+      - Field
+      - Entity
+      - Journey
+      - Document
+      - Search
+      - Product
+      - ProductField
+      type: string
+    CreateDynamicConfigurationRequestDtoServiceRequest:
       type: object
       properties:
-        id:
-          type: string
-          description: The UiD of the cloned dynamic configuration
-          format: uuid
-          example: d7f592a5-3feb-4607-bf39-ab9e81c45db0
+        data:
+          $ref: '#/components/schemas/CreateDynamicConfigurationRequestDto'
       additionalProperties: false
-      description: Response DTO representing cloned dynamic configuration data
+      description: Service request data
+    CloneDynamicConfigurationRequestDto:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+          description: Name of cloned dynamic configuration
+          example: Canada configuration - clone
+      additionalProperties: false
+      description: Request DTO representing dynamic configuration data to clone
     ConditionDto:
       required:
       - logicalOperation
@@ -883,42 +944,21 @@ components:
           description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
       additionalProperties: false
       description: Represents condition root
-    CreateDynamicConfigurationRequestDtoServiceRequest:
+    CloneDynamicConfigurationResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The UiD of the cloned dynamic configuration
+          format: uuid
+          example: d7f592a5-3feb-4607-bf39-ab9e81c45db0
+      additionalProperties: false
+      description: Response DTO representing cloned dynamic configuration data
+    CreateDynamicConfigurationResponseDtoServiceResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/CreateDynamicConfigurationRequestDto'
-      additionalProperties: false
-      description: Service request data
-    ValueField:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          description: Value of DataSource used to filter field values
-        field:
-          type:
-          - string
-          - 'null'
-          description: Field value used to validate conditional value
-      additionalProperties: false
-    UpdateDynamicConfigurationResponseDto:
-      type: object
-      properties:
-        version:
-          type: integer
-          description: Version of dynamic configuration after update
-          format: int32
-          example: 1
-      additionalProperties: false
-      description: Response DTO representing updated dynamic configuration
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data:
-          description: The service response DTO
+          $ref: '#/components/schemas/CreateDynamicConfigurationResponseDto'
         messages:
           type:
           - array
@@ -928,6 +968,125 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
+    CreateDynamicConfigurationRequestDto:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+          description: Name of the dynamic configuration
+          example: Canada rule
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of the dynamic configuration
+          example: Rule for Canada Private Banking
+        geographicAccessLayerId:
+          type:
+          - string
+          - 'null'
+          description: 'UiD of the referenced Geographic access layer
+
+            The access layer DataType must match the dynamic configuration DataType property'
+          format: uuid
+          example: 4e63e0ee-c5f8-4115-a1e6-a980dadcacd1
+        businessRelatedAccessLayerId:
+          type:
+          - string
+          - 'null'
+          description: 'UiD of the referenced Business related access layer
+
+            The access layer DataType must match the dynamic configuration DataType property'
+          format: uuid
+          example: ec7c05d2-fc98-442c-ba5b-51652b59738c
+        dataType:
+          $ref: '#/components/schemas/AccessLayerDataTypeDto'
+        conditions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDto'
+          description: Conditions under which the dynamic configuration is assigned
+      additionalProperties: false
+      description: Request DTO representing dynamic configuration to create
+    UpdateDynamicConfigurationRequestDto:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+          description: Name of the dynamic configuration
+          example: Canada rule
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of the dynamic configuration
+          example: Rule for Canada Private Banking
+        geographicAccessLayerId:
+          type:
+          - string
+          - 'null'
+          description: 'UiD of the referenced Geographic access layer
+
+            The access layer DataType must match the dynamic configuration DataType property'
+          format: uuid
+          example: 4e63e0ee-c5f8-4115-a1e6-a980dadcacd1
+        businessRelatedAccessLayerId:
+          type:
+          - string
+          - 'null'
+          description: 'UiD of the referenced Business related access layer
+
+            The access layer DataType must match the dynamic configuration DataType property'
+          format: uuid
+          example: ec7c05d2-fc98-442c-ba5b-51652b59738c
+        dataType:
+          $ref: '#/components/schemas/AccessLayerDataTypeDto'
+        conditions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDto'
+          description: Conditions under which the dynamic configuration is assigned
+        version:
+          type: integer
+          description: "Current version of the dynamic configuration where the changes needs to be applied. This parameter is required \nto guarantee consistency and conflicts detection. If it is not provided, it will save new changes\non top of latest without conflicts checking"
+          format: int32
+          default: -1
+          example: 1
+      additionalProperties: false
+      description: Request DTO representing dynamic configuration data to update
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+          description: Name of the property
+          example: data
+        errorMessage:
+          type:
+          - string
+          - 'null'
+          description: User friendly error message
+          example: Data is required
+        attemptedValue:
+          description: Invalid value
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Internal error code
+          example: NotNullValidator
+      additionalProperties: false
+      description: Represents the details of validation error
     StringServiceResponse:
       type: object
       properties:
@@ -945,35 +1104,31 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    ValidationErrorModelListServiceResponse:
+    ServiceResponseMessage:
       type: object
       properties:
-        data:
+        message:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel'
-          description: The service response DTO
-        messages:
+          description: The message
+          example: Success
+        type:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
       additionalProperties: false
-      description: Service response data
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
+      description: The message associated to the service response
     ConditionDefinitionDto:
       type: object
       properties:
@@ -1032,31 +1187,6 @@ components:
           $ref: '#/components/schemas/ValueField'
       additionalProperties: false
       description: Represents condition
-    ValidationErrorModel:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-          description: Name of the property
-          example: data
-        errorMessage:
-          type:
-          - string
-          - 'null'
-          description: User friendly error message
-          example: Data is required
-        attemptedValue:
-          description: Invalid value
-        errorCode:
-          type:
-          - string
-          - 'null'
-          description: Internal error code
-          example: NotNullValidator
-      additionalProperties: false
-      description: Represents the details of validation error
     UpdateDynamicConfigurationResponseDtoServiceResponse:
       type: object
       properties:
@@ -1071,107 +1201,11 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    AccessLayerDataTypeDto:
-      enum:
-      - Field
-      - Entity
-      - Journey
-      - Document
-      - Search
-      - Product
-      - ProductField
-      type: string
-    UpdateDynamicConfigurationRequestDto:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-          description: Name of the dynamic configuration
-          example: Canada rule
-        description:
-          type:
-          - string
-          - 'null'
-          description: Description of the dynamic configuration
-          example: Rule for Canada Private Banking
-        geographicAccessLayerId:
-          type:
-          - string
-          - 'null'
-          description: 'UiD of the referenced Geographic access layer
-
-            The access layer DataType must match the dynamic configuration DataType property'
-          format: uuid
-          example: 4e63e0ee-c5f8-4115-a1e6-a980dadcacd1
-        businessRelatedAccessLayerId:
-          type:
-          - string
-          - 'null'
-          description: 'UiD of the referenced Business related access layer
-
-            The access layer DataType must match the dynamic configuration DataType property'
-          format: uuid
-          example: ec7c05d2-fc98-442c-ba5b-51652b59738c
-        dataType:
-          $ref: '#/components/schemas/AccessLayerDataTypeDto'
-        conditions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDto'
-          description: Conditions under which the dynamic configuration is assigned
-        version:
-          type: integer
-          description: "Current version of the dynamic configuration where the changes needs to be applied. This parameter is required \nto guarantee consistency and conflicts detection. If it is not provided, it will save new changes\non top of latest without conflicts checking"
-          format: int32
-          default: -1
-          example: 1
-      additionalProperties: false
-      description: Request DTO representing dynamic configuration data to update
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-          description: The message
-          example: Success
-        type:
-          type:
-          - string
-          - 'null'
-          description: 'Type of the message
-
-            One of Info, Warning, Error, Forbidden'
-          example: Info
-        errorCode:
-          type:
-          - string
-          - 'null'
-          description: Error Code
-          example: INTERNAL_SERVER_ERROR
-      additionalProperties: false
-      description: The message associated to the service response
-    CloneDynamicConfigurationRequestDto:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-          description: Name of cloned dynamic configuration
-          example: Canada configuration - clone
-      additionalProperties: false
-      description: Request DTO representing dynamic configuration data to clone
-    CloneDynamicConfigurationResponseDtoServiceResponse:
+    ObjectServiceResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/CloneDynamicConfigurationResponseDto'
+          description: The service response DTO
         messages:
           type:
           - array
@@ -1181,50 +1215,16 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    CreateDynamicConfigurationRequestDto:
+    CreateDynamicConfigurationResponseDto:
       type: object
       properties:
-        name:
-          type:
-          - string
-          - 'null'
-          description: Name of the dynamic configuration
-          example: Canada rule
-        description:
-          type:
-          - string
-          - 'null'
-          description: Description of the dynamic configuration
-          example: Rule for Canada Private Banking
-        geographicAccessLayerId:
-          type:
-          - string
-          - 'null'
-          description: 'UiD of the referenced Geographic access layer
-
-            The access layer DataType must match the dynamic configuration DataType property'
+        id:
+          type: string
+          description: The UiD of created dynamic configuration
           format: uuid
-          example: 4e63e0ee-c5f8-4115-a1e6-a980dadcacd1
-        businessRelatedAccessLayerId:
-          type:
-          - string
-          - 'null'
-          description: 'UiD of the referenced Business related access layer
-
-            The access layer DataType must match the dynamic configuration DataType property'
-          format: uuid
-          example: ec7c05d2-fc98-442c-ba5b-51652b59738c
-        dataType:
-          $ref: '#/components/schemas/AccessLayerDataTypeDto'
-        conditions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDto'
-          description: Conditions under which the dynamic configuration is assigned
+          example: c1009239-898f-41e7-a1cb-3c9513487234
       additionalProperties: false
-      description: Request DTO representing dynamic configuration to create
+      description: Response DTO representing created dynamic configuration
     DynamicConfigurationDto:
       type: object
       properties:
@@ -1290,6 +1290,88 @@ components:
           example: 1
       additionalProperties: false
       description: Response DTO representing dynamic configuration data
+    ConditionDto_2:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the condition
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        name:
+          type:
+          - string
+          - 'null'
+          description: The name of the condition
+          example: Company-type only
+        description:
+          type:
+          - string
+          - 'null'
+          description: The description of the condition
+          example: Applicable only when EntityType=Company
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
+          example: AND
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto_2'
+          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
+      additionalProperties: false
+      description: Represents condition root
+    DynamicConfigurationAccessLayerDto:
+      type: object
+      properties:
+        accessLayerId:
+          type: string
+          description: UiD of the associated access layer
+          format: uuid
+          example: e4ec4810-6386-4610-a605-0d636f393daf
+        dataKey:
+          type:
+          - string
+          - 'null'
+          description: DataKey of the associated access layer
+          example: Canada
+      additionalProperties: false
+    DynamicConfigurationDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/DynamicConfigurationDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    DynamicConfigurationPageDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/DynamicConfigurationPageDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
     ConditionDefinitionDto_2:
       type: object
       properties:
@@ -1350,38 +1432,6 @@ components:
           description: Field value used for conditional limit validation
       additionalProperties: false
       description: Represents condition
-    DynamicConfigurationPageDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/DynamicConfigurationPageDto'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    DynamicConfigurationDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/DynamicConfigurationDto'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
     AccessLayerDataTypeDto_2:
       enum:
       - Field
@@ -1406,56 +1456,6 @@ components:
           type:
           - string
           - 'null'
-      additionalProperties: false
-    ConditionDto_2:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The ID of the condition
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        name:
-          type:
-          - string
-          - 'null'
-          description: The name of the condition
-          example: Company-type only
-        description:
-          type:
-          - string
-          - 'null'
-          description: The description of the condition
-          example: Applicable only when EntityType=Company
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
-          example: AND
-        operands:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto_2'
-          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
-      additionalProperties: false
-      description: Represents condition root
-    DynamicConfigurationAccessLayerDto:
-      type: object
-      properties:
-        accessLayerId:
-          type: string
-          description: UiD of the associated access layer
-          format: uuid
-          example: e4ec4810-6386-4610-a605-0d636f393daf
-        dataKey:
-          type:
-          - string
-          - 'null'
-          description: DataKey of the associated access layer
-          example: Canada
       additionalProperties: false
     DynamicConfigurationDto_2:
       type: object
@@ -1522,6 +1522,41 @@ components:
           example: 1
       additionalProperties: false
       description: Response DTO representing dynamic configuration data
+    ConditionDto_3:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the condition
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        name:
+          type:
+          - string
+          - 'null'
+          description: The name of the condition
+          example: Company-type only
+        description:
+          type:
+          - string
+          - 'null'
+          description: The description of the condition
+          example: Applicable only when EntityType=Company
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
+          example: AND
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto_3'
+          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
+      additionalProperties: false
+      description: Represents condition root
     ConditionDefinitionDto_3:
       type: object
       properties:
@@ -1593,41 +1628,6 @@ components:
       - Product
       - ProductField
       type: string
-    ConditionDto_3:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The ID of the condition
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        name:
-          type:
-          - string
-          - 'null'
-          description: The name of the condition
-          example: Company-type only
-        description:
-          type:
-          - string
-          - 'null'
-          description: The description of the condition
-          example: Applicable only when EntityType=Company
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
-          example: AND
-        operands:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto_3'
-          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
-      additionalProperties: false
-      description: Represents condition root
   securitySchemes:
     Bearer:
       type: apiKey

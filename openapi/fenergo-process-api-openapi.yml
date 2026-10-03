@@ -1261,41 +1261,95 @@ paths:
                   errorCode: OBSOLETE_ENDPOINT
 components:
   schemas:
-    MonitoringRecordDto:
+    NewRequestSearchRequestDto:
+      required:
+      - entityType
+      - providersIds
+      - searchCriteria
       type: object
       properties:
-        id:
+        providersIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        searchCriteria: {}
+        entityType:
+          allOf:
+          - $ref: '#/components/schemas/EntityType'
+      additionalProperties: false
+    ProviderNewRequestGetRecordsDto:
+      type: object
+      properties:
+        providerId:
           type: string
           format: uuid
-        importId:
+        recentRecordId:
+          type:
+          - string
+          - 'null'
+        records:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/NewRequestGetRecordsDto'
+      additionalProperties: false
+    ProcessGetRequestDto:
+      required:
+      - externalId
+      - providerId
+      - searchId
+      type: object
+      properties:
+        searchId:
+          type: string
+          format: uuid
+        providerId:
           type: string
           format: uuid
         externalId:
-          type:
-          - string
-          - 'null'
-        status:
-          allOf:
-          - $ref: '#/components/schemas/MonitoringStatus'
-        failReason:
-          allOf:
-          - $ref: '#/components/schemas/MonitoringInitiationFailReason'
-        deletionFailReason:
-          allOf:
-          - $ref: '#/components/schemas/MonitoringDeletionInitiationFailReason'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-        deletionErrorMessage:
-          type:
-          - string
-          - 'null'
-        created:
+          minLength: 1
           type: string
-          format: date-time
+        documentCollectionProviderIds:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        taskId:
+          type:
+          - string
+          - 'null'
+          format: uuid
       additionalProperties: false
-    ProviderNewRequestImportRecordsDto:
+    DocumentsRequestDto:
+      required:
+      - documents
+      type: object
+      properties:
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentRequestDto'
+      additionalProperties: false
+    SearchStatus:
+      enum:
+      - Initiated
+      - Requested
+      - Completed
+      - FailedInitiation
+      - FailedRequest
+      type: string
+    GetStatus:
+      enum:
+      - Initiated
+      - Requested
+      - Completed
+      - FailedInitiation
+      - FailedRequest
+      type: string
+    ProviderSearchRecordsDto:
       type: object
       properties:
         providerId:
@@ -1309,194 +1363,17 @@ components:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/NewRequestImportRecordDto'
+            $ref: '#/components/schemas/SearchRecordDto'
       additionalProperties: false
-    NewRequestSearchResponseDtoServiceResponse:
+    ProcessGetRequestDtoServiceRequest:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/NewRequestSearchResponseDto'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    ProcessSearchRequestDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ProcessSearchRequestDto'
+          - $ref: '#/components/schemas/ProcessGetRequestDto'
           description: The service request DTO
       additionalProperties: false
       description: Service request data
-    EntityValidationDetails:
-      type: object
-      properties:
-        entityName:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-        targetEntity:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ExternalDataProcessGetDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ExternalDataProcessGetDto'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    DocumentRequestDataDto:
-      required:
-      - name
-      - type
-      type: object
-      properties:
-        name:
-          minLength: 1
-          type: string
-        type:
-          minLength: 1
-          type: string
-        accessLayers:
-          allOf:
-          - $ref: '#/components/schemas/AccessLayerDto'
-      additionalProperties: false
-    DocumentsStatusRequestDto:
-      required:
-      - documents
-      type: object
-      properties:
-        documents:
-          type: array
-          items:
-            $ref: '#/components/schemas/DocumentStatusRequestDto'
-      additionalProperties: false
-    ProcessStatus:
-      enum:
-      - Unknown
-      - Active
-      - Invalid
-      type: string
-    NewRequestImportRequestDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/NewRequestImportRequestDto'
-          description: The service request DTO
-      additionalProperties: false
-      description: Service request data
-    ImportRecordsDto:
-      type: object
-      properties:
-        getId:
-          type: string
-          format: uuid
-        recentRecordId:
-          type: string
-          format: uuid
-        records:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ImportRecordDto'
-      additionalProperties: false
-    ImportRecordDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        getId:
-          type: string
-          format: uuid
-        status:
-          allOf:
-          - $ref: '#/components/schemas/ImportStatus'
-        failReason:
-          allOf:
-          - $ref: '#/components/schemas/ImportFailReason'
-        created:
-          type: string
-          format: date-time
-        errorMessage:
-          type:
-          - string
-          - 'null'
-        validationMessages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/EntityValidationDetails'
-      additionalProperties: false
-    AccessLayerDto:
-      type: object
-      properties:
-        geographic:
-          uniqueItems: true
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-        businessRelated:
-          uniqueItems: true
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-      additionalProperties: false
-    ImportFailReason:
-      enum:
-      - None
-      - ProviderNotEnabled
-      - InternalError
-      type: string
-    NewRequestGetRecordsDto:
-      type: object
-      properties:
-        externalId:
-          type:
-          - string
-          - 'null'
-        recentRecordId:
-          type: string
-          format: uuid
-        records:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/NewRequestGetRecordDto'
-      additionalProperties: false
     NewRequestImportRecordDto:
       type: object
       properties:
@@ -1533,13 +1410,12 @@ components:
           type: string
           format: date-time
       additionalProperties: false
-    GetRecordsDto:
+    ProviderImportRecordsDto:
       type: object
       properties:
-        externalId:
-          type:
-          - string
-          - 'null'
+        providerId:
+          type: string
+          format: uuid
         recentRecordId:
           type: string
           format: uuid
@@ -1548,32 +1424,134 @@ components:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/GetRecordDto'
+            $ref: '#/components/schemas/ImportRecordsDto'
       additionalProperties: false
-    MonitoringStatus:
+    UboRecordDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        getId:
+          type: string
+          format: uuid
+        status:
+          allOf:
+          - $ref: '#/components/schemas/UboStatus'
+        failReason:
+          allOf:
+          - $ref: '#/components/schemas/UboInitiationFailReason'
+        created:
+          type: string
+          format: date-time
+      additionalProperties: false
+    DocumentStatus:
       enum:
-      - None
+      - Available
       - Initiated
       - Requested
-      - Active
-      - SkippedAlreadyActive
-      - DeletionInitiated
-      - DeletionRequested
-      - Deleted
+      - Completed
+      - Rejected
       - FailedInitiation
       - FailedRequest
-      - FailedDeletionInitiation
-      - FailedDeletionRequest
       type: string
-    DocumentsRequestDtoServiceRequest:
+    NewRequestImportRequestDtoServiceRequest:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/DocumentsRequestDto'
+          - $ref: '#/components/schemas/NewRequestImportRequestDto'
           description: The service request DTO
       additionalProperties: false
       description: Service request data
+    GetRecordDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        externalId:
+          type:
+          - string
+          - 'null'
+        searchId:
+          type: string
+          format: uuid
+        status:
+          allOf:
+          - $ref: '#/components/schemas/GetStatus'
+        failReason:
+          allOf:
+          - $ref: '#/components/schemas/GetInitiationFailReason'
+        created:
+          type: string
+          format: date-time
+        taskId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+      additionalProperties: false
+    ProviderNewRequestImportRecordsDto:
+      type: object
+      properties:
+        providerId:
+          type: string
+          format: uuid
+        recentRecordId:
+          type: string
+          format: uuid
+        records:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/NewRequestImportRecordDto'
+      additionalProperties: false
+    ProcessSearchRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ProcessSearchRequestDto'
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
+    AccessLayerDto:
+      type: object
+      properties:
+        geographic:
+          uniqueItems: true
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        businessRelated:
+          uniqueItems: true
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+      additionalProperties: false
+    NewRequestGetRequestDto:
+      required:
+      - externalId
+      - providerId
+      - searchId
+      type: object
+      properties:
+        searchId:
+          type: string
+          format: uuid
+        providerId:
+          type: string
+          format: uuid
+        externalId:
+          minLength: 1
+          type: string
+      additionalProperties: false
     ProviderGetRecordsDto:
       type: object
       properties:
@@ -1591,59 +1569,27 @@ components:
           items:
             $ref: '#/components/schemas/GetRecordsDto'
       additionalProperties: false
-    ImportStatus:
-      enum:
-      - None
-      - Initiated
-      - Completed
-      - CompletedWithWarnings
-      - Failed
-      type: string
-    SearchInitiationFailReason:
-      enum:
-      - None
-      - ProviderNotEnabled
-      - DraftNotFound
-      - InternalError
-      - EntityTypeUnsupported
-      type: string
-    ProcessGetRequestDto:
-      required:
-      - externalId
-      - providerId
-      - searchId
+    ImportRecordsDto:
       type: object
       properties:
-        searchId:
+        getId:
           type: string
           format: uuid
-        providerId:
+        recentRecordId:
           type: string
           format: uuid
-        externalId:
-          minLength: 1
-          type: string
-        documentCollectionProviderIds:
+        records:
           type:
           - array
           - 'null'
           items:
-            type: string
-        taskId:
-          type:
-          - string
-          - 'null'
-          format: uuid
+            $ref: '#/components/schemas/ImportRecordDto'
       additionalProperties: false
-    DocumentStatus:
+    ProcessStatus:
       enum:
-      - Available
-      - Initiated
-      - Requested
-      - Completed
-      - Rejected
-      - FailedInitiation
-      - FailedRequest
+      - Unknown
+      - Active
+      - Invalid
       type: string
     DocumentRecordDto:
       type: object
@@ -1664,44 +1610,6 @@ components:
         created:
           type: string
           format: date-time
-      additionalProperties: false
-    SearchRecordDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        status:
-          allOf:
-          - $ref: '#/components/schemas/SearchStatus'
-        failReason:
-          allOf:
-          - $ref: '#/components/schemas/SearchInitiationFailReason'
-        created:
-          type: string
-          format: date-time
-        taskId:
-          type:
-          - string
-          - 'null'
-          format: uuid
-      additionalProperties: false
-    NewRequestSearchRequestDto:
-      required:
-      - entityType
-      - providersIds
-      - searchCriteria
-      type: object
-      properties:
-        providersIds:
-          type: array
-          items:
-            type: string
-            format: uuid
-        searchCriteria: {}
-        entityType:
-          allOf:
-          - $ref: '#/components/schemas/EntityType'
       additionalProperties: false
     ExternalDataNewRequestDto:
       type: object
@@ -1737,6 +1645,12 @@ components:
           type: string
           format: date-time
       additionalProperties: false
+    GetInitiationFailReason:
+      enum:
+      - None
+      - ProviderNotEnabled
+      - InternalError
+      type: string
     ProcessImportRequestDto:
       required:
       - getId
@@ -1746,6 +1660,219 @@ components:
           type: string
           format: uuid
       additionalProperties: false
+    SearchInitiationFailReason:
+      enum:
+      - None
+      - ProviderNotEnabled
+      - DraftNotFound
+      - InternalError
+      - EntityTypeUnsupported
+      type: string
+    EntityValidationDetails:
+      type: object
+      properties:
+        entityName:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        targetEntity:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    NewRequestSearchResponseDto:
+      required:
+      - id
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+      additionalProperties: false
+    DocumentRequestDto:
+      required:
+      - data
+      - id
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        data:
+          allOf:
+          - $ref: '#/components/schemas/DocumentRequestDataDto'
+      additionalProperties: false
+    ImportStatus:
+      enum:
+      - None
+      - Initiated
+      - Completed
+      - CompletedWithWarnings
+      - Failed
+      type: string
+    ProcessImportRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ProcessImportRequestDto'
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
+    SearchRecordDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          allOf:
+          - $ref: '#/components/schemas/SearchStatus'
+        failReason:
+          allOf:
+          - $ref: '#/components/schemas/SearchInitiationFailReason'
+        created:
+          type: string
+          format: date-time
+        taskId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+      additionalProperties: false
+    UboInitiationFailReason:
+      enum:
+      - None
+      - ProviderNotEnabled
+      - InternalError
+      type: string
+    ExternalDataProcessContextDto:
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/ContextType'
+        id:
+          type: string
+          format: uuid
+      additionalProperties: false
+    UboStatus:
+      enum:
+      - Initiated
+      - Requested
+      - Completed
+      - FailedInitiation
+      - FailedRequest
+      type: string
+    DocumentsRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/DocumentsRequestDto'
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
+    ProcessSearchRequestDto:
+      required:
+      - providersIds
+      type: object
+      properties:
+        providersIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        taskId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+      additionalProperties: false
+    NewRequestImportContextDataDto:
+      type: object
+      properties:
+        entityId:
+          type: string
+          format: uuid
+        journeysIds:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+            format: uuid
+      additionalProperties: false
+    EntityType:
+      enum:
+      - Unknown
+      - Company
+      - Individual
+      type: string
+    ExternalDataProcessGetDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ExternalDataProcessGetDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    DocumentInitiationFailReason:
+      enum:
+      - None
+      - ProviderNotEnabled
+      - InternalError
+      type: string
+    MonitoringStatus:
+      enum:
+      - None
+      - Initiated
+      - Requested
+      - Active
+      - SkippedAlreadyActive
+      - DeletionInitiated
+      - DeletionRequested
+      - Deleted
+      - FailedInitiation
+      - FailedRequest
+      - FailedDeletionInitiation
+      - FailedDeletionRequest
+      type: string
+    DocumentsStatusRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/DocumentsStatusRequestDto'
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
+    MonitoringInitiationFailReason:
+      enum:
+      - None
+      - ProviderNotEnabled
+      - InternalError
+      type: string
+    ContextType:
+      enum:
+      - Empty
+      - Journey
+      - NewRequest
+      type: string
     DocumentStatusRequestDto:
       required:
       - documentId
@@ -1759,15 +1886,253 @@ components:
           allOf:
           - $ref: '#/components/schemas/DocumentStatus'
       additionalProperties: false
-    NewRequestSearchResponseDto:
-      required:
-      - id
+    ImportRecordDto:
       type: object
       properties:
         id:
           type: string
           format: uuid
+        getId:
+          type: string
+          format: uuid
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ImportStatus'
+        failReason:
+          allOf:
+          - $ref: '#/components/schemas/ImportFailReason'
+        created:
+          type: string
+          format: date-time
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        validationMessages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/EntityValidationDetails'
       additionalProperties: false
+    NewRequestSearchResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/NewRequestSearchResponseDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    ProcessUboRequestDto:
+      required:
+      - getId
+      type: object
+      properties:
+        getId:
+          type: string
+          format: uuid
+      additionalProperties: false
+    ExternalDataProcessDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ExternalDataProcessDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    DocumentRequestDataDto:
+      required:
+      - name
+      - type
+      type: object
+      properties:
+        name:
+          minLength: 1
+          type: string
+        type:
+          minLength: 1
+          type: string
+        accessLayers:
+          allOf:
+          - $ref: '#/components/schemas/AccessLayerDto'
+      additionalProperties: false
+    ExternalDataNewRequestDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ExternalDataNewRequestDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    GetRecordsDto:
+      type: object
+      properties:
+        externalId:
+          type:
+          - string
+          - 'null'
+        recentRecordId:
+          type: string
+          format: uuid
+        records:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/GetRecordDto'
+      additionalProperties: false
+    NewRequestGetRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/NewRequestGetRequestDto'
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
+    ProviderMonitoringRecordsDto:
+      type: object
+      properties:
+        providerId:
+          type: string
+          format: uuid
+        recentRecordId:
+          type: string
+          format: uuid
+        records:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/MonitoringRecordDto'
+      additionalProperties: false
+    ExternalDataProcessGetDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        isLargePayload:
+          type: boolean
+        s3FileLocation:
+          type:
+          - string
+          - 'null'
+        documents:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/DocumentRecordsDto'
+      additionalProperties: false
+    DocumentsStatusRequestDto:
+      required:
+      - documents
+      type: object
+      properties:
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentStatusRequestDto'
+      additionalProperties: false
+    NewRequestSearchRecordDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          allOf:
+          - $ref: '#/components/schemas/SearchStatus'
+        criteria: {}
+        entityType:
+          allOf:
+          - $ref: '#/components/schemas/EntityType'
+        failReason:
+          allOf:
+          - $ref: '#/components/schemas/SearchInitiationFailReason'
+        created:
+          type: string
+          format: date-time
+      additionalProperties: false
+    ProcessUboRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ProcessUboRequestDto'
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    UboRecordsDto:
+      type: object
+      properties:
+        getId:
+          type: string
+          format: uuid
+        recentRecordId:
+          type: string
+          format: uuid
+        records:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UboRecordDto'
+      additionalProperties: false
+    MonitoringDeletionInitiationFailReason:
+      enum:
+      - None
+      - ProviderNotEnabled
+      - InternalError
+      type: string
+    ImportFailReason:
+      enum:
+      - None
+      - ProviderNotEnabled
+      - InternalError
+      type: string
     NewRequestGetRecordDto:
       type: object
       properties:
@@ -1791,356 +2156,6 @@ components:
           type: string
           format: date-time
       additionalProperties: false
-    NewRequestImportContextDataDto:
-      type: object
-      properties:
-        entityId:
-          type: string
-          format: uuid
-        journeysIds:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-            format: uuid
-      additionalProperties: false
-    ProviderNewRequestSearchRecordsDto:
-      type: object
-      properties:
-        providerId:
-          type: string
-          format: uuid
-        recentRecordId:
-          type: string
-          format: uuid
-        records:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/NewRequestSearchRecordDto'
-      additionalProperties: false
-    NewRequestGetRequestDto:
-      required:
-      - externalId
-      - providerId
-      - searchId
-      type: object
-      properties:
-        searchId:
-          type: string
-          format: uuid
-        providerId:
-          type: string
-          format: uuid
-        externalId:
-          minLength: 1
-          type: string
-      additionalProperties: false
-    SearchStatus:
-      enum:
-      - Initiated
-      - Requested
-      - Completed
-      - FailedInitiation
-      - FailedRequest
-      type: string
-    MonitoringInitiationFailReason:
-      enum:
-      - None
-      - ProviderNotEnabled
-      - InternalError
-      type: string
-    ProcessImportRequestDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ProcessImportRequestDto'
-          description: The service request DTO
-      additionalProperties: false
-      description: Service request data
-    ExternalDataProcessGetDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        isLargePayload:
-          type: boolean
-        s3FileLocation:
-          type:
-          - string
-          - 'null'
-        documents:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/DocumentRecordsDto'
-      additionalProperties: false
-    ProviderSearchRecordsDto:
-      type: object
-      properties:
-        providerId:
-          type: string
-          format: uuid
-        recentRecordId:
-          type: string
-          format: uuid
-        records:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/SearchRecordDto'
-      additionalProperties: false
-    ServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    ExternalDataNewRequestDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ExternalDataNewRequestDto'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    ProcessGetRequestDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ProcessGetRequestDto'
-          description: The service request DTO
-      additionalProperties: false
-      description: Service request data
-    DocumentRequestDto:
-      required:
-      - data
-      - id
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        data:
-          allOf:
-          - $ref: '#/components/schemas/DocumentRequestDataDto'
-      additionalProperties: false
-    ProcessUboRequestDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ProcessUboRequestDto'
-          description: The service request DTO
-      additionalProperties: false
-      description: Service request data
-    NewRequestSearchRecordDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        status:
-          allOf:
-          - $ref: '#/components/schemas/SearchStatus'
-        criteria: {}
-        entityType:
-          allOf:
-          - $ref: '#/components/schemas/EntityType'
-        failReason:
-          allOf:
-          - $ref: '#/components/schemas/SearchInitiationFailReason'
-        created:
-          type: string
-          format: date-time
-      additionalProperties: false
-    NewRequestImportRequestDto:
-      required:
-      - accessLayers
-      - externalId
-      - journeyTypes
-      - overwrittenData
-      - searchId
-      type: object
-      properties:
-        searchId:
-          type: string
-          format: uuid
-        externalId:
-          minLength: 1
-          type: string
-        overwrittenData: {}
-        journeyTypes:
-          type: array
-          items:
-            $ref: '#/components/schemas/JourneyTypeDto'
-        accessLayers:
-          allOf:
-          - $ref: '#/components/schemas/AccessLayerDto'
-      additionalProperties: false
-    UboRecordDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        getId:
-          type: string
-          format: uuid
-        status:
-          allOf:
-          - $ref: '#/components/schemas/UboStatus'
-        failReason:
-          allOf:
-          - $ref: '#/components/schemas/UboInitiationFailReason'
-        created:
-          type: string
-          format: date-time
-      additionalProperties: false
-    JourneyTypeDto:
-      required:
-      - type
-      type: object
-      properties:
-        type:
-          minLength: 1
-          type: string
-      additionalProperties: false
-    ContextType:
-      enum:
-      - Empty
-      - Journey
-      - NewRequest
-      type: string
-    DocumentRecordsDto:
-      type: object
-      properties:
-        externalId:
-          type:
-          - string
-          - 'null'
-        recentRecordId:
-          type: string
-          format: uuid
-        records:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/DocumentRecordDto'
-      additionalProperties: false
-    EntityType:
-      enum:
-      - Unknown
-      - Company
-      - Individual
-      type: string
-    ProcessUboRequestDto:
-      required:
-      - getId
-      type: object
-      properties:
-        getId:
-          type: string
-          format: uuid
-      additionalProperties: false
-    ProviderMonitoringRecordsDto:
-      type: object
-      properties:
-        providerId:
-          type: string
-          format: uuid
-        recentRecordId:
-          type: string
-          format: uuid
-        records:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/MonitoringRecordDto'
-      additionalProperties: false
-    ExternalDataProcessContextDto:
-      type: object
-      properties:
-        type:
-          allOf:
-          - $ref: '#/components/schemas/ContextType'
-        id:
-          type: string
-          format: uuid
-      additionalProperties: false
-    NewRequestSearchRequestDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/NewRequestSearchRequestDto'
-          description: The service request DTO
-      additionalProperties: false
-      description: Service request data
-    DocumentInitiationFailReason:
-      enum:
-      - None
-      - ProviderNotEnabled
-      - InternalError
-      type: string
-    ExternalDataProcessDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ExternalDataProcessDto'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data:
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
     StringServiceResponse:
       type: object
       properties:
@@ -2158,80 +2173,6 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    UboInitiationFailReason:
-      enum:
-      - None
-      - ProviderNotEnabled
-      - InternalError
-      type: string
-    ProcessSearchRequestDto:
-      required:
-      - providersIds
-      type: object
-      properties:
-        providersIds:
-          type: array
-          items:
-            type: string
-            format: uuid
-        taskId:
-          type:
-          - string
-          - 'null'
-          format: uuid
-      additionalProperties: false
-    GetRecordDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        externalId:
-          type:
-          - string
-          - 'null'
-        searchId:
-          type: string
-          format: uuid
-        status:
-          allOf:
-          - $ref: '#/components/schemas/GetStatus'
-        failReason:
-          allOf:
-          - $ref: '#/components/schemas/GetInitiationFailReason'
-        created:
-          type: string
-          format: date-time
-        taskId:
-          type:
-          - string
-          - 'null'
-          format: uuid
-      additionalProperties: false
-    UboRecordsDto:
-      type: object
-      properties:
-        getId:
-          type: string
-          format: uuid
-        recentRecordId:
-          type: string
-          format: uuid
-        records:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/UboRecordDto'
-      additionalProperties: false
-    UboStatus:
-      enum:
-      - Initiated
-      - Requested
-      - Completed
-      - FailedInitiation
-      - FailedRequest
-      type: string
     ExternalDataProcessDto:
       type: object
       properties:
@@ -2278,20 +2219,64 @@ components:
           type: string
           format: date-time
       additionalProperties: false
-    MonitoringDeletionInitiationFailReason:
-      enum:
-      - None
-      - ProviderNotEnabled
-      - InternalError
-      type: string
-    GetStatus:
-      enum:
-      - Initiated
-      - Requested
-      - Completed
-      - FailedInitiation
-      - FailedRequest
-      type: string
+    NewRequestImportRequestDto:
+      required:
+      - accessLayers
+      - externalId
+      - journeyTypes
+      - overwrittenData
+      - searchId
+      type: object
+      properties:
+        searchId:
+          type: string
+          format: uuid
+        externalId:
+          minLength: 1
+          type: string
+        overwrittenData: {}
+        journeyTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/JourneyTypeDto'
+        accessLayers:
+          allOf:
+          - $ref: '#/components/schemas/AccessLayerDto'
+      additionalProperties: false
+    MonitoringRecordDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        importId:
+          type: string
+          format: uuid
+        externalId:
+          type:
+          - string
+          - 'null'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/MonitoringStatus'
+        failReason:
+          allOf:
+          - $ref: '#/components/schemas/MonitoringInitiationFailReason'
+        deletionFailReason:
+          allOf:
+          - $ref: '#/components/schemas/MonitoringDeletionInitiationFailReason'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        deletionErrorMessage:
+          type:
+          - string
+          - 'null'
+        created:
+          type: string
+          format: date-time
+      additionalProperties: false
     ServiceResponseMessage:
       type: object
       properties:
@@ -2317,58 +2302,50 @@ components:
           example: INTERNAL_SERVER_ERROR
       additionalProperties: false
       description: The message associated to the service response
-    GetInitiationFailReason:
-      enum:
-      - None
-      - ProviderNotEnabled
-      - InternalError
-      type: string
-    DocumentsRequestDto:
-      required:
-      - documents
+    NewRequestGetRecordsDto:
       type: object
       properties:
-        documents:
-          type: array
-          items:
-            $ref: '#/components/schemas/DocumentRequestDto'
-      additionalProperties: false
-    NewRequestGetRequestDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/NewRequestGetRequestDto'
-          description: The service request DTO
-      additionalProperties: false
-      description: Service request data
-    ProviderNewRequestGetRecordsDto:
-      type: object
-      properties:
-        providerId:
-          type: string
-          format: uuid
-        recentRecordId:
+        externalId:
           type:
           - string
           - 'null'
+        recentRecordId:
+          type: string
+          format: uuid
         records:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/NewRequestGetRecordsDto'
+            $ref: '#/components/schemas/NewRequestGetRecordDto'
       additionalProperties: false
-    DocumentsStatusRequestDtoServiceRequest:
+    NewRequestSearchRequestDtoServiceRequest:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/DocumentsStatusRequestDto'
+          - $ref: '#/components/schemas/NewRequestSearchRequestDto'
           description: The service request DTO
       additionalProperties: false
       description: Service request data
-    ProviderImportRecordsDto:
+    DocumentRecordsDto:
+      type: object
+      properties:
+        externalId:
+          type:
+          - string
+          - 'null'
+        recentRecordId:
+          type: string
+          format: uuid
+        records:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/DocumentRecordDto'
+      additionalProperties: false
+    ProviderNewRequestSearchRecordsDto:
       type: object
       properties:
         providerId:
@@ -2382,7 +2359,30 @@ components:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ImportRecordsDto'
+            $ref: '#/components/schemas/NewRequestSearchRecordDto'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data:
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    JourneyTypeDto:
+      required:
+      - type
+      type: object
+      properties:
+        type:
+          minLength: 1
+          type: string
       additionalProperties: false
   securitySchemes:
     Bearer:

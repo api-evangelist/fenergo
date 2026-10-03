@@ -5532,15 +5532,42 @@ paths:
     - url: /screeningquery
 components:
   schemas:
-    UpdateScopingRuleSetVersionDtoServiceRequest:
+    CreateScopingRuleSetDtoServiceRequest:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/UpdateScopingRuleSetVersionDto'
-          description: Request DTO representing set of properties which define a new version of scoping rule set
+          - $ref: '#/components/schemas/CreateScopingRuleSetDto'
+          description: DTO representing scoping rule set data needed for creation
       additionalProperties: false
       description: Service request data
+    CreateScopingRuleSetVersionDto:
+      type: object
+      properties:
+        effectiveFrom:
+          type: string
+          description: The date that the version takes effect when published
+          format: date-time
+          example: '2021-01-05T14:48:00.000Z'
+        notes:
+          type:
+          - string
+          - 'null'
+          description: Notes related to the Related Party Scoping Rules Version
+        conditions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDto'
+          description: Conditions under which the schema can be used
+      additionalProperties: false
+      description: DTO representing scoping rule set data needed for version creation
+    Decision:
+      enum:
+      - Approve
+      - Reject
+      type: string
     CloneScopingRuleSetVersionResponseDtoServiceResponse:
       type: object
       properties:
@@ -5557,6 +5584,72 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
+    CreateScopingRuleSetResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateScopingRuleSetResponseDto'
+          description: DTO representing scoping rule set data
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    VersionStatus:
+      enum:
+      - Draft
+      - Pending
+      - Rejected
+      - Published
+      - Archived
+      - Deleted
+      type: string
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    CloneScopingRuleSetVersionDto:
+      required:
+      - name
+      type: object
+      properties:
+        name:
+          minLength: 1
+          type: string
+          description: Name of new scoping rule set
+          example: Shareholder Scoping Rules
+      additionalProperties: false
+      description: Request DTO representing clone scoping rule set data
     CloneScopingRuleSetVersionDtoServiceRequest:
       type: object
       properties:
@@ -5564,6 +5657,113 @@ components:
           allOf:
           - $ref: '#/components/schemas/CloneScopingRuleSetVersionDto'
           description: Request DTO representing clone scoping rule set data
+      additionalProperties: false
+      description: Service request data
+    CreateScopingRuleSetResponseDto:
+      allOf:
+      - $ref: '#/components/schemas/CreateScopingRuleSetDto'
+      - required:
+        - signees
+        type: object
+        properties:
+          scopingRuleSetId:
+            type: string
+            description: The UiD of scoping rule set
+            format: uuid
+            example: 7084669b-0813-4faa-b1d5-b7bf6d749717
+          versionNumber:
+            type: integer
+            description: The version number
+            format: int32
+            example: 1
+          created:
+            type: string
+            description: The creation date of the version (Read-only)
+            format: date-time
+            example: '2021-01-05T14:48:00.000Z'
+          status:
+            allOf:
+            - $ref: '#/components/schemas/VersionStatus'
+            description: The status of the version
+            example: Draft
+          signees:
+            type: array
+            items:
+              $ref: '#/components/schemas/SigneeDto'
+            description: The defined list of signees for the version
+        additionalProperties: false
+      description: DTO representing scoping rule set data
+    CreateScopingRuleSetDto:
+      allOf:
+      - $ref: '#/components/schemas/CreateScopingRuleSetVersionDto'
+      - required:
+        - name
+        type: object
+        properties:
+          name:
+            minLength: 1
+            type: string
+            description: Scoping rule set name
+            example: Global
+        additionalProperties: false
+      description: DTO representing scoping rule set data needed for creation
+    ValueField:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          description: Value of DataSource used to filter field values
+        field:
+          type:
+          - string
+          - 'null'
+          description: Field value used to validate conditional value
+      additionalProperties: false
+    SignScopingRuleSetVersionResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/SignScopingRuleSetVersionResponseDto'
+          description: Sign scoping rule set response contains the new version status
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    UpdateScopingRuleSetResponseDto:
+      type: object
+      properties:
+        version:
+          type: integer
+          description: Scoping rule set aggregate version after update
+          format: int32
+          example: 4
+      additionalProperties: false
+      description: Response DTO representing updated scoping rule set
+    CloneScopingRuleSetVersionResponseDto:
+      type: object
+      properties:
+        scopingRuleSetId:
+          type: string
+          description: Id of the cloned scoping rule set
+          format: uuid
+          example: 7084669b-0813-4faa-b1d5-b7bf6d749717
+      additionalProperties: false
+      description: Cloned scoping rule set response data
+    UpdateScopingRuleSetVersionDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UpdateScopingRuleSetVersionDto'
+          description: Request DTO representing set of properties which define a new version of scoping rule set
       additionalProperties: false
       description: Service request data
     SigneeDto:
@@ -5584,47 +5784,23 @@ components:
           readOnly: true
       additionalProperties: false
       description: Defines a version Signee
-    CreateScopingRuleSetDtoServiceRequest:
+    Approver:
       type: object
       properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateScopingRuleSetDto'
-          description: DTO representing scoping rule set data needed for creation
-      additionalProperties: false
-      description: Service request data
-    UpdateScopingRuleSetVersionDto:
-      type: object
-      properties:
-        effectiveFrom:
-          type: string
-          description: The date that the version takes effect when published
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        notes:
+        subject:
           type:
           - string
           - 'null'
-          description: Notes related to the Related Party Scoping Rules Version
-        conditions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDto'
-          description: Conditions under which the schema can be used
-        version:
-          type: integer
-          description: 'Current version of scoping rule set version aggregate where the changes needs to be applied. This parameter is required
-
-            to guarantee consistency and conflicts detection. If it is not provided, it will save new changes
-
-            on top of latest without conflicts checking'
-          format: int32
-          default: -1
-          example: 5
+        successor:
+          allOf:
+          - $ref: '#/components/schemas/Approver'
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
       additionalProperties: false
-      description: Request DTO representing set of properties which define a new version of scoping rule set
     ConditionDto:
       type: object
       properties:
@@ -5660,14 +5836,14 @@ components:
           description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
       additionalProperties: false
       description: Represents condition root
-    CreateScopingRuleSetVersionDto:
+    UpdateScopingRuleSetVersionDto:
       type: object
       properties:
         effectiveFrom:
           type: string
           description: The date that the version takes effect when published
           format: date-time
-          example: '2021-01-05T14:48:00.000Z'
+          example: '2021-01-01T14:48:00.000Z'
         notes:
           type:
           - string
@@ -5680,75 +5856,52 @@ components:
           items:
             $ref: '#/components/schemas/ConditionDto'
           description: Conditions under which the schema can be used
+        version:
+          type: integer
+          description: 'Current version of scoping rule set version aggregate where the changes needs to be applied. This parameter is required
+
+            to guarantee consistency and conflicts detection. If it is not provided, it will save new changes
+
+            on top of latest without conflicts checking'
+          format: int32
+          default: -1
+          example: 5
       additionalProperties: false
-      description: DTO representing scoping rule set data needed for version creation
-    ValueField:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          description: Value of DataSource used to filter field values
-        field:
-          type:
-          - string
-          - 'null'
-          description: Field value used to validate conditional value
-      additionalProperties: false
-    CloneScopingRuleSetVersionResponseDto:
+      description: Request DTO representing set of properties which define a new version of scoping rule set
+    SignScopingRuleSetVersionResponseDto:
       type: object
       properties:
         scopingRuleSetId:
           type: string
-          description: Id of the cloned scoping rule set
+          description: The UiD of the scoping rule set
           format: uuid
-          example: 7084669b-0813-4faa-b1d5-b7bf6d749717
-      additionalProperties: false
-      description: Cloned scoping rule set response data
-    CloneScopingRuleSetVersionDto:
-      required:
-      - name
-      type: object
-      properties:
-        name:
-          minLength: 1
-          type: string
-          description: Name of new scoping rule set
-          example: Shareholder Scoping Rules
-      additionalProperties: false
-      description: Request DTO representing clone scoping rule set data
-    Decision:
-      enum:
-      - Approve
-      - Reject
-      type: string
-    SignScopingRuleSetVersionResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/SignScopingRuleSetVersionResponseDto'
-          description: Sign scoping rule set response contains the new version status
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    UpdateScopingRuleSetResponseDto:
-      type: object
-      properties:
-        version:
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        versionNumber:
           type: integer
-          description: Scoping rule set aggregate version after update
+          description: The number of the version that has been signed
           format: int32
-          example: 4
+          example: 2
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+          description: The new version status
+          example: Rejected
       additionalProperties: false
-      description: Response DTO representing updated scoping rule set
+      description: Sign scoping rule set response contains the new version status
+    ApproveAction:
+      type: object
+      properties:
+        comment:
+          type:
+          - string
+          - 'null'
+        decision:
+          allOf:
+          - $ref: '#/components/schemas/Decision'
+        created:
+          type: string
+          format: date-time
+      additionalProperties: false
     ApproveActionServiceRequest:
       type: object
       properties:
@@ -5758,20 +5911,40 @@ components:
           description: The service request DTO
       additionalProperties: false
       description: Service request data
-    ObjectServiceResponse:
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+          description: Name of the property
+          example: data
+        errorMessage:
+          type:
+          - string
+          - 'null'
+          description: User friendly error message
+          example: Data is required
+        attemptedValue:
+          description: Invalid value
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Internal error code
+          example: NotNullValidator
+      additionalProperties: false
+      description: Represents the details of validation error
+    CreateScopingRuleSetVersionDtoServiceRequest:
       type: object
       properties:
         data:
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+          allOf:
+          - $ref: '#/components/schemas/CreateScopingRuleSetVersionDto'
+          description: DTO representing scoping rule set data needed for version creation
       additionalProperties: false
-      description: Service response data
+      description: Service request data
     StringServiceResponse:
       type: object
       properties:
@@ -5789,47 +5962,13 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    Approver:
-      type: object
-      properties:
-        subject:
-          type:
-          - string
-          - 'null'
-        successor:
-          allOf:
-          - $ref: '#/components/schemas/Approver'
-        action:
-          allOf:
-          - $ref: '#/components/schemas/ApproveAction'
-        hasProcessedRequest:
-          type: boolean
-          readOnly: true
-      additionalProperties: false
-    CreateScopingRuleSetDto:
-      allOf:
-      - $ref: '#/components/schemas/CreateScopingRuleSetVersionDto'
-      - required:
-        - name
-        type: object
-        properties:
-          name:
-            minLength: 1
-            type: string
-            description: Scoping rule set name
-            example: Global
-        additionalProperties: false
-      description: DTO representing scoping rule set data needed for creation
-    ValidationErrorModelListServiceResponse:
+    UpdateScopingRuleSetResponseDtoServiceResponse:
       type: object
       properties:
         data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel'
-          description: The service response DTO
+          allOf:
+          - $ref: '#/components/schemas/UpdateScopingRuleSetResponseDto'
+          description: Response DTO representing updated scoping rule set
         messages:
           type:
           - array
@@ -5839,16 +5978,31 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+          description: The message
+          example: Success
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
+      additionalProperties: false
+      description: The message associated to the service response
     ConditionDefinitionDto:
       type: object
       properties:
@@ -5909,13 +6063,11 @@ components:
           description: Field value used for conditional limit validation
       additionalProperties: false
       description: Represents condition
-    CreateScopingRuleSetResponseDtoServiceResponse:
+    ObjectServiceResponse:
       type: object
       properties:
         data:
-          allOf:
-          - $ref: '#/components/schemas/CreateScopingRuleSetResponseDto'
-          description: DTO representing scoping rule set data
+          description: The service response DTO
         messages:
           type:
           - array
@@ -5925,158 +6077,27 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    CreateScopingRuleSetResponseDto:
+    ScopingRuleSetVersionDto:
       allOf:
-      - $ref: '#/components/schemas/CreateScopingRuleSetDto'
+      - $ref: '#/components/schemas/ScopingRuleSetLiteVersionDto'
       - required:
         - signees
         type: object
         properties:
-          scopingRuleSetId:
-            type: string
-            description: The UiD of scoping rule set
-            format: uuid
-            example: 7084669b-0813-4faa-b1d5-b7bf6d749717
-          versionNumber:
-            type: integer
-            description: The version number
-            format: int32
-            example: 1
-          created:
-            type: string
-            description: The creation date of the version (Read-only)
-            format: date-time
-            example: '2021-01-05T14:48:00.000Z'
-          status:
-            allOf:
-            - $ref: '#/components/schemas/VersionStatus'
-            description: The status of the version
-            example: Draft
           signees:
             type: array
             items:
               $ref: '#/components/schemas/SigneeDto'
             description: The defined list of signees for the version
+          conditions:
+            type:
+            - array
+            - 'null'
+            items:
+              $ref: '#/components/schemas/ConditionDto'
+            description: Conditions under which the schema can be used
         additionalProperties: false
-      description: DTO representing scoping rule set data
-    ValidationErrorModel:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-          description: Name of the property
-          example: data
-        errorMessage:
-          type:
-          - string
-          - 'null'
-          description: User friendly error message
-          example: Data is required
-        attemptedValue:
-          description: Invalid value
-        errorCode:
-          type:
-          - string
-          - 'null'
-          description: Internal error code
-          example: NotNullValidator
-      additionalProperties: false
-      description: Represents the details of validation error
-    VersionStatus:
-      enum:
-      - Draft
-      - Pending
-      - Rejected
-      - Published
-      - Archived
-      - Deleted
-      type: string
-    SignScopingRuleSetVersionResponseDto:
-      type: object
-      properties:
-        scopingRuleSetId:
-          type: string
-          description: The UiD of the scoping rule set
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        versionNumber:
-          type: integer
-          description: The number of the version that has been signed
-          format: int32
-          example: 2
-        status:
-          allOf:
-          - $ref: '#/components/schemas/VersionStatus'
-          description: The new version status
-          example: Rejected
-      additionalProperties: false
-      description: Sign scoping rule set response contains the new version status
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-          description: The message
-          example: Success
-        type:
-          type:
-          - string
-          - 'null'
-          description: 'Type of the message
-
-            One of Info, Warning, Error, Forbidden'
-          example: Info
-        errorCode:
-          type:
-          - string
-          - 'null'
-          description: Error Code
-          example: INTERNAL_SERVER_ERROR
-      additionalProperties: false
-      description: The message associated to the service response
-    UpdateScopingRuleSetResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/UpdateScopingRuleSetResponseDto'
-          description: Response DTO representing updated scoping rule set
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    ApproveAction:
-      type: object
-      properties:
-        comment:
-          type:
-          - string
-          - 'null'
-        decision:
-          allOf:
-          - $ref: '#/components/schemas/Decision'
-        created:
-          type: string
-          format: date-time
-      additionalProperties: false
-    CreateScopingRuleSetVersionDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateScopingRuleSetVersionDto'
-          description: DTO representing scoping rule set data needed for version creation
-      additionalProperties: false
-      description: Service request data
+      description: Response DTO representing scoping rule set version data
     ScopingRuleSetLiteDto:
       required:
       - name
@@ -6181,6 +6202,22 @@ components:
           example: Version Notes
       additionalProperties: false
       description: Represents a lite version of a Scoping Rule Set version
+    ScopingRuleSetVersionDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ScopingRuleSetVersionDto'
+          description: Response DTO representing scoping rule set version data
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
     ScopingRuleSetLiteDtoIEnumerableServiceResponse:
       type: object
       properties:
@@ -6200,76 +6237,47 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    ScopingRuleSetVersionDtoServiceResponse:
+    ScopingRuleSetVersionSignResponse:
       type: object
       properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ScopingRuleSetVersionDto'
-          description: Response DTO representing scoping rule set version data
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    ScopingRuleSetVersionDto:
-      allOf:
-      - $ref: '#/components/schemas/ScopingRuleSetLiteVersionDto'
-      - required:
-        - signees
-        type: object
-        properties:
-          signees:
-            type: array
-            items:
-              $ref: '#/components/schemas/SigneeDto'
-            description: The defined list of signees for the version
-          conditions:
-            type:
-            - array
-            - 'null'
-            items:
-              $ref: '#/components/schemas/ConditionDto'
-            description: Conditions under which the schema can be used
-        additionalProperties: false
-      description: Response DTO representing scoping rule set version data
-    UpdateScopingRuleSetVersionDtoServiceRequest_2:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/UpdateScopingRuleSetVersionDto_2'
-          description: Request DTO representing set of properties which define a new version of scoping rule set
-      additionalProperties: false
-    CloneScopingRuleSetVersionResponse:
-      type: object
-      properties:
-        scopingRuleSetId:
+        setId:
           type: string
-          description: Id of the cloned scoping rule set
+          description: The UiD of the scoping rule set
           format: uuid
-        expectedRuleCount:
+        versionNumber:
           type: integer
-          description: Expected number of rules of the cloned scoping rule set
+          description: The number of the version that has been signed
           format: int32
+          example: 2
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+          description: The new version status
+          example: Rejected
       additionalProperties: false
-      description: Request DTO representing clone scoping rule set data
-    CreateScopingRuleSetResponseServiceResponse:
+      description: Sign scoping rule set response contains the new version status
+    CreateScopingRuleSetResponse:
+      allOf:
+      - $ref: '#/components/schemas/ScopingRuleSetDto'
+      - type: object
+        additionalProperties: false
+    ScopingRuleSetVersionDtoServiceRequest:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/CreateScopingRuleSetResponse'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_2'
+          - $ref: '#/components/schemas/ScopingRuleSetVersionDto_2'
+          description: Request DTO representing product scoping rule set data
+      additionalProperties: false
+    CreateScopingRuleSetVersionFromSetIdResponse:
+      type: object
+      properties:
+        setId:
+          type: string
+          format: uuid
+        versionNumber:
+          type: integer
+          format: int32
       additionalProperties: false
     CloneScopingRuleSetVersionDtoServiceRequest_2:
       type: object
@@ -6277,6 +6285,22 @@ components:
         data:
           allOf:
           - $ref: '#/components/schemas/CloneScopingRuleSetVersionDto_2'
+      additionalProperties: false
+    CloneScopingRuleSetVersionDto_2:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+          description: Scoping Rule Set Name
+          example: Loans in USA
+        uniqueIdentifier:
+          type:
+          - string
+          - 'null'
+          description: Scoping Rule Set UniqueIdentifier
+          example: Global
       additionalProperties: false
     Signee:
       type: object
@@ -6295,13 +6319,30 @@ components:
           type: boolean
           readOnly: true
       additionalProperties: false
-    CloneScopingRuleSetVersionResponseServiceResponse:
+    ScopingRuleType:
+      enum:
+      - TaskDisplay
+      - ProductJourney
+      type: string
+    ValueField_2:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+        field:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ScopingRuleSetVersionDtoServiceResponse_2:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/CloneScopingRuleSetVersionResponse'
-          description: Request DTO representing clone scoping rule set data
+          - $ref: '#/components/schemas/ScopingRuleSetVersionDto_2'
+          description: Request DTO representing product scoping rule set data
         messages:
           type:
           - array
@@ -6309,34 +6350,25 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage_2'
       additionalProperties: false
-    UpdateScopingRuleSetVersionDto_2:
+    UpdateScopingRuleSetVersionDtoServiceRequest_2:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UpdateScopingRuleSetVersionDto_2'
+          description: Request DTO representing set of properties which define a new version of scoping rule set
+      additionalProperties: false
+    ScopingRuleSetDto:
       allOf:
       - $ref: '#/components/schemas/ScopingRuleSetVersionDto_2'
       - type: object
         properties:
-          version:
-            type: integer
-            description: "Current version of Scoping Rule Set aggregate where the changes needs to be applied. This parameter is required \nto guarantee consistency and conflicts detection. If it is not provided, it will save new changes\non top of latest without conflicts checking"
-            format: int32
-            default: -1
-            example: 5
+          type:
+            allOf:
+            - $ref: '#/components/schemas/ScopingRuleType'
+            description: Type of the scoping rule
+            example: ProductJourney
         additionalProperties: false
-      description: Request DTO representing set of properties which define a new version of scoping rule set
-    ScopingRuleType:
-      enum:
-      - TaskDisplay
-      - ProductJourney
-      type: string
-    CreateScopingRuleSetVersionFromSetIdResponse:
-      type: object
-      properties:
-        setId:
-          type: string
-          format: uuid
-        versionNumber:
-          type: integer
-          format: int32
-      additionalProperties: false
     ConditionDto_2:
       required:
       - logicalOperation
@@ -6375,13 +6407,39 @@ components:
           valueType: text
           operation: equal
           operands: []
-    ScopingRuleSetVersionDtoServiceResponse_2:
+    UpdateScopingRuleSetVersionDto_2:
+      allOf:
+      - $ref: '#/components/schemas/ScopingRuleSetVersionDto_2'
+      - type: object
+        properties:
+          version:
+            type: integer
+            description: "Current version of Scoping Rule Set aggregate where the changes needs to be applied. This parameter is required \nto guarantee consistency and conflicts detection. If it is not provided, it will save new changes\non top of latest without conflicts checking"
+            format: int32
+            default: -1
+            example: 5
+        additionalProperties: false
+      description: Request DTO representing set of properties which define a new version of scoping rule set
+    ScopingRuleSetVersionSignResponseServiceResponse:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/ScopingRuleSetVersionDto_2'
-          description: Request DTO representing product scoping rule set data
+          - $ref: '#/components/schemas/ScopingRuleSetVersionSignResponse'
+          description: Sign scoping rule set response contains the new version status
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_2'
+      additionalProperties: false
+    CreateScopingRuleSetVersionFromSetIdResponseServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateScopingRuleSetVersionFromSetIdResponse'
         messages:
           type:
           - array
@@ -6403,73 +6461,12 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage_2'
       additionalProperties: false
-    ValueField_2:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-        field:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ScopingRuleSetVersionDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ScopingRuleSetVersionDto_2'
-          description: Request DTO representing product scoping rule set data
-      additionalProperties: false
-    ScopingRuleSetVersionSignResponseServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ScopingRuleSetVersionSignResponse'
-          description: Sign scoping rule set response contains the new version status
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_2'
-      additionalProperties: false
-    CloneScopingRuleSetVersionDto_2:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-          description: Scoping Rule Set Name
-          example: Loans in USA
-        uniqueIdentifier:
-          type:
-          - string
-          - 'null'
-          description: Scoping Rule Set UniqueIdentifier
-          example: Global
-      additionalProperties: false
     ApproveActionServiceRequest_2:
       type: object
       properties:
         data:
           allOf:
           - $ref: '#/components/schemas/ApproveAction'
-      additionalProperties: false
-    ObjectServiceResponse_2:
-      type: object
-      properties:
-        data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_2'
       additionalProperties: false
     ScopingRuleSetVersionDto_2:
       type: object
@@ -6550,42 +6547,25 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage_2'
       additionalProperties: false
-    ScopingRuleSetVersionSignResponse:
+    CloneScopingRuleSetVersionResponse:
       type: object
       properties:
-        setId:
+        scopingRuleSetId:
           type: string
-          description: The UiD of the scoping rule set
+          description: Id of the cloned scoping rule set
           format: uuid
-        versionNumber:
+        expectedRuleCount:
           type: integer
-          description: The number of the version that has been signed
+          description: Expected number of rules of the cloned scoping rule set
           format: int32
-          example: 2
-        status:
-          allOf:
-          - $ref: '#/components/schemas/VersionStatus'
-          description: The new version status
-          example: Rejected
       additionalProperties: false
-      description: Sign scoping rule set response contains the new version status
-    ScopingRuleSetDto:
-      allOf:
-      - $ref: '#/components/schemas/ScopingRuleSetVersionDto_2'
-      - type: object
-        properties:
-          type:
-            allOf:
-            - $ref: '#/components/schemas/ScopingRuleType'
-            description: Type of the scoping rule
-            example: ProductJourney
-        additionalProperties: false
-    CreateScopingRuleSetVersionFromSetIdResponseServiceResponse:
+      description: Request DTO representing clone scoping rule set data
+    CreateScopingRuleSetResponseServiceResponse:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/CreateScopingRuleSetVersionFromSetIdResponse'
+          - $ref: '#/components/schemas/CreateScopingRuleSetResponse'
         messages:
           type:
           - array
@@ -6593,12 +6573,35 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage_2'
       additionalProperties: false
-    ScopingRuleSetDtoServiceRequest:
+    ServiceResponseMessage_2:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    CloneScopingRuleSetVersionResponseServiceResponse:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/ScopingRuleSetDto'
+          - $ref: '#/components/schemas/CloneScopingRuleSetVersionResponse'
+          description: Request DTO representing clone scoping rule set data
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_2'
       additionalProperties: false
     ConditionDefinitionDto_2:
       type: object
@@ -6645,26 +6648,39 @@ components:
           allOf:
           - $ref: '#/components/schemas/ValueField_2'
       additionalProperties: false
-    CreateScopingRuleSetResponse:
-      allOf:
-      - $ref: '#/components/schemas/ScopingRuleSetDto'
-      - type: object
-        additionalProperties: false
-    ServiceResponseMessage_2:
+    ScopingRuleSetDtoServiceRequest:
       type: object
       properties:
-        message:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ScopingRuleSetDto'
+      additionalProperties: false
+    ObjectServiceResponse_2:
+      type: object
+      properties:
+        data: {}
+        messages:
           type:
-          - string
+          - array
           - 'null'
-        type:
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_2'
+      additionalProperties: false
+    ScopingRuleSetDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
           type:
-          - string
+          - array
           - 'null'
-        errorCode:
+          items:
+            $ref: '#/components/schemas/ScopingRuleSetDto_2'
+        messages:
           type:
-          - string
+          - array
           - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_3'
       additionalProperties: false
     ActiveScopingRuleSetVersionResponseDto:
       type: object
@@ -6740,15 +6756,25 @@ components:
           example: ProductJourney
       additionalProperties: false
       description: Response DTO representing light scoping rule set version data
-    ActiveScopingRuleSetVersionResponseDtoIEnumerableServiceResponse:
+    ValueField_3:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+        field:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ScopingRuleSetVersionDtoServiceResponse_3:
       type: object
       properties:
         data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ActiveScopingRuleSetVersionResponseDto'
+          allOf:
+          - $ref: '#/components/schemas/ScopingRuleSetVersionDto_3'
+          description: Response DTO representing scoping rule set version data
         messages:
           type:
           - array
@@ -6756,6 +6782,45 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage_3'
       additionalProperties: false
+    ScopingRuleSetDto_2:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The UiD of the scoping rule set
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        versions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ScopingRuleSetVersionDto_3'
+          description: Versions associated to this scoping rule set
+        version:
+          type: integer
+          description: Version number for given Aggregate (concurrency check)
+          format: int32
+          example: 1
+        status:
+          type:
+          - string
+          - 'null'
+          description: Product Requirement Set status
+          example: Active
+        uniqueIdentifier:
+          type:
+          - string
+          - 'null'
+          description: UniqueIdentifier of the scoping rule set
+          example: Global
+        type:
+          allOf:
+          - $ref: '#/components/schemas/ScopingRuleType'
+          description: Type of the scoping rule
+          example: ProductJourney
+      additionalProperties: false
+      description: Response DTO representing scoping rule set data
     ConditionDto_3:
       type: object
       properties:
@@ -6781,74 +6846,7 @@ components:
           items:
             $ref: '#/components/schemas/ConditionDefinitionDto_3'
       additionalProperties: false
-    ScopingRuleSetVersionDtoServiceResponse_3:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ScopingRuleSetVersionDto_3'
-          description: Response DTO representing scoping rule set version data
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_3'
-      additionalProperties: false
-    ScopingRuleSetDtoIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ScopingRuleSetDto_2'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_3'
-      additionalProperties: false
     ServiceResponse_2:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_3'
-      additionalProperties: false
-    ValueField_3:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-        field:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ObjectServiceResponse_3:
-      type: object
-      properties:
-        data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_3'
-      additionalProperties: false
-    StringServiceResponse_3:
       type: object
       properties:
         data:
@@ -6964,45 +6962,36 @@ components:
           example: ProductJourney
       additionalProperties: false
       description: Response DTO representing scoping rule set version data
-    ScopingRuleSetDto_2:
+    StringServiceResponse_3:
       type: object
       properties:
-        id:
-          type: string
-          description: The UiD of the scoping rule set
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        versions:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ScopingRuleSetVersionDto_3'
-          description: Versions associated to this scoping rule set
-        version:
-          type: integer
-          description: Version number for given Aggregate (concurrency check)
-          format: int32
-          example: 1
-        status:
-          type:
-          - string
-          - 'null'
-          description: Product Requirement Set status
-          example: Active
-        uniqueIdentifier:
-          type:
-          - string
-          - 'null'
-          description: UniqueIdentifier of the scoping rule set
-          example: Global
-        type:
-          allOf:
-          - $ref: '#/components/schemas/ScopingRuleType'
-          description: Type of the scoping rule
-          example: ProductJourney
+            $ref: '#/components/schemas/ServiceResponseMessage_3'
       additionalProperties: false
-      description: Response DTO representing scoping rule set data
+    ServiceResponseMessage_3:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
     ConditionDefinitionDto_3:
       type: object
       properties:
@@ -7048,51 +7037,32 @@ components:
           allOf:
           - $ref: '#/components/schemas/ValueField_3'
       additionalProperties: false
-    ServiceResponseMessage_3:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    UpdateScopingRuleSetVersionDtoServiceRequest_3:
+    ActiveScopingRuleSetVersionResponseDtoIEnumerableServiceResponse:
       type: object
       properties:
         data:
-          allOf:
-          - $ref: '#/components/schemas/UpdateScopingRuleSetVersionDto_3'
-          description: Request DTO representing set of properties which define a new version of scoping rule set
-      additionalProperties: false
-    CloneScopingRuleSetVersionResponseDtoServiceResponse_2:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CloneScopingRuleSetVersionResponseDto'
-          description: Cloned scoping rule set response data
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ActiveScopingRuleSetVersionResponseDto'
         messages:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ServiceResponseMessage_4'
+            $ref: '#/components/schemas/ServiceResponseMessage_3'
       additionalProperties: false
-    CloneScopingRuleSetVersionDtoServiceRequest_3:
+    ObjectServiceResponse_3:
       type: object
       properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CloneScopingRuleSetVersionDto'
-          description: Request DTO representing clone scoping rule set data
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_3'
       additionalProperties: false
     CreateScopingRuleSetDtoServiceRequest_2:
       type: object
@@ -7102,74 +7072,6 @@ components:
           - $ref: '#/components/schemas/CreateScopingRuleSetDto_2'
           description: DTO representing scoping rule set data needed for creation
       additionalProperties: false
-    UpdateScopingRuleSetVersionDto_3:
-      required:
-      - effectiveFrom
-      type: object
-      properties:
-        effectiveFrom:
-          type: string
-          description: The date that the version takes effect when published
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        conditions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDto_4'
-          description: Conditions under which the schema can be used
-        version:
-          maximum: 2147483647
-          minimum: 0
-          type: integer
-          description: 'Current version of scoping rule set version aggregate where the changes needs to be applied. This parameter is required
-
-            to guarantee consistency and conflicts detection. If it is not provided, it will save new changes
-
-            on top of latest without conflicts checking'
-          format: int32
-          default: -1
-          example: 5
-      additionalProperties: false
-      description: Request DTO representing set of properties which define a new version of scoping rule set
-    ConditionDto_4:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type:
-          - string
-          - 'null'
-        description:
-          type:
-          - string
-          - 'null'
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-        operands:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto_4'
-      additionalProperties: false
-      example:
-        id: 118313c6-91e6-4b05-a537-5a1ab906418f
-        name: Company-type only
-        description: Applicable only when EntityType=Company
-        logicalOperation: AND
-        operands:
-        - fieldName: EntityType
-          value:
-          - Company
-          valueType: text
-          operation: equal
-          operands: []
     CreateScopingRuleSetVersionDto_2:
       required:
       - effectiveFrom
@@ -7189,25 +7091,13 @@ components:
           description: Conditions under which the schema can be used
       additionalProperties: false
       description: DTO representing scoping rule set data needed for version creation
-    ValueField_4:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-        field:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    SignScopingRuleSetVersionResponseDtoServiceResponse_2:
+    CloneScopingRuleSetVersionResponseDtoServiceResponse_2:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/SignScopingRuleSetVersionResponseDto'
-          description: Sign scoping rule set response contains the new version status
+          - $ref: '#/components/schemas/CloneScopingRuleSetVersionResponseDto'
+          description: Cloned scoping rule set response data
         messages:
           type:
           - array
@@ -7215,17 +7105,13 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage_4'
       additionalProperties: false
-    ApproveActionServiceRequest_3:
+    CreateScopingRuleSetResponseDtoServiceResponse_2:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/ApproveAction'
-      additionalProperties: false
-    ObjectServiceResponse_4:
-      type: object
-      properties:
-        data: {}
+          - $ref: '#/components/schemas/CreateScopingRuleSetResponseDto_2'
+          description: DTO representing scoping rule set data
         messages:
           type:
           - array
@@ -7233,45 +7119,6 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage_4'
       additionalProperties: false
-    StringServiceResponse_4:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_4'
-      additionalProperties: false
-    CreateScopingRuleSetDto_2:
-      required:
-      - effectiveFrom
-      - name
-      type: object
-      properties:
-        effectiveFrom:
-          type: string
-          description: The date that the version takes effect when published
-          format: date-time
-          example: '2021-01-05T14:48:00.000Z'
-        conditions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDto_4'
-          description: Conditions under which the schema can be used
-        name:
-          minLength: 1
-          type: string
-          description: Scoping rule set name
-          example: Global
-      additionalProperties: false
-      description: DTO representing scoping rule set data needed for creation
     ValidationErrorModelListServiceResponse_2:
       type: object
       properties:
@@ -7298,64 +7145,13 @@ components:
         - message: Data is required
           type: Error
           errorCode: Error Code
-    ConditionDefinitionDto_4:
-      type: object
-      properties:
-        fieldName:
-          type:
-          - string
-          - 'null'
-        value:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-        valueId:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-        valueType:
-          type:
-          - string
-          - 'null'
-        dataSource:
-          type:
-          - string
-          - 'null'
-        operation:
-          type:
-          - string
-          - 'null'
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-        operands:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto_4'
-        valueField:
-          allOf:
-          - $ref: '#/components/schemas/ValueField_4'
-      additionalProperties: false
-    CreateScopingRuleSetResponseDtoServiceResponse_2:
+    CloneScopingRuleSetVersionDtoServiceRequest_3:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/CreateScopingRuleSetResponseDto_2'
-          description: DTO representing scoping rule set data
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_4'
+          - $ref: '#/components/schemas/CloneScopingRuleSetVersionDto'
+          description: Request DTO representing clone scoping rule set data
       additionalProperties: false
     CreateScopingRuleSetResponseDto_2:
       required:
@@ -7408,6 +7204,140 @@ components:
           description: The defined list of signees for the version
       additionalProperties: false
       description: DTO representing scoping rule set data
+    ValueField_4:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+        field:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    SignScopingRuleSetVersionResponseDtoServiceResponse_2:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/SignScopingRuleSetVersionResponseDto'
+          description: Sign scoping rule set response contains the new version status
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_4'
+      additionalProperties: false
+    CreateScopingRuleSetDto_2:
+      required:
+      - effectiveFrom
+      - name
+      type: object
+      properties:
+        effectiveFrom:
+          type: string
+          description: The date that the version takes effect when published
+          format: date-time
+          example: '2021-01-05T14:48:00.000Z'
+        conditions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDto_4'
+          description: Conditions under which the schema can be used
+        name:
+          minLength: 1
+          type: string
+          description: Scoping rule set name
+          example: Global
+      additionalProperties: false
+      description: DTO representing scoping rule set data needed for creation
+    UpdateScopingRuleSetVersionDtoServiceRequest_3:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UpdateScopingRuleSetVersionDto_3'
+          description: Request DTO representing set of properties which define a new version of scoping rule set
+      additionalProperties: false
+    ConditionDto_4:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type:
+          - string
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto_4'
+      additionalProperties: false
+      example:
+        id: 118313c6-91e6-4b05-a537-5a1ab906418f
+        name: Company-type only
+        description: Applicable only when EntityType=Company
+        logicalOperation: AND
+        operands:
+        - fieldName: EntityType
+          value:
+          - Company
+          valueType: text
+          operation: equal
+          operands: []
+    UpdateScopingRuleSetVersionDto_3:
+      required:
+      - effectiveFrom
+      type: object
+      properties:
+        effectiveFrom:
+          type: string
+          description: The date that the version takes effect when published
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        conditions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDto_4'
+          description: Conditions under which the schema can be used
+        version:
+          maximum: 2147483647
+          minimum: 0
+          type: integer
+          description: 'Current version of scoping rule set version aggregate where the changes needs to be applied. This parameter is required
+
+            to guarantee consistency and conflicts detection. If it is not provided, it will save new changes
+
+            on top of latest without conflicts checking'
+          format: int32
+          default: -1
+          example: 5
+      additionalProperties: false
+      description: Request DTO representing set of properties which define a new version of scoping rule set
+    ApproveActionServiceRequest_3:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+      additionalProperties: false
     ValidationErrorModel_2:
       type: object
       properties:
@@ -7425,6 +7355,42 @@ components:
           - string
           - 'null'
       additionalProperties: false
+    CreateScopingRuleSetVersionDtoServiceRequest_2:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateScopingRuleSetVersionDto_2'
+          description: DTO representing scoping rule set data needed for version creation
+      additionalProperties: false
+    StringServiceResponse_4:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_4'
+      additionalProperties: false
+    UpdateScopingRuleSetResponseDtoServiceResponse_2:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UpdateScopingRuleSetResponseDto'
+          description: Response DTO representing updated scoping rule set
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_4'
+      additionalProperties: false
     ServiceResponseMessage_4:
       type: object
       properties:
@@ -7441,67 +7407,7 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    UpdateScopingRuleSetResponseDtoServiceResponse_2:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/UpdateScopingRuleSetResponseDto'
-          description: Response DTO representing updated scoping rule set
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_4'
-      additionalProperties: false
-    CreateScopingRuleSetVersionDtoServiceRequest_2:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateScopingRuleSetVersionDto_2'
-          description: DTO representing scoping rule set data needed for version creation
-      additionalProperties: false
-    ValidationErrorModelListServiceResponse_3:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel_3'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_5'
-      additionalProperties: false
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
-    ValueField_5:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-        field:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ConditionDefinitionDto_5:
+    ConditionDefinitionDto_4:
       type: object
       properties:
         fieldName:
@@ -7541,11 +7447,104 @@ components:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ConditionDefinitionDto_5'
+            $ref: '#/components/schemas/ConditionDefinitionDto_4'
         valueField:
           allOf:
-          - $ref: '#/components/schemas/ValueField_5'
+          - $ref: '#/components/schemas/ValueField_4'
       additionalProperties: false
+    ObjectServiceResponse_4:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_4'
+      additionalProperties: false
+    ScopingRuleSetVersionDto_4:
+      required:
+      - name
+      - signees
+      type: object
+      properties:
+        id:
+          type: string
+          description: The UiD of the scoping rule set version
+          format: uuid
+          example: 228313c6-91e6-4b05-a537-5a1ab906418f
+        scopingRuleSetId:
+          type: string
+          description: The UiD of the scoping rule set that the version belongs to
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        name:
+          minLength: 1
+          type: string
+          description: Display name of scoping rule set
+          example: Global Scoping Rules
+        versionNumber:
+          type: integer
+          description: The versions number
+          format: int32
+          example: 1
+        effectiveFrom:
+          type: string
+          description: The date that the version takes effect when published
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        effectiveUntil:
+          type:
+          - string
+          - 'null'
+          description: The calculated date that the version ceases being active
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        publicationDate:
+          type:
+          - string
+          - 'null'
+          description: The date that the version got published
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+          description: The status of the version
+          example: Published
+        created:
+          type: string
+          description: The creation date of the version
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        isActive:
+          type: boolean
+          description: 'The calculated flag to annotate whether this is the model''s latest version
+
+            at the time of the query (not necessarily published)'
+          example: true
+        version:
+          type:
+          - integer
+          - 'null'
+          description: Version number for given Aggregate (concurrency check)
+          format: int32
+          example: 1
+        signees:
+          type: array
+          items:
+            $ref: '#/components/schemas/SigneeDto'
+          description: The defined list of signees for the version
+        conditions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDto_5'
+          description: Conditions under which the schema can be used
+      additionalProperties: false
+      description: Response DTO representing scoping rule set version data
     ValidationErrorModel_3:
       type: object
       properties:
@@ -7563,21 +7562,56 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    ScopingRuleSetLiteDtoIEnumerableServiceResponse_2:
+    StringServiceResponse_5:
       type: object
       properties:
         data:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/ScopingRuleSetLiteDto'
         messages:
           type:
           - array
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage_5'
+      additionalProperties: false
+    ConditionDto_5:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type:
+          - string
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto_5'
+      additionalProperties: false
+    ValueField_5:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+        field:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
     ScopingRuleSetLiteVersionDto_2:
       required:
@@ -7664,7 +7698,279 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    ConditionDto_5:
+    ScopingRuleSetVersionDtoServiceResponse_4:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ScopingRuleSetVersionDto_4'
+          description: Response DTO representing scoping rule set version data
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_5'
+      additionalProperties: false
+    ConditionDefinitionDto_5:
+      type: object
+      properties:
+        fieldName:
+          type:
+          - string
+          - 'null'
+        value:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        valueId:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        valueType:
+          type:
+          - string
+          - 'null'
+        dataSource:
+          type:
+          - string
+          - 'null'
+        operation:
+          type:
+          - string
+          - 'null'
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto_5'
+        valueField:
+          allOf:
+          - $ref: '#/components/schemas/ValueField_5'
+      additionalProperties: false
+    ValidationErrorModelListServiceResponse_3:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel_3'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_5'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    ScopingRuleSetLiteDtoIEnumerableServiceResponse_2:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ScopingRuleSetLiteDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_5'
+      additionalProperties: false
+    ObjectServiceResponse_5:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_5'
+      additionalProperties: false
+    CreateScopingRuleSetDtoServiceRequest_3:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateScopingRuleSetDto_3'
+          description: DTO representing scoping rule set data needed for creation
+      additionalProperties: false
+    CreateScopingRuleSetVersionDto_3:
+      required:
+      - name
+      type: object
+      properties:
+        name:
+          minLength: 1
+          type: string
+          description: Scoping rule set name
+          example: Global Scoping Rules
+        effectiveFrom:
+          type: string
+          description: The date that the version takes effect when published
+          format: date-time
+          example: '2021-01-05T14:48:00.000Z'
+        conditions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDto_6'
+          description: Conditions under which the schema can be used
+      additionalProperties: false
+      description: DTO representing scoping rule set data needed for version creation
+    CloneScopingRuleSetVersionResponseDtoServiceResponse_3:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CloneScopingRuleSetVersionResponseDto'
+          description: Cloned scoping rule set response data
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_6'
+      additionalProperties: false
+    CreateScopingRuleSetResponseDtoServiceResponse_3:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateScopingRuleSetResponseDto'
+          description: DTO representing scoping rule set data
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_6'
+      additionalProperties: false
+    ValidationErrorModelListServiceResponse_4:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel_4'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_6'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    CloneScopingRuleSetVersionDto_3:
+      required:
+      - jurisdiction
+      - name
+      type: object
+      properties:
+        name:
+          minLength: 1
+          type: string
+          description: Name of new scoping rule set
+          example: Global Scoping Rules
+        jurisdiction:
+          minLength: 1
+          type: string
+          description: Jurisdiction for the new scoping rule set
+          example: Global
+      additionalProperties: false
+      description: Request DTO representing clone scoping rule set data
+    CloneScopingRuleSetVersionDtoServiceRequest_4:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CloneScopingRuleSetVersionDto_3'
+          description: Request DTO representing clone scoping rule set data
+      additionalProperties: false
+    CreateScopingRuleSetDto_3:
+      allOf:
+      - $ref: '#/components/schemas/CreateScopingRuleSetVersionDto_3'
+      - required:
+        - jurisdiction
+        type: object
+        properties:
+          jurisdiction:
+            minLength: 1
+            type: string
+            description: Scoping rule set jurisdiction
+            example: Global
+        additionalProperties: false
+      description: DTO representing scoping rule set data needed for creation
+    ValueField_6:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+        field:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    SignScopingRuleSetVersionResponseDtoServiceResponse_3:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/SignScopingRuleSetVersionResponseDto'
+          description: Sign scoping rule set response contains the new version status
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_6'
+      additionalProperties: false
+    UpdateScopingRuleSetVersionDtoServiceRequest_4:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UpdateScopingRuleSetVersionDto_4'
+          description: Request DTO representing set of properties which define a new version of scoping rule set
+      additionalProperties: false
+    ConditionDto_6:
       type: object
       properties:
         id:
@@ -7687,166 +7993,7 @@ components:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ConditionDefinitionDto_5'
-      additionalProperties: false
-    StringServiceResponse_5:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_5'
-      additionalProperties: false
-    ScopingRuleSetVersionDtoServiceResponse_4:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ScopingRuleSetVersionDto_4'
-          description: Response DTO representing scoping rule set version data
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_5'
-      additionalProperties: false
-    ObjectServiceResponse_5:
-      type: object
-      properties:
-        data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_5'
-      additionalProperties: false
-    ScopingRuleSetVersionDto_4:
-      required:
-      - name
-      - signees
-      type: object
-      properties:
-        id:
-          type: string
-          description: The UiD of the scoping rule set version
-          format: uuid
-          example: 228313c6-91e6-4b05-a537-5a1ab906418f
-        scopingRuleSetId:
-          type: string
-          description: The UiD of the scoping rule set that the version belongs to
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        name:
-          minLength: 1
-          type: string
-          description: Display name of scoping rule set
-          example: Global Scoping Rules
-        versionNumber:
-          type: integer
-          description: The versions number
-          format: int32
-          example: 1
-        effectiveFrom:
-          type: string
-          description: The date that the version takes effect when published
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        effectiveUntil:
-          type:
-          - string
-          - 'null'
-          description: The calculated date that the version ceases being active
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        publicationDate:
-          type:
-          - string
-          - 'null'
-          description: The date that the version got published
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        status:
-          allOf:
-          - $ref: '#/components/schemas/VersionStatus'
-          description: The status of the version
-          example: Published
-        created:
-          type: string
-          description: The creation date of the version
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        isActive:
-          type: boolean
-          description: 'The calculated flag to annotate whether this is the model''s latest version
-
-            at the time of the query (not necessarily published)'
-          example: true
-        version:
-          type:
-          - integer
-          - 'null'
-          description: Version number for given Aggregate (concurrency check)
-          format: int32
-          example: 1
-        signees:
-          type: array
-          items:
-            $ref: '#/components/schemas/SigneeDto'
-          description: The defined list of signees for the version
-        conditions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDto_5'
-          description: Conditions under which the schema can be used
-      additionalProperties: false
-      description: Response DTO representing scoping rule set version data
-    UpdateScopingRuleSetVersionDtoServiceRequest_4:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/UpdateScopingRuleSetVersionDto_4'
-          description: Request DTO representing set of properties which define a new version of scoping rule set
-      additionalProperties: false
-    CloneScopingRuleSetVersionResponseDtoServiceResponse_3:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CloneScopingRuleSetVersionResponseDto'
-          description: Cloned scoping rule set response data
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_6'
-      additionalProperties: false
-    CloneScopingRuleSetVersionDtoServiceRequest_4:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CloneScopingRuleSetVersionDto_3'
-          description: Request DTO representing clone scoping rule set data
-      additionalProperties: false
-    CreateScopingRuleSetDtoServiceRequest_3:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateScopingRuleSetDto_3'
-          description: DTO representing scoping rule set data needed for creation
+            $ref: '#/components/schemas/ConditionDefinitionDto_6'
       additionalProperties: false
     UpdateScopingRuleSetVersionDto_4:
       required:
@@ -7882,99 +8029,6 @@ components:
           example: 5
       additionalProperties: false
       description: Request DTO representing set of properties which define a new version of scoping rule set
-    ConditionDto_6:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type:
-          - string
-          - 'null'
-        description:
-          type:
-          - string
-          - 'null'
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-        operands:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto_6'
-      additionalProperties: false
-    CreateScopingRuleSetVersionDto_3:
-      required:
-      - name
-      type: object
-      properties:
-        name:
-          minLength: 1
-          type: string
-          description: Scoping rule set name
-          example: Global Scoping Rules
-        effectiveFrom:
-          type: string
-          description: The date that the version takes effect when published
-          format: date-time
-          example: '2021-01-05T14:48:00.000Z'
-        conditions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDto_6'
-          description: Conditions under which the schema can be used
-      additionalProperties: false
-      description: DTO representing scoping rule set data needed for version creation
-    ValueField_6:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-        field:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    CloneScopingRuleSetVersionDto_3:
-      required:
-      - jurisdiction
-      - name
-      type: object
-      properties:
-        name:
-          minLength: 1
-          type: string
-          description: Name of new scoping rule set
-          example: Global Scoping Rules
-        jurisdiction:
-          minLength: 1
-          type: string
-          description: Jurisdiction for the new scoping rule set
-          example: Global
-      additionalProperties: false
-      description: Request DTO representing clone scoping rule set data
-    SignScopingRuleSetVersionResponseDtoServiceResponse_3:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/SignScopingRuleSetVersionResponseDto'
-          description: Sign scoping rule set response contains the new version status
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_6'
-      additionalProperties: false
     ApproveActionServiceRequest_4:
       type: object
       properties:
@@ -7982,16 +8036,30 @@ components:
           allOf:
           - $ref: '#/components/schemas/ApproveAction'
       additionalProperties: false
-    ObjectServiceResponse_6:
+    ValidationErrorModel_4:
       type: object
       properties:
-        data: {}
-        messages:
+        propertyName:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_6'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    CreateScopingRuleSetVersionDtoServiceRequest_3:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateScopingRuleSetVersionDto_3'
+          description: DTO representing scoping rule set data needed for version creation
       additionalProperties: false
     StringServiceResponse_6:
       type: object
@@ -8007,29 +8075,13 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage_6'
       additionalProperties: false
-    CreateScopingRuleSetDto_3:
-      allOf:
-      - $ref: '#/components/schemas/CreateScopingRuleSetVersionDto_3'
-      - required:
-        - jurisdiction
-        type: object
-        properties:
-          jurisdiction:
-            minLength: 1
-            type: string
-            description: Scoping rule set jurisdiction
-            example: Global
-        additionalProperties: false
-      description: DTO representing scoping rule set data needed for creation
-    ValidationErrorModelListServiceResponse_4:
+    UpdateScopingRuleSetResponseDtoServiceResponse_3:
       type: object
       properties:
         data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel_4'
+          allOf:
+          - $ref: '#/components/schemas/UpdateScopingRuleSetResponseDto'
+          description: Response DTO representing updated scoping rule set
         messages:
           type:
           - array
@@ -8037,16 +8089,22 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage_6'
       additionalProperties: false
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
+    ServiceResponseMessage_6:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
     ConditionDefinitionDto_6:
       type: object
       properties:
@@ -8092,13 +8150,10 @@ components:
           allOf:
           - $ref: '#/components/schemas/ValueField_6'
       additionalProperties: false
-    CreateScopingRuleSetResponseDtoServiceResponse_3:
+    ObjectServiceResponse_6:
       type: object
       properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateScopingRuleSetResponseDto'
-          description: DTO representing scoping rule set data
+        data: {}
         messages:
           type:
           - array
@@ -8106,69 +8161,38 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage_6'
       additionalProperties: false
-    ValidationErrorModel_4:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-        attemptedValue: {}
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ServiceResponseMessage_6:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    UpdateScopingRuleSetResponseDtoServiceResponse_3:
+    CreateScopingRuleSetDtoServiceRequest_4:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/UpdateScopingRuleSetResponseDto'
-          description: Response DTO representing updated scoping rule set
-        messages:
+          - $ref: '#/components/schemas/CreateScopingRuleSetDto_4'
+          description: DTO representing scoping rule set data needed for creation
+      additionalProperties: false
+    CreateScopingRuleSetVersionDto_4:
+      required:
+      - name
+      type: object
+      properties:
+        name:
+          minLength: 1
+          type: string
+          description: Scoping rule set name
+          example: Global Scoping Rules
+        effectiveFrom:
+          type: string
+          description: The date that the version takes effect when published
+          format: date-time
+          example: '2021-01-05T14:48:00.000Z'
+        conditions:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ServiceResponseMessage_6'
+            $ref: '#/components/schemas/ConditionDto_7'
+          description: Conditions under which the schema can be used
       additionalProperties: false
-    CreateScopingRuleSetVersionDtoServiceRequest_3:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateScopingRuleSetVersionDto_3'
-          description: DTO representing scoping rule set data needed for version creation
-      additionalProperties: false
-    UpdateScopingRuleSetVersionDtoServiceRequest_5:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/UpdateScopingRuleSetVersionDto_5'
-          description: Request DTO representing set of properties which define a new version of scoping rule set
-      additionalProperties: false
+      description: DTO representing scoping rule set data needed for version creation
     CloneScopingRuleSetVersionResponseDtoServiceResponse_4:
       type: object
       properties:
@@ -8183,6 +8207,64 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage_7'
       additionalProperties: false
+    CreateScopingRuleSetResponseDtoServiceResponse_4:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateScopingRuleSetResponseDto'
+          description: DTO representing scoping rule set data
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_7'
+      additionalProperties: false
+    ValidationErrorModelListServiceResponse_5:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel_5'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_7'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    CloneScopingRuleSetVersionDto_4:
+      required:
+      - jurisdiction
+      - name
+      type: object
+      properties:
+        name:
+          minLength: 1
+          type: string
+          description: Name of new scoping rule set
+          example: Global Scoping Rules
+        jurisdiction:
+          minLength: 1
+          type: string
+          description: Jurisdiction for the new scoping rule set
+          example: Global
+      additionalProperties: false
+      description: Request DTO representing clone scoping rule set data
     CloneScopingRuleSetVersionDtoServiceRequest_5:
       type: object
       properties:
@@ -8191,13 +8273,78 @@ components:
           - $ref: '#/components/schemas/CloneScopingRuleSetVersionDto_4'
           description: Request DTO representing clone scoping rule set data
       additionalProperties: false
-    CreateScopingRuleSetDtoServiceRequest_4:
+    CreateScopingRuleSetDto_4:
+      allOf:
+      - $ref: '#/components/schemas/CreateScopingRuleSetVersionDto_4'
+      - required:
+        - jurisdiction
+        type: object
+        properties:
+          jurisdiction:
+            minLength: 1
+            type: string
+            description: Scoping rule set jurisdiction
+            example: Global
+        additionalProperties: false
+      description: DTO representing scoping rule set data needed for creation
+    ValueField_7:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+        field:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    SignScopingRuleSetVersionResponseDtoServiceResponse_4:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/CreateScopingRuleSetDto_4'
-          description: DTO representing scoping rule set data needed for creation
+          - $ref: '#/components/schemas/SignScopingRuleSetVersionResponseDto'
+          description: Sign scoping rule set response contains the new version status
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_7'
+      additionalProperties: false
+    UpdateScopingRuleSetVersionDtoServiceRequest_5:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UpdateScopingRuleSetVersionDto_5'
+          description: Request DTO representing set of properties which define a new version of scoping rule set
+      additionalProperties: false
+    ConditionDto_7:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type:
+          - string
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto_7'
       additionalProperties: false
     UpdateScopingRuleSetVersionDto_5:
       required:
@@ -8233,99 +8380,6 @@ components:
           example: 5
       additionalProperties: false
       description: Request DTO representing set of properties which define a new version of scoping rule set
-    ConditionDto_7:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type:
-          - string
-          - 'null'
-        description:
-          type:
-          - string
-          - 'null'
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-        operands:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto_7'
-      additionalProperties: false
-    CreateScopingRuleSetVersionDto_4:
-      required:
-      - name
-      type: object
-      properties:
-        name:
-          minLength: 1
-          type: string
-          description: Scoping rule set name
-          example: Global Scoping Rules
-        effectiveFrom:
-          type: string
-          description: The date that the version takes effect when published
-          format: date-time
-          example: '2021-01-05T14:48:00.000Z'
-        conditions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDto_7'
-          description: Conditions under which the schema can be used
-      additionalProperties: false
-      description: DTO representing scoping rule set data needed for version creation
-    ValueField_7:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-        field:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    CloneScopingRuleSetVersionDto_4:
-      required:
-      - jurisdiction
-      - name
-      type: object
-      properties:
-        name:
-          minLength: 1
-          type: string
-          description: Name of new scoping rule set
-          example: Global Scoping Rules
-        jurisdiction:
-          minLength: 1
-          type: string
-          description: Jurisdiction for the new scoping rule set
-          example: Global
-      additionalProperties: false
-      description: Request DTO representing clone scoping rule set data
-    SignScopingRuleSetVersionResponseDtoServiceResponse_4:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/SignScopingRuleSetVersionResponseDto'
-          description: Sign scoping rule set response contains the new version status
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_7'
-      additionalProperties: false
     ApproveActionServiceRequest_5:
       type: object
       properties:
@@ -8333,16 +8387,30 @@ components:
           allOf:
           - $ref: '#/components/schemas/ApproveAction'
       additionalProperties: false
-    ObjectServiceResponse_7:
+    ValidationErrorModel_5:
       type: object
       properties:
-        data: {}
-        messages:
+        propertyName:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_7'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    CreateScopingRuleSetVersionDtoServiceRequest_4:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateScopingRuleSetVersionDto_4'
+          description: DTO representing scoping rule set data needed for version creation
       additionalProperties: false
     StringServiceResponse_7:
       type: object
@@ -8358,29 +8426,13 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage_7'
       additionalProperties: false
-    CreateScopingRuleSetDto_4:
-      allOf:
-      - $ref: '#/components/schemas/CreateScopingRuleSetVersionDto_4'
-      - required:
-        - jurisdiction
-        type: object
-        properties:
-          jurisdiction:
-            minLength: 1
-            type: string
-            description: Scoping rule set jurisdiction
-            example: Global
-        additionalProperties: false
-      description: DTO representing scoping rule set data needed for creation
-    ValidationErrorModelListServiceResponse_5:
+    UpdateScopingRuleSetResponseDtoServiceResponse_4:
       type: object
       properties:
         data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel_5'
+          allOf:
+          - $ref: '#/components/schemas/UpdateScopingRuleSetResponseDto'
+          description: Response DTO representing updated scoping rule set
         messages:
           type:
           - array
@@ -8388,16 +8440,22 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage_7'
       additionalProperties: false
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
+    ServiceResponseMessage_7:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
     ConditionDefinitionDto_7:
       type: object
       properties:
@@ -8443,13 +8501,10 @@ components:
           allOf:
           - $ref: '#/components/schemas/ValueField_7'
       additionalProperties: false
-    CreateScopingRuleSetResponseDtoServiceResponse_4:
+    ObjectServiceResponse_7:
       type: object
       properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateScopingRuleSetResponseDto'
-          description: DTO representing scoping rule set data
+        data: {}
         messages:
           type:
           - array
@@ -8457,69 +8512,38 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage_7'
       additionalProperties: false
-    ValidationErrorModel_5:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-        attemptedValue: {}
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ServiceResponseMessage_7:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    UpdateScopingRuleSetResponseDtoServiceResponse_4:
+    CreateScopingRuleSetDtoServiceRequest_5:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/UpdateScopingRuleSetResponseDto'
-          description: Response DTO representing updated scoping rule set
-        messages:
+          - $ref: '#/components/schemas/CreateScopingRuleSetDto_5'
+          description: DTO representing scoping rule set data needed for creation
+      additionalProperties: false
+    CreateScopingRuleSetVersionDto_5:
+      required:
+      - name
+      type: object
+      properties:
+        name:
+          minLength: 1
+          type: string
+          description: Scoping rule set name
+          example: Global Scoping Rules
+        effectiveFrom:
+          type: string
+          description: The date that the version takes effect when published
+          format: date-time
+          example: '2021-01-05T14:48:00.000Z'
+        conditions:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ServiceResponseMessage_7'
+            $ref: '#/components/schemas/ConditionDto_8'
+          description: Conditions under which the schema can be used
       additionalProperties: false
-    CreateScopingRuleSetVersionDtoServiceRequest_4:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateScopingRuleSetVersionDto_4'
-          description: DTO representing scoping rule set data needed for version creation
-      additionalProperties: false
-    UpdateScopingRuleSetVersionDtoServiceRequest_6:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/UpdateScopingRuleSetVersionDto_6'
-          description: Request DTO representing set of properties which define a new version of scoping rule set
-      additionalProperties: false
+      description: DTO representing scoping rule set data needed for version creation
     CloneScopingRuleSetVersionResponseDtoServiceResponse_5:
       type: object
       properties:
@@ -8534,6 +8558,64 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage_8'
       additionalProperties: false
+    CreateScopingRuleSetResponseDtoServiceResponse_5:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateScopingRuleSetResponseDto'
+          description: DTO representing scoping rule set data
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_8'
+      additionalProperties: false
+    ValidationErrorModelListServiceResponse_6:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel_6'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_8'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    CloneScopingRuleSetVersionDto_5:
+      required:
+      - jurisdiction
+      - name
+      type: object
+      properties:
+        name:
+          minLength: 1
+          type: string
+          description: Name of new scoping rule set
+          example: Global Scoping Rules
+        jurisdiction:
+          minLength: 1
+          type: string
+          description: Jurisdiction for the new scoping rule set
+          example: Global
+      additionalProperties: false
+      description: Request DTO representing clone scoping rule set data
     CloneScopingRuleSetVersionDtoServiceRequest_6:
       type: object
       properties:
@@ -8542,13 +8624,78 @@ components:
           - $ref: '#/components/schemas/CloneScopingRuleSetVersionDto_5'
           description: Request DTO representing clone scoping rule set data
       additionalProperties: false
-    CreateScopingRuleSetDtoServiceRequest_5:
+    CreateScopingRuleSetDto_5:
+      allOf:
+      - $ref: '#/components/schemas/CreateScopingRuleSetVersionDto_5'
+      - required:
+        - jurisdiction
+        type: object
+        properties:
+          jurisdiction:
+            minLength: 1
+            type: string
+            description: Scoping rule set jurisdiction
+            example: Global
+        additionalProperties: false
+      description: DTO representing scoping rule set data needed for creation
+    ValueField_8:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+        field:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    SignScopingRuleSetVersionResponseDtoServiceResponse_5:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/CreateScopingRuleSetDto_5'
-          description: DTO representing scoping rule set data needed for creation
+          - $ref: '#/components/schemas/SignScopingRuleSetVersionResponseDto'
+          description: Sign scoping rule set response contains the new version status
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_8'
+      additionalProperties: false
+    UpdateScopingRuleSetVersionDtoServiceRequest_6:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UpdateScopingRuleSetVersionDto_6'
+          description: Request DTO representing set of properties which define a new version of scoping rule set
+      additionalProperties: false
+    ConditionDto_8:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type:
+          - string
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto_8'
       additionalProperties: false
     UpdateScopingRuleSetVersionDto_6:
       required:
@@ -8584,99 +8731,6 @@ components:
           example: 5
       additionalProperties: false
       description: Request DTO representing set of properties which define a new version of scoping rule set
-    ConditionDto_8:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type:
-          - string
-          - 'null'
-        description:
-          type:
-          - string
-          - 'null'
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-        operands:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto_8'
-      additionalProperties: false
-    CreateScopingRuleSetVersionDto_5:
-      required:
-      - name
-      type: object
-      properties:
-        name:
-          minLength: 1
-          type: string
-          description: Scoping rule set name
-          example: Global Scoping Rules
-        effectiveFrom:
-          type: string
-          description: The date that the version takes effect when published
-          format: date-time
-          example: '2021-01-05T14:48:00.000Z'
-        conditions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDto_8'
-          description: Conditions under which the schema can be used
-      additionalProperties: false
-      description: DTO representing scoping rule set data needed for version creation
-    ValueField_8:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-        field:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    CloneScopingRuleSetVersionDto_5:
-      required:
-      - jurisdiction
-      - name
-      type: object
-      properties:
-        name:
-          minLength: 1
-          type: string
-          description: Name of new scoping rule set
-          example: Global Scoping Rules
-        jurisdiction:
-          minLength: 1
-          type: string
-          description: Jurisdiction for the new scoping rule set
-          example: Global
-      additionalProperties: false
-      description: Request DTO representing clone scoping rule set data
-    SignScopingRuleSetVersionResponseDtoServiceResponse_5:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/SignScopingRuleSetVersionResponseDto'
-          description: Sign scoping rule set response contains the new version status
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_8'
-      additionalProperties: false
     ApproveActionServiceRequest_6:
       type: object
       properties:
@@ -8684,16 +8738,30 @@ components:
           allOf:
           - $ref: '#/components/schemas/ApproveAction'
       additionalProperties: false
-    ObjectServiceResponse_8:
+    ValidationErrorModel_6:
       type: object
       properties:
-        data: {}
-        messages:
+        propertyName:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_8'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    CreateScopingRuleSetVersionDtoServiceRequest_5:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateScopingRuleSetVersionDto_5'
+          description: DTO representing scoping rule set data needed for version creation
       additionalProperties: false
     StringServiceResponse_8:
       type: object
@@ -8709,29 +8777,13 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage_8'
       additionalProperties: false
-    CreateScopingRuleSetDto_5:
-      allOf:
-      - $ref: '#/components/schemas/CreateScopingRuleSetVersionDto_5'
-      - required:
-        - jurisdiction
-        type: object
-        properties:
-          jurisdiction:
-            minLength: 1
-            type: string
-            description: Scoping rule set jurisdiction
-            example: Global
-        additionalProperties: false
-      description: DTO representing scoping rule set data needed for creation
-    ValidationErrorModelListServiceResponse_6:
+    UpdateScopingRuleSetResponseDtoServiceResponse_5:
       type: object
       properties:
         data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel_6'
+          allOf:
+          - $ref: '#/components/schemas/UpdateScopingRuleSetResponseDto'
+          description: Response DTO representing updated scoping rule set
         messages:
           type:
           - array
@@ -8739,16 +8791,22 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage_8'
       additionalProperties: false
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
+    ServiceResponseMessage_8:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
     ConditionDefinitionDto_8:
       type: object
       properties:
@@ -8794,13 +8852,10 @@ components:
           allOf:
           - $ref: '#/components/schemas/ValueField_8'
       additionalProperties: false
-    CreateScopingRuleSetResponseDtoServiceResponse_5:
+    ObjectServiceResponse_8:
       type: object
       properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateScopingRuleSetResponseDto'
-          description: DTO representing scoping rule set data
+        data: {}
         messages:
           type:
           - array
@@ -8808,7 +8863,7 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage_8'
       additionalProperties: false
-    ValidationErrorModel_6:
+    ValidationErrorModel_7:
       type: object
       properties:
         propertyName:
@@ -8825,53 +8880,13 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    ServiceResponseMessage_8:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    UpdateScopingRuleSetResponseDtoServiceResponse_5:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/UpdateScopingRuleSetResponseDto'
-          description: Response DTO representing updated scoping rule set
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_8'
-      additionalProperties: false
-    CreateScopingRuleSetVersionDtoServiceRequest_5:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateScopingRuleSetVersionDto_5'
-          description: DTO representing scoping rule set data needed for version creation
-      additionalProperties: false
-    ValidationErrorModelListServiceResponse_7:
+    StringServiceResponse_9:
       type: object
       properties:
         data:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel_7'
         messages:
           type:
           - array
@@ -8879,16 +8894,31 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage_9'
       additionalProperties: false
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
+    ConditionDto_9:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type:
+          - string
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto_9'
+      additionalProperties: false
     ValueField_9:
       type: object
       properties:
@@ -8930,68 +8960,6 @@ components:
           example: 1
       additionalProperties: false
       description: Represents a lite version of a Scoped Entity
-    ConditionDefinitionDto_9:
-      type: object
-      properties:
-        fieldName:
-          type:
-          - string
-          - 'null'
-        value:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-        valueId:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-        valueType:
-          type:
-          - string
-          - 'null'
-        dataSource:
-          type:
-          - string
-          - 'null'
-        operation:
-          type:
-          - string
-          - 'null'
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-        operands:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto_9'
-        valueField:
-          allOf:
-          - $ref: '#/components/schemas/ValueField_9'
-      additionalProperties: false
-    ValidationErrorModel_7:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-        attemptedValue: {}
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
     ScopingRuleSetLiteVersionDto_3:
       required:
       - jurisdiction
@@ -9067,22 +9035,6 @@ components:
           example: 1
       additionalProperties: false
       description: Represents a lite version of a Scoped Entity Version
-    ScopingRuleSetLiteDtoIEnumerableServiceResponse_3:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ScopingRuleSetLiteDto_2'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_9'
-      additionalProperties: false
     ServiceResponseMessage_9:
       type: object
       properties:
@@ -9099,7 +9051,150 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    ConditionDto_9:
+    ScopingRuleSetVersionDtoServiceResponse_5:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ScopingRuleSetVersionDto'
+          description: Response DTO representing scoping rule set version data
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_9'
+      additionalProperties: false
+    ConditionDefinitionDto_9:
+      type: object
+      properties:
+        fieldName:
+          type:
+          - string
+          - 'null'
+        value:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        valueId:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        valueType:
+          type:
+          - string
+          - 'null'
+        dataSource:
+          type:
+          - string
+          - 'null'
+        operation:
+          type:
+          - string
+          - 'null'
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto_9'
+        valueField:
+          allOf:
+          - $ref: '#/components/schemas/ValueField_9'
+      additionalProperties: false
+    ValidationErrorModelListServiceResponse_7:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel_7'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_9'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    ScopingRuleSetLiteDtoIEnumerableServiceResponse_3:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ScopingRuleSetLiteDto_2'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_9'
+      additionalProperties: false
+    ObjectServiceResponse_9:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_9'
+      additionalProperties: false
+    ValidationErrorModel_8:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    StringServiceResponse_10:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_10'
+      additionalProperties: false
+    ConditionDto_10:
       type: object
       properties:
         id:
@@ -9122,73 +9217,8 @@ components:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ConditionDefinitionDto_9'
+            $ref: '#/components/schemas/ConditionDefinitionDto_10'
       additionalProperties: false
-    StringServiceResponse_9:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_9'
-      additionalProperties: false
-    ScopingRuleSetVersionDtoServiceResponse_5:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ScopingRuleSetVersionDto'
-          description: Response DTO representing scoping rule set version data
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_9'
-      additionalProperties: false
-    ObjectServiceResponse_9:
-      type: object
-      properties:
-        data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_9'
-      additionalProperties: false
-    ValidationErrorModelListServiceResponse_8:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel_8'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_10'
-      additionalProperties: false
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
     ValueField_10:
       type: object
       properties:
@@ -9230,68 +9260,6 @@ components:
           example: 1
       additionalProperties: false
       description: Represents a lite version of a Scoped Entity
-    ConditionDefinitionDto_10:
-      type: object
-      properties:
-        fieldName:
-          type:
-          - string
-          - 'null'
-        value:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-        valueId:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-        valueType:
-          type:
-          - string
-          - 'null'
-        dataSource:
-          type:
-          - string
-          - 'null'
-        operation:
-          type:
-          - string
-          - 'null'
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-        operands:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto_10'
-        valueField:
-          allOf:
-          - $ref: '#/components/schemas/ValueField_10'
-      additionalProperties: false
-    ValidationErrorModel_8:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-        attemptedValue: {}
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
     ScopingRuleSetLiteVersionDto_4:
       required:
       - jurisdiction
@@ -9367,22 +9335,6 @@ components:
           example: 1
       additionalProperties: false
       description: Represents a lite version of a Scoped Entity Version
-    ScopingRuleSetLiteDtoIEnumerableServiceResponse_4:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ScopingRuleSetLiteDto_3'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_10'
-      additionalProperties: false
     ServiceResponseMessage_10:
       type: object
       properties:
@@ -9399,7 +9351,150 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    ConditionDto_10:
+    ScopingRuleSetVersionDtoServiceResponse_6:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ScopingRuleSetVersionDto'
+          description: Response DTO representing scoping rule set version data
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_10'
+      additionalProperties: false
+    ConditionDefinitionDto_10:
+      type: object
+      properties:
+        fieldName:
+          type:
+          - string
+          - 'null'
+        value:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        valueId:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        valueType:
+          type:
+          - string
+          - 'null'
+        dataSource:
+          type:
+          - string
+          - 'null'
+        operation:
+          type:
+          - string
+          - 'null'
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto_10'
+        valueField:
+          allOf:
+          - $ref: '#/components/schemas/ValueField_10'
+      additionalProperties: false
+    ValidationErrorModelListServiceResponse_8:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel_8'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_10'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    ScopingRuleSetLiteDtoIEnumerableServiceResponse_4:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ScopingRuleSetLiteDto_3'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_10'
+      additionalProperties: false
+    ObjectServiceResponse_10:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_10'
+      additionalProperties: false
+    ValidationErrorModel_9:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    StringServiceResponse_11:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_11'
+      additionalProperties: false
+    ConditionDto_11:
       type: object
       properties:
         id:
@@ -9422,73 +9517,8 @@ components:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ConditionDefinitionDto_10'
+            $ref: '#/components/schemas/ConditionDefinitionDto_11'
       additionalProperties: false
-    StringServiceResponse_10:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_10'
-      additionalProperties: false
-    ScopingRuleSetVersionDtoServiceResponse_6:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ScopingRuleSetVersionDto'
-          description: Response DTO representing scoping rule set version data
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_10'
-      additionalProperties: false
-    ObjectServiceResponse_10:
-      type: object
-      properties:
-        data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_10'
-      additionalProperties: false
-    ValidationErrorModelListServiceResponse_9:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel_9'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_11'
-      additionalProperties: false
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
     ValueField_11:
       type: object
       properties:
@@ -9530,68 +9560,6 @@ components:
           example: 1
       additionalProperties: false
       description: Represents a lite version of a Scoped Entity
-    ConditionDefinitionDto_11:
-      type: object
-      properties:
-        fieldName:
-          type:
-          - string
-          - 'null'
-        value:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-        valueId:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-        valueType:
-          type:
-          - string
-          - 'null'
-        dataSource:
-          type:
-          - string
-          - 'null'
-        operation:
-          type:
-          - string
-          - 'null'
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-        operands:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto_11'
-        valueField:
-          allOf:
-          - $ref: '#/components/schemas/ValueField_11'
-      additionalProperties: false
-    ValidationErrorModel_9:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-        attemptedValue: {}
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
     ScopingRuleSetLiteVersionDto_5:
       required:
       - jurisdiction
@@ -9667,22 +9635,6 @@ components:
           example: 1
       additionalProperties: false
       description: Represents a lite version of a Scoped Entity Version
-    ScopingRuleSetLiteDtoIEnumerableServiceResponse_5:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ScopingRuleSetLiteDto_4'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_11'
-      additionalProperties: false
     ServiceResponseMessage_11:
       type: object
       properties:
@@ -9699,7 +9651,150 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    ConditionDto_11:
+    ScopingRuleSetVersionDtoServiceResponse_7:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ScopingRuleSetVersionDto'
+          description: Response DTO representing scoping rule set version data
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_11'
+      additionalProperties: false
+    ConditionDefinitionDto_11:
+      type: object
+      properties:
+        fieldName:
+          type:
+          - string
+          - 'null'
+        value:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        valueId:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        valueType:
+          type:
+          - string
+          - 'null'
+        dataSource:
+          type:
+          - string
+          - 'null'
+        operation:
+          type:
+          - string
+          - 'null'
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto_11'
+        valueField:
+          allOf:
+          - $ref: '#/components/schemas/ValueField_11'
+      additionalProperties: false
+    ValidationErrorModelListServiceResponse_9:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel_9'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_11'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    ScopingRuleSetLiteDtoIEnumerableServiceResponse_5:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ScopingRuleSetLiteDto_4'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_11'
+      additionalProperties: false
+    ObjectServiceResponse_11:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_11'
+      additionalProperties: false
+    ValidationErrorModel_10:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    StringServiceResponse_12:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_12'
+      additionalProperties: false
+    ConditionDto_12:
       type: object
       properties:
         id:
@@ -9722,73 +9817,8 @@ components:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ConditionDefinitionDto_11'
+            $ref: '#/components/schemas/ConditionDefinitionDto_12'
       additionalProperties: false
-    StringServiceResponse_11:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_11'
-      additionalProperties: false
-    ScopingRuleSetVersionDtoServiceResponse_7:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ScopingRuleSetVersionDto'
-          description: Response DTO representing scoping rule set version data
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_11'
-      additionalProperties: false
-    ObjectServiceResponse_11:
-      type: object
-      properties:
-        data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_11'
-      additionalProperties: false
-    ValidationErrorModelListServiceResponse_10:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel_10'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_12'
-      additionalProperties: false
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
     ValueField_12:
       type: object
       properties:
@@ -9830,68 +9860,6 @@ components:
           example: 1
       additionalProperties: false
       description: Represents a lite version of a Scoped Entity
-    ConditionDefinitionDto_12:
-      type: object
-      properties:
-        fieldName:
-          type:
-          - string
-          - 'null'
-        value:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-        valueId:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-        valueType:
-          type:
-          - string
-          - 'null'
-        dataSource:
-          type:
-          - string
-          - 'null'
-        operation:
-          type:
-          - string
-          - 'null'
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-        operands:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto_12'
-        valueField:
-          allOf:
-          - $ref: '#/components/schemas/ValueField_12'
-      additionalProperties: false
-    ValidationErrorModel_10:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-        attemptedValue: {}
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
     ScopingRuleSetLiteVersionDto_6:
       required:
       - jurisdiction
@@ -9967,22 +9935,6 @@ components:
           example: 1
       additionalProperties: false
       description: Represents a lite version of a Scoped Entity Version
-    ScopingRuleSetLiteDtoIEnumerableServiceResponse_6:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ScopingRuleSetLiteDto_5'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_12'
-      additionalProperties: false
     ServiceResponseMessage_12:
       type: object
       properties:
@@ -9999,17 +9951,48 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    ConditionDto_12:
+    ScopingRuleSetVersionDtoServiceResponse_8:
       type: object
       properties:
-        id:
-          type: string
-          format: uuid
-        name:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ScopingRuleSetVersionDto'
+          description: Response DTO representing scoping rule set version data
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_12'
+      additionalProperties: false
+    ConditionDefinitionDto_12:
+      type: object
+      properties:
+        fieldName:
           type:
           - string
           - 'null'
-        description:
+        value:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        valueId:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        valueType:
+          type:
+          - string
+          - 'null'
+        dataSource:
+          type:
+          - string
+          - 'null'
+        operation:
           type:
           - string
           - 'null'
@@ -10023,14 +10006,19 @@ components:
           - 'null'
           items:
             $ref: '#/components/schemas/ConditionDefinitionDto_12'
+        valueField:
+          allOf:
+          - $ref: '#/components/schemas/ValueField_12'
       additionalProperties: false
-    StringServiceResponse_12:
+    ValidationErrorModelListServiceResponse_10:
       type: object
       properties:
         data:
           type:
-          - string
+          - array
           - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel_10'
         messages:
           type:
           - array
@@ -10038,13 +10026,25 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage_12'
       additionalProperties: false
-    ScopingRuleSetVersionDtoServiceResponse_8:
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    ScopingRuleSetLiteDtoIEnumerableServiceResponse_6:
       type: object
       properties:
         data:
-          allOf:
-          - $ref: '#/components/schemas/ScopingRuleSetVersionDto'
-          description: Response DTO representing scoping rule set version data
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ScopingRuleSetLiteDto_5'
         messages:
           type:
           - array

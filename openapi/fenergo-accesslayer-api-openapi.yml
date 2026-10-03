@@ -1734,6 +1734,42 @@ paths:
     - url: /authorizationquery
 components:
   schemas:
+    SensitiveDataKindDto:
+      enum:
+      - None
+      - SensitiveData
+      - SensitiveDataDelegate
+      type: string
+      description: Set of possible values for Sensitive Data parameter
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
     UpdateAccessLayersConfigurationRequestDtoServiceRequest:
       type: object
       properties:
@@ -1741,13 +1777,86 @@ components:
           $ref: '#/components/schemas/UpdateAccessLayersConfigurationRequestDto'
       additionalProperties: false
       description: Service request data
-    UpdateAccessLayerRequestDtoServiceRequest:
+    BatchUpdateUserAccessLayersRequestDtoServiceRequest:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/UpdateAccessLayerRequestDto'
+          $ref: '#/components/schemas/BatchUpdateUserAccessLayersRequestDto'
       additionalProperties: false
       description: Service request data
+    CreateAccessLayerResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/CreateAccessLayerResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    AccessLayerDataTypeDto:
+      enum:
+      - Field
+      - Entity
+      - Journey
+      - Document
+      - Search
+      - Product
+      - ProductField
+      type: string
+    UpdateAccessLayerRequestDto:
+      type: object
+      properties:
+        label:
+          type:
+          - string
+          - 'null'
+          description: Label of the access layer
+          example: Private Banking
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of the access layer
+          example: Business related access layer for entities
+        type:
+          $ref: '#/components/schemas/AccessLayerTypeDto'
+        dataType:
+          $ref: '#/components/schemas/AccessLayerDataTypeDto'
+        sensitiveDataKind:
+          $ref: '#/components/schemas/SensitiveDataKindDto'
+        version:
+          type: integer
+          description: "Current version of the access layer where the changes needs to be applied. This parameter is required \nto guarantee consistency and conflicts detection. If it is not provided, it will save new changes\non top of latest without conflicts checking"
+          format: int32
+          default: -1
+          example: 1
+      additionalProperties: false
+      description: Request DTO representing access layer data to update
+    CreateAccessLayerRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/CreateAccessLayerRequestDto'
+      additionalProperties: false
+      description: Service request data
+    BatchUpdateUserAccessLayersRequestDto:
+      type: object
+      properties:
+        accessLayers:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+            format: uuid
+          description: List of IDs of access layers that should be assigned to user
+      additionalProperties: false
+      description: Batch update users request data
     CreateAccessLayerResponseDto:
       type: object
       properties:
@@ -1758,18 +1867,145 @@ components:
           example: 1bb44eba-d489-4138-8cfa-eee3d49250c9
       additionalProperties: false
       description: Response DTO representing created access layer
-    BatchUpdateUserAccessLayersRequestDtoServiceRequest:
+    CreateAccessLayerRequestDto:
       type: object
       properties:
-        data:
-          $ref: '#/components/schemas/BatchUpdateUserAccessLayersRequestDto'
+        dataKey:
+          type:
+          - string
+          - 'null'
+          description: 'Data key of the access layer
+
+            The property is immutable'
+          example: PrivateBanking
+        label:
+          type:
+          - string
+          - 'null'
+          description: Label of the access layer
+          example: Private Banking
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of the access layer
+          example: Business related access layer for entities
+        type:
+          $ref: '#/components/schemas/AccessLayerTypeDto'
+        dataType:
+          $ref: '#/components/schemas/AccessLayerDataTypeDto'
+        users:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of user ids assigned to the access layer
+        sensitiveDataKind:
+          $ref: '#/components/schemas/SensitiveDataKindDto'
       additionalProperties: false
-      description: Service request data
+      description: Request DTO representing access layer data to create
     UpdateAccessLayerResponseDtoServiceResponse:
       type: object
       properties:
         data:
           $ref: '#/components/schemas/UpdateAccessLayerResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+          description: Name of the property
+          example: data
+        errorMessage:
+          type:
+          - string
+          - 'null'
+          description: User friendly error message
+          example: Data is required
+        attemptedValue:
+          description: Invalid value
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Internal error code
+          example: NotNullValidator
+      additionalProperties: false
+      description: Represents the details of validation error
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    AccessLayerTypeDto:
+      enum:
+      - Geographic
+      - BusinessRelated
+      type: string
+    UpdateAccessLayerResponseDto:
+      type: object
+      properties:
+        version:
+          type: integer
+          description: Version of access layer after update
+          format: int32
+          example: 1
+      additionalProperties: false
+      description: Response DTO representing updated access layer
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+          description: The message
+          example: Success
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
+      additionalProperties: false
+      description: The message associated to the service response
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data:
+          description: The service response DTO
         messages:
           type:
           - array
@@ -1820,265 +2056,13 @@ components:
           default: -1
           example: 1
       additionalProperties: false
-    AccessLayerTypeDto:
-      enum:
-      - Geographic
-      - BusinessRelated
-      type: string
-    CreateAccessLayerRequestDto:
-      type: object
-      properties:
-        dataKey:
-          type:
-          - string
-          - 'null'
-          description: 'Data key of the access layer
-
-            The property is immutable'
-          example: PrivateBanking
-        label:
-          type:
-          - string
-          - 'null'
-          description: Label of the access layer
-          example: Private Banking
-        description:
-          type:
-          - string
-          - 'null'
-          description: Description of the access layer
-          example: Business related access layer for entities
-        type:
-          $ref: '#/components/schemas/AccessLayerTypeDto'
-        dataType:
-          $ref: '#/components/schemas/AccessLayerDataTypeDto'
-        users:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: List of user ids assigned to the access layer
-        sensitiveDataKind:
-          $ref: '#/components/schemas/SensitiveDataKindDto'
-      additionalProperties: false
-      description: Request DTO representing access layer data to create
-    CreateAccessLayerResponseDtoServiceResponse:
+    UpdateAccessLayerRequestDtoServiceRequest:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/CreateAccessLayerResponseDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    CreateAccessLayerRequestDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/CreateAccessLayerRequestDto'
+          $ref: '#/components/schemas/UpdateAccessLayerRequestDto'
       additionalProperties: false
       description: Service request data
-    SensitiveDataKindDto:
-      enum:
-      - None
-      - SensitiveData
-      - SensitiveDataDelegate
-      type: string
-      description: Set of possible values for Sensitive Data parameter
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data:
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    ValidationErrorModelListServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    UpdateAccessLayerRequestDto:
-      type: object
-      properties:
-        label:
-          type:
-          - string
-          - 'null'
-          description: Label of the access layer
-          example: Private Banking
-        description:
-          type:
-          - string
-          - 'null'
-          description: Description of the access layer
-          example: Business related access layer for entities
-        type:
-          $ref: '#/components/schemas/AccessLayerTypeDto'
-        dataType:
-          $ref: '#/components/schemas/AccessLayerDataTypeDto'
-        sensitiveDataKind:
-          $ref: '#/components/schemas/SensitiveDataKindDto'
-        version:
-          type: integer
-          description: "Current version of the access layer where the changes needs to be applied. This parameter is required \nto guarantee consistency and conflicts detection. If it is not provided, it will save new changes\non top of latest without conflicts checking"
-          format: int32
-          default: -1
-          example: 1
-      additionalProperties: false
-      description: Request DTO representing access layer data to update
-    ValidationErrorModel:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-          description: Name of the property
-          example: data
-        errorMessage:
-          type:
-          - string
-          - 'null'
-          description: User friendly error message
-          example: Data is required
-        attemptedValue:
-          description: Invalid value
-        errorCode:
-          type:
-          - string
-          - 'null'
-          description: Internal error code
-          example: NotNullValidator
-      additionalProperties: false
-      description: Represents the details of validation error
-    AccessLayerDataTypeDto:
-      enum:
-      - Field
-      - Entity
-      - Journey
-      - Document
-      - Search
-      - Product
-      - ProductField
-      type: string
-    BatchUpdateUserAccessLayersRequestDto:
-      type: object
-      properties:
-        accessLayers:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-            format: uuid
-          description: List of IDs of access layers that should be assigned to user
-      additionalProperties: false
-      description: Batch update users request data
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-          description: The message
-          example: Success
-        type:
-          type:
-          - string
-          - 'null'
-          description: 'Type of the message
-
-            One of Info, Warning, Error, Forbidden'
-          example: Info
-        errorCode:
-          type:
-          - string
-          - 'null'
-          description: Error Code
-          example: INTERNAL_SERVER_ERROR
-      additionalProperties: false
-      description: The message associated to the service response
-    UpdateAccessLayerResponseDto:
-      type: object
-      properties:
-        version:
-          type: integer
-          description: Version of access layer after update
-          format: int32
-          example: 1
-      additionalProperties: false
-      description: Response DTO representing updated access layer
-    AccessLayersConfigurationDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/AccessLayersConfigurationDto'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
     AccessLayersConfigurationDto:
       type: object
       properties:
@@ -2109,33 +2093,6 @@ components:
           example: 1
       additionalProperties: false
       description: Response DTO representing access layers configuration
-    AccessLayerDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/AccessLayerDto'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    AccessLayerDataTypeDto_2:
-      enum:
-      - Field
-      - DataGroup
-      - Entity
-      - Journey
-      - Document
-      - Search
-      - Product
-      - ProductField
-      type: string
     AccessLayerDto:
       type: object
       properties:
@@ -2218,6 +2175,33 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
+    AccessLayersConfigurationDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/AccessLayersConfigurationDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    AccessLayerDataTypeDto_2:
+      enum:
+      - Field
+      - DataGroup
+      - Entity
+      - Journey
+      - Document
+      - Search
+      - Product
+      - ProductField
+      type: string
     AccessLayerDtoIEnumerableServiceResponse:
       type: object
       properties:
@@ -2237,6 +2221,85 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
+    AccessLayerDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/AccessLayerDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    AccessLayerDto_2:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The UiD of the team
+          format: uuid
+          example: e4ec4810-6386-4610-a605-0d636f393daf
+        name:
+          type:
+          - string
+          - 'null'
+          description: 'Name of the access layer
+
+            The value is calculated based on dataKey, type and dataType fields'
+          example: Private Banking - Business Related - Search
+        dataKey:
+          type:
+          - string
+          - 'null'
+          description: Data key of the access layer
+          example: PrivateBanking
+        label:
+          type:
+          - string
+          - 'null'
+          description: Label of the access layer
+          example: Private Banking
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of the access layer
+          example: Business related access layer for entities
+        type:
+          allOf:
+          - $ref: '#/components/schemas/AccessLayerTypeDto'
+          description: Type of the access layer
+          example: Business Related
+        dataType:
+          allOf:
+          - $ref: '#/components/schemas/AccessLayerDataTypeDto_3'
+          description: Data type of the access layer
+          example: Search
+        sensitiveDataKind:
+          allOf:
+          - $ref: '#/components/schemas/SensitiveDataKindDto'
+          description: Value indicating if this access layer should be used to restrict access to Sensitive Data data
+          example: SensitiveDataDelegate
+        users:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of user ids assigned to the access layer
+        version:
+          type: integer
+          description: Version number for given Entity
+          format: int32
+          example: 1
+      additionalProperties: false
+      description: Response DTO representing access layer data
     AccessLayerLightDto:
       type: object
       properties:
@@ -2328,141 +2391,23 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    AccessLayerDto_2:
+    AccessLayerLightDtoItemsPage:
       type: object
       properties:
-        id:
-          type: string
-          description: The UiD of the team
-          format: uuid
-          example: e4ec4810-6386-4610-a605-0d636f393daf
-        name:
-          type:
-          - string
-          - 'null'
-          description: 'Name of the access layer
-
-            The value is calculated based on dataKey, type and dataType fields'
-          example: Private Banking - Business Related - Search
-        dataKey:
-          type:
-          - string
-          - 'null'
-          description: Data key of the access layer
-          example: PrivateBanking
-        label:
-          type:
-          - string
-          - 'null'
-          description: Label of the access layer
-          example: Private Banking
-        description:
-          type:
-          - string
-          - 'null'
-          description: Description of the access layer
-          example: Business related access layer for entities
-        type:
-          allOf:
-          - $ref: '#/components/schemas/AccessLayerTypeDto'
-          description: Type of the access layer
-          example: Business Related
-        dataType:
-          allOf:
-          - $ref: '#/components/schemas/AccessLayerDataTypeDto_3'
-          description: Data type of the access layer
-          example: Search
-        sensitiveDataKind:
-          allOf:
-          - $ref: '#/components/schemas/SensitiveDataKindDto'
-          description: Value indicating if this access layer should be used to restrict access to Sensitive Data data
-          example: SensitiveDataDelegate
-        users:
+        items:
           type:
           - array
           - 'null'
           items:
-            type: string
-          description: List of user ids assigned to the access layer
-        version:
-          type: integer
-          description: Version number for given Entity
-          format: int32
-          example: 1
+            $ref: '#/components/schemas/AccessLayerLightDto_2'
+          description: The items result set
+        paginationToken:
+          type:
+          - string
+          - 'null'
+          description: The token for retrieving the next page of results
       additionalProperties: false
-      description: Response DTO representing access layer data
-    AccessLayerLightDto_2:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The UiD of the team
-          format: uuid
-          example: e4ec4810-6386-4610-a605-0d636f393daf
-        name:
-          type:
-          - string
-          - 'null'
-          description: 'Name of the access layer
-
-            The value is calculated based on dataKey, type and dataType fields'
-          example: Private Banking - Business Related - Search
-        dataKey:
-          type:
-          - string
-          - 'null'
-          description: Data key of the access layer
-          example: PrivateBanking
-        label:
-          type:
-          - string
-          - 'null'
-          description: Label of the access layer
-          example: Private Banking
-        description:
-          type:
-          - string
-          - 'null'
-          description: Description of the access layer
-          example: Business related access layer for entities
-        usersCount:
-          type: integer
-          description: Number of users assigned to access layer
-          format: int32
-          example: 10
-        type:
-          allOf:
-          - $ref: '#/components/schemas/AccessLayerTypeDto'
-          description: Type of the access layer
-          example: Business Related
-        dataType:
-          allOf:
-          - $ref: '#/components/schemas/AccessLayerDataTypeDto_4'
-          description: Data type of the access layer
-          example: Search
-        sensitiveDataKind:
-          allOf:
-          - $ref: '#/components/schemas/SensitiveDataKindDto'
-          description: Value indicating if this access layer should be used to restrict access to Sensitive Data data
-          example: SensitiveDataDelegate
-        version:
-          type: integer
-          description: Version number for given Entity
-          format: int32
-          example: 1
-      additionalProperties: false
-      description: Response DTO representing access layer data
-    AccessLayerDataTypeDto_4:
-      enum:
-      - Field
-      - DataGroup
-      - Entity
-      - Journey
-      - Document
-      - Search
-      - Product
-      - ProductField
-      type: string
+      description: Query Result Page
     AccessLayerDto_3:
       type: object
       properties:
@@ -2542,23 +2487,78 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    AccessLayerLightDtoItemsPage:
+    AccessLayerLightDto_2:
       type: object
       properties:
-        items:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/AccessLayerLightDto_2'
-          description: The items result set
-        paginationToken:
+        id:
+          type: string
+          description: The UiD of the team
+          format: uuid
+          example: e4ec4810-6386-4610-a605-0d636f393daf
+        name:
           type:
           - string
           - 'null'
-          description: The token for retrieving the next page of results
+          description: 'Name of the access layer
+
+            The value is calculated based on dataKey, type and dataType fields'
+          example: Private Banking - Business Related - Search
+        dataKey:
+          type:
+          - string
+          - 'null'
+          description: Data key of the access layer
+          example: PrivateBanking
+        label:
+          type:
+          - string
+          - 'null'
+          description: Label of the access layer
+          example: Private Banking
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of the access layer
+          example: Business related access layer for entities
+        usersCount:
+          type: integer
+          description: Number of users assigned to access layer
+          format: int32
+          example: 10
+        type:
+          allOf:
+          - $ref: '#/components/schemas/AccessLayerTypeDto'
+          description: Type of the access layer
+          example: Business Related
+        dataType:
+          allOf:
+          - $ref: '#/components/schemas/AccessLayerDataTypeDto_4'
+          description: Data type of the access layer
+          example: Search
+        sensitiveDataKind:
+          allOf:
+          - $ref: '#/components/schemas/SensitiveDataKindDto'
+          description: Value indicating if this access layer should be used to restrict access to Sensitive Data data
+          example: SensitiveDataDelegate
+        version:
+          type: integer
+          description: Version number for given Entity
+          format: int32
+          example: 1
       additionalProperties: false
-      description: Query Result Page
+      description: Response DTO representing access layer data
+    AccessLayerDataTypeDto_4:
+      enum:
+      - Field
+      - DataGroup
+      - Entity
+      - Journey
+      - Document
+      - Search
+      - Product
+      - ProductField
+      type: string
   securitySchemes:
     Bearer:
       type: apiKey

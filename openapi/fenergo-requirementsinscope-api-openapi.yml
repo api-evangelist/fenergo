@@ -696,31 +696,7 @@ paths:
     - url: /policyquery
 components:
   schemas:
-    DateTimePeriodFormulaVariableDto:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-        timePeriodKind:
-          type:
-          - string
-          - 'null'
-        value:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        timeZoneId:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    SpecialCharactersRuleDto2:
+    CollectionMaximumCountRuleDto2:
       type: object
       properties:
         active:
@@ -733,15 +709,69 @@ components:
           - 'null'
           description: Validation rule error message
           example: Validation error occurred
-        excludedCharacters:
+        requiredTypesMaxCount:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: integer
+            format: int32
+          description: Dictionary of required Primary Data Group Field values with maximum count
+          example:
+            Registered: 1
+        overallMaximumCount:
+          type:
+          - integer
+          - 'null'
+          description: Overall maximum count
+          format: int32
+          example: 1
+      additionalProperties: false
+      description: Request DTO representing collection maximum count validation rule metadata
+    ValueLimitRuleDtoConditionalValidationRuleDto:
+      type: object
+      properties:
+        isActive:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        staticRule:
+          allOf:
+          - $ref: '#/components/schemas/ValueLimitRuleDto'
+          description: Static validation rule always applied when active
+        dynamicRules:
           type:
           - array
           - 'null'
           items:
-            type: string
-          description: Array of special characters, which will be ignored by validation e.g. ["!","@","#"]
+            $ref: '#/components/schemas/ValueLimitRuleDtoConditionalValueDto'
+          description: Conditional validation rules
       additionalProperties: false
-      description: Request DTO representing special characters rule metadata
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+          description: The message
+          example: Success
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
+      additionalProperties: false
+      description: The message associated to the service response
     DataValidationRulesDto:
       type: object
       properties:
@@ -831,57 +861,10 @@ components:
           example: Europe/Warsaw
       additionalProperties: false
       description: Request DTO representing validation data metadata
-    RegexRuleDtoConditionalValueDto:
+    RegexRuleDto:
       type: object
       properties:
-        id:
-          type: string
-          description: The ID of the condition
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        name:
-          type:
-          - string
-          - 'null'
-          description: The name of the condition
-          example: Company-type only
-        description:
-          type:
-          - string
-          - 'null'
-          description: The description of the condition
-          example: Applicable only when EntityType=Company
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
-          example: AND
-        operands:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto'
-          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
-        value:
-          allOf:
-          - $ref: '#/components/schemas/RegexRuleDto'
-          description: Request DTO representing regex rule metadata
-        priority:
-          type: integer
-          description: Priority of the value in case when multiple conditional values are evaluated
-          format: int32
-          example: 1
-      additionalProperties: false
-    RegexRuleDto2:
-      type: object
-      properties:
-        active:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        message:
+        errorMessage:
           type:
           - string
           - 'null'
@@ -899,105 +882,51 @@ components:
           example: ^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$
       additionalProperties: false
       description: Request DTO representing regex rule metadata
-    RequirementsInScopeRequestDto:
+    DateLimitRuleDto2:
       type: object
       properties:
-        name:
-          type:
-          - string
-          - 'null'
-          description: Exact name of the requirement
-          example: Fenergo Comprehensive Standard Policy Requirements
-        jurisdiction:
-          type:
-          - string
-          - 'null'
-          description: '(Deprecated - Use Jurisdictions instead)
-
-            Jurisdiction of the requirement'
-          example: Global
-          deprecated: true
-        jurisdictions:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: Jurisdictions of the requirement e.g. ["Global", "Ireland"]
-        type:
-          type:
-          - string
-          - 'null'
-          description: Type of requirement
-          example: Data
-        category:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: List of requirement category e.g. ["Basic Details", "Enrich Details"]
-        entityType:
-          type:
-          - string
-          - 'null'
-          description: Type of entity
-          example: Company
-        isMandatory:
-          type:
-          - boolean
-          - 'null'
-          description: Mandatory flag of the requirement
-          example: true
-        isSensitiveData:
-          type:
-          - boolean
-          - 'null'
-          description: Sensitive data flag of the requirement
-          example: true
-        isMaterialData:
-          type:
-          - boolean
-          - 'null'
-          description: Materiality flag of the requirement
-          example: true
-        isIndexable:
-          type:
-          - boolean
-          - 'null'
-          description: Requirement is data indexed for search flag
-          example: true
-        dataField:
-          allOf:
-          - $ref: '#/components/schemas/DataFieldDto'
-          description: Data field definition
-        targetEntity:
-          type:
-          - string
-          - 'null'
-          description: Target entity
-          example: Client
-        includeConditions:
+        active:
           type: boolean
-          description: 'Include conditions flag.
-
-            If true, include the Requirements containing conditions.
-
-            If false, only the Requirements without conditions will be returned.'
-          example: false
-      additionalProperties: false
-      description: Response DTO representing filter parameters for in-scope query
-    BasicRuleDto:
-      type: object
-      properties:
-        errorMessage:
+          description: Validation rule active flag
+          example: true
+        message:
           type:
           - string
           - 'null'
           description: Validation rule error message
           example: Validation error occurred
+        minDate:
+          type:
+          - string
+          - 'null'
+          description: Minimum date
+          format: date-time
+          example: '2020-01-01T14:48:00.000Z'
+        maxDate:
+          type:
+          - string
+          - 'null'
+          description: Maximum date
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
       additionalProperties: false
-      description: Request DTO representing basic validation rule metadata
+      description: Request DTO representing date limit rule metadata
+    ReferenceDto:
+      type: object
+      properties:
+        type:
+          type:
+          - string
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+        url:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
     EmptyRuleDtoConditionalValidationRuleDto:
       type: object
       properties:
@@ -1017,172 +946,7 @@ components:
             $ref: '#/components/schemas/EmptyRuleDtoConditionalValueDto'
           description: Conditional validation rules
       additionalProperties: false
-    CollectionMinimumCountRuleDtoValidationRuleDto:
-      type: object
-      properties:
-        isActive:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        staticRule:
-          allOf:
-          - $ref: '#/components/schemas/CollectionMinimumCountRuleDto'
-          description: Static validation rule always applied when active
-      additionalProperties: false
-    ExternalProviderRuleDtoValidationRuleDto:
-      type: object
-      properties:
-        isActive:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        staticRule:
-          allOf:
-          - $ref: '#/components/schemas/ExternalProviderRuleDto'
-          description: Static validation rule always applied when active
-      additionalProperties: false
-    ValueLimitRuleDtoConditionalValidationRuleDto:
-      type: object
-      properties:
-        isActive:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        staticRule:
-          allOf:
-          - $ref: '#/components/schemas/ValueLimitRuleDto'
-          description: Static validation rule always applied when active
-        dynamicRules:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValueLimitRuleDtoConditionalValueDto'
-          description: Conditional validation rules
-      additionalProperties: false
-    VersionStatus:
-      enum:
-      - Draft
-      - Pending
-      - Rejected
-      - Published
-      - Archived
-      - Deleted
-      type: string
-    NumberFormulaSchemaDto:
-      type: object
-      properties:
-        formulaSetId:
-          type: string
-          format: uuid
-        versionNumber:
-          type:
-          - integer
-          - 'null'
-          format: int32
-        formulaString:
-          type:
-          - string
-          - 'null'
-        formulaVariables:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/NumberFormulaVariableDto'
-      additionalProperties: false
-    ValueLimitRuleDto2:
-      type: object
-      properties:
-        active:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        message:
-          type:
-          - string
-          - 'null'
-          description: Validation rule error message
-          example: Validation error occurred
-        minValue:
-          type:
-          - integer
-          - 'null'
-          description: Minimum value
-          format: int32
-          example: 1
-        maxValue:
-          type:
-          - integer
-          - 'null'
-          description: Maximum value
-          format: int32
-          example: 10
-      additionalProperties: false
-      description: Request DTO representing value limit rule metadata
-    ValueLimitRuleDto:
-      type: object
-      properties:
-        errorMessage:
-          type:
-          - string
-          - 'null'
-          description: Validation rule error message
-          example: Validation error occurred
-        minValue:
-          type:
-          - integer
-          - 'null'
-          description: Minimum value
-          format: int32
-          example: 1
-        maxValue:
-          type:
-          - integer
-          - 'null'
-          description: Maximum value
-          format: int32
-          example: 10
-      additionalProperties: false
-      description: Request DTO representing value limit rule metadata
-    OwnershipValidationRuleDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The UiD of the ownership validation rule
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        setId:
-          type: string
-          description: The UiD of the requirement set
-          format: uuid
-          example: 012cfe3a-7bfa-41e7-8269-d49b3b38dff3
-        ownershipValidationData:
-          allOf:
-          - $ref: '#/components/schemas/OwnershipValidationDataDto'
-          description: Ownership Validation Data - set of validation rules specific to ownership requirement
-      additionalProperties: false
-    BasicRuleDtoConditionalValidationRuleDto:
-      type: object
-      properties:
-        isActive:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        staticRule:
-          allOf:
-          - $ref: '#/components/schemas/BasicRuleDto'
-          description: Static validation rule always applied when active
-        dynamicRules:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/BasicRuleDtoConditionalValueDto'
-          description: Conditional validation rules
-      additionalProperties: false
-    BasicRuleDtoConditionalValueDto:
+    ConditionalValueDto:
       type: object
       properties:
         id:
@@ -1216,69 +980,24 @@ components:
             $ref: '#/components/schemas/ConditionDefinitionDto'
           description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
         value:
-          allOf:
-          - $ref: '#/components/schemas/BasicRuleDto'
-          description: Request DTO representing basic validation rule metadata
+          type:
+          - string
+          - 'null'
+          description: Value that should be returned when conditions are met
+          example: Relationship Manager
         priority:
           type: integer
           description: Priority of the value in case when multiple conditional values are evaluated
           format: int32
           example: 1
-      additionalProperties: false
-    ExternalProviderRuleDto2:
-      type: object
-      properties:
-        active:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        message:
+        valueId:
           type:
           - string
           - 'null'
-          description: Validation rule error message
-          example: Validation error occurred
-        providerId:
-          type: string
-          description: Id of external provider.
-          format: uuid
+          description: Value Id that should be returned when conditions are met
+          example: RM
       additionalProperties: false
-      description: Request DTO representing external provider rule metadata
-    SpecialCharactersRuleDto:
-      type: object
-      properties:
-        errorMessage:
-          type:
-          - string
-          - 'null'
-          description: Validation rule error message
-          example: Validation error occurred
-        excludedCharacters:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: Array of special characters, which will be ignored by validation e.g. ["!","@","#"]
-      additionalProperties: false
-      description: Request DTO representing special characters rule metadata
-    FilterConditionDto:
-      type: object
-      properties:
-        fieldName:
-          type:
-          - string
-          - 'null'
-          description: Field name for the filter condition
-        conditions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDto'
-          description: Conditions applied to the field
-      additionalProperties: false
-    ValueLimitRuleDtoValidationRuleDto:
+    BasicRuleDtoValidationRuleDto:
       type: object
       properties:
         isActive:
@@ -1287,25 +1006,156 @@ components:
           example: true
         staticRule:
           allOf:
-          - $ref: '#/components/schemas/ValueLimitRuleDto'
+          - $ref: '#/components/schemas/BasicRuleDto'
           description: Static validation rule always applied when active
       additionalProperties: false
-    AccessLayerDto:
+    StringServiceResponse:
       type: object
       properties:
-        geographic:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
           type:
           - array
           - 'null'
           items:
-            type: string
-        businessRelated:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
+      description: Service response data
+    OwnershipValidationDataDto:
+      type: object
+      properties:
+        isMandatory:
+          allOf:
+          - $ref: '#/components/schemas/BasicRuleDto2'
+          description: Request DTO representing basic validation rule metadata
+        partyCount:
+          allOf:
+          - $ref: '#/components/schemas/ValueLimitRuleDto2'
+          description: Request DTO representing value limit rule metadata
+        addAllParties:
+          allOf:
+          - $ref: '#/components/schemas/BasicRuleDto2'
+          description: Request DTO representing basic validation rule metadata
+        idvIsMandatory:
+          allOf:
+          - $ref: '#/components/schemas/BasicRuleDto2'
+          description: Request DTO representing basic validation rule metadata
+        idvPartyCount:
+          allOf:
+          - $ref: '#/components/schemas/ValueLimitRuleDto2'
+          description: Request DTO representing value limit rule metadata
+        idvAllParties:
+          allOf:
+          - $ref: '#/components/schemas/BasicRuleDto2'
+          description: Request DTO representing basic validation rule metadata
+      additionalProperties: false
+    ExternalProviderRuleDtoValidationRuleDto:
+      type: object
+      properties:
+        isActive:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        staticRule:
+          allOf:
+          - $ref: '#/components/schemas/ExternalProviderRuleDto'
+          description: Static validation rule always applied when active
+      additionalProperties: false
+    ConditionDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the condition
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        name:
+          type:
+          - string
+          - 'null'
+          description: The name of the condition
+          example: Company-type only
+        description:
+          type:
+          - string
+          - 'null'
+          description: The description of the condition
+          example: Applicable only when EntityType=Company
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
+          example: AND
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto'
+          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
+      additionalProperties: false
+      description: Represents condition root
+    NumberFormulaVariableDto:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+        propertyName:
+          type:
+          - string
+          - 'null'
+        filterConditions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/FilterConditionDto'
+      additionalProperties: false
+    DateLimitRuleDtoConditionalValidationRuleDto:
+      type: object
+      properties:
+        isActive:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        staticRule:
+          allOf:
+          - $ref: '#/components/schemas/DateLimitRuleDto'
+          description: Static validation rule always applied when active
+        dynamicRules:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/DateLimitRuleDtoConditionalValueDto'
+          description: Conditional validation rules
+      additionalProperties: false
+    EmptyRuleDto:
+      type: object
+      additionalProperties: false
+      description: Request DTO representing rule with no parameters
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data:
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
     ValidationDataDto:
       type: object
       properties:
@@ -1381,156 +1231,98 @@ components:
           description: Validation rule that allows to use external provider for validating all fields of a DataGroup as a collection
       additionalProperties: false
       description: Request DTO representing validation data metadata
-    SpecialCharactersRuleDtoValidationRuleDto:
+    ServiceResponse:
       type: object
       properties:
-        isActive:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        staticRule:
-          allOf:
-          - $ref: '#/components/schemas/SpecialCharactersRuleDto'
-          description: Static validation rule always applied when active
-      additionalProperties: false
-    DateLimitRuleDtoConditionalValidationRuleDto:
-      type: object
-      properties:
-        isActive:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        staticRule:
-          allOf:
-          - $ref: '#/components/schemas/DateLimitRuleDto'
-          description: Static validation rule always applied when active
-        dynamicRules:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/DateLimitRuleDtoConditionalValueDto'
-          description: Conditional validation rules
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
-    ExternalProviderRuleDto:
-      type: object
-      properties:
-        providerId:
-          type: string
-          description: Id of external provider.
-          format: uuid
-      additionalProperties: false
-      description: Request DTO representing external provider rule metadata
-    DataFieldDto:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-          description: Property name
-          example: firstName
-        propertyType:
-          type:
-          - string
-          - 'null'
-          description: Property type
-          example: text
-        propertyTypeId:
-          type:
-          - string
-          - 'null'
-          description: Property type id
-          format: uuid
-          example: ab92ecbc-bd77-494b-acad-3d2fb0b8136c
-        linkChildFieldPropertyName:
-          type:
-          - string
-          - 'null'
-          description: Linked child field property name
-          example: productCategory
-        linkedParentFieldPropertyName:
-          type:
-          - string
-          - 'null'
-          description: Linked Parent field property name
-          example: productCategory
-        externalSearchApiProviderId:
-          type:
-          - string
-          - 'null'
-          description: External search api provider id
-          format: uuid
-          example: ab92ecbc-bd77-494b-acad-3d2fb0b8136c
-        propertyTypeVersion:
-          type:
-          - integer
-          - 'null'
-          description: Property version
-          format: int32
-          deprecated: true
-        formulaSchema:
-          allOf:
-          - $ref: '#/components/schemas/NumberFormulaSchemaDto'
-          description: Number formula schema
-        dateTimePeriodFormulaSchema:
-          allOf:
-          - $ref: '#/components/schemas/DateTimePeriodFormulaSchemaDto'
-          description: Date formula schema
-      additionalProperties: false
-      description: Response DTO representing data field data
-    ValueField:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          description: Value of DataSource used to filter field values
-        field:
-          type:
-          - string
-          - 'null'
-          description: Field value used to validate conditional value
-      additionalProperties: false
-    RequirementsInScopeRequestDtoServiceRequest:
+      description: Service response data
+    RequirementDtoListServiceResponse:
       type: object
       properties:
         data:
-          allOf:
-          - $ref: '#/components/schemas/RequirementsInScopeRequestDto'
-          description: Response DTO representing filter parameters for in-scope query
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RequirementDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
-      description: Service request data
-    OwnershipValidationDataDto:
+      description: Service response data
+    BasicRuleDtoConditionalValueDto:
       type: object
       properties:
-        isMandatory:
+        id:
+          type: string
+          description: The ID of the condition
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        name:
+          type:
+          - string
+          - 'null'
+          description: The name of the condition
+          example: Company-type only
+        description:
+          type:
+          - string
+          - 'null'
+          description: The description of the condition
+          example: Applicable only when EntityType=Company
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
+          example: AND
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto'
+          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
+        value:
           allOf:
-          - $ref: '#/components/schemas/BasicRuleDto2'
+          - $ref: '#/components/schemas/BasicRuleDto'
           description: Request DTO representing basic validation rule metadata
-        partyCount:
-          allOf:
-          - $ref: '#/components/schemas/ValueLimitRuleDto2'
-          description: Request DTO representing value limit rule metadata
-        addAllParties:
-          allOf:
-          - $ref: '#/components/schemas/BasicRuleDto2'
-          description: Request DTO representing basic validation rule metadata
-        idvIsMandatory:
-          allOf:
-          - $ref: '#/components/schemas/BasicRuleDto2'
-          description: Request DTO representing basic validation rule metadata
-        idvPartyCount:
-          allOf:
-          - $ref: '#/components/schemas/ValueLimitRuleDto2'
-          description: Request DTO representing value limit rule metadata
-        idvAllParties:
-          allOf:
-          - $ref: '#/components/schemas/BasicRuleDto2'
-          description: Request DTO representing basic validation rule metadata
+        priority:
+          type: integer
+          description: Priority of the value in case when multiple conditional values are evaluated
+          format: int32
+          example: 1
       additionalProperties: false
-    DateLimitRuleDto2:
+    CollectionMaximumCountRuleDtoValidationRuleDto:
+      type: object
+      properties:
+        isActive:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        staticRule:
+          allOf:
+          - $ref: '#/components/schemas/CollectionMaximumCountRuleDto'
+          description: Static validation rule always applied when active
+      additionalProperties: false
+    BasicRuleDto2:
       type: object
       properties:
         active:
@@ -1543,26 +1335,16 @@ components:
           - 'null'
           description: Validation rule error message
           example: Validation error occurred
-        minDate:
-          type:
-          - string
-          - 'null'
-          description: Minimum date
-          format: date-time
-          example: '2020-01-01T14:48:00.000Z'
-        maxDate:
-          type:
-          - string
-          - 'null'
-          description: Maximum date
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
       additionalProperties: false
-      description: Request DTO representing date limit rule metadata
-    RegexRuleDto:
+      description: Request DTO representing basic validation rule metadata
+    RegexRuleDto2:
       type: object
       properties:
-        errorMessage:
+        active:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        message:
           type:
           - string
           - 'null'
@@ -1580,77 +1362,80 @@ components:
           example: ^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$
       additionalProperties: false
       description: Request DTO representing regex rule metadata
-    BasicRuleDto2:
+    ActiveSetVersionResponseDto:
       type: object
       properties:
-        active:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        message:
+        id:
+          type: string
+          description: The UiD of the requirement set version
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        setId:
+          type: string
+          description: The UiD of the requirement set that the version belongs to
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        requirementSetStatus:
           type:
           - string
           - 'null'
-          description: Validation rule error message
-          example: Validation error occurred
-      additionalProperties: false
-      description: Request DTO representing basic validation rule metadata
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data:
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    DateLimitRuleDto:
-      type: object
-      properties:
-        errorMessage:
+          description: Requirement set status
+          example: Active
+        jurisdiction:
           type:
           - string
           - 'null'
-          description: Validation rule error message
-          example: Validation error occurred
-        minDate:
-          type:
-          - string
-          - 'null'
-          description: Minimum date
-          format: date-time
-          example: '2020-01-01T14:48:00.000Z'
-        maxDate:
-          type:
-          - string
-          - 'null'
-          description: Maximum date
+          description: Requirement set jurisdiction
+          example: Global
+        versionNumber:
+          type: integer
+          description: The versions number
+          format: int32
+          example: 1
+        effectiveFrom:
+          type: string
+          description: The date that the version takes effect when published
           format: date-time
           example: '2021-01-01T14:48:00.000Z'
+        effectiveUntil:
+          type:
+          - string
+          - 'null'
+          description: The calculated date that the version ceases being active
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+          description: The status of the version
+          example: Published
+        created:
+          type: string
+          description: The creation date of the version
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        version:
+          type: integer
+          description: Version number for given Aggregate (concurrency check)
+          format: int32
+          example: 1
       additionalProperties: false
-      description: Request DTO representing date limit rule metadata
-    ReferenceDto:
+      description: Response DTO representing light requirement set version data
+    ValueField:
       type: object
       properties:
-        type:
+        dataSource:
           type:
           - string
           - 'null'
-        description:
+          description: Value of DataSource used to filter field values
+        field:
           type:
           - string
           - 'null'
-        url:
-          type:
-          - string
-          - 'null'
+          description: Field value used to validate conditional value
       additionalProperties: false
-    DateLimitRuleDtoConditionalValueDto:
+    RegexRuleDtoConditionalValueDto:
       type: object
       properties:
         id:
@@ -1685,95 +1470,30 @@ components:
           description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
         value:
           allOf:
-          - $ref: '#/components/schemas/DateLimitRuleDto'
-          description: Request DTO representing date limit rule metadata
+          - $ref: '#/components/schemas/RegexRuleDto'
+          description: Request DTO representing regex rule metadata
         priority:
           type: integer
           description: Priority of the value in case when multiple conditional values are evaluated
           format: int32
           example: 1
       additionalProperties: false
-    ValueLimitRuleDtoConditionalValueDto:
+    FilterConditionDto:
       type: object
       properties:
-        id:
-          type: string
-          description: The ID of the condition
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        name:
+        fieldName:
           type:
           - string
           - 'null'
-          description: The name of the condition
-          example: Company-type only
-        description:
-          type:
-          - string
-          - 'null'
-          description: The description of the condition
-          example: Applicable only when EntityType=Company
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
-          example: AND
-        operands:
+          description: Field name for the filter condition
+        conditions:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ConditionDefinitionDto'
-          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
-        value:
-          allOf:
-          - $ref: '#/components/schemas/ValueLimitRuleDto'
-          description: Request DTO representing value limit rule metadata
-        priority:
-          type: integer
-          description: Priority of the value in case when multiple conditional values are evaluated
-          format: int32
-          example: 1
+            $ref: '#/components/schemas/ConditionDto'
+          description: Conditions applied to the field
       additionalProperties: false
-    BasicRuleDtoValidationRuleDto:
-      type: object
-      properties:
-        isActive:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        staticRule:
-          allOf:
-          - $ref: '#/components/schemas/BasicRuleDto'
-          description: Static validation rule always applied when active
-      additionalProperties: false
-    CollectionMinimumCountRuleDto:
-      type: object
-      properties:
-        errorMessage:
-          type:
-          - string
-          - 'null'
-          description: Validation rule error message
-          example: Validation error occurred
-        requiredTypesMinCount:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type: integer
-            format: int32
-          description: Dictionary of required Primary Data Group Field values with minimum count
-          example:
-            Registered: 1
-        overallMinimumCount:
-          type: integer
-          description: Overall minimum count
-          format: int32
-          example: 1
-      additionalProperties: false
-      description: Request DTO representing collection minimum count validation rule metadata
     RequirementDto:
       type: object
       properties:
@@ -2116,6 +1836,771 @@ components:
           deprecated: true
       additionalProperties: false
       description: Request DTO representing requirement metadata
+    DateTimePeriodFormulaSchemaDto:
+      type: object
+      properties:
+        formulaSetId:
+          type: string
+          format: uuid
+        versionNumber:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        formulaString:
+          type:
+          - string
+          - 'null'
+        dateTimePeriodFormulaVariables:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/DateTimePeriodFormulaVariableDto'
+      additionalProperties: false
+    ExternalProviderRuleDto2:
+      type: object
+      properties:
+        active:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        message:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+        providerId:
+          type: string
+          description: Id of external provider.
+          format: uuid
+      additionalProperties: false
+      description: Request DTO representing external provider rule metadata
+    CollectionMinimumCountRuleDto2:
+      type: object
+      properties:
+        active:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        message:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+        requiredTypesMinCount:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: integer
+            format: int32
+          description: Dictionary of required Primary Data Group Field values with minimum count
+          example:
+            Registered: 1
+        overallMinimumCount:
+          type: integer
+          description: Overall minimum count
+          format: int32
+          example: 1
+      additionalProperties: false
+      description: Request DTO representing collection minimum count validation rule metadata
+    ValueLimitRuleDtoValidationRuleDto:
+      type: object
+      properties:
+        isActive:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        staticRule:
+          allOf:
+          - $ref: '#/components/schemas/ValueLimitRuleDto'
+          description: Static validation rule always applied when active
+      additionalProperties: false
+    DateTimePeriodFormulaVariableDto:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+        timePeriodKind:
+          type:
+          - string
+          - 'null'
+        value:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        timeZoneId:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    RequirementsInScopeRequestDto:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+          description: Exact name of the requirement
+          example: Fenergo Comprehensive Standard Policy Requirements
+        jurisdiction:
+          type:
+          - string
+          - 'null'
+          description: '(Deprecated - Use Jurisdictions instead)
+
+            Jurisdiction of the requirement'
+          example: Global
+          deprecated: true
+        jurisdictions:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Jurisdictions of the requirement e.g. ["Global", "Ireland"]
+        type:
+          type:
+          - string
+          - 'null'
+          description: Type of requirement
+          example: Data
+        category:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of requirement category e.g. ["Basic Details", "Enrich Details"]
+        entityType:
+          type:
+          - string
+          - 'null'
+          description: Type of entity
+          example: Company
+        isMandatory:
+          type:
+          - boolean
+          - 'null'
+          description: Mandatory flag of the requirement
+          example: true
+        isSensitiveData:
+          type:
+          - boolean
+          - 'null'
+          description: Sensitive data flag of the requirement
+          example: true
+        isMaterialData:
+          type:
+          - boolean
+          - 'null'
+          description: Materiality flag of the requirement
+          example: true
+        isIndexable:
+          type:
+          - boolean
+          - 'null'
+          description: Requirement is data indexed for search flag
+          example: true
+        dataField:
+          allOf:
+          - $ref: '#/components/schemas/DataFieldDto'
+          description: Data field definition
+        targetEntity:
+          type:
+          - string
+          - 'null'
+          description: Target entity
+          example: Client
+        includeConditions:
+          type: boolean
+          description: 'Include conditions flag.
+
+            If true, include the Requirements containing conditions.
+
+            If false, only the Requirements without conditions will be returned.'
+          example: false
+      additionalProperties: false
+      description: Response DTO representing filter parameters for in-scope query
+    BasicRuleDto:
+      type: object
+      properties:
+        errorMessage:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+      additionalProperties: false
+      description: Request DTO representing basic validation rule metadata
+    ExternalProviderRuleDto:
+      type: object
+      properties:
+        providerId:
+          type: string
+          description: Id of external provider.
+          format: uuid
+      additionalProperties: false
+      description: Request DTO representing external provider rule metadata
+    CollectionMinimumCountRuleDto:
+      type: object
+      properties:
+        errorMessage:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+        requiredTypesMinCount:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: integer
+            format: int32
+          description: Dictionary of required Primary Data Group Field values with minimum count
+          example:
+            Registered: 1
+        overallMinimumCount:
+          type: integer
+          description: Overall minimum count
+          format: int32
+          example: 1
+      additionalProperties: false
+      description: Request DTO representing collection minimum count validation rule metadata
+    NumberFormulaSchemaDto:
+      type: object
+      properties:
+        formulaSetId:
+          type: string
+          format: uuid
+        versionNumber:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        formulaString:
+          type:
+          - string
+          - 'null'
+        formulaVariables:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/NumberFormulaVariableDto'
+      additionalProperties: false
+    ConditionDefinitionDto:
+      type: object
+      properties:
+        fieldName:
+          type:
+          - string
+          - 'null'
+          description: Name of the field to evaluate
+          example: EntityType
+        value:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of values
+        valueId:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of value ids
+        valueType:
+          type:
+          - string
+          - 'null'
+          description: Type of the value
+          example: text
+        dataSource:
+          type:
+          - string
+          - 'null'
+          description: Data source from which field is retrieved. If empty then Entity Data properties will be used.
+          example: entityDataMetadata
+        operation:
+          type:
+          - string
+          - 'null'
+          description: Logical operation to be performed to match the values
+          example: equal
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+          description: Logical operation to be performed on the operands collection
+          example: AND
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto'
+          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
+        valueField:
+          allOf:
+          - $ref: '#/components/schemas/ValueField'
+          description: Field value used for conditional limit validation
+      additionalProperties: false
+      description: Represents condition
+    ValueLimitRuleDtoConditionalValueDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the condition
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        name:
+          type:
+          - string
+          - 'null'
+          description: The name of the condition
+          example: Company-type only
+        description:
+          type:
+          - string
+          - 'null'
+          description: The description of the condition
+          example: Applicable only when EntityType=Company
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
+          example: AND
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto'
+          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
+        value:
+          allOf:
+          - $ref: '#/components/schemas/ValueLimitRuleDto'
+          description: Request DTO representing value limit rule metadata
+        priority:
+          type: integer
+          description: Priority of the value in case when multiple conditional values are evaluated
+          format: int32
+          example: 1
+      additionalProperties: false
+    RegexRuleDtoConditionalValidationRuleDto:
+      type: object
+      properties:
+        isActive:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        staticRule:
+          allOf:
+          - $ref: '#/components/schemas/RegexRuleDto'
+          description: Static validation rule always applied when active
+        dynamicRules:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RegexRuleDtoConditionalValueDto'
+          description: Conditional validation rules
+      additionalProperties: false
+    DataFieldDto:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+          description: Property name
+          example: firstName
+        propertyType:
+          type:
+          - string
+          - 'null'
+          description: Property type
+          example: text
+        propertyTypeId:
+          type:
+          - string
+          - 'null'
+          description: Property type id
+          format: uuid
+          example: ab92ecbc-bd77-494b-acad-3d2fb0b8136c
+        linkChildFieldPropertyName:
+          type:
+          - string
+          - 'null'
+          description: Linked child field property name
+          example: productCategory
+        linkedParentFieldPropertyName:
+          type:
+          - string
+          - 'null'
+          description: Linked Parent field property name
+          example: productCategory
+        externalSearchApiProviderId:
+          type:
+          - string
+          - 'null'
+          description: External search api provider id
+          format: uuid
+          example: ab92ecbc-bd77-494b-acad-3d2fb0b8136c
+        propertyTypeVersion:
+          type:
+          - integer
+          - 'null'
+          description: Property version
+          format: int32
+          deprecated: true
+        formulaSchema:
+          allOf:
+          - $ref: '#/components/schemas/NumberFormulaSchemaDto'
+          description: Number formula schema
+        dateTimePeriodFormulaSchema:
+          allOf:
+          - $ref: '#/components/schemas/DateTimePeriodFormulaSchemaDto'
+          description: Date formula schema
+      additionalProperties: false
+      description: Response DTO representing data field data
+    OwnershipValidationRuleDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The UiD of the ownership validation rule
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        setId:
+          type: string
+          description: The UiD of the requirement set
+          format: uuid
+          example: 012cfe3a-7bfa-41e7-8269-d49b3b38dff3
+        ownershipValidationData:
+          allOf:
+          - $ref: '#/components/schemas/OwnershipValidationDataDto'
+          description: Ownership Validation Data - set of validation rules specific to ownership requirement
+      additionalProperties: false
+    CollectionMaximumCountRuleDto:
+      type: object
+      properties:
+        errorMessage:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+        requiredTypesMaxCount:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: integer
+            format: int32
+          description: Dictionary of required Primary Data Group Field values with maximum count
+          example:
+            Registered: 1
+        overallMaximumCount:
+          type:
+          - integer
+          - 'null'
+          description: Overall maximum count
+          format: int32
+          example: 1
+      additionalProperties: false
+      description: Request DTO representing collection maximum count validation rule metadata
+    DateLimitRuleDtoConditionalValueDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the condition
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        name:
+          type:
+          - string
+          - 'null'
+          description: The name of the condition
+          example: Company-type only
+        description:
+          type:
+          - string
+          - 'null'
+          description: The description of the condition
+          example: Applicable only when EntityType=Company
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
+          example: AND
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto'
+          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
+        value:
+          allOf:
+          - $ref: '#/components/schemas/DateLimitRuleDto'
+          description: Request DTO representing date limit rule metadata
+        priority:
+          type: integer
+          description: Priority of the value in case when multiple conditional values are evaluated
+          format: int32
+          example: 1
+      additionalProperties: false
+    SpecialCharactersRuleDto:
+      type: object
+      properties:
+        errorMessage:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+        excludedCharacters:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Array of special characters, which will be ignored by validation e.g. ["!","@","#"]
+      additionalProperties: false
+      description: Request DTO representing special characters rule metadata
+    SpecialCharactersRuleDtoValidationRuleDto:
+      type: object
+      properties:
+        isActive:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        staticRule:
+          allOf:
+          - $ref: '#/components/schemas/SpecialCharactersRuleDto'
+          description: Static validation rule always applied when active
+      additionalProperties: false
+    ActiveSetVersionResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ActiveSetVersionResponseDto'
+          description: Response DTO representing light requirement set version data
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    ValueLimitRuleDto2:
+      type: object
+      properties:
+        active:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        message:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+        minValue:
+          type:
+          - integer
+          - 'null'
+          description: Minimum value
+          format: int32
+          example: 1
+        maxValue:
+          type:
+          - integer
+          - 'null'
+          description: Maximum value
+          format: int32
+          example: 10
+      additionalProperties: false
+      description: Request DTO representing value limit rule metadata
+    ValueLimitRuleDto:
+      type: object
+      properties:
+        errorMessage:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+        minValue:
+          type:
+          - integer
+          - 'null'
+          description: Minimum value
+          format: int32
+          example: 1
+        maxValue:
+          type:
+          - integer
+          - 'null'
+          description: Maximum value
+          format: int32
+          example: 10
+      additionalProperties: false
+      description: Request DTO representing value limit rule metadata
+    CollectionMinimumCountRuleDtoValidationRuleDto:
+      type: object
+      properties:
+        isActive:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        staticRule:
+          allOf:
+          - $ref: '#/components/schemas/CollectionMinimumCountRuleDto'
+          description: Static validation rule always applied when active
+      additionalProperties: false
+    BasicRuleDtoConditionalValidationRuleDto:
+      type: object
+      properties:
+        isActive:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        staticRule:
+          allOf:
+          - $ref: '#/components/schemas/BasicRuleDto'
+          description: Static validation rule always applied when active
+        dynamicRules:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/BasicRuleDtoConditionalValueDto'
+          description: Conditional validation rules
+      additionalProperties: false
+    EmptyRuleDtoConditionalValueDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the condition
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        name:
+          type:
+          - string
+          - 'null'
+          description: The name of the condition
+          example: Company-type only
+        description:
+          type:
+          - string
+          - 'null'
+          description: The description of the condition
+          example: Applicable only when EntityType=Company
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
+          example: AND
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto'
+          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
+        value:
+          allOf:
+          - $ref: '#/components/schemas/EmptyRuleDto'
+          description: Request DTO representing rule with no parameters
+        priority:
+          type: integer
+          description: Priority of the value in case when multiple conditional values are evaluated
+          format: int32
+          example: 1
+      additionalProperties: false
+    VersionStatus:
+      enum:
+      - Draft
+      - Pending
+      - Rejected
+      - Published
+      - Archived
+      - Deleted
+      type: string
+    DateLimitRuleDto:
+      type: object
+      properties:
+        errorMessage:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+        minDate:
+          type:
+          - string
+          - 'null'
+          description: Minimum date
+          format: date-time
+          example: '2020-01-01T14:48:00.000Z'
+        maxDate:
+          type:
+          - string
+          - 'null'
+          description: Maximum date
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+      additionalProperties: false
+      description: Request DTO representing date limit rule metadata
+    AccessLayerDto:
+      type: object
+      properties:
+        geographic:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        businessRelated:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+      additionalProperties: false
+    RequirementsInScopeRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/RequirementsInScopeRequestDto'
+          description: Response DTO representing filter parameters for in-scope query
+      additionalProperties: false
+      description: Service request data
     ValidationRuleDto:
       type: object
       properties:
@@ -2192,7 +2677,7 @@ components:
           description: Request DTO representing validation data metadata
       additionalProperties: false
       description: Request DTO representing validation rule metadata
-    CollectionMinimumCountRuleDto2:
+    SpecialCharactersRuleDto2:
       type: object
       properties:
         active:
@@ -2205,564 +2690,16 @@ components:
           - 'null'
           description: Validation rule error message
           example: Validation error occurred
-        requiredTypesMinCount:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type: integer
-            format: int32
-          description: Dictionary of required Primary Data Group Field values with minimum count
-          example:
-            Registered: 1
-        overallMinimumCount:
-          type: integer
-          description: Overall minimum count
-          format: int32
-          example: 1
-      additionalProperties: false
-      description: Request DTO representing collection minimum count validation rule metadata
-    ConditionDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The ID of the condition
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        name:
-          type:
-          - string
-          - 'null'
-          description: The name of the condition
-          example: Company-type only
-        description:
-          type:
-          - string
-          - 'null'
-          description: The description of the condition
-          example: Applicable only when EntityType=Company
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
-          example: AND
-        operands:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto'
-          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
-      additionalProperties: false
-      description: Represents condition root
-    EmptyRuleDto:
-      type: object
-      additionalProperties: false
-      description: Request DTO representing rule with no parameters
-    CollectionMaximumCountRuleDto:
-      type: object
-      properties:
-        errorMessage:
-          type:
-          - string
-          - 'null'
-          description: Validation rule error message
-          example: Validation error occurred
-        requiredTypesMaxCount:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type: integer
-            format: int32
-          description: Dictionary of required Primary Data Group Field values with maximum count
-          example:
-            Registered: 1
-        overallMaximumCount:
-          type:
-          - integer
-          - 'null'
-          description: Overall maximum count
-          format: int32
-          example: 1
-      additionalProperties: false
-      description: Request DTO representing collection maximum count validation rule metadata
-    NumberFormulaVariableDto:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-        propertyName:
-          type:
-          - string
-          - 'null'
-        filterConditions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/FilterConditionDto'
-      additionalProperties: false
-    CollectionMaximumCountRuleDto2:
-      type: object
-      properties:
-        active:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        message:
-          type:
-          - string
-          - 'null'
-          description: Validation rule error message
-          example: Validation error occurred
-        requiredTypesMaxCount:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type: integer
-            format: int32
-          description: Dictionary of required Primary Data Group Field values with maximum count
-          example:
-            Registered: 1
-        overallMaximumCount:
-          type:
-          - integer
-          - 'null'
-          description: Overall maximum count
-          format: int32
-          example: 1
-      additionalProperties: false
-      description: Request DTO representing collection maximum count validation rule metadata
-    CollectionMaximumCountRuleDtoValidationRuleDto:
-      type: object
-      properties:
-        isActive:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        staticRule:
-          allOf:
-          - $ref: '#/components/schemas/CollectionMaximumCountRuleDto'
-          description: Static validation rule always applied when active
-      additionalProperties: false
-    ServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    DateTimePeriodFormulaSchemaDto:
-      type: object
-      properties:
-        formulaSetId:
-          type: string
-          format: uuid
-        versionNumber:
-          type:
-          - integer
-          - 'null'
-          format: int32
-        formulaString:
-          type:
-          - string
-          - 'null'
-        dateTimePeriodFormulaVariables:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/DateTimePeriodFormulaVariableDto'
-      additionalProperties: false
-    RequirementDtoListServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/RequirementDto'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-          description: The message
-          example: Success
-        type:
-          type:
-          - string
-          - 'null'
-          description: 'Type of the message
-
-            One of Info, Warning, Error, Forbidden'
-          example: Info
-        errorCode:
-          type:
-          - string
-          - 'null'
-          description: Error Code
-          example: INTERNAL_SERVER_ERROR
-      additionalProperties: false
-      description: The message associated to the service response
-    EmptyRuleDtoConditionalValueDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The ID of the condition
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        name:
-          type:
-          - string
-          - 'null'
-          description: The name of the condition
-          example: Company-type only
-        description:
-          type:
-          - string
-          - 'null'
-          description: The description of the condition
-          example: Applicable only when EntityType=Company
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
-          example: AND
-        operands:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto'
-          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
-        value:
-          allOf:
-          - $ref: '#/components/schemas/EmptyRuleDto'
-          description: Request DTO representing rule with no parameters
-        priority:
-          type: integer
-          description: Priority of the value in case when multiple conditional values are evaluated
-          format: int32
-          example: 1
-      additionalProperties: false
-    ConditionDefinitionDto:
-      type: object
-      properties:
-        fieldName:
-          type:
-          - string
-          - 'null'
-          description: Name of the field to evaluate
-          example: EntityType
-        value:
+        excludedCharacters:
           type:
           - array
           - 'null'
           items:
             type: string
-          description: List of values
-        valueId:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: List of value ids
-        valueType:
-          type:
-          - string
-          - 'null'
-          description: Type of the value
-          example: text
-        dataSource:
-          type:
-          - string
-          - 'null'
-          description: Data source from which field is retrieved. If empty then Entity Data properties will be used.
-          example: entityDataMetadata
-        operation:
-          type:
-          - string
-          - 'null'
-          description: Logical operation to be performed to match the values
-          example: equal
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-          description: Logical operation to be performed on the operands collection
-          example: AND
-        operands:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto'
-          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
-        valueField:
-          allOf:
-          - $ref: '#/components/schemas/ValueField'
-          description: Field value used for conditional limit validation
+          description: Array of special characters, which will be ignored by validation e.g. ["!","@","#"]
       additionalProperties: false
-      description: Represents condition
-    RegexRuleDtoConditionalValidationRuleDto:
-      type: object
-      properties:
-        isActive:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        staticRule:
-          allOf:
-          - $ref: '#/components/schemas/RegexRuleDto'
-          description: Static validation rule always applied when active
-        dynamicRules:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/RegexRuleDtoConditionalValueDto'
-          description: Conditional validation rules
-      additionalProperties: false
-    ActiveSetVersionResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ActiveSetVersionResponseDto'
-          description: Response DTO representing light requirement set version data
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    ActiveSetVersionResponseDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The UiD of the requirement set version
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        setId:
-          type: string
-          description: The UiD of the requirement set that the version belongs to
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        requirementSetStatus:
-          type:
-          - string
-          - 'null'
-          description: Requirement set status
-          example: Active
-        jurisdiction:
-          type:
-          - string
-          - 'null'
-          description: Requirement set jurisdiction
-          example: Global
-        versionNumber:
-          type: integer
-          description: The versions number
-          format: int32
-          example: 1
-        effectiveFrom:
-          type: string
-          description: The date that the version takes effect when published
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        effectiveUntil:
-          type:
-          - string
-          - 'null'
-          description: The calculated date that the version ceases being active
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        status:
-          allOf:
-          - $ref: '#/components/schemas/VersionStatus'
-          description: The status of the version
-          example: Published
-        created:
-          type: string
-          description: The creation date of the version
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        version:
-          type: integer
-          description: Version number for given Aggregate (concurrency check)
-          format: int32
-          example: 1
-      additionalProperties: false
-      description: Response DTO representing light requirement set version data
-    ConditionalValueDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The ID of the condition
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        name:
-          type:
-          - string
-          - 'null'
-          description: The name of the condition
-          example: Company-type only
-        description:
-          type:
-          - string
-          - 'null'
-          description: The description of the condition
-          example: Applicable only when EntityType=Company
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
-          example: AND
-        operands:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto'
-          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
-        value:
-          type:
-          - string
-          - 'null'
-          description: Value that should be returned when conditions are met
-          example: Relationship Manager
-        priority:
-          type: integer
-          description: Priority of the value in case when multiple conditional values are evaluated
-          format: int32
-          example: 1
-        valueId:
-          type:
-          - string
-          - 'null'
-          description: Value Id that should be returned when conditions are met
-          example: RM
-      additionalProperties: false
-    SinglePropertyDto2:
-      type: object
-      properties:
-        value:
-          type:
-          - string
-          - 'null'
-        valueId:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    AccountRelatedFundsDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        accountRelatedFunds:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/AccountRelatedFundDto'
-      additionalProperties: false
-    InvestmentAccountDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        investmentAccount:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/InvestmentAccountDto'
-      additionalProperties: false
-    ManualCreditScreeningDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        creditScreenings:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ManualCreditScreeningDto'
-        relatedPartyCreditScreenings:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ManualCreditScreeningDto'
-      additionalProperties: false
-    RelatedUnderlyingPrincipalOwnerDataSource:
+      description: Request DTO representing special characters rule metadata
+    JourneyLevelDataDataSource:
       type: object
       properties:
         dataSource:
@@ -2773,6 +2710,63 @@ components:
         properties:
           allOf:
           - $ref: '#/components/schemas/PropertiesDto'
+      additionalProperties: false
+    SearchRequirementsDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/SearchRequirementsDto'
+          description: Request DTO representing requirements search filter
+      additionalProperties: false
+      description: Service request data
+    ScreeningMaterialityDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        assessments:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ScreeningMaterialityAssessmentDto'
+      additionalProperties: false
+      description: 'Data source for Screening Materiality Assessment outcomes.
+
+        Contains a list of assessments — one per entity in the batch (main entity and related parties).'
+    RelatedFCRsDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        fcRs:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RelatedFCRDto'
+      additionalProperties: false
+    CollectionPropertyDto2:
+      type: object
+      properties:
+        items:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/CollectionItemDto'
+        collectionId:
+          type:
+          - string
+          - 'null'
+          format: uuid
       additionalProperties: false
     PropertiesDto:
       type: object
@@ -2796,22 +2790,87 @@ components:
           additionalProperties:
             $ref: '#/components/schemas/CustomPropertyDto2'
       additionalProperties: false
-    CollateralDataSource:
+    SearchRequirementsDto:
       type: object
       properties:
-        dataSource:
+        name:
           type:
           - string
           - 'null'
-          readOnly: true
-        collaterals:
+          description: Exact name of the requirement
+          example: Fenergo Comprehensive Standard Policy Requirements
+        type:
+          type:
+          - string
+          - 'null'
+          description: Type of requirement
+          example: Data
+        jurisdictions:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/CollateralDto'
+            $ref: '#/components/schemas/VersionedJurisdictionDto'
+          description: Jurisdictions of the requirement in specific version. Null versionId will get the latest.
+        category:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of requirement category e.g. ["Basic Details", "Enrich Details"]
+        entityType:
+          type:
+          - string
+          - 'null'
+          description: Type of entity
+          example: Company
+        isMandatory:
+          type:
+          - boolean
+          - 'null'
+          description: Mandatory flag of the requirement
+          example: true
+        isSensitiveData:
+          type:
+          - boolean
+          - 'null'
+          description: Sensitive data flag of the requirement
+          example: true
+        isMaterialData:
+          type:
+          - boolean
+          - 'null'
+          description: Materiality flag of the requirement
+          example: true
+        isIndexable:
+          type:
+          - boolean
+          - 'null'
+          description: Requirement is data indexed for search flag
+          example: true
+        dataField:
+          allOf:
+          - $ref: '#/components/schemas/DataFieldDto'
+          description: Data field definition
+        targetEntity:
+          type:
+          - string
+          - 'null'
+          description: Target entity
+          example: Client
+        includeConditions:
+          type: boolean
+          description: 'Include conditions flag.
+
+            If true, include the Requirements containing conditions.
+
+            If false, only the Requirements without conditions will be returned.
+
+            <example>false</example>'
       additionalProperties: false
-    EntityAssociationDataSource:
+      description: Request DTO representing requirements search filter
+    InvestmentAccountDataSource:
       type: object
       properties:
         dataSource:
@@ -2819,24 +2878,539 @@ components:
           - string
           - 'null'
           readOnly: true
+        investmentAccount:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/InvestmentAccountDto'
+      additionalProperties: false
+    AccountRelatedFundsDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        accountRelatedFunds:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AccountRelatedFundDto'
+      additionalProperties: false
+    ChangedFieldsDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        changedFields:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ChangedFieldDto'
+      additionalProperties: false
+    RelatedUnderlyingPrincipalOwnerDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        properties:
+          allOf:
+          - $ref: '#/components/schemas/PropertiesDto'
+      additionalProperties: false
+    RelatedDealDto:
+      type: object
+      properties:
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+          description: Generic properties setup in policy
+          example:
+            firstName:
+              type: Single
+              value: Tom
+            dateOfBirth:
+              type: Single
+              value: '2021-07-15'
+            address:
+              type: Collection
+              dataGroupId: dfde9f06-040a-4127-b9a0-2c802a6502fc
+              collections:
+                54a25d24-1a4b-45c6-a5b4-980e5d3a1df5:
+                  properties:
+                    country: Ireland
+                    city: Dublin
+                    street: Mayor Street
+                47010265-3b85-4407-be61-90d04525f020:
+                  properties:
+                    country: Ireland
+                    city: Dublin
+                    street: E Wall Rd
+      additionalProperties: false
+    ManualCreditScreeningDto:
+      type: object
+      properties:
+        taskDataKey:
+          type:
+          - string
+          - 'null'
+          description: Task Data Key
+        taskId:
+          type: string
+          description: Task Id
+          format: uuid
+        entityId:
+          type: string
+          description: Entity Id
+          format: uuid
+        creditScreeningOutcome:
+          type:
+          - string
+          - 'null'
+          description: The outcome recorded for a manual screening task.
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+          description: Generic properties setup in policy for manual credit screening
+          example:
+            firstName:
+              type: Single
+              value: Tom
+            dateOfBirth:
+              type: Single
+              value: '2021-07-15'
+            address:
+              type: Collection
+              dataGroupId: dfde9f06-040a-4127-b9a0-2c802a6502fc
+              collections:
+                54a25d24-1a4b-45c6-a5b4-980e5d3a1df5:
+                  properties:
+                    country: Ireland
+                    city: Dublin
+                    street: Mayor Street
+                47010265-3b85-4407-be61-90d04525f020:
+                  properties:
+                    country: Ireland
+                    city: Dublin
+                    street: E Wall Rd
+      additionalProperties: false
+    SignificanceEngineDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        significanceEngine:
+          allOf:
+          - $ref: '#/components/schemas/SignificanceEngineDto'
+      additionalProperties: false
+    ManualCreditScreeningDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        creditScreenings:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ManualCreditScreeningDto'
+        relatedPartyCreditScreenings:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ManualCreditScreeningDto'
+      additionalProperties: false
+    RelatedProductDto:
+      type: object
+      properties:
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+          description: Generic properties setup in product policy
+          example:
+            firstName:
+              type: Single
+              value: Tom
+            dateOfBirth:
+              type: Single
+              value: '2021-07-15'
+            address:
+              type: Collection
+              dataGroupId: dfde9f06-040a-4127-b9a0-2c802a6502fc
+              collections:
+                54a25d24-1a4b-45c6-a5b4-980e5d3a1df5:
+                  properties:
+                    country: Ireland
+                    city: Dublin
+                    street: Mayor Street
+                47010265-3b85-4407-be61-90d04525f020:
+                  properties:
+                    country: Ireland
+                    city: Dublin
+                    street: E Wall Rd
+        lifecycleStatus:
+          type:
+          - string
+          - 'null'
+          description: System field used in backend for status of a product in lifecycle
+        relationshipTypes:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: System field used in backend for product of a product relationship
+      additionalProperties: false
+    ExternalDataAdapterDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        eventType:
+          type:
+          - string
+          - 'null'
+        eventSubtype:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    CustomPropertyDto2:
+      type: object
+      properties:
+        singleProperties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/SinglePropertyDto2'
+        customProperties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/CustomPropertyDto2'
+      additionalProperties: false
+    RelatedAssociationDto:
+      type: object
+      properties:
         associationType:
           type:
           - string
           - 'null'
+          description: Type of this association
+          example: 'Employee of '
         ownershipPercentage:
           type:
           - number
           - 'null'
+          description: Ownership Percentage of this association
           format: double
+          example: 0.5
         associationToClient:
           type:
           - string
           - 'null'
+          description: Association To Client
+          example: Direct/Indirect
         properties:
           allOf:
           - $ref: '#/components/schemas/PropertiesDto'
           description: Generic properties
       additionalProperties: false
+    EvaluateRequirementsInScopeRequestDto:
+      type: object
+      properties:
+        requirementTypes:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of requirement types [Data, Document, OwnershipAndControl]
+        jurisdictions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/VersionedJurisdictionDto'
+          description: Jurisdictions of the requirement in specific version
+        targetEntity:
+          type:
+          - string
+          - 'null'
+          description: Target entity
+          example: Client
+        entityType:
+          type:
+          - string
+          - 'null'
+          description: Type of entity
+          example: Company
+        categories:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of requirement category e.g. ["Basic Details", "Enrich Details"]
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+          description: Entity data properties used for condition evaluation
+          example:
+            firstName:
+              type: Single
+              value: Tom
+            dateOfBirth:
+              type: Single
+              value: '2021-07-15'
+            address:
+              type: Collection
+              dataGroupId: dfde9f06-040a-4127-b9a0-2c802a6502fc
+              collections:
+                54a25d24-1a4b-45c6-a5b4-980e5d3a1df5:
+                  properties:
+                    country: Ireland
+                    city: Dublin
+                    street: Mayor Street
+                47010265-3b85-4407-be61-90d04525f020:
+                  properties:
+                    country: Ireland
+                    city: Dublin
+                    street: E Wall Rd
+        dataSources:
+          allOf:
+          - $ref: '#/components/schemas/DataSourcesDto'
+          description: Additional data sources used for evaluation
+      additionalProperties: false
+    RelatedAssetsDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        assets:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RelatedAssetDto'
+      additionalProperties: false
+    AutoCreditScreeningDto:
+      type: object
+      properties:
+        entityId:
+          type: string
+          description: Entity Id
+          format: uuid
+        creditScreeningOutcome:
+          type:
+          - string
+          - 'null'
+          description: The outcome recorded for a manual screening task.
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+          description: Generic properties setup in policy for auto credit screening
+          example:
+            firstName:
+              type: Single
+              value: Tom
+            dateOfBirth:
+              type: Single
+              value: '2021-07-15'
+            address:
+              type: Collection
+              dataGroupId: dfde9f06-040a-4127-b9a0-2c802a6502fc
+              collections:
+                54a25d24-1a4b-45c6-a5b4-980e5d3a1df5:
+                  properties:
+                    country: Ireland
+                    city: Dublin
+                    street: Mayor Street
+                47010265-3b85-4407-be61-90d04525f020:
+                  properties:
+                    country: Ireland
+                    city: Dublin
+                    street: E Wall Rd
+        providerInternalIdentifier:
+          type:
+          - string
+          - 'null'
+          description: Provider Internal Identifier
+      additionalProperties: false
+    CurrentFieldDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        currentField:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ManualCreditAssessmentV2DataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        creditAssessments:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/CreditAssessmentDto'
+      additionalProperties: false
+    ScreeningMaterialityAssessmentDto:
+      type: object
+      properties:
+        mainEntity:
+          type: boolean
+          description: Whether this assessment is for the main entity (true) or a related party (false).
+        materialityOutcome:
+          type:
+          - string
+          - 'null'
+          description: Overall materiality outcome of the screening assessment (e.g. "Material", "Non-Material").
+        pepMaterialityStatus:
+          type:
+          - string
+          - 'null'
+          description: PEP (Politically Exposed Person) materiality status.
+        sanctionsMaterialityStatus:
+          type:
+          - string
+          - 'null'
+          description: Sanctions materiality status.
+        adverseMediaMaterialityStatus:
+          type:
+          - string
+          - 'null'
+          description: Adverse media materiality status.
+        enforcementsMaterialityStatus:
+          type:
+          - string
+          - 'null'
+          description: Enforcements materiality status.
+        otherMaterialityStatus:
+          type:
+          - string
+          - 'null'
+          description: Other (non-categorised) materiality status.
+        pepJurisdictions:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: PEP jurisdictions associated with this assessment.
+        sanctionsJurisdictions:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Sanctions jurisdictions associated with this assessment.
+        adverseMediaJurisdictions:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Adverse media jurisdictions associated with this assessment.
+        enforcementsJurisdictions:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Enforcements jurisdictions associated with this assessment.
+        otherJurisdictions:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Other jurisdictions associated with this assessment.
+        sanctionsProceedDecision:
+          type:
+          - string
+          - 'null'
+          description: Sanctions ok-to-proceed decision text returned by Screening (e.g. "Ok to proceed", "Not to proceed").
+      additionalProperties: false
+    AutoCreditScreeningDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        creditScreenings:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AutoCreditScreeningDto'
+        relatedPartyCreditScreenings:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AutoCreditScreeningDto'
+      additionalProperties: false
+    RequirementsInScopeRequestV2DtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/RequirementsInScopeRequestV2Dto'
+          description: Request DTO representing requirements search filter
+      additionalProperties: false
+      description: Service request data
     DataSourcesDto:
       type: object
       properties:
@@ -2987,69 +3561,7 @@ components:
           - $ref: '#/components/schemas/ScreeningMaterialityDataSource'
           description: DataSource for Screening Materiality Assessment outcomes for the entity being evaluated (main entity or a specific related party).
       additionalProperties: false
-    CustomPropertyDto2:
-      type: object
-      properties:
-        singleProperties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/SinglePropertyDto2'
-        customProperties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/CustomPropertyDto2'
-      additionalProperties: false
-    AutoCreditScreeningDto:
-      type: object
-      properties:
-        entityId:
-          type: string
-          description: Entity Id
-          format: uuid
-        creditScreeningOutcome:
-          type:
-          - string
-          - 'null'
-          description: The outcome recorded for a manual screening task.
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-          description: Generic properties setup in policy for auto credit screening
-          example:
-            firstName:
-              type: Single
-              value: Tom
-            dateOfBirth:
-              type: Single
-              value: '2021-07-15'
-            address:
-              type: Collection
-              dataGroupId: dfde9f06-040a-4127-b9a0-2c802a6502fc
-              collections:
-                54a25d24-1a4b-45c6-a5b4-980e5d3a1df5:
-                  properties:
-                    country: Ireland
-                    city: Dublin
-                    street: Mayor Street
-                47010265-3b85-4407-be61-90d04525f020:
-                  properties:
-                    country: Ireland
-                    city: Dublin
-                    street: E Wall Rd
-        providerInternalIdentifier:
-          type:
-          - string
-          - 'null'
-          description: Provider Internal Identifier
-      additionalProperties: false
-    AutoCreditScreeningDataSource:
+    RelatedProductsDataSource:
       type: object
       properties:
         dataSource:
@@ -3057,20 +3569,14 @@ components:
           - string
           - 'null'
           readOnly: true
-        creditScreenings:
+        products:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/AutoCreditScreeningDto'
-        relatedPartyCreditScreenings:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/AutoCreditScreeningDto'
+            $ref: '#/components/schemas/RelatedProductDto'
       additionalProperties: false
-    CurrentProductMetadataDataSource:
+    AlertAssessmentDataSource:
       type: object
       properties:
         dataSource:
@@ -3078,85 +3584,25 @@ components:
           - string
           - 'null'
           readOnly: true
-        isAgency:
+        assessments:
           type:
-          - string
+          - array
           - 'null'
-        lifecycleStatus:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    RelatedPartyDto:
-      type: object
-      properties:
-        properties:
+          items:
+            $ref: '#/components/schemas/AlertAssessmentDto'
+        lastAssessment:
           allOf:
-          - $ref: '#/components/schemas/PropertiesDto'
-          description: Generic properties setup in policy
-        metadata:
+          - $ref: '#/components/schemas/AlertAssessmentDto'
+        lastAssessmentOutcome:
           type:
-          - object
+          - string
           - 'null'
-          additionalProperties:
-            type:
-            - string
-            - 'null'
-          description: The properties from the actual relationship
+        lastAssessmentDisposition:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
-    CreditAssessmentDto:
-      type: object
-      properties:
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-          description: Generic properties setup in policy for manual credit assessment
-          example:
-            firstName:
-              type: Single
-              value: Tom
-            dateOfBirth:
-              type: Single
-              value: '2021-07-15'
-            address:
-              type: Collection
-              dataGroupId: dfde9f06-040a-4127-b9a0-2c802a6502fc
-              collections:
-                54a25d24-1a4b-45c6-a5b4-980e5d3a1df5:
-                  properties:
-                    country: Ireland
-                    city: Dublin
-                    street: Mayor Street
-                47010265-3b85-4407-be61-90d04525f020:
-                  properties:
-                    country: Ireland
-                    city: Dublin
-                    street: E Wall Rd
-        assessmentOutcome:
-          type:
-          - string
-          - 'null'
-          description: Assessment Outcome of this manual credit assessment
-        assessmentComment:
-          type:
-          - string
-          - 'null'
-          description: Assessment Comment of this credit assessment
-        taskId:
-          type:
-          - string
-          - 'null'
-          description: Task Id
-        taskDataKey:
-          type:
-          - string
-          - 'null'
-          description: Task Data Key
-      additionalProperties: false
-    AutoCreditAssessmentDataSource:
+    CollateralDataSource:
       type: object
       properties:
         dataSource:
@@ -3164,122 +3610,14 @@ components:
           - string
           - 'null'
           readOnly: true
-        autoCreditAssessments:
+        collaterals:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/AutoCreditAssessmentDto'
+            $ref: '#/components/schemas/CollateralDto'
       additionalProperties: false
-    PropertyDto:
-      required:
-      - type
-      type: object
-      properties:
-        type:
-          allOf:
-          - $ref: '#/components/schemas/PropertyType'
-          readOnly: true
-        discriminator:
-          allOf:
-          - $ref: '#/components/schemas/PropertyType'
-          readOnly: true
-        isValid:
-          type:
-          - boolean
-          - 'null'
-      additionalProperties: false
-      discriminator:
-        propertyName: type
-        mapping:
-          Collection: '#/components/schemas/CollectionPropertyDto'
-          Custom: '#/components/schemas/CustomPropertyDto'
-          Single: '#/components/schemas/SinglePropertyDto'
-    RelatedInvestmentManagerDataSource:
-      type: object
-      properties:
-        properties:
-          allOf:
-          - $ref: '#/components/schemas/PropertiesDto'
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-      additionalProperties: false
-    RelatedAssociationsDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        relatedAssociations:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/RelatedAssociationDto'
-      additionalProperties: false
-    CurrentProductDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-          description: Generic properties setup in product policy
-          example:
-            firstName:
-              type: Single
-              value: Tom
-            dateOfBirth:
-              type: Single
-              value: '2021-07-15'
-            address:
-              type: Collection
-              dataGroupId: dfde9f06-040a-4127-b9a0-2c802a6502fc
-              collections:
-                54a25d24-1a4b-45c6-a5b4-980e5d3a1df5:
-                  properties:
-                    country: Ireland
-                    city: Dublin
-                    street: Mayor Street
-                47010265-3b85-4407-be61-90d04525f020:
-                  properties:
-                    country: Ireland
-                    city: Dublin
-                    street: E Wall Rd
-        lifecycleStatus:
-          type:
-          - string
-          - 'null'
-          description: System field used in backend for status of a product in lifecycle
-      additionalProperties: false
-    RelatedFCRsDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        fcRs:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/RelatedFCRDto'
-      additionalProperties: false
-    InvestmentAccountRelatedFundShareClassDataSource:
+    MainEntityDataSource:
       type: object
       properties:
         dataSource:
@@ -3290,75 +3628,6 @@ components:
         properties:
           allOf:
           - $ref: '#/components/schemas/PropertiesDto'
-          description: Properties of the investment account related fund share class
-      additionalProperties: false
-    AlertDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        source:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        attribute:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    CollateralDto:
-      type: object
-      properties:
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-          description: Generic properties setup in policy
-          example:
-            firstName:
-              type: Single
-              value: Tom
-            dateOfBirth:
-              type: Single
-              value: '2021-07-15'
-            address:
-              type: Collection
-              dataGroupId: dfde9f06-040a-4127-b9a0-2c802a6502fc
-              collections:
-                54a25d24-1a4b-45c6-a5b4-980e5d3a1df5:
-                  properties:
-                    country: Ireland
-                    city: Dublin
-                    street: Mayor Street
-                47010265-3b85-4407-be61-90d04525f020:
-                  properties:
-                    country: Ireland
-                    city: Dublin
-                    street: E Wall Rd
-      additionalProperties: false
-    ReviewAndApprovalDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        reviewAndApprovals:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ReviewAndApprovalDto'
       additionalProperties: false
     AutoCreditAssessmentDto:
       type: object
@@ -3402,76 +3671,7 @@ components:
           - 'null'
           description: Provider Internal Identifier
       additionalProperties: false
-    RelatedDocumentsDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        documents:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/RelatedDocumentDto'
-      additionalProperties: false
-    RelatedAssetsDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        assets:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/RelatedAssetDto'
-      additionalProperties: false
-    SearchRequirementsDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/SearchRequirementsDto'
-          description: Request DTO representing requirements search filter
-      additionalProperties: false
-      description: Service request data
-    CurrentJourneysDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        inProgressJourneyTypes:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-      additionalProperties: false
-    RelatedDealsDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        relatedDeals:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/RelatedDealDto'
-      additionalProperties: false
-    MainEntityDataSource:
+    InvestmentAccountRelatedFundShareClassDataSource:
       type: object
       properties:
         dataSource:
@@ -3482,8 +3682,9 @@ components:
         properties:
           allOf:
           - $ref: '#/components/schemas/PropertiesDto'
+          description: Properties of the investment account related fund share class
       additionalProperties: false
-    InvestmentAccountFundDataSource:
+    AlertDataSource:
       type: object
       properties:
         dataSource:
@@ -3491,132 +3692,19 @@ components:
           - string
           - 'null'
           readOnly: true
-        properties:
-          allOf:
-          - $ref: '#/components/schemas/PropertiesDto'
-          description: Properties of the single investment account fund
-      additionalProperties: false
-    AlertAssessmentDataSource:
-      type: object
-      properties:
-        dataSource:
+        source:
           type:
           - string
           - 'null'
-          readOnly: true
-        assessments:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/AlertAssessmentDto'
-        lastAssessment:
-          allOf:
-          - $ref: '#/components/schemas/AlertAssessmentDto'
-        lastAssessmentOutcome:
+        type:
           type:
           - string
           - 'null'
-        lastAssessmentDisposition:
+        attribute:
           type:
           - string
           - 'null'
       additionalProperties: false
-    ScreeningMaterialityDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        assessments:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ScreeningMaterialityAssessmentDto'
-      additionalProperties: false
-      description: 'Data source for Screening Materiality Assessment outcomes.
-
-        Contains a list of assessments — one per entity in the batch (main entity and related parties).'
-    RelatedProductDto:
-      type: object
-      properties:
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-          description: Generic properties setup in product policy
-          example:
-            firstName:
-              type: Single
-              value: Tom
-            dateOfBirth:
-              type: Single
-              value: '2021-07-15'
-            address:
-              type: Collection
-              dataGroupId: dfde9f06-040a-4127-b9a0-2c802a6502fc
-              collections:
-                54a25d24-1a4b-45c6-a5b4-980e5d3a1df5:
-                  properties:
-                    country: Ireland
-                    city: Dublin
-                    street: Mayor Street
-                47010265-3b85-4407-be61-90d04525f020:
-                  properties:
-                    country: Ireland
-                    city: Dublin
-                    street: E Wall Rd
-        lifecycleStatus:
-          type:
-          - string
-          - 'null'
-          description: System field used in backend for status of a product in lifecycle
-        relationshipTypes:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: System field used in backend for product of a product relationship
-      additionalProperties: false
-    RelatedAssociationDto:
-      type: object
-      properties:
-        associationType:
-          type:
-          - string
-          - 'null'
-          description: Type of this association
-          example: 'Employee of '
-        ownershipPercentage:
-          type:
-          - number
-          - 'null'
-          description: Ownership Percentage of this association
-          format: double
-          example: 0.5
-        associationToClient:
-          type:
-          - string
-          - 'null'
-          description: Association To Client
-          example: Direct/Indirect
-        properties:
-          allOf:
-          - $ref: '#/components/schemas/PropertiesDto'
-          description: Generic properties
-      additionalProperties: false
-    PropertyType:
-      enum:
-      - Single
-      - Custom
-      - Collection
-      type: string
     RelatedPartiesDataSource:
       type: object
       properties:
@@ -3632,25 +3720,22 @@ components:
           items:
             $ref: '#/components/schemas/RelatedPartyDto'
       additionalProperties: false
-    RelatedFCRDto:
+    RelatedDocumentDto:
       type: object
       properties:
-        status:
-          type:
-          - string
-          - 'null'
-          description: The status of the FCR.
-        createdDate:
-          type: string
-          description: The date the FCR was created.
-          format: date-time
-        submittedDate:
-          type:
-          - string
-          - 'null'
-          description: The date the FCR was submitted.
-          format: date-time
+        document:
+          allOf:
+          - $ref: '#/components/schemas/RelatedDocumentVersionedDto'
       additionalProperties: false
+    EvaluateRequirementsInScopeRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/EvaluateRequirementsInScopeRequestDto'
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
     RelatedDocumentVersionedDto:
       type: object
       properties:
@@ -3690,87 +3775,58 @@ components:
                     city: Dublin
                     street: E Wall Rd
       additionalProperties: false
-    SearchRequirementsDto:
+    RelatedClientDataSource:
       type: object
       properties:
-        name:
+        dataSource:
           type:
           - string
           - 'null'
-          description: Exact name of the requirement
-          example: Fenergo Comprehensive Standard Policy Requirements
-        type:
+          readOnly: true
+        properties:
           type:
-          - string
+          - object
           - 'null'
-          description: Type of requirement
-          example: Data
-        jurisdictions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/VersionedJurisdictionDto'
-          description: Jurisdictions of the requirement in specific version. Null versionId will get the latest.
-        category:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: List of requirement category e.g. ["Basic Details", "Enrich Details"]
-        entityType:
-          type:
-          - string
-          - 'null'
-          description: Type of entity
-          example: Company
-        isMandatory:
-          type:
-          - boolean
-          - 'null'
-          description: Mandatory flag of the requirement
-          example: true
-        isSensitiveData:
-          type:
-          - boolean
-          - 'null'
-          description: Sensitive data flag of the requirement
-          example: true
-        isMaterialData:
-          type:
-          - boolean
-          - 'null'
-          description: Materiality flag of the requirement
-          example: true
-        isIndexable:
-          type:
-          - boolean
-          - 'null'
-          description: Requirement is data indexed for search flag
-          example: true
-        dataField:
-          allOf:
-          - $ref: '#/components/schemas/DataFieldDto'
-          description: Data field definition
-        targetEntity:
-          type:
-          - string
-          - 'null'
-          description: Target entity
-          example: Client
-        includeConditions:
-          type: boolean
-          description: 'Include conditions flag.
-
-            If true, include the Requirements containing conditions.
-
-            If false, only the Requirements without conditions will be returned.
-
-            <example>false</example>'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+          example:
+            firstName:
+              type: Single
+              value: Tom
+            dateOfBirth:
+              type: Single
+              value: '2021-07-15'
+            address:
+              type: Collection
+              dataGroupId: dfde9f06-040a-4127-b9a0-2c802a6502fc
+              collections:
+                54a25d24-1a4b-45c6-a5b4-980e5d3a1df5:
+                  properties:
+                    country: Ireland
+                    city: Dublin
+                    street: Mayor Street
+                47010265-3b85-4407-be61-90d04525f020:
+                  properties:
+                    country: Ireland
+                    city: Dublin
+                    street: E Wall Rd
       additionalProperties: false
-      description: Request DTO representing requirements search filter
-    RelatedDealDto:
+    RelatedDealsDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        relatedDeals:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RelatedDealDto'
+      additionalProperties: false
+    CollateralDto:
       type: object
       properties:
         properties:
@@ -3802,112 +3858,6 @@ components:
                     city: Dublin
                     street: E Wall Rd
       additionalProperties: false
-    ChangedFieldsDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        changedFields:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ChangedFieldDto'
-      additionalProperties: false
-    SignificanceEngineDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        significanceEngine:
-          allOf:
-          - $ref: '#/components/schemas/SignificanceEngineDto'
-      additionalProperties: false
-    RelatedDocumentDto:
-      type: object
-      properties:
-        document:
-          allOf:
-          - $ref: '#/components/schemas/RelatedDocumentVersionedDto'
-      additionalProperties: false
-    CurrentFieldDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        currentField:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ManualCreditScreeningDto:
-      type: object
-      properties:
-        taskDataKey:
-          type:
-          - string
-          - 'null'
-          description: Task Data Key
-        taskId:
-          type: string
-          description: Task Id
-          format: uuid
-        entityId:
-          type: string
-          description: Entity Id
-          format: uuid
-        creditScreeningOutcome:
-          type:
-          - string
-          - 'null'
-          description: The outcome recorded for a manual screening task.
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-          description: Generic properties setup in policy for manual credit screening
-          example:
-            firstName:
-              type: Single
-              value: Tom
-            dateOfBirth:
-              type: Single
-              value: '2021-07-15'
-            address:
-              type: Collection
-              dataGroupId: dfde9f06-040a-4127-b9a0-2c802a6502fc
-              collections:
-                54a25d24-1a4b-45c6-a5b4-980e5d3a1df5:
-                  properties:
-                    country: Ireland
-                    city: Dublin
-                    street: Mayor Street
-                47010265-3b85-4407-be61-90d04525f020:
-                  properties:
-                    country: Ireland
-                    city: Dublin
-                    street: E Wall Rd
-      additionalProperties: false
-    EvaluateRequirementsInScopeRequestDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/EvaluateRequirementsInScopeRequestDto'
-          description: The service request DTO
-      additionalProperties: false
-      description: Service request data
     SignificanceEngineDto:
       type: object
       properties:
@@ -3930,16 +3880,21 @@ components:
               items:
                 type: string
       additionalProperties: false
-    ReviewAndApprovalDto:
+    CurrentProductDataSource:
       type: object
       properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
         properties:
           type:
           - object
           - 'null'
           additionalProperties:
             $ref: '#/components/schemas/PropertyDto'
-          description: Generic properties setup in policy for review and approval task
+          description: Generic properties setup in product policy
           example:
             firstName:
               type: Single
@@ -3961,70 +3916,60 @@ components:
                     country: Ireland
                     city: Dublin
                     street: E Wall Rd
-        approvalOutcome:
+        lifecycleStatus:
           type:
           - string
           - 'null'
-          description: The Approval Outcome of the task
-        approvalReason:
-          type:
-          - string
-          - 'null'
-          description: The Reason of the approval decision.
-        taskId:
-          type:
-          - string
-          - 'null'
-          description: Task Id
-        taskDataKey:
-          type:
-          - string
-          - 'null'
-          description: Task Data Key
+          description: System field used in backend for status of a product in lifecycle
       additionalProperties: false
-    EvaluateRequirementsInScopeRequestDto:
+    EntityDataMetadataDataSource:
       type: object
       properties:
-        requirementTypes:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: List of requirement types [Data, Document, OwnershipAndControl]
-        jurisdictions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/VersionedJurisdictionDto'
-          description: Jurisdictions of the requirement in specific version
-        targetEntity:
+        dataSource:
           type:
           - string
           - 'null'
-          description: Target entity
-          example: Client
+          readOnly: true
         entityType:
           type:
           - string
           - 'null'
-          description: Type of entity
-          example: Company
-        categories:
+      additionalProperties: false
+    CollectionItemDto:
+      type: object
+      properties:
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/SinglePropertyDto2'
+      additionalProperties: false
+    ReviewAndApprovalDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        reviewAndApprovals:
           type:
           - array
           - 'null'
           items:
-            type: string
-          description: List of requirement category e.g. ["Basic Details", "Enrich Details"]
+            $ref: '#/components/schemas/ReviewAndApprovalDto'
+      additionalProperties: false
+    RelatedAssetDto:
+      type: object
+      properties:
         properties:
           type:
           - object
           - 'null'
           additionalProperties:
             $ref: '#/components/schemas/PropertyDto'
-          description: Entity data properties used for condition evaluation
+          description: Generic properties setup in policy
           example:
             firstName:
               type: Single
@@ -4046,12 +3991,8 @@ components:
                     country: Ireland
                     city: Dublin
                     street: E Wall Rd
-        dataSources:
-          allOf:
-          - $ref: '#/components/schemas/DataSourcesDto'
-          description: Additional data sources used for evaluation
       additionalProperties: false
-    CurrentUserDataSource:
+    AutoCreditAssessmentDataSource:
       type: object
       properties:
         dataSource:
@@ -4059,104 +4000,20 @@ components:
           - string
           - 'null'
           readOnly: true
-        teamIds:
+        autoCreditAssessments:
           type:
           - array
           - 'null'
           items:
-            type: string
-            format: uuid
-        isSystemUser:
-          type: boolean
+            $ref: '#/components/schemas/AutoCreditAssessmentDto'
       additionalProperties: false
-    ScreeningMaterialityAssessmentDto:
+    AccountRelatedFundDto:
       type: object
       properties:
-        mainEntity:
-          type: boolean
-          description: Whether this assessment is for the main entity (true) or a related party (false).
-        materialityOutcome:
-          type:
-          - string
-          - 'null'
-          description: Overall materiality outcome of the screening assessment (e.g. "Material", "Non-Material").
-        pepMaterialityStatus:
-          type:
-          - string
-          - 'null'
-          description: PEP (Politically Exposed Person) materiality status.
-        sanctionsMaterialityStatus:
-          type:
-          - string
-          - 'null'
-          description: Sanctions materiality status.
-        adverseMediaMaterialityStatus:
-          type:
-          - string
-          - 'null'
-          description: Adverse media materiality status.
-        enforcementsMaterialityStatus:
-          type:
-          - string
-          - 'null'
-          description: Enforcements materiality status.
-        otherMaterialityStatus:
-          type:
-          - string
-          - 'null'
-          description: Other (non-categorised) materiality status.
-        pepJurisdictions:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: PEP jurisdictions associated with this assessment.
-        sanctionsJurisdictions:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: Sanctions jurisdictions associated with this assessment.
-        adverseMediaJurisdictions:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: Adverse media jurisdictions associated with this assessment.
-        enforcementsJurisdictions:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: Enforcements jurisdictions associated with this assessment.
-        otherJurisdictions:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: Other jurisdictions associated with this assessment.
-        sanctionsProceedDecision:
-          type:
-          - string
-          - 'null'
-          description: Sanctions ok-to-proceed decision text returned by Screening (e.g. "Ok to proceed", "Not to proceed").
-      additionalProperties: false
-    JourneyLevelDataDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
         properties:
           allOf:
           - $ref: '#/components/schemas/PropertiesDto'
+          description: Generic properties
       additionalProperties: false
     RequirementsInScopeRequestV2Dto:
       type: object
@@ -4248,98 +4105,36 @@ components:
           example: true
       additionalProperties: false
       description: Request DTO representing requirements search filter
-    RelatedAssetDto:
-      type: object
-      properties:
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-          description: Generic properties setup in policy
-          example:
-            firstName:
-              type: Single
-              value: Tom
-            dateOfBirth:
-              type: Single
-              value: '2021-07-15'
-            address:
-              type: Collection
-              dataGroupId: dfde9f06-040a-4127-b9a0-2c802a6502fc
-              collections:
-                54a25d24-1a4b-45c6-a5b4-980e5d3a1df5:
-                  properties:
-                    country: Ireland
-                    city: Dublin
-                    street: Mayor Street
-                47010265-3b85-4407-be61-90d04525f020:
-                  properties:
-                    country: Ireland
-                    city: Dublin
-                    street: E Wall Rd
-      additionalProperties: false
-    InvestmentAccountDto:
+    RelatedInvestmentManagerDataSource:
       type: object
       properties:
         properties:
           allOf:
           - $ref: '#/components/schemas/PropertiesDto'
-          description: Generic properties of a single in-scope investment account
-      additionalProperties: false
-    EntityDataMetadataDataSource:
-      type: object
-      properties:
         dataSource:
           type:
           - string
           - 'null'
           readOnly: true
-        entityType:
-          type:
-          - string
-          - 'null'
       additionalProperties: false
-    ChangedFieldDto:
+    RelatedFCRDto:
       type: object
       properties:
-        key:
+        status:
           type:
           - string
           - 'null'
-      additionalProperties: false
-    ManualCreditAssessmentV2DataSource:
-      type: object
-      properties:
-        dataSource:
+          description: The status of the FCR.
+        createdDate:
+          type: string
+          description: The date the FCR was created.
+          format: date-time
+        submittedDate:
           type:
           - string
           - 'null'
-          readOnly: true
-        creditAssessments:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/CreditAssessmentDto'
-      additionalProperties: false
-    EventIngressDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        eventType:
-          type:
-          - string
-          - 'null'
-        eventSubtype:
-          type:
-          - string
-          - 'null'
+          description: The date the FCR was submitted.
+          format: date-time
       additionalProperties: false
     AlertAssessmentDto:
       type: object
@@ -4348,23 +4143,6 @@ components:
           type:
           - string
           - 'null'
-      additionalProperties: false
-    VersionedJurisdictionDto:
-      type: object
-      properties:
-        jurisdiction:
-          type:
-          - string
-          - 'null'
-          description: Jurisdiction of the requirement
-          example: Global
-        versionId:
-          type:
-          - string
-          - 'null'
-          description: Jurisdiction of the requirement
-          format: uuid
-          example: 894e1443-dd7a-4b9d-b253-430c2de80524
       additionalProperties: false
     CurrentDataGroupItemDataSource:
       type: object
@@ -4383,15 +4161,31 @@ components:
             - string
             - 'null'
       additionalProperties: false
-    AccountRelatedFundDto:
+    PropertyDto:
+      required:
+      - type
       type: object
       properties:
-        properties:
+        type:
           allOf:
-          - $ref: '#/components/schemas/PropertiesDto'
-          description: Generic properties
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        discriminator:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        isValid:
+          type:
+          - boolean
+          - 'null'
       additionalProperties: false
-    RelatedProductsDataSource:
+      discriminator:
+        propertyName: type
+        mapping:
+          Collection: '#/components/schemas/CollectionPropertyDto'
+          Custom: '#/components/schemas/CustomPropertyDto'
+          Single: '#/components/schemas/SinglePropertyDto'
+    CurrentProductMetadataDataSource:
       type: object
       properties:
         dataSource:
@@ -4399,39 +4193,112 @@ components:
           - string
           - 'null'
           readOnly: true
-        products:
+        isAgency:
+          type:
+          - string
+          - 'null'
+        lifecycleStatus:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    RelatedDocumentsDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        documents:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/RelatedProductDto'
+            $ref: '#/components/schemas/RelatedDocumentDto'
       additionalProperties: false
-    CollectionPropertyDto2:
+    EntityAssociationDataSource:
       type: object
       properties:
-        items:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/CollectionItemDto'
-        collectionId:
+        dataSource:
           type:
           - string
           - 'null'
-          format: uuid
+          readOnly: true
+        associationType:
+          type:
+          - string
+          - 'null'
+        ownershipPercentage:
+          type:
+          - number
+          - 'null'
+          format: double
+        associationToClient:
+          type:
+          - string
+          - 'null'
+        properties:
+          allOf:
+          - $ref: '#/components/schemas/PropertiesDto'
+          description: Generic properties
       additionalProperties: false
-    CollectionItemDto:
+    VersionedJurisdictionDto:
+      type: object
+      properties:
+        jurisdiction:
+          type:
+          - string
+          - 'null'
+          description: Jurisdiction of the requirement
+          example: Global
+        versionId:
+          type:
+          - string
+          - 'null'
+          description: Jurisdiction of the requirement
+          format: uuid
+          example: 894e1443-dd7a-4b9d-b253-430c2de80524
+      additionalProperties: false
+    PropertyType:
+      enum:
+      - Single
+      - Custom
+      - Collection
+      type: string
+    RelatedPartyDto:
       type: object
       properties:
         properties:
+          allOf:
+          - $ref: '#/components/schemas/PropertiesDto'
+          description: Generic properties setup in policy
+        metadata:
           type:
           - object
           - 'null'
           additionalProperties:
-            $ref: '#/components/schemas/SinglePropertyDto2'
+            type:
+            - string
+            - 'null'
+          description: The properties from the actual relationship
       additionalProperties: false
-    ExternalDataAdapterDataSource:
+    CurrentJourneysDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        inProgressJourneyTypes:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+      additionalProperties: false
+    EventIngressDataSource:
       type: object
       properties:
         dataSource:
@@ -4448,16 +4315,7 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    RequirementsInScopeRequestV2DtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/RequirementsInScopeRequestV2Dto'
-          description: Request DTO representing requirements search filter
-      additionalProperties: false
-      description: Service request data
-    RelatedClientDataSource:
+    InvestmentAccountFundDataSource:
       type: object
       properties:
         dataSource:
@@ -4466,11 +4324,20 @@ components:
           - 'null'
           readOnly: true
         properties:
+          allOf:
+          - $ref: '#/components/schemas/PropertiesDto'
+          description: Properties of the single investment account fund
+      additionalProperties: false
+    ReviewAndApprovalDto:
+      type: object
+      properties:
+        properties:
           type:
           - object
           - 'null'
           additionalProperties:
             $ref: '#/components/schemas/PropertyDto'
+          description: Generic properties setup in policy for review and approval task
           example:
             firstName:
               type: Single
@@ -4492,8 +4359,141 @@ components:
                     country: Ireland
                     city: Dublin
                     street: E Wall Rd
+        approvalOutcome:
+          type:
+          - string
+          - 'null'
+          description: The Approval Outcome of the task
+        approvalReason:
+          type:
+          - string
+          - 'null'
+          description: The Reason of the approval decision.
+        taskId:
+          type:
+          - string
+          - 'null'
+          description: Task Id
+        taskDataKey:
+          type:
+          - string
+          - 'null'
+          description: Task Data Key
       additionalProperties: false
-    SpecialCharactersRuleDto2_2:
+    CurrentUserDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        teamIds:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+            format: uuid
+        isSystemUser:
+          type: boolean
+      additionalProperties: false
+    InvestmentAccountDto:
+      type: object
+      properties:
+        properties:
+          allOf:
+          - $ref: '#/components/schemas/PropertiesDto'
+          description: Generic properties of a single in-scope investment account
+      additionalProperties: false
+    RelatedAssociationsDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        relatedAssociations:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RelatedAssociationDto'
+      additionalProperties: false
+    CreditAssessmentDto:
+      type: object
+      properties:
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+          description: Generic properties setup in policy for manual credit assessment
+          example:
+            firstName:
+              type: Single
+              value: Tom
+            dateOfBirth:
+              type: Single
+              value: '2021-07-15'
+            address:
+              type: Collection
+              dataGroupId: dfde9f06-040a-4127-b9a0-2c802a6502fc
+              collections:
+                54a25d24-1a4b-45c6-a5b4-980e5d3a1df5:
+                  properties:
+                    country: Ireland
+                    city: Dublin
+                    street: Mayor Street
+                47010265-3b85-4407-be61-90d04525f020:
+                  properties:
+                    country: Ireland
+                    city: Dublin
+                    street: E Wall Rd
+        assessmentOutcome:
+          type:
+          - string
+          - 'null'
+          description: Assessment Outcome of this manual credit assessment
+        assessmentComment:
+          type:
+          - string
+          - 'null'
+          description: Assessment Comment of this credit assessment
+        taskId:
+          type:
+          - string
+          - 'null'
+          description: Task Id
+        taskDataKey:
+          type:
+          - string
+          - 'null'
+          description: Task Data Key
+      additionalProperties: false
+    ChangedFieldDto:
+      type: object
+      properties:
+        key:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    SinglePropertyDto2:
+      type: object
+      properties:
+        value:
+          type:
+          - string
+          - 'null'
+        valueId:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    CollectionMaximumCountRuleDto2_2:
       type: object
       properties:
         errorMessage:
@@ -4502,62 +4502,33 @@ components:
           - 'null'
           description: Validation rule error message
           example: Validation error occurred
-        excludedCharacters:
+        requiredTypesMaxCount:
           type:
-          - array
+          - object
           - 'null'
-          items:
-            type: string
-          description: Array of special characters, which will be ignored by validation e.g. ["!","@","#"]
-      additionalProperties: false
-      description: Request DTO representing special characters rule metadata
-    RegexRuleDtoConditionalValueDto_2:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The ID of the condition
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        name:
+          additionalProperties:
+            type: integer
+            format: int32
+          description: Dictionary of required Primary Data Group Field values with maximum count
+          example:
+            Registered: 1
+        overallMaximumCount:
           type:
-          - string
+          - integer
           - 'null'
-          description: The name of the condition
-          example: Company-type only
-        description:
-          type:
-          - string
-          - 'null'
-          description: The description of the condition
-          example: Applicable only when EntityType=Company
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
-          example: AND
-        operands:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto'
-          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
-        value:
-          allOf:
-          - $ref: '#/components/schemas/RegexRuleDto2_2'
-          description: Request DTO representing regex rule metadata
-        priority:
-          type: integer
-          description: Priority of the value in case when multiple conditional values are evaluated
+          description: Overall maximum count
           format: int32
           example: 1
       additionalProperties: false
-    RegexRuleDto2_2:
+      description: Request DTO representing collection maximum count validation rule metadata
+    RegexRuleDto_2:
       type: object
       properties:
-        errorMessage:
+        active:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        message:
           type:
           - string
           - 'null'
@@ -4575,22 +4546,32 @@ components:
           example: ^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$
       additionalProperties: false
       description: Request DTO representing regex rule metadata
-    BasicRuleDto_2:
+    DateLimitRuleDto2_2:
       type: object
       properties:
-        active:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        message:
+        errorMessage:
           type:
           - string
           - 'null'
           description: Validation rule error message
           example: Validation error occurred
+        minDate:
+          type:
+          - string
+          - 'null'
+          description: Minimum date
+          format: date-time
+          example: '2020-01-01T14:48:00.000Z'
+        maxDate:
+          type:
+          - string
+          - 'null'
+          description: Maximum date
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
       additionalProperties: false
-      description: Request DTO representing basic validation rule metadata
-    CollectionMinimumCountRuleDtoValidationRuleDto_2:
+      description: Request DTO representing date limit rule metadata
+    BasicRuleDtoValidationRuleDto_2:
       type: object
       properties:
         isActive:
@@ -4599,8 +4580,36 @@ components:
           example: true
         staticRule:
           allOf:
-          - $ref: '#/components/schemas/CollectionMinimumCountRuleDto2_2'
+          - $ref: '#/components/schemas/BasicRuleDto2_2'
           description: Static validation rule always applied when active
+      additionalProperties: false
+    OwnershipValidationDataDto_2:
+      type: object
+      properties:
+        isMandatory:
+          allOf:
+          - $ref: '#/components/schemas/BasicRuleDto_2'
+          description: Request DTO representing basic validation rule metadata
+        partyCount:
+          allOf:
+          - $ref: '#/components/schemas/ValueLimitRuleDto_2'
+          description: Request DTO representing value limit rule metadata
+        addAllParties:
+          allOf:
+          - $ref: '#/components/schemas/BasicRuleDto_2'
+          description: Request DTO representing basic validation rule metadata
+        idvIsMandatory:
+          allOf:
+          - $ref: '#/components/schemas/BasicRuleDto_2'
+          description: Request DTO representing basic validation rule metadata
+        idvPartyCount:
+          allOf:
+          - $ref: '#/components/schemas/ValueLimitRuleDto_2'
+          description: Request DTO representing value limit rule metadata
+        idvAllParties:
+          allOf:
+          - $ref: '#/components/schemas/BasicRuleDto_2'
+          description: Request DTO representing basic validation rule metadata
       additionalProperties: false
     ExternalProviderRuleDtoValidationRuleDto_2:
       type: object
@@ -4614,7 +4623,7 @@ components:
           - $ref: '#/components/schemas/ExternalProviderRuleDto2_2'
           description: Static validation rule always applied when active
       additionalProperties: false
-    ValueLimitRuleDtoConditionalValidationRuleDto_2:
+    DateLimitRuleDtoConditionalValidationRuleDto_2:
       type: object
       properties:
         isActive:
@@ -4623,131 +4632,15 @@ components:
           example: true
         staticRule:
           allOf:
-          - $ref: '#/components/schemas/ValueLimitRuleDto2_2'
+          - $ref: '#/components/schemas/DateLimitRuleDto2_2'
           description: Static validation rule always applied when active
         dynamicRules:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ValueLimitRuleDtoConditionalValueDto_2'
+            $ref: '#/components/schemas/DateLimitRuleDtoConditionalValueDto_2'
           description: Conditional validation rules
-      additionalProperties: false
-    ValueLimitRuleDto_2:
-      type: object
-      properties:
-        active:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        message:
-          type:
-          - string
-          - 'null'
-          description: Validation rule error message
-          example: Validation error occurred
-        minValue:
-          type:
-          - integer
-          - 'null'
-          description: Minimum value
-          format: int32
-          example: 1
-        maxValue:
-          type:
-          - integer
-          - 'null'
-          description: Maximum value
-          format: int32
-          example: 10
-      additionalProperties: false
-      description: Request DTO representing value limit rule metadata
-    SpecialCharactersRuleDto_2:
-      type: object
-      properties:
-        active:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        message:
-          type:
-          - string
-          - 'null'
-          description: Validation rule error message
-          example: Validation error occurred
-        excludedCharacters:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: Array of special characters, which will be ignored by validation e.g. ["!","@","#"]
-      additionalProperties: false
-      description: Request DTO representing special characters rule metadata
-    ValueLimitRuleDto2_2:
-      type: object
-      properties:
-        errorMessage:
-          type:
-          - string
-          - 'null'
-          description: Validation rule error message
-          example: Validation error occurred
-        minValue:
-          type:
-          - integer
-          - 'null'
-          description: Minimum value
-          format: int32
-          example: 1
-        maxValue:
-          type:
-          - integer
-          - 'null'
-          description: Maximum value
-          format: int32
-          example: 10
-      additionalProperties: false
-      description: Request DTO representing value limit rule metadata
-    BasicRuleDtoConditionalValidationRuleDto_2:
-      type: object
-      properties:
-        isActive:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        staticRule:
-          allOf:
-          - $ref: '#/components/schemas/BasicRuleDto2_2'
-          description: Static validation rule always applied when active
-        dynamicRules:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/BasicRuleDtoConditionalValueDto_2'
-          description: Conditional validation rules
-      additionalProperties: false
-    ExternalProviderRuleDto2_2:
-      type: object
-      properties:
-        providerId:
-          type: string
-          description: Id of external provider.
-          format: uuid
-      additionalProperties: false
-      description: Request DTO representing external provider rule metadata
-    ValueLimitRuleDtoValidationRuleDto_2:
-      type: object
-      properties:
-        isActive:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        staticRule:
-          allOf:
-          - $ref: '#/components/schemas/ValueLimitRuleDto2_2'
-          description: Static validation rule always applied when active
       additionalProperties: false
     ValidationDataDto_2:
       type: object
@@ -4824,175 +4717,7 @@ components:
           description: Validation rule that allows to use external provider for validating all fields of a DataGroup as a collection
       additionalProperties: false
       description: Request DTO representing validation data metadata
-    SpecialCharactersRuleDtoValidationRuleDto_2:
-      type: object
-      properties:
-        isActive:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        staticRule:
-          allOf:
-          - $ref: '#/components/schemas/SpecialCharactersRuleDto2_2'
-          description: Static validation rule always applied when active
-      additionalProperties: false
-    DateLimitRuleDtoConditionalValidationRuleDto_2:
-      type: object
-      properties:
-        isActive:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        staticRule:
-          allOf:
-          - $ref: '#/components/schemas/DateLimitRuleDto2_2'
-          description: Static validation rule always applied when active
-        dynamicRules:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/DateLimitRuleDtoConditionalValueDto_2'
-          description: Conditional validation rules
-      additionalProperties: false
-    ExternalProviderRuleDto_2:
-      type: object
-      properties:
-        active:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        message:
-          type:
-          - string
-          - 'null'
-          description: Validation rule error message
-          example: Validation error occurred
-        providerId:
-          type: string
-          description: Id of external provider.
-          format: uuid
-      additionalProperties: false
-      description: Request DTO representing external provider rule metadata
-    OwnershipValidationDataDto_2:
-      type: object
-      properties:
-        isMandatory:
-          allOf:
-          - $ref: '#/components/schemas/BasicRuleDto_2'
-          description: Request DTO representing basic validation rule metadata
-        partyCount:
-          allOf:
-          - $ref: '#/components/schemas/ValueLimitRuleDto_2'
-          description: Request DTO representing value limit rule metadata
-        addAllParties:
-          allOf:
-          - $ref: '#/components/schemas/BasicRuleDto_2'
-          description: Request DTO representing basic validation rule metadata
-        idvIsMandatory:
-          allOf:
-          - $ref: '#/components/schemas/BasicRuleDto_2'
-          description: Request DTO representing basic validation rule metadata
-        idvPartyCount:
-          allOf:
-          - $ref: '#/components/schemas/ValueLimitRuleDto_2'
-          description: Request DTO representing value limit rule metadata
-        idvAllParties:
-          allOf:
-          - $ref: '#/components/schemas/BasicRuleDto_2'
-          description: Request DTO representing basic validation rule metadata
-      additionalProperties: false
-    RegexRuleDto_2:
-      type: object
-      properties:
-        active:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        message:
-          type:
-          - string
-          - 'null'
-          description: Validation rule error message
-          example: Validation error occurred
-        isCaseSensitive:
-          type: boolean
-          description: Flag that indicate if regex is case sensitive
-          example: false
-        regexValue:
-          type:
-          - string
-          - 'null'
-          description: Regex expression
-          example: ^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$
-      additionalProperties: false
-      description: Request DTO representing regex rule metadata
-    DateLimitRuleDto2_2:
-      type: object
-      properties:
-        errorMessage:
-          type:
-          - string
-          - 'null'
-          description: Validation rule error message
-          example: Validation error occurred
-        minDate:
-          type:
-          - string
-          - 'null'
-          description: Minimum date
-          format: date-time
-          example: '2020-01-01T14:48:00.000Z'
-        maxDate:
-          type:
-          - string
-          - 'null'
-          description: Maximum date
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-      additionalProperties: false
-      description: Request DTO representing date limit rule metadata
-    DateLimitRuleDto_2:
-      type: object
-      properties:
-        active:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        message:
-          type:
-          - string
-          - 'null'
-          description: Validation rule error message
-          example: Validation error occurred
-        minDate:
-          type:
-          - string
-          - 'null'
-          description: Minimum date
-          format: date-time
-          example: '2020-01-01T14:48:00.000Z'
-        maxDate:
-          type:
-          - string
-          - 'null'
-          description: Maximum date
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-      additionalProperties: false
-      description: Request DTO representing date limit rule metadata
-    BasicRuleDto2_2:
-      type: object
-      properties:
-        errorMessage:
-          type:
-          - string
-          - 'null'
-          description: Validation rule error message
-          example: Validation error occurred
-      additionalProperties: false
-      description: Request DTO representing basic validation rule metadata
-    DateLimitRuleDtoConditionalValueDto_2:
+    BasicRuleDtoConditionalValueDto_2:
       type: object
       properties:
         id:
@@ -5027,14 +4752,212 @@ components:
           description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
         value:
           allOf:
-          - $ref: '#/components/schemas/DateLimitRuleDto2_2'
-          description: Request DTO representing date limit rule metadata
+          - $ref: '#/components/schemas/BasicRuleDto2_2'
+          description: Request DTO representing basic validation rule metadata
         priority:
           type: integer
           description: Priority of the value in case when multiple conditional values are evaluated
           format: int32
           example: 1
       additionalProperties: false
+    CollectionMaximumCountRuleDtoValidationRuleDto_2:
+      type: object
+      properties:
+        isActive:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        staticRule:
+          allOf:
+          - $ref: '#/components/schemas/CollectionMaximumCountRuleDto2_2'
+          description: Static validation rule always applied when active
+      additionalProperties: false
+    RegexRuleDto2_2:
+      type: object
+      properties:
+        errorMessage:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+        isCaseSensitive:
+          type: boolean
+          description: Flag that indicate if regex is case sensitive
+          example: false
+        regexValue:
+          type:
+          - string
+          - 'null'
+          description: Regex expression
+          example: ^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$
+      additionalProperties: false
+      description: Request DTO representing regex rule metadata
+    BasicRuleDto2_2:
+      type: object
+      properties:
+        errorMessage:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+      additionalProperties: false
+      description: Request DTO representing basic validation rule metadata
+    RegexRuleDtoConditionalValueDto_2:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The ID of the condition
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        name:
+          type:
+          - string
+          - 'null'
+          description: The name of the condition
+          example: Company-type only
+        description:
+          type:
+          - string
+          - 'null'
+          description: The description of the condition
+          example: Applicable only when EntityType=Company
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+          description: Logical operation on the Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDto.Operands collection
+          example: AND
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto'
+          description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
+        value:
+          allOf:
+          - $ref: '#/components/schemas/RegexRuleDto2_2'
+          description: Request DTO representing regex rule metadata
+        priority:
+          type: integer
+          description: Priority of the value in case when multiple conditional values are evaluated
+          format: int32
+          example: 1
+      additionalProperties: false
+    ExternalProviderRuleDto2_2:
+      type: object
+      properties:
+        providerId:
+          type: string
+          description: Id of external provider.
+          format: uuid
+      additionalProperties: false
+      description: Request DTO representing external provider rule metadata
+    CollectionMinimumCountRuleDto2_2:
+      type: object
+      properties:
+        errorMessage:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+        requiredTypesMinCount:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: integer
+            format: int32
+          description: Dictionary of required Primary Data Group Field values with minimum count
+          example:
+            Registered: 1
+        overallMinimumCount:
+          type: integer
+          description: Overall minimum count
+          format: int32
+          example: 1
+      additionalProperties: false
+      description: Request DTO representing collection minimum count validation rule metadata
+    ValueLimitRuleDtoValidationRuleDto_2:
+      type: object
+      properties:
+        isActive:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        staticRule:
+          allOf:
+          - $ref: '#/components/schemas/ValueLimitRuleDto2_2'
+          description: Static validation rule always applied when active
+      additionalProperties: false
+    BasicRuleDto_2:
+      type: object
+      properties:
+        active:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        message:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+      additionalProperties: false
+      description: Request DTO representing basic validation rule metadata
+    CollectionMinimumCountRuleDto_2:
+      type: object
+      properties:
+        active:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        message:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+        requiredTypesMinCount:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: integer
+            format: int32
+          description: Dictionary of required Primary Data Group Field values with minimum count
+          example:
+            Registered: 1
+        overallMinimumCount:
+          type: integer
+          description: Overall minimum count
+          format: int32
+          example: 1
+      additionalProperties: false
+      description: Request DTO representing collection minimum count validation rule metadata
+    ExternalProviderRuleDto_2:
+      type: object
+      properties:
+        active:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        message:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+        providerId:
+          type: string
+          description: Id of external provider.
+          format: uuid
+      additionalProperties: false
+      description: Request DTO representing external provider rule metadata
     ValueLimitRuleDtoConditionalValueDto_2:
       type: object
       properties:
@@ -5078,7 +5001,26 @@ components:
           format: int32
           example: 1
       additionalProperties: false
-    CollectionMinimumCountRuleDto_2:
+    RegexRuleDtoConditionalValidationRuleDto_2:
+      type: object
+      properties:
+        isActive:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        staticRule:
+          allOf:
+          - $ref: '#/components/schemas/RegexRuleDto2_2'
+          description: Static validation rule always applied when active
+        dynamicRules:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RegexRuleDtoConditionalValueDto_2'
+          description: Conditional validation rules
+      additionalProperties: false
+    SpecialCharactersRuleDto_2:
       type: object
       properties:
         active:
@@ -5091,61 +5033,15 @@ components:
           - 'null'
           description: Validation rule error message
           example: Validation error occurred
-        requiredTypesMinCount:
+        excludedCharacters:
           type:
-          - object
+          - array
           - 'null'
-          additionalProperties:
-            type: integer
-            format: int32
-          description: Dictionary of required Primary Data Group Field values with minimum count
-          example:
-            Registered: 1
-        overallMinimumCount:
-          type: integer
-          description: Overall minimum count
-          format: int32
-          example: 1
+          items:
+            type: string
+          description: Array of special characters, which will be ignored by validation e.g. ["!","@","#"]
       additionalProperties: false
-      description: Request DTO representing collection minimum count validation rule metadata
-    BasicRuleDtoValidationRuleDto_2:
-      type: object
-      properties:
-        isActive:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        staticRule:
-          allOf:
-          - $ref: '#/components/schemas/BasicRuleDto2_2'
-          description: Static validation rule always applied when active
-      additionalProperties: false
-    CollectionMinimumCountRuleDto2_2:
-      type: object
-      properties:
-        errorMessage:
-          type:
-          - string
-          - 'null'
-          description: Validation rule error message
-          example: Validation error occurred
-        requiredTypesMinCount:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type: integer
-            format: int32
-          description: Dictionary of required Primary Data Group Field values with minimum count
-          example:
-            Registered: 1
-        overallMinimumCount:
-          type: integer
-          description: Overall minimum count
-          format: int32
-          example: 1
-      additionalProperties: false
-      description: Request DTO representing collection minimum count validation rule metadata
+      description: Request DTO representing special characters rule metadata
     CollectionMaximumCountRuleDto_2:
       type: object
       properties:
@@ -5178,66 +5074,7 @@ components:
           example: 1
       additionalProperties: false
       description: Request DTO representing collection maximum count validation rule metadata
-    CollectionMaximumCountRuleDto2_2:
-      type: object
-      properties:
-        errorMessage:
-          type:
-          - string
-          - 'null'
-          description: Validation rule error message
-          example: Validation error occurred
-        requiredTypesMaxCount:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type: integer
-            format: int32
-          description: Dictionary of required Primary Data Group Field values with maximum count
-          example:
-            Registered: 1
-        overallMaximumCount:
-          type:
-          - integer
-          - 'null'
-          description: Overall maximum count
-          format: int32
-          example: 1
-      additionalProperties: false
-      description: Request DTO representing collection maximum count validation rule metadata
-    CollectionMaximumCountRuleDtoValidationRuleDto_2:
-      type: object
-      properties:
-        isActive:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        staticRule:
-          allOf:
-          - $ref: '#/components/schemas/CollectionMaximumCountRuleDto2_2'
-          description: Static validation rule always applied when active
-      additionalProperties: false
-    RegexRuleDtoConditionalValidationRuleDto_2:
-      type: object
-      properties:
-        isActive:
-          type: boolean
-          description: Validation rule active flag
-          example: true
-        staticRule:
-          allOf:
-          - $ref: '#/components/schemas/RegexRuleDto2_2'
-          description: Static validation rule always applied when active
-        dynamicRules:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/RegexRuleDtoConditionalValueDto_2'
-          description: Conditional validation rules
-      additionalProperties: false
-    BasicRuleDtoConditionalValueDto_2:
+    DateLimitRuleDtoConditionalValueDto_2:
       type: object
       properties:
         id:
@@ -5272,13 +5109,176 @@ components:
           description: Collection of operands for given condition. These might contain additional, nested conditions of type Fenergo.Nebula.Platform.LogicEngine.Model.Dto.ConditionDefinitionDto
         value:
           allOf:
-          - $ref: '#/components/schemas/BasicRuleDto2_2'
-          description: Request DTO representing basic validation rule metadata
+          - $ref: '#/components/schemas/DateLimitRuleDto2_2'
+          description: Request DTO representing date limit rule metadata
         priority:
           type: integer
           description: Priority of the value in case when multiple conditional values are evaluated
           format: int32
           example: 1
+      additionalProperties: false
+    SpecialCharactersRuleDtoValidationRuleDto_2:
+      type: object
+      properties:
+        isActive:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        staticRule:
+          allOf:
+          - $ref: '#/components/schemas/SpecialCharactersRuleDto2_2'
+          description: Static validation rule always applied when active
+      additionalProperties: false
+    ValueLimitRuleDto2_2:
+      type: object
+      properties:
+        errorMessage:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+        minValue:
+          type:
+          - integer
+          - 'null'
+          description: Minimum value
+          format: int32
+          example: 1
+        maxValue:
+          type:
+          - integer
+          - 'null'
+          description: Maximum value
+          format: int32
+          example: 10
+      additionalProperties: false
+      description: Request DTO representing value limit rule metadata
+    ValueLimitRuleDto_2:
+      type: object
+      properties:
+        active:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        message:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+        minValue:
+          type:
+          - integer
+          - 'null'
+          description: Minimum value
+          format: int32
+          example: 1
+        maxValue:
+          type:
+          - integer
+          - 'null'
+          description: Maximum value
+          format: int32
+          example: 10
+      additionalProperties: false
+      description: Request DTO representing value limit rule metadata
+    CollectionMinimumCountRuleDtoValidationRuleDto_2:
+      type: object
+      properties:
+        isActive:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        staticRule:
+          allOf:
+          - $ref: '#/components/schemas/CollectionMinimumCountRuleDto2_2'
+          description: Static validation rule always applied when active
+      additionalProperties: false
+    BasicRuleDtoConditionalValidationRuleDto_2:
+      type: object
+      properties:
+        isActive:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        staticRule:
+          allOf:
+          - $ref: '#/components/schemas/BasicRuleDto2_2'
+          description: Static validation rule always applied when active
+        dynamicRules:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/BasicRuleDtoConditionalValueDto_2'
+          description: Conditional validation rules
+      additionalProperties: false
+    SpecialCharactersRuleDto2_2:
+      type: object
+      properties:
+        errorMessage:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+        excludedCharacters:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Array of special characters, which will be ignored by validation e.g. ["!","@","#"]
+      additionalProperties: false
+      description: Request DTO representing special characters rule metadata
+    DateLimitRuleDto_2:
+      type: object
+      properties:
+        active:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        message:
+          type:
+          - string
+          - 'null'
+          description: Validation rule error message
+          example: Validation error occurred
+        minDate:
+          type:
+          - string
+          - 'null'
+          description: Minimum date
+          format: date-time
+          example: '2020-01-01T14:48:00.000Z'
+        maxDate:
+          type:
+          - string
+          - 'null'
+          description: Maximum date
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+      additionalProperties: false
+      description: Request DTO representing date limit rule metadata
+    ValueLimitRuleDtoConditionalValidationRuleDto_2:
+      type: object
+      properties:
+        isActive:
+          type: boolean
+          description: Validation rule active flag
+          example: true
+        staticRule:
+          allOf:
+          - $ref: '#/components/schemas/ValueLimitRuleDto2_2'
+          description: Static validation rule always applied when active
+        dynamicRules:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValueLimitRuleDtoConditionalValueDto_2'
+          description: Conditional validation rules
       additionalProperties: false
   securitySchemes:
     Bearer:

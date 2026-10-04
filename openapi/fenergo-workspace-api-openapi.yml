@@ -749,26 +749,31 @@ paths:
     - url: /policyquery
 components:
   schemas:
-    CreateWorkspaceRequestDto:
-      required:
-      - name
+    ServiceResponseMessage:
       type: object
       properties:
-        name:
-          maxLength: 60
-          minLength: 1
-          type: string
-          description: Name of Workspace
-          example: Global configurators
-        description:
-          maxLength: 255
+        message:
           type:
           - string
           - 'null'
-          description: Description of Workspace
-          example: Workspace for global configurators
+          description: The message
+          example: Success
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
       additionalProperties: false
-      description: Create workspace request
+      description: The message associated to the service response
     UpdateWorkspaceRequestDto:
       required:
       - name
@@ -789,27 +794,6 @@ components:
           example: Workspace for global configurators.
       additionalProperties: false
       description: Update workspace request
-    BulkSoftDeleteWorkspaceRequestDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/BulkSoftDeleteWorkspaceRequestDto'
-          description: Delete workspaces in bulk request
-      additionalProperties: false
-      description: Service request data
-    CreateWorkspaceResponseDto:
-      required:
-      - workspaceId
-      type: object
-      properties:
-        workspaceId:
-          type: string
-          description: Unique identifier of Workspace
-          format: uuid
-          example: 46b34a29-d426-407e-b1cc-98d727ed4883
-      additionalProperties: false
-      description: Response DTO representing created Workspace
     UpdateWorkspaceRequestDtoServiceRequest:
       type: object
       properties:
@@ -817,6 +801,30 @@ components:
           allOf:
           - $ref: '#/components/schemas/UpdateWorkspaceRequestDto'
           description: Update workspace request
+      additionalProperties: false
+      description: Service request data
+    BulkSoftDeleteWorkspaceRequestDto:
+      required:
+      - ids
+      type: object
+      properties:
+        ids:
+          minItems: 1
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: List of workspace IDs to delete. A maximum of 20 IDs can be provided per request.
+      additionalProperties: false
+      description: Delete workspaces in bulk request
+    BulkSoftDeleteWorkspaceRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/BulkSoftDeleteWorkspaceRequestDto'
+          description: Delete workspaces in bulk request
       additionalProperties: false
       description: Service request data
     CreateWorkspaceRequestDtoServiceRequest:
@@ -853,31 +861,26 @@ components:
           - string
           - 'null'
       additionalProperties: {}
-    ServiceResponseMessage:
+    CreateWorkspaceRequestDto:
+      required:
+      - name
       type: object
       properties:
-        message:
+        name:
+          maxLength: 60
+          minLength: 1
+          type: string
+          description: Name of Workspace
+          example: Global configurators
+        description:
+          maxLength: 255
           type:
           - string
           - 'null'
-          description: The message
-          example: Success
-        type:
-          type:
-          - string
-          - 'null'
-          description: 'Type of the message
-
-            One of Info, Warning, Error, Forbidden'
-          example: Info
-        errorCode:
-          type:
-          - string
-          - 'null'
-          description: Error Code
-          example: INTERNAL_SERVER_ERROR
+          description: Description of Workspace
+          example: Workspace for global configurators
       additionalProperties: false
-      description: The message associated to the service response
+      description: Create workspace request
     CreateWorkspaceResponseDtoServiceResponse:
       type: object
       properties:
@@ -894,111 +897,7 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    BulkSoftDeleteWorkspaceRequestDto:
-      required:
-      - ids
-      type: object
-      properties:
-        ids:
-          minItems: 1
-          uniqueItems: true
-          type: array
-          items:
-            type: string
-            format: uuid
-          description: List of workspace IDs to delete. A maximum of 20 IDs can be provided per request.
-      additionalProperties: false
-      description: Delete workspaces in bulk request
-    WorkspaceChangeListItemViewModelDtoItemsPage:
-      type: object
-      properties:
-        items:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/WorkspaceChangeListItemViewModelDto'
-          description: The items result set
-        paginationToken:
-          type:
-          - string
-          - 'null'
-          description: The token for retrieving the next page of results
-      additionalProperties: false
-      description: Query Result Page
-    AvailableWorkspaceItemResponseDto:
-      type: object
-      properties:
-        workspaceId:
-          type: string
-          description: Unique identifier of Workspace
-          format: uuid
-          example: 46b34a29-d426-407e-b1cc-98d727ed4883
-        name:
-          type:
-          - string
-          - 'null'
-          description: Name of Workspace
-          example: Global configurators
-        description:
-          type:
-          - string
-          - 'null'
-          description: Description of Workspace
-          example: Workspace created to implement Commercial Banking features
-        group:
-          allOf:
-          - $ref: '#/components/schemas/AvailableWorkspaceGroup'
-          description: Group of Workspace
-          example: ContainsChanges
-      additionalProperties: false
-      description: Workspace DTO
-    WorkspaceChangeListItemViewModelDtoItemsPageServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/WorkspaceChangeListItemViewModelDtoItemsPage'
-          description: Query Result Page
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    AvailableWorkspaceGroup:
-      enum:
-      - NoChanges
-      - PendingRemoval
-      - ContainsChanges
-      - LockedPendingReview
-      type: string
-    ActiveWorkspaceViewModelDto:
-      type: object
-      properties:
-        workspaceId:
-          type: string
-          description: Unique identifier of Workspace
-          format: uuid
-          example: 46b34a29-d426-407e-b1cc-98d727ed4883
-        name:
-          type:
-          - string
-          - 'null'
-          description: Name of Workspace
-          example: Global configurators
-        description:
-          type:
-          - string
-          - 'null'
-          description: Description of Workspace
-          example: Workspace for global configurators.
-      additionalProperties: false
-      description: Workspace DTO
-    GetCurrentWorkspaceResponseDto:
+    CreateWorkspaceResponseDto:
       required:
       - workspaceId
       type: object
@@ -1009,75 +908,7 @@ components:
           format: uuid
           example: 46b34a29-d426-407e-b1cc-98d727ed4883
       additionalProperties: false
-      description: Represents user preferred workspace
-    AvailableWorkspaceItemResponseDtoListServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/AvailableWorkspaceItemResponseDto'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    ActiveWorkspaceViewModelDtoItemsPage:
-      type: object
-      properties:
-        items:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ActiveWorkspaceViewModelDto'
-          description: The items result set
-        paginationToken:
-          type:
-          - string
-          - 'null'
-          description: The token for retrieving the next page of results
-      additionalProperties: false
-      description: Query Result Page
-    GetCurrentWorkspaceResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/GetCurrentWorkspaceResponseDto'
-          description: Represents user preferred workspace
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    ActiveWorkspaceViewModelDtoItemsPageServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ActiveWorkspaceViewModelDtoItemsPage'
-          description: Query Result Page
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
+      description: Response DTO representing created Workspace
     WorkspaceChangeListItemViewModelDto:
       type: object
       properties:
@@ -1131,6 +962,175 @@ components:
           example: '2023-10-05T14:30:00Z'
       additionalProperties: false
       description: Represents a change in the workspace
+    ActiveWorkspaceViewModelDto:
+      type: object
+      properties:
+        workspaceId:
+          type: string
+          description: Unique identifier of Workspace
+          format: uuid
+          example: 46b34a29-d426-407e-b1cc-98d727ed4883
+        name:
+          type:
+          - string
+          - 'null'
+          description: Name of Workspace
+          example: Global configurators
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of Workspace
+          example: Workspace for global configurators.
+      additionalProperties: false
+      description: Workspace DTO
+    ActiveWorkspaceViewModelDtoItemsPage:
+      type: object
+      properties:
+        items:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ActiveWorkspaceViewModelDto'
+          description: The items result set
+        paginationToken:
+          type:
+          - string
+          - 'null'
+          description: The token for retrieving the next page of results
+      additionalProperties: false
+      description: Query Result Page
+    AvailableWorkspaceGroup:
+      enum:
+      - NoChanges
+      - PendingRemoval
+      - ContainsChanges
+      - LockedPendingReview
+      type: string
+    WorkspaceChangeListItemViewModelDtoItemsPageServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/WorkspaceChangeListItemViewModelDtoItemsPage'
+          description: Query Result Page
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    GetCurrentWorkspaceResponseDto:
+      required:
+      - workspaceId
+      type: object
+      properties:
+        workspaceId:
+          type: string
+          description: Unique identifier of Workspace
+          format: uuid
+          example: 46b34a29-d426-407e-b1cc-98d727ed4883
+      additionalProperties: false
+      description: Represents user preferred workspace
+    ActiveWorkspaceViewModelDtoItemsPageServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ActiveWorkspaceViewModelDtoItemsPage'
+          description: Query Result Page
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    AvailableWorkspaceItemResponseDtoListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AvailableWorkspaceItemResponseDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    GetCurrentWorkspaceResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetCurrentWorkspaceResponseDto'
+          description: Represents user preferred workspace
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    WorkspaceChangeListItemViewModelDtoItemsPage:
+      type: object
+      properties:
+        items:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/WorkspaceChangeListItemViewModelDto'
+          description: The items result set
+        paginationToken:
+          type:
+          - string
+          - 'null'
+          description: The token for retrieving the next page of results
+      additionalProperties: false
+      description: Query Result Page
+    AvailableWorkspaceItemResponseDto:
+      type: object
+      properties:
+        workspaceId:
+          type: string
+          description: Unique identifier of Workspace
+          format: uuid
+          example: 46b34a29-d426-407e-b1cc-98d727ed4883
+        name:
+          type:
+          - string
+          - 'null'
+          description: Name of Workspace
+          example: Global configurators
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of Workspace
+          example: Workspace created to implement Commercial Banking features
+        group:
+          allOf:
+          - $ref: '#/components/schemas/AvailableWorkspaceGroup'
+          description: Group of Workspace
+          example: ContainsChanges
+      additionalProperties: false
+      description: Workspace DTO
   securitySchemes:
     Bearer:
       type: apiKey

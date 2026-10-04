@@ -780,48 +780,67 @@ paths:
     - url: /authorizationquery
 components:
   schemas:
-    AccessLayerReferenceDto:
+    ServiceResponseMessage:
       type: object
       properties:
-        id:
+        message:
           type:
           - string
           - 'null'
-          description: The UiD of the access layer
-          example: e4ec4810-6386-4610-a605-0d636f393daf
-        label:
-          type:
-          - string
-          - 'null'
-          description: Label of the access layer
-          example: Private Banking
-        dataKey:
-          type:
-          - string
-          - 'null'
-          description: Data key of the access layer
-          example: PrivateBanking
+          description: The message
+          example: Success
         type:
-          allOf:
-          - $ref: '#/components/schemas/AccessLayerTypeDto'
-          description: Type of the access layer
-          example: Business Related
-        dataType:
-          allOf:
-          - $ref: '#/components/schemas/AccessLayerDataTypeDto'
-          description: Data type of the access layer
-          example: Search
+          type:
+          - string
+          - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
       additionalProperties: false
-      description: Response DTO representing access layer reference data
-    UserNameDtoIEnumerableServiceResponse:
+      description: The message associated to the service response
+    ReferenceDataDto:
       type: object
       properties:
-        data:
+        accessLayers:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/UserNameDto'
+            $ref: '#/components/schemas/AccessLayerReferenceDto'
+          description: Collection of access layer reference data
+        users:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UserReferenceDto'
+          description: Collection of user reference data
+        teams:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/TeamReferenceDto'
+          description: Collection of user reference data
+        accessLayersConfiguration:
+          allOf:
+          - $ref: '#/components/schemas/AccessLayersConfigurationReferenceDto'
+          description: Access layers configuration
+      additionalProperties: false
+      description: Response DTO representing reference data
+    TeamWithUsersDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/TeamWithUsersDto'
           description: The service response DTO
         messages:
           type:
@@ -832,30 +851,23 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    UserNameDto:
+    StringServiceResponse:
       type: object
       properties:
-        id:
+        data:
           type:
           - string
           - 'null'
-          description: The UiD of the user
-          example: 1bb44eba-d489-4138-8cfa-eee3d49250c9
-        username:
+          description: The service response DTO
+        messages:
           type:
-          - string
+          - array
           - 'null'
-          description: Username
-          example: user.name@fenergo.com
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
-      description: Response DTO representing user data
-    SensitiveDataKindDto:
-      enum:
-      - None
-      - SensitiveData
-      - SensitiveDataDelegate
-      type: string
-      description: Set of possible values for Sensitive Data parameter
+      description: Service response data
     TeamReferenceDto:
       type: object
       properties:
@@ -880,35 +892,6 @@ components:
           description: List of user ids assigned to the team
       additionalProperties: false
       description: Response DTO representing team reference data
-    ValidationErrorModelListServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
     TeamWithUsersDto:
       type: object
       properties:
@@ -932,7 +915,56 @@ components:
           description: List of user ids assigned to the team
       additionalProperties: false
       description: Response DTO representing team data
-    UserReferenceDto:
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data:
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    AccessLayerDataTypeDto:
+      enum:
+      - Field
+      - DataGroup
+      - Entity
+      - Journey
+      - Document
+      - Search
+      - Product
+      - ProductField
+      type: string
+    TeamNameDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/TeamNameDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    AccessLayerTypeDto:
+      enum:
+      - Geographic
+      - BusinessRelated
+      type: string
+    UserNameDto:
       type: object
       properties:
         id:
@@ -940,15 +972,41 @@ components:
           - string
           - 'null'
           description: The UiD of the user
-          example: 86059e9a-4910-476b-bdb5-71d77fc966fd
-        label:
+          example: 1bb44eba-d489-4138-8cfa-eee3d49250c9
+        username:
           type:
           - string
           - 'null'
-          description: Display name of the user
-          example: John Doe
+          description: Username
+          example: user.name@fenergo.com
       additionalProperties: false
-      description: Response DTO representing user reference data
+      description: Response DTO representing user data
+    SensitiveDataKindDto:
+      enum:
+      - None
+      - SensitiveData
+      - SensitiveDataDelegate
+      type: string
+      description: Set of possible values for Sensitive Data parameter
+    AccessLayerLightReferenceDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AccessLayerLightReferenceDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
     AccessLayerLightReferenceDto:
       type: object
       properties:
@@ -986,66 +1044,6 @@ components:
           example: SensitiveDataDelegate
       additionalProperties: false
       description: Response DTO representing access layer data
-    AccessLayerDataTypeDto:
-      enum:
-      - Field
-      - DataGroup
-      - Entity
-      - Journey
-      - Document
-      - Search
-      - Product
-      - ProductField
-      type: string
-    ReferenceDataDto:
-      type: object
-      properties:
-        accessLayers:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/AccessLayerReferenceDto'
-          description: Collection of access layer reference data
-        users:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/UserReferenceDto'
-          description: Collection of user reference data
-        teams:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/TeamReferenceDto'
-          description: Collection of user reference data
-        accessLayersConfiguration:
-          allOf:
-          - $ref: '#/components/schemas/AccessLayersConfigurationReferenceDto'
-          description: Access layers configuration
-      additionalProperties: false
-      description: Response DTO representing reference data
-    TeamNameDtoIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/TeamNameDto'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
     TeamNameDto:
       type: object
       properties:
@@ -1068,25 +1066,6 @@ components:
         data:
           allOf:
           - $ref: '#/components/schemas/ReferenceDataDto'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    AccessLayerLightReferenceDtoIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/AccessLayerLightReferenceDto'
           description: The service response DTO
         messages:
           type:
@@ -1122,39 +1101,6 @@ components:
           example: NotNullValidator
       additionalProperties: false
       description: Represents the details of validation error
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    TeamWithUsersDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/TeamWithUsersDto'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
     AccessLayersConfigurationReferenceDto:
       type: object
       properties:
@@ -1178,35 +1124,48 @@ components:
           description: If set to true automatic access layer evaluation engine will be enabled additionally for product
           example: true
       additionalProperties: false
-    ServiceResponseMessage:
+    AccessLayerReferenceDto:
       type: object
       properties:
-        message:
+        id:
           type:
           - string
           - 'null'
-          description: The message
-          example: Success
+          description: The UiD of the access layer
+          example: e4ec4810-6386-4610-a605-0d636f393daf
+        label:
+          type:
+          - string
+          - 'null'
+          description: Label of the access layer
+          example: Private Banking
+        dataKey:
+          type:
+          - string
+          - 'null'
+          description: Data key of the access layer
+          example: PrivateBanking
         type:
-          type:
-          - string
-          - 'null'
-          description: 'Type of the message
-
-            One of Info, Warning, Error, Forbidden'
-          example: Info
-        errorCode:
-          type:
-          - string
-          - 'null'
-          description: Error Code
-          example: INTERNAL_SERVER_ERROR
+          allOf:
+          - $ref: '#/components/schemas/AccessLayerTypeDto'
+          description: Type of the access layer
+          example: Business Related
+        dataType:
+          allOf:
+          - $ref: '#/components/schemas/AccessLayerDataTypeDto'
+          description: Data type of the access layer
+          example: Search
       additionalProperties: false
-      description: The message associated to the service response
-    ObjectServiceResponse:
+      description: Response DTO representing access layer reference data
+    ValidationErrorModelListServiceResponse:
       type: object
       properties:
         data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
           description: The service response DTO
         messages:
           type:
@@ -1217,11 +1176,52 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    AccessLayerTypeDto:
-      enum:
-      - Geographic
-      - BusinessRelated
-      type: string
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    UserNameDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UserNameDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    UserReferenceDto:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+          description: The UiD of the user
+          example: 86059e9a-4910-476b-bdb5-71d77fc966fd
+        label:
+          type:
+          - string
+          - 'null'
+          description: Display name of the user
+          example: John Doe
+      additionalProperties: false
+      description: Response DTO representing user reference data
   securitySchemes:
     Bearer:
       type: apiKey

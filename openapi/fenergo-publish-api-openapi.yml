@@ -109,26 +109,6 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    OutreachApprovals:
-      type: object
-      properties:
-        amendmentApprovals:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/OutreachAmendmentApproval'
-          description: 'Per-entity, per-field amendment approvals. Only the listed fields are written to
-
-            entity drafts; fields absent from the list are left unchanged.'
-        associations:
-          allOf:
-          - $ref: '#/components/schemas/ExternalDataOutreach'
-          description: Association-level approval decisions (removals and new associations).
-      additionalProperties: false
-      description: 'Outreach-review approval decisions carried with a publish message (AB#545441).
-
-        Null when the publish was not triggered from an outreach review context.'
     PublishOrchestratorDtoServiceRequest:
       type: object
       properties:
@@ -138,7 +118,118 @@ components:
           description: The service request DTO
       additionalProperties: false
       description: Service request data
+    JurisdictionDto:
+      type: object
+      properties:
+        jurisdiction:
+          type:
+          - string
+          - 'null'
+          description: Name of the Jurisdiction
+          example: Global
+        jurisdictionVersion:
+          type:
+          - string
+          - 'null'
+          description: Version of the Jurisdiction
+          format: uuid
+          example: 8fd3739b-555c-49d8-9ab4-eb442480d852
+      additionalProperties: false
+    ApprovedNewAssociation:
+      type: object
+      properties:
+        parentId:
+          type: string
+          format: uuid
+        associationType:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+      description: 'Identifies a specific non-snapshot association proposed by Outreach that the reviewer has
+
+        approved for creation. Both ParentId and AssociationType must match for the
+
+        association to be created during import.'
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+          description: The message
+          example: Success
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
+      additionalProperties: false
+      description: The message associated to the service response
     ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    ExternalDataOutreach:
+      type: object
+      properties:
+        approvedVerifiedAssociationIdsRemoval:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+            format: uuid
+          description: 'IDs of verified associations approved for removal by the reviewer; they will be deleted
+
+            via RemoveVerifiedAssociation during import.'
+        approvedUnverifiedAssociationIdsRemoval:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+            format: uuid
+          description: 'IDs of unverified associations approved for removal by the reviewer; they will be deleted
+
+            via RemoveUnverifiedAssociation during import.'
+        approvedNewAssociations:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ApprovedNewAssociation'
+          description: 'Approved (parentId, associationType) pairs for non-snapshot associations proposed by Outreach.
+
+            Only non-snapshot associations matching both ParentId and AssociationType in this list will be
+
+            created during import; all others are silently skipped.'
+      additionalProperties: false
+      description: Association-level approval decisions within an outreach review publish (AB#545441).
+    StringServiceResponse:
       type: object
       properties:
         data:
@@ -168,23 +259,26 @@ components:
           items:
             type: string
       additionalProperties: false
-    StringServiceResponse:
+    OutreachApprovals:
       type: object
       properties:
-        data:
-          type:
-          - string
-          - 'null'
-          description: The service response DTO
-        messages:
+        amendmentApprovals:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+            $ref: '#/components/schemas/OutreachAmendmentApproval'
+          description: 'Per-entity, per-field amendment approvals. Only the listed fields are written to
+
+            entity drafts; fields absent from the list are left unchanged.'
+        associations:
+          allOf:
+          - $ref: '#/components/schemas/ExternalDataOutreach'
+          description: Association-level approval decisions (removals and new associations).
       additionalProperties: false
-      description: Service response data
+      description: 'Outreach-review approval decisions carried with a publish message (AB#545441).
+
+        Null when the publish was not triggered from an outreach review context.'
     PublishOrchestratorDto:
       required:
       - draftId
@@ -277,100 +371,6 @@ components:
             outreach review context (AB#545441).'
       additionalProperties: false
       description: Class to represent the publish external data process
-    ApprovedNewAssociation:
-      type: object
-      properties:
-        parentId:
-          type: string
-          format: uuid
-        associationType:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-      description: 'Identifies a specific non-snapshot association proposed by Outreach that the reviewer has
-
-        approved for creation. Both ParentId and AssociationType must match for the
-
-        association to be created during import.'
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-          description: The message
-          example: Success
-        type:
-          type:
-          - string
-          - 'null'
-          description: 'Type of the message
-
-            One of Info, Warning, Error, Forbidden'
-          example: Info
-        errorCode:
-          type:
-          - string
-          - 'null'
-          description: Error Code
-          example: INTERNAL_SERVER_ERROR
-      additionalProperties: false
-      description: The message associated to the service response
-    ExternalDataOutreach:
-      type: object
-      properties:
-        approvedVerifiedAssociationIdsRemoval:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-            format: uuid
-          description: 'IDs of verified associations approved for removal by the reviewer; they will be deleted
-
-            via RemoveVerifiedAssociation during import.'
-        approvedUnverifiedAssociationIdsRemoval:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-            format: uuid
-          description: 'IDs of unverified associations approved for removal by the reviewer; they will be deleted
-
-            via RemoveUnverifiedAssociation during import.'
-        approvedNewAssociations:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ApprovedNewAssociation'
-          description: 'Approved (parentId, associationType) pairs for non-snapshot associations proposed by Outreach.
-
-            Only non-snapshot associations matching both ParentId and AssociationType in this list will be
-
-            created during import; all others are silently skipped.'
-      additionalProperties: false
-      description: Association-level approval decisions within an outreach review publish (AB#545441).
-    JurisdictionDto:
-      type: object
-      properties:
-        jurisdiction:
-          type:
-          - string
-          - 'null'
-          description: Name of the Jurisdiction
-          example: Global
-        jurisdictionVersion:
-          type:
-          - string
-          - 'null'
-          description: Version of the Jurisdiction
-          format: uuid
-          example: 8fd3739b-555c-49d8-9ab4-eb442480d852
-      additionalProperties: false
     ObjectServiceResponse:
       type: object
       properties:

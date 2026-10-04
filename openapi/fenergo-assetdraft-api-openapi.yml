@@ -797,13 +797,15 @@ paths:
     - url: /collateralquery
 components:
   schemas:
-    ServiceResponse:
+    ValidationErrorModelListServiceResponse:
       type: object
       properties:
         data:
           type:
-          - string
+          - array
           - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
         messages:
           type:
           - array
@@ -811,120 +813,53 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    AssetDraftDto:
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    UpdateAssetDraftDtoServiceRequest:
       type: object
       properties:
-        id:
-          type: string
-          description: The Asset Id
-          format: uuid
-          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UpdateAssetDraftDto'
+          description: "Class to represent the Asset uploaded. \nContains all properties needed to fill the metadata of the Asset being uploaded."
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
         type:
           type:
           - string
           - 'null'
-          description: The Asset Type
-          example: Financial Asset
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-          description: 'List of custom properties for an Asset separate from the standard
-
-            out of the box properties.'
-          example:
-            firstName:
-              type: Single
-              value: Tom
-            dateOfBirth:
-              type: Single
-              value: '2021-07-15'
-            address:
-              type: Collection
-              dataGroupId: 674ccef1-cfdc-46af-97f8-340b24ab7f43
-              collections:
-                54a25d24-1a4b-45c6-a5b4-980e5d3a1df5:
-                  properties:
-                    country: Spain
-                    city: Madrid
-                    street: C. de Sevilla
-                93468632-1a9e-4ad0-b2e1-c5ec0f65d7b2:
-                  properties:
-                    country: Spain
-                    city: Barcelona
-                    street: Carrer de Girona
-        status:
+        errorCode:
           type:
           - string
           - 'null'
-          description: The Asset Draft Status
-          example: Active
-        assetVersion:
-          type: integer
-          description: The Version of Asset that Draft was made for
-          format: int32
-          example: 1
-        assetId:
-          type: string
-          description: AssetId for Asset Draft
-          format: uuid
-        journeyId:
-          type: string
-          description: JourneyId for Asset Draft
-          format: uuid
-        version:
-          type: integer
-          description: Version of the Asset Draft
-          format: int32
-        createdDate:
-          type:
-          - string
-          - 'null'
-          description: DateTime of the created Asset
-          format: date-time
       additionalProperties: false
-      description: "Class to represent the Asset uploaded. \nContains all properties needed to fill the metadata of the Asset being uploaded."
-    AssetDraftUpdatedDtoServiceResponse:
+    AssetDraftDtoServiceResponse:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/AssetDraftUpdatedDto'
-          description: Response DTO representing updated Asset Draft
+          - $ref: '#/components/schemas/AssetDraftDto'
+          description: "Class to represent the Asset uploaded. \nContains all properties needed to fill the metadata of the Asset being uploaded."
         messages:
           type:
           - array
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    AssetDraftDataSourcesDto:
-      type: object
-      properties:
-        collateral:
-          allOf:
-          - $ref: '#/components/schemas/CollateralDataSource'
-          description: Asset Draft's Collateral Data Source
-      additionalProperties: false
-      description: DataSources relates to Asset Draft
-    ValidationErrorModel:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-        attemptedValue: {}
-        errorCode:
-          type:
-          - string
-          - 'null'
       additionalProperties: false
     VersionedJurisdictionDto:
       type: object
@@ -941,7 +876,7 @@ components:
           format: uuid
           example: 7c4bc3ff-9d5b-4ccd-839b-637c227b1c65
       additionalProperties: false
-    StringServiceResponse:
+    ServiceResponse:
       type: object
       properties:
         data:
@@ -955,21 +890,54 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    PropertyDto:
+    CollateralDataSource:
       type: object
       properties:
-        type:
-          allOf:
-          - $ref: '#/components/schemas/PropertyType'
-          readOnly: true
-        discriminator:
-          allOf:
-          - $ref: '#/components/schemas/PropertyType'
-          readOnly: true
-        isValid:
+        dataSource:
           type:
-          - boolean
+          - string
           - 'null'
+          readOnly: true
+        collaterals:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/CollateralDto'
+      additionalProperties: false
+    AssetDraftUpdatedDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/AssetDraftUpdatedDto'
+          description: Response DTO representing updated Asset Draft
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    PropertyType:
+      enum:
+      - Single
+      - Custom
+      - Collection
+      type: string
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
     UpdateAssetDraftDto:
       type: object
@@ -1084,14 +1052,6 @@ components:
                     street: Carrer de Girona
       additionalProperties: false
       description: "Class to represent the Asset uploaded. \nContains all properties needed to fill the metadata of the Asset being uploaded."
-    UpdateAssetDraftDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/UpdateAssetDraftDto'
-          description: "Class to represent the Asset uploaded. \nContains all properties needed to fill the metadata of the Asset being uploaded."
-      additionalProperties: false
     CollateralDto:
       type: object
       properties:
@@ -1123,20 +1083,22 @@ components:
                     city: Barcelona
                     street: Carrer de Girona
       additionalProperties: false
-    CollateralDataSource:
+    ValidationErrorModel:
       type: object
       properties:
-        dataSource:
+        propertyName:
           type:
           - string
           - 'null'
-          readOnly: true
-        collaterals:
+        errorMessage:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/CollateralDto'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
     AssetDraftUpdatedDto:
       type: object
@@ -1148,54 +1110,106 @@ components:
           example: 4
       additionalProperties: false
       description: Response DTO representing updated Asset Draft
-    ServiceResponseMessage:
+    AssetDraftDataSourcesDto:
       type: object
       properties:
-        message:
+        collateral:
+          allOf:
+          - $ref: '#/components/schemas/CollateralDataSource'
+          description: Asset Draft's Collateral Data Source
+      additionalProperties: false
+      description: DataSources relates to Asset Draft
+    PropertyDto:
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        discriminator:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        isValid:
           type:
-          - string
+          - boolean
           - 'null'
+      additionalProperties: false
+    AssetDraftDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The Asset Id
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
         type:
           type:
           - string
           - 'null'
-        errorCode:
+          description: The Asset Type
+          example: Financial Asset
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+          description: 'List of custom properties for an Asset separate from the standard
+
+            out of the box properties.'
+          example:
+            firstName:
+              type: Single
+              value: Tom
+            dateOfBirth:
+              type: Single
+              value: '2021-07-15'
+            address:
+              type: Collection
+              dataGroupId: 674ccef1-cfdc-46af-97f8-340b24ab7f43
+              collections:
+                54a25d24-1a4b-45c6-a5b4-980e5d3a1df5:
+                  properties:
+                    country: Spain
+                    city: Madrid
+                    street: C. de Sevilla
+                93468632-1a9e-4ad0-b2e1-c5ec0f65d7b2:
+                  properties:
+                    country: Spain
+                    city: Barcelona
+                    street: Carrer de Girona
+        status:
           type:
           - string
           - 'null'
-      additionalProperties: false
-    PropertyType:
-      enum:
-      - Single
-      - Custom
-      - Collection
-      type: string
-    ValidationErrorModelListServiceResponse:
-      type: object
-      properties:
-        data:
+          description: The Asset Draft Status
+          example: Active
+        assetVersion:
+          type: integer
+          description: The Version of Asset that Draft was made for
+          format: int32
+          example: 1
+        assetId:
+          type: string
+          description: AssetId for Asset Draft
+          format: uuid
+        journeyId:
+          type: string
+          description: JourneyId for Asset Draft
+          format: uuid
+        version:
+          type: integer
+          description: Version of the Asset Draft
+          format: int32
+        createdDate:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: DateTime of the created Asset
+          format: date-time
       additionalProperties: false
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
+      description: "Class to represent the Asset uploaded. \nContains all properties needed to fill the metadata of the Asset being uploaded."
     ObjectServiceResponse:
       type: object
       properties:
@@ -1207,13 +1221,40 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    AssetDraftDtoServiceResponse:
+    AssetDraftListQueryDto:
+      type: object
+      properties:
+        ids:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: The list of Asset Draft Ids to fetch
+      additionalProperties: false
+    AssetDraftDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AssetDraftDto_2'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AssetDraftDtoServiceResponse_2:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/AssetDraftDto'
-          description: "Class to represent the Asset uploaded. \nContains all properties needed to fill the metadata of the Asset being uploaded."
+          - $ref: '#/components/schemas/AssetDraftDto_2'
+          description: "An Asset object. \nContains all properties needed to fill the metadata of the Asset."
         messages:
           type:
           - array
@@ -1283,47 +1324,6 @@ components:
         data:
           allOf:
           - $ref: '#/components/schemas/AssetDraftListQueryDto'
-      additionalProperties: false
-    AssetDraftListQueryDto:
-      type: object
-      properties:
-        ids:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: The list of Asset Draft Ids to fetch
-      additionalProperties: false
-    AssetDraftDtoIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/AssetDraftDto_2'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    AssetDraftDtoServiceResponse_2:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/AssetDraftDto_2'
-          description: "An Asset object. \nContains all properties needed to fill the metadata of the Asset."
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
   securitySchemes:
     Bearer:

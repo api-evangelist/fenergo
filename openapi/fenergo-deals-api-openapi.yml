@@ -1198,27 +1198,29 @@ paths:
     - url: /dealsquery
 components:
   schemas:
-    ServiceResponse:
+    RelationshipContexts:
+      enum:
+      - None
+      - Hierarchy
+      - InvestmentAccount
+      - Both
+      type: string
+      description: 'Identifies the relationship context for a related party in the RPD&D task.
+
+        Defined as a flags enum so that Fenergo.Nebula.Association.Query.Application.Enums.RelationshipContexts.Both is a true bitwise combination
+
+        of Fenergo.Nebula.Association.Query.Application.Enums.RelationshipContexts.Hierarchy and Fenergo.Nebula.Association.Query.Application.Enums.RelationshipContexts.InvestmentAccount, allowing callers
+
+        to use `HasFlag` to test individual origins.'
+    AssociationDtoIEnumerableServiceResponse:
       type: object
       properties:
         data:
-          type:
-          - string
-          - 'null'
-        messages:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
+            $ref: '#/components/schemas/AssociationDto'
         messages:
           type:
           - array
@@ -1242,40 +1244,13 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    AssociationDtoIEnumerableServiceResponse:
+    ServiceResponse:
       type: object
       properties:
         data:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/AssociationDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    RelationshipContexts:
-      enum:
-      - None
-      - Hierarchy
-      - InvestmentAccount
-      - Both
-      type: string
-      description: 'Identifies the relationship context for a related party in the RPD&D task.
-
-        Defined as a flags enum so that Fenergo.Nebula.Association.Query.Application.Enums.RelationshipContexts.Both is a true bitwise combination
-
-        of Fenergo.Nebula.Association.Query.Application.Enums.RelationshipContexts.Hierarchy and Fenergo.Nebula.Association.Query.Application.Enums.RelationshipContexts.InvestmentAccount, allowing callers
-
-        to use `HasFlag` to test individual origins.'
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
         messages:
           type:
           - array
@@ -1376,34 +1351,13 @@ components:
             Null when the RP originates from the entity hierarchy only.'
       additionalProperties: false
       description: The metadata of an association between two entities
-    DealPropertyType:
-      enum:
-      - Single
-      - Group
-      - Collection
-      type: string
-    CreateUrlToUploadFileRequestDto:
-      type: object
-      properties:
-        fileName:
-          type: string
-        dataKey:
-          type: string
-        isRootContent:
-          type: boolean
-        dealDraftId:
-          type: string
-          format: uuid
-        contentSize:
-          type: integer
-          format: int64
-      additionalProperties: false
-    CreateDraftsForAllEntitiesInDealResponseServiceResponse:
+    StringServiceResponse:
       type: object
       properties:
         data:
-          allOf:
-          - $ref: '#/components/schemas/CreateDraftsForAllEntitiesInDealResponse'
+          type:
+          - string
+          - 'null'
         messages:
           type:
           - array
@@ -1411,12 +1365,10 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    CreateUrlToUploadFileResponseDtoServiceResponse:
+    ObjectServiceResponse:
       type: object
       properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateUrlToUploadFileResponseDto'
+        data: {}
         messages:
           type:
           - array
@@ -1424,117 +1376,12 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    Property:
-      type: object
-      properties:
-        type:
-          allOf:
-          - $ref: '#/components/schemas/DealPropertyType'
-          readOnly: true
-        discriminator:
-          allOf:
-          - $ref: '#/components/schemas/DealPropertyType'
-          readOnly: true
-      additionalProperties: false
-    ValidationErrorModelListServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
-    CreateDraftsForAllEntitiesInDealRequestDtoServiceRequest:
+    DealDtoServiceRequest:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/CreateDraftsForAllEntitiesInDealRequestDto'
-      additionalProperties: false
-    CreateUrlToUploadFileResponseDto:
-      type: object
-      properties:
-        url:
-          type: string
-        fileIdentifier:
-          type: string
-      additionalProperties: false
-    DealDto:
-      type: object
-      properties:
-        entityId:
-          type: string
-          format: uuid
-        journeyId:
-          type: string
-          format: uuid
-        requirementSetId:
-          type: string
-          format: uuid
-        properties:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/Property'
-          description: This is a generic property which must be replaced with either a `SingleProperty` or a `CollectionProperty`If the field does not exist inside defined policy then it will not be saved.
-          example:
-            firstName:
-              type: Single
-              value: Tom
-            dateOfBirth:
-              type: Single
-              value: '2021-07-15'
-            address:
-              type: Collection
-              dataGroupId: 674ccef1-cfdc-46af-97f8-340b24ab7f43
-              collections:
-                54a25d24-1a4b-45c6-a5b4-980e5d3a1df5:
-                  properties:
-                    country: Spain
-                    city: Madrid
-                    street: C. de Sevilla
-                93468632-1a9e-4ad0-b2e1-c5ec0f65d7b2:
-                  properties:
-                    country: Spain
-                    city: Barcelona
-                    street: Carrer de Girona
-      additionalProperties: false
-    CreateDraftsForAllEntitiesInDealResponse:
-      type: object
-      properties:
-        dealDraftId:
-          type: string
-          format: uuid
-        productIds:
-          type: array
-          items:
-            type: string
-            format: uuid
-        associationIds:
-          type: array
-          items:
-            type: string
-            format: uuid
-        covenantsConditionsId:
-          type: string
-          format: uuid
+          - $ref: '#/components/schemas/DealDto'
       additionalProperties: false
     CreateDealResponse:
       type: object
@@ -1583,12 +1430,59 @@ components:
                     city: Barcelona
                     street: Carrer de Girona
       additionalProperties: false
-    DealDtoServiceRequest:
+    CreateUrlToUploadFileResponseDtoServiceResponse:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/DealDto'
+          - $ref: '#/components/schemas/CreateUrlToUploadFileResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    DealPropertyType:
+      enum:
+      - Single
+      - Group
+      - Collection
+      type: string
+    CreateUrlToUploadFileRequestDto:
+      type: object
+      properties:
+        fileName:
+          type: string
+        dataKey:
+          type: string
+        isRootContent:
+          type: boolean
+        dealDraftId:
+          type: string
+          format: uuid
+        contentSize:
+          type: integer
+          format: int64
+      additionalProperties: false
+    CreateUrlToUploadFileRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateUrlToUploadFileRequestDto'
+      additionalProperties: false
+    Property:
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/DealPropertyType'
+          readOnly: true
+        discriminator:
+          allOf:
+          - $ref: '#/components/schemas/DealPropertyType'
+          readOnly: true
       additionalProperties: false
     CreateDealResponseServiceResponse:
       type: object
@@ -1621,12 +1515,25 @@ components:
             type: string
             format: uuid
       additionalProperties: false
-    CreateUrlToUploadFileRequestDtoServiceRequest:
+    CreateDraftsForAllEntitiesInDealResponse:
       type: object
       properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateUrlToUploadFileRequestDto'
+        dealDraftId:
+          type: string
+          format: uuid
+        productIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        associationIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        covenantsConditionsId:
+          type: string
+          format: uuid
       additionalProperties: false
     ValidationErrorModel:
       type: object
@@ -1645,12 +1552,54 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    GetPreSignUrlForFileIdentifiersResponseDtoServiceResponse:
+    DealDto:
+      type: object
+      properties:
+        entityId:
+          type: string
+          format: uuid
+        journeyId:
+          type: string
+          format: uuid
+        requirementSetId:
+          type: string
+          format: uuid
+        properties:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Property'
+          description: This is a generic property which must be replaced with either a `SingleProperty` or a `CollectionProperty`If the field does not exist inside defined policy then it will not be saved.
+          example:
+            firstName:
+              type: Single
+              value: Tom
+            dateOfBirth:
+              type: Single
+              value: '2021-07-15'
+            address:
+              type: Collection
+              dataGroupId: 674ccef1-cfdc-46af-97f8-340b24ab7f43
+              collections:
+                54a25d24-1a4b-45c6-a5b4-980e5d3a1df5:
+                  properties:
+                    country: Spain
+                    city: Madrid
+                    street: C. de Sevilla
+                93468632-1a9e-4ad0-b2e1-c5ec0f65d7b2:
+                  properties:
+                    country: Spain
+                    city: Barcelona
+                    street: Carrer de Girona
+      additionalProperties: false
+    ValidationErrorModelListServiceResponse:
       type: object
       properties:
         data:
-          allOf:
-          - $ref: '#/components/schemas/GetPreSignUrlForFileIdentifiersResponseDto'
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
         messages:
           type:
           - array
@@ -1658,19 +1607,45 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    SinglePropertyDto2:
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    CreateUrlToUploadFileResponseDto:
       type: object
       properties:
-        value:
-          type:
-          - string
-          - 'null'
-        valueId:
-          type:
-          - string
-          - 'null'
+        url:
+          type: string
+        fileIdentifier:
+          type: string
       additionalProperties: false
-    AccountRelatedFundsDataSource:
+    CreateDraftsForAllEntitiesInDealRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateDraftsForAllEntitiesInDealRequestDto'
+      additionalProperties: false
+    CreateDraftsForAllEntitiesInDealResponseServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateDraftsForAllEntitiesInDealResponse'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ManualCreditScreeningDataSource:
       type: object
       properties:
         dataSource:
@@ -1678,29 +1653,20 @@ components:
           - string
           - 'null'
           readOnly: true
-        accountRelatedFunds:
+        creditScreenings:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/AccountRelatedFundDto'
-      additionalProperties: false
-    GetPreSignUrlForFileIdentifiersRequestDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/GetPreSignUrlForFileIdentifiersRequestDto'
-      additionalProperties: false
-    SignificanceEngineDto:
-      type: object
-      properties:
-        key:
+            $ref: '#/components/schemas/ManualCreditScreeningDto'
+        relatedPartyCreditScreenings:
           type:
-          - string
+          - array
           - 'null'
+          items:
+            $ref: '#/components/schemas/ManualCreditScreeningDto'
       additionalProperties: false
-    CollateralDto:
+    RelatedProductDto:
       type: object
       properties:
         properties:
@@ -1709,19 +1675,85 @@ components:
           - 'null'
           additionalProperties:
             $ref: '#/components/schemas/PropertyDto'
-      additionalProperties: false
-    DealsSnapshotDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/DealsSnapshotDto'
-        messages:
+        lifecycleStatus:
+          type:
+          - string
+          - 'null'
+        relationshipTypes:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+            type: string
+      additionalProperties: false
+    CurrentDataGroupItemDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type:
+            - string
+            - 'null'
+      additionalProperties: false
+    DealsSnapshotDto:
+      type: object
+      properties:
+        associatedProducts:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/SnapshotProduct'
+        dealProductAssociations:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AssociationDto_2'
+        dealDrafts:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/DealDraft'
+        verifiedDeals:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/Deal'
+      additionalProperties: false
+    GetRelatedDealsDataSourceResponseDto:
+      type: object
+      properties:
+        dataSources:
+          allOf:
+          - $ref: '#/components/schemas/DataSourcesDto'
+      additionalProperties: false
+    ExternalDataAdapterDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        eventType:
+          type:
+          - string
+          - 'null'
+        eventSubtype:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
     DealDraft:
       type: object
@@ -1765,6 +1797,51 @@ components:
           type: string
           format: date-time
       additionalProperties: false
+    DealDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/DealDto_2'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CustomPropertyDto2:
+      type: object
+      properties:
+        singleProperties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/SinglePropertyDto2'
+        customProperties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/CustomPropertyDto2'
+      additionalProperties: false
+    DealsSnapshotDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/DealsSnapshotDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
     RelatedAssociationDto:
       type: object
       properties:
@@ -1785,124 +1862,6 @@ components:
           allOf:
           - $ref: '#/components/schemas/PropertiesDto'
       additionalProperties: false
-    ManualCreditScreeningDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        creditScreenings:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ManualCreditScreeningDto'
-        relatedPartyCreditScreenings:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ManualCreditScreeningDto'
-      additionalProperties: false
-    PropertyType:
-      enum:
-      - Single
-      - Custom
-      - Collection
-      type: string
-    Property_2:
-      required:
-      - discriminator
-      type: object
-      properties:
-        discriminator:
-          allOf:
-          - $ref: '#/components/schemas/DealPropertyType'
-          readOnly: true
-        type:
-          allOf:
-          - $ref: '#/components/schemas/DealPropertyType'
-          readOnly: true
-      additionalProperties: false
-      discriminator:
-        propertyName: discriminator
-        mapping:
-          Collection: '#/components/schemas/CollectionProperty'
-          Group: '#/components/schemas/GroupProperty'
-          Single: '#/components/schemas/SingleProperty'
-    AutoCreditAssessmentDto:
-      type: object
-      properties:
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-        assessmentOutcome:
-          type:
-          - string
-          - 'null'
-        providerInternalIdentifier:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    RelatedPartiesDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        relatedParties:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/RelatedPartyDto'
-      additionalProperties: false
-    DealsSnapshotDto:
-      type: object
-      properties:
-        associatedProducts:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/SnapshotProduct'
-        dealProductAssociations:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/AssociationDto_2'
-        dealDrafts:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/DealDraft'
-        verifiedDeals:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/Deal'
-      additionalProperties: false
-    RelatedDealDto:
-      type: object
-      properties:
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-      additionalProperties: false
     JourneyLevelDataDataSource:
       type: object
       properties:
@@ -1914,6 +1873,243 @@ components:
         properties:
           allOf:
           - $ref: '#/components/schemas/PropertiesDto'
+      additionalProperties: false
+    RelatedDealsDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        relatedDeals:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RelatedDealDto'
+      additionalProperties: false
+    RelatedClientDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+      additionalProperties: false
+    PropertyDto:
+      required:
+      - discriminator
+      type: object
+      properties:
+        discriminator:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        type:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        isValid:
+          type:
+          - boolean
+          - 'null'
+      additionalProperties: false
+      discriminator:
+        propertyName: discriminator
+        mapping:
+          Collection: '#/components/schemas/CollectionPropertyDto'
+          Custom: '#/components/schemas/CustomPropertyDto'
+          Single: '#/components/schemas/SinglePropertyDto'
+    Deal:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant:
+          type:
+          - string
+          - 'null'
+        version:
+          type: integer
+          format: int32
+        isLocked:
+          type: boolean
+        entityId:
+          type: string
+          format: uuid
+        journeyId:
+          type: string
+          format: uuid
+        requirementSetId:
+          type: string
+          format: uuid
+        requirementSetVersion:
+          type: integer
+          format: int32
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/Property_2'
+        isDeleted:
+          type: boolean
+        created:
+          type: string
+          format: date-time
+        status:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    CollateralDto:
+      type: object
+      properties:
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+      additionalProperties: false
+    CollectionPropertyDto2:
+      type: object
+      properties:
+        items:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/CollectionItemDto'
+        collectionId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+      additionalProperties: false
+    RelatedAssetsDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        assets:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RelatedAssetDto'
+      additionalProperties: false
+    EntityAssociationDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        associationType:
+          type:
+          - string
+          - 'null'
+        ownershipPercentage:
+          type:
+          - number
+          - 'null'
+          format: double
+        associationToClient:
+          type:
+          - string
+          - 'null'
+        properties:
+          allOf:
+          - $ref: '#/components/schemas/PropertiesDto'
+      additionalProperties: false
+    AssociationDto_2:
+      type: object
+      properties:
+        id:
+          type: string
+        isVerified:
+          type: boolean
+        journeyId:
+          type: string
+        sourceId:
+          type: string
+        targetId:
+          type: string
+        type:
+          type: string
+      additionalProperties: false
+    SnapshotProduct:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        family:
+          type: string
+        properties:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+        entityId:
+          type: string
+        status:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    SignificanceEngineDto:
+      type: object
+      properties:
+        key:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    GetPreSignUrlForFileIdentifiersResponseDto:
+      type: object
+      properties:
+        isRootContent:
+          type: boolean
+        urls:
+          type: object
+          additionalProperties:
+            type: string
+      additionalProperties: false
+    PropertyType:
+      enum:
+      - Single
+      - Custom
+      - Collection
+      type: string
+    RelatedPartyDto:
+      type: object
+      properties:
+        properties:
+          allOf:
+          - $ref: '#/components/schemas/PropertiesDto'
+        metadata:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type:
+            - string
+            - 'null'
       additionalProperties: false
     PropertiesDto:
       type: object
@@ -1937,7 +2133,28 @@ components:
           additionalProperties:
             $ref: '#/components/schemas/CustomPropertyDto2'
       additionalProperties: false
-    CollateralDataSource:
+    AutoCreditScreeningDto:
+      type: object
+      properties:
+        entityId:
+          type: string
+          format: uuid
+        creditScreeningOutcome:
+          type:
+          - string
+          - 'null'
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+        providerInternalIdentifier:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    CurrentFieldDataSource:
       type: object
       properties:
         dataSource:
@@ -1945,12 +2162,40 @@ components:
           - string
           - 'null'
           readOnly: true
-        collaterals:
+        currentField:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ManualCreditAssessmentV2DataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        creditAssessments:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/CollateralDto'
+            $ref: '#/components/schemas/CreditAssessmentDto'
+      additionalProperties: false
+    AccountRelatedFundsDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        accountRelatedFunds:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AccountRelatedFundDto'
       additionalProperties: false
     ChangedFieldsDataSource:
       type: object
@@ -1967,6 +2212,134 @@ components:
           items:
             $ref: '#/components/schemas/ChangedFieldDto'
       additionalProperties: false
+    GetPreSignUrlForFileIdentifiersResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetPreSignUrlForFileIdentifiersResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CurrentJourneysDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        inProgressJourneyTypes:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+      additionalProperties: false
+    AutoCreditScreeningDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        creditScreenings:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AutoCreditScreeningDto'
+        relatedPartyCreditScreenings:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AutoCreditScreeningDto'
+      additionalProperties: false
+    CurrentProductDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+        lifecycleStatus:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    EntityDataMetadataDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        entityType:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    EventIngressDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        eventType:
+          type:
+          - string
+          - 'null'
+        eventSubtype:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    CollectionItemDto:
+      type: object
+      properties:
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/SinglePropertyDto2'
+      additionalProperties: false
+    Property_2:
+      required:
+      - discriminator
+      type: object
+      properties:
+        discriminator:
+          allOf:
+          - $ref: '#/components/schemas/DealPropertyType'
+          readOnly: true
+        type:
+          allOf:
+          - $ref: '#/components/schemas/DealPropertyType'
+          readOnly: true
+      additionalProperties: false
+      discriminator:
+        propertyName: discriminator
+        mapping:
+          Collection: '#/components/schemas/CollectionProperty'
+          Group: '#/components/schemas/GroupProperty'
+          Single: '#/components/schemas/SingleProperty'
     DataSourcesDto:
       type: object
       properties:
@@ -2043,7 +2416,7 @@ components:
           allOf:
           - $ref: '#/components/schemas/SignificanceEngineDataSource'
       additionalProperties: false
-    EntityAssociationDataSource:
+    RelatedProductsDataSource:
       type: object
       properties:
         dataSource:
@@ -2051,22 +2424,153 @@ components:
           - string
           - 'null'
           readOnly: true
-        associationType:
+        products:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RelatedProductDto'
+      additionalProperties: false
+    CollateralDataSource:
+      type: object
+      properties:
+        dataSource:
           type:
           - string
           - 'null'
-        ownershipPercentage:
+          readOnly: true
+        collaterals:
           type:
-          - number
+          - array
           - 'null'
-          format: double
-        associationToClient:
+          items:
+            $ref: '#/components/schemas/CollateralDto'
+      additionalProperties: false
+    MainEntityDataSource:
+      type: object
+      properties:
+        dataSource:
           type:
           - string
           - 'null'
+          readOnly: true
         properties:
           allOf:
           - $ref: '#/components/schemas/PropertiesDto'
+      additionalProperties: false
+    DealDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/DealDto_2'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    GetPreSignUrlForFileIdentifiersRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetPreSignUrlForFileIdentifiersRequestDto'
+      additionalProperties: false
+    RelatedAssetDto:
+      type: object
+      properties:
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+      additionalProperties: false
+    DealDto_2:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        entityId:
+          type: string
+          format: uuid
+        journeyId:
+          type: string
+          format: uuid
+        requirementSetId:
+          type: string
+          format: uuid
+        requirementSetVersion:
+          type: integer
+          format: int32
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/Property_2'
+        version:
+          type: integer
+          format: int32
+        created:
+          type: string
+          format: date-time
+        status:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    DealJourneyDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/DealJourneyDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    RelatedAssociationsDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        relatedAssociations:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RelatedAssociationDto'
+      additionalProperties: false
+    AutoCreditAssessmentDto:
+      type: object
+      properties:
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+        assessmentOutcome:
+          type:
+          - string
+          - 'null'
+        providerInternalIdentifier:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
     DealJourneyDto:
       type: object
@@ -2108,7 +2612,7 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    RelatedAssetDto:
+    RelatedDealDto:
       type: object
       properties:
         properties:
@@ -2118,77 +2622,18 @@ components:
           additionalProperties:
             $ref: '#/components/schemas/PropertyDto'
       additionalProperties: false
-    Deal:
+    GetRelatedDealsDataSourceResponseDtoServiceResponse:
       type: object
       properties:
-        id:
-          type: string
-          format: uuid
-        tenant:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetRelatedDealsDataSourceResponseDto'
+        messages:
           type:
-          - string
+          - array
           - 'null'
-        version:
-          type: integer
-          format: int32
-        isLocked:
-          type: boolean
-        entityId:
-          type: string
-          format: uuid
-        journeyId:
-          type: string
-          format: uuid
-        requirementSetId:
-          type: string
-          format: uuid
-        requirementSetVersion:
-          type: integer
-          format: int32
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/Property_2'
-        isDeleted:
-          type: boolean
-        created:
-          type: string
-          format: date-time
-        status:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    CustomPropertyDto2:
-      type: object
-      properties:
-        singleProperties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/SinglePropertyDto2'
-        customProperties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/CustomPropertyDto2'
-      additionalProperties: false
-    EntityDataMetadataDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        entityType:
-          type:
-          - string
-          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
     GetPreSignUrlForFileIdentifiersRequestDto:
       type: object
@@ -2206,201 +2651,6 @@ components:
           - string
           - 'null'
           format: uuid
-      additionalProperties: false
-    AssociationDto_2:
-      type: object
-      properties:
-        id:
-          type: string
-        isVerified:
-          type: boolean
-        journeyId:
-          type: string
-        sourceId:
-          type: string
-        targetId:
-          type: string
-        type:
-          type: string
-      additionalProperties: false
-    AutoCreditScreeningDto:
-      type: object
-      properties:
-        entityId:
-          type: string
-          format: uuid
-        creditScreeningOutcome:
-          type:
-          - string
-          - 'null'
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-        providerInternalIdentifier:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    RelatedAssetsDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        assets:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/RelatedAssetDto'
-      additionalProperties: false
-    AutoCreditScreeningDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        creditScreenings:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/AutoCreditScreeningDto'
-        relatedPartyCreditScreenings:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/AutoCreditScreeningDto'
-      additionalProperties: false
-    ManualCreditAssessmentV2DataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        creditAssessments:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/CreditAssessmentDto'
-      additionalProperties: false
-    EventIngressDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        eventType:
-          type:
-          - string
-          - 'null'
-        eventSubtype:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ChangedFieldDto:
-      type: object
-      properties:
-        key:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    CurrentJourneysDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        inProgressJourneyTypes:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-      additionalProperties: false
-    RelatedPartyDto:
-      type: object
-      properties:
-        properties:
-          allOf:
-          - $ref: '#/components/schemas/PropertiesDto'
-        metadata:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type:
-            - string
-            - 'null'
-      additionalProperties: false
-    DealDto_2:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        entityId:
-          type: string
-          format: uuid
-        journeyId:
-          type: string
-          format: uuid
-        requirementSetId:
-          type: string
-          format: uuid
-        requirementSetVersion:
-          type: integer
-          format: int32
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/Property_2'
-        version:
-          type: integer
-          format: int32
-        created:
-          type: string
-          format: date-time
-        status:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    CurrentDataGroupItemDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type:
-            - string
-            - 'null'
       additionalProperties: false
     CreditAssessmentDto:
       type: object
@@ -2428,7 +2678,7 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    RelatedDealsDataSource:
+    RelatedPartiesDataSource:
       type: object
       properties:
         dataSource:
@@ -2436,65 +2686,12 @@ components:
           - string
           - 'null'
           readOnly: true
-        relatedDeals:
+        relatedParties:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/RelatedDealDto'
-      additionalProperties: false
-    MainEntityDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        properties:
-          allOf:
-          - $ref: '#/components/schemas/PropertiesDto'
-      additionalProperties: false
-    GetPreSignUrlForFileIdentifiersResponseDto:
-      type: object
-      properties:
-        isRootContent:
-          type: boolean
-        urls:
-          type: object
-          additionalProperties:
-            type: string
-      additionalProperties: false
-    DealJourneyDtoIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/DealJourneyDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    SignificanceEngineDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        significanceEngine:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/SignificanceEngineDto'
+            $ref: '#/components/schemas/RelatedPartyDto'
       additionalProperties: false
     AutoCreditAssessmentDataSource:
       type: object
@@ -2511,194 +2708,20 @@ components:
           items:
             $ref: '#/components/schemas/AutoCreditAssessmentDto'
       additionalProperties: false
+    ChangedFieldDto:
+      type: object
+      properties:
+        key:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
     AccountRelatedFundDto:
       type: object
       properties:
         properties:
           allOf:
           - $ref: '#/components/schemas/PropertiesDto'
-      additionalProperties: false
-    DealDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/DealDto_2'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    GetRelatedDealsDataSourceResponseDto:
-      type: object
-      properties:
-        dataSources:
-          allOf:
-          - $ref: '#/components/schemas/DataSourcesDto'
-      additionalProperties: false
-    RelatedProductsDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        products:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/RelatedProductDto'
-      additionalProperties: false
-    GetRelatedDealsDataSourceResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/GetRelatedDealsDataSourceResponseDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    CollectionPropertyDto2:
-      type: object
-      properties:
-        items:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/CollectionItemDto'
-        collectionId:
-          type:
-          - string
-          - 'null'
-          format: uuid
-      additionalProperties: false
-    CollectionItemDto:
-      type: object
-      properties:
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/SinglePropertyDto2'
-      additionalProperties: false
-    PropertyDto:
-      required:
-      - discriminator
-      type: object
-      properties:
-        discriminator:
-          allOf:
-          - $ref: '#/components/schemas/PropertyType'
-          readOnly: true
-        type:
-          allOf:
-          - $ref: '#/components/schemas/PropertyType'
-          readOnly: true
-        isValid:
-          type:
-          - boolean
-          - 'null'
-      additionalProperties: false
-      discriminator:
-        propertyName: discriminator
-        mapping:
-          Collection: '#/components/schemas/CollectionPropertyDto'
-          Custom: '#/components/schemas/CustomPropertyDto'
-          Single: '#/components/schemas/SinglePropertyDto'
-    CurrentProductDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-        lifecycleStatus:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    CurrentFieldDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        currentField:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    DealDtoIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/DealDto_2'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ExternalDataAdapterDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        eventType:
-          type:
-          - string
-          - 'null'
-        eventSubtype:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    SnapshotProduct:
-      type: object
-      properties:
-        id:
-          type: string
-        type:
-          type: string
-        family:
-          type: string
-        properties:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-        entityId:
-          type: string
-        status:
-          type:
-          - string
-          - 'null'
       additionalProperties: false
     ManualCreditScreeningDto:
       type: object
@@ -2724,7 +2747,7 @@ components:
           additionalProperties:
             $ref: '#/components/schemas/PropertyDto'
       additionalProperties: false
-    RelatedAssociationsDataSource:
+    SignificanceEngineDataSource:
       type: object
       properties:
         dataSource:
@@ -2732,47 +2755,24 @@ components:
           - string
           - 'null'
           readOnly: true
-        relatedAssociations:
+        significanceEngine:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/RelatedAssociationDto'
+            $ref: '#/components/schemas/SignificanceEngineDto'
       additionalProperties: false
-    RelatedClientDataSource:
+    SinglePropertyDto2:
       type: object
       properties:
-        dataSource:
+        value:
           type:
           - string
           - 'null'
-          readOnly: true
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-      additionalProperties: false
-    RelatedProductDto:
-      type: object
-      properties:
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-        lifecycleStatus:
+        valueId:
           type:
           - string
           - 'null'
-        relationshipTypes:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
       additionalProperties: false
   securitySchemes:
     Bearer:

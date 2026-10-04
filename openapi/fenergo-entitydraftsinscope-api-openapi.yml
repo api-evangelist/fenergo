@@ -277,17 +277,273 @@ paths:
     - url: /entitydataquery
 components:
   schemas:
-    SinglePropertyDto2:
+    EntityRoleDto:
       type: object
       properties:
-        value:
+        name:
           type:
           - string
           - 'null'
-        valueId:
+          description: Role of the entity
+          example: Client
+      additionalProperties: false
+      description: Response DTO representing the entity role data
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
           type:
           - string
           - 'null'
+          description: The message
+          example: Success
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
+      additionalProperties: false
+      description: The message associated to the service response
+    SharedDataTemplateDto:
+      type: object
+      properties:
+        sharedDataTemplateId:
+          type: string
+          description: The Shared Data Template Id
+          format: uuid
+        versionNumber:
+          type: integer
+          description: The version of the shared data template linked to the entity
+          format: int32
+      additionalProperties: false
+      description: Request DTO to query for a shared data template linked to an entity group
+    EntityRiskDto:
+      type: object
+      properties:
+        riskCategory:
+          type:
+          - string
+          - 'null'
+          description: Risk category
+          example: Low
+        riskLevel:
+          type:
+          - number
+          - 'null'
+          description: Risk level
+          format: double
+          example: 1
+      additionalProperties: false
+      description: Response DTO representing the entity risk data
+    SearchEntityDraftsDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/SearchEntityDraftsDto'
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    CustomPropertyDto2:
+      type: object
+      properties:
+        singleProperties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/SinglePropertyDto2'
+        customProperties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/CustomPropertyDto2'
+      additionalProperties: false
+    PropertyDto:
+      required:
+      - discriminator
+      type: object
+      properties:
+        discriminator:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          description: Property is not used in generated models. We need it to deserialize correctly to specific type in generated DotNet Client.
+          readOnly: true
+        type:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          description: Type of properties.
+          readOnly: true
+      additionalProperties: false
+      description: Abstraction that represents properties
+      discriminator:
+        propertyName: discriminator
+        mapping:
+          Collection: '#/components/schemas/CollectionPropertyDto'
+          Custom: '#/components/schemas/CustomPropertyDto'
+          Single: '#/components/schemas/SinglePropertyDto'
+    EntityDraftDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/EntityDraftDto'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data:
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    CollectionPropertyDto2:
+      type: object
+      properties:
+        items:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/CollectionItemDto'
+        collectionId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+      additionalProperties: false
+    VersionedJurisdictionDto:
+      type: object
+      properties:
+        jurisdiction:
+          type:
+          - string
+          - 'null'
+          description: Jurisdiction Name
+          example: Global
+        versionId:
+          type: string
+          description: Jurisdiction Version Id
+          format: uuid
+          example: 7c4bc3ff-9d5b-4ccd-839b-637c227b1c65
+      additionalProperties: false
+    RiskVersionDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The Id of the risk model
+          format: uuid
+        version:
+          type: integer
+          description: The version of the model
+          format: int32
+      additionalProperties: false
+      description: Stores the Id and the Version of a Risk Configuration Model
+    PropertyType:
+      enum:
+      - Single
+      - Custom
+      - Collection
+      type: string
+    PropertiesDto:
+      type: object
+      properties:
+        singleProperties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/SinglePropertyDto2'
+        collectionProperties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/CollectionPropertyDto2'
+        customProperties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/CustomPropertyDto2'
+      additionalProperties: false
+    AccessLayerDetailsDto:
+      type: object
+      properties:
+        dataKey:
+          type:
+          - string
+          - 'null'
+          description: Access layer data key
+          example: Global
+        inheritedFrom:
+          uniqueItems: true
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+            format: uuid
+          description: List of entity ids that access layer is inherited from
+        isInherited:
+          type: boolean
+          description: Flag indicating if access layer is inherited by default
+      additionalProperties: false
+    CollectionItemDto:
+      type: object
+      properties:
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/SinglePropertyDto2'
       additionalProperties: false
     SearchEntityDraftsDto:
       type: object
@@ -315,235 +571,6 @@ components:
           description: Entity ids
       additionalProperties: false
       description: Request DTO representing entity drafts search criteria
-    EntityDraftDtoIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/EntityDraftDto'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    PropertyType:
-      enum:
-      - Single
-      - Custom
-      - Collection
-      type: string
-    ValidationErrorModelListServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
-    EntityRoleDto:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-          description: Role of the entity
-          example: Client
-      additionalProperties: false
-      description: Response DTO representing the entity role data
-    MaskedPropertiesDto:
-      type: object
-      properties:
-        singleProperties:
-          uniqueItems: true
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: Masked single data requirement properties
-          example:
-          - property1
-      additionalProperties: false
-      description: Property name list of sensitive data requirements with masked value
-    AccessLayerDto:
-      type: object
-      properties:
-        geographic:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: Collection of geographic access layers
-        businessRelated:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: Collection of business related access layers
-        geographicDetails:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/AccessLayerDetailsDto'
-          description: Collection of geographic access layers with details about inheritance
-        businessRelatedDetails:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/AccessLayerDetailsDto'
-          description: Collection of business related access layers with details about inheritance
-      additionalProperties: false
-      description: Response DTO representing associated access layers
-    SearchEntityDraftsDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/SearchEntityDraftsDto'
-          description: The service request DTO
-      additionalProperties: false
-      description: Service request data
-    PropertiesDto:
-      type: object
-      properties:
-        singleProperties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/SinglePropertyDto2'
-        collectionProperties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/CollectionPropertyDto2'
-        customProperties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/CustomPropertyDto2'
-      additionalProperties: false
-    CustomPropertyDto2:
-      type: object
-      properties:
-        singleProperties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/SinglePropertyDto2'
-        customProperties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/CustomPropertyDto2'
-      additionalProperties: false
-    AssociatedVersionedJurisdictionDto:
-      type: object
-      properties:
-        jurisdiction:
-          type:
-          - string
-          - 'null'
-          description: Jurisdiction Name
-          example: Global
-        versionId:
-          type: string
-          description: Jurisdiction Version Id
-          format: uuid
-          example: 7c4bc3ff-9d5b-4ccd-839b-637c227b1c65
-        isOffboarded:
-          type: boolean
-          description: Flag to determine if previously associated jurisdiction is now offboarded
-          example: false
-      additionalProperties: false
-    AccessLayerDetailsDto:
-      type: object
-      properties:
-        dataKey:
-          type:
-          - string
-          - 'null'
-          description: Access layer data key
-          example: Global
-        inheritedFrom:
-          uniqueItems: true
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-            format: uuid
-          description: List of entity ids that access layer is inherited from
-        isInherited:
-          type: boolean
-          description: Flag indicating if access layer is inherited by default
-      additionalProperties: false
-    RiskVersionDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The Id of the risk model
-          format: uuid
-        version:
-          type: integer
-          description: The version of the model
-          format: int32
-      additionalProperties: false
-      description: Stores the Id and the Version of a Risk Configuration Model
-    VersionedJurisdictionDto:
-      type: object
-      properties:
-        jurisdiction:
-          type:
-          - string
-          - 'null'
-          description: Jurisdiction Name
-          example: Global
-        versionId:
-          type: string
-          description: Jurisdiction Version Id
-          format: uuid
-          example: 7c4bc3ff-9d5b-4ccd-839b-637c227b1c65
-      additionalProperties: false
     EntityDraftDto:
       type: object
       properties:
@@ -675,52 +702,6 @@ components:
           description: Property name list of sensitive data requirements with masked value
       additionalProperties: false
       description: Response DTO representing entity draft data
-    SharedDataTemplateDto:
-      type: object
-      properties:
-        sharedDataTemplateId:
-          type: string
-          description: The Shared Data Template Id
-          format: uuid
-        versionNumber:
-          type: integer
-          description: The version of the shared data template linked to the entity
-          format: int32
-      additionalProperties: false
-      description: Request DTO to query for a shared data template linked to an entity group
-    EntityRiskDto:
-      type: object
-      properties:
-        riskCategory:
-          type:
-          - string
-          - 'null'
-          description: Risk category
-          example: Low
-        riskLevel:
-          type:
-          - number
-          - 'null'
-          description: Risk level
-          format: double
-          example: 1
-      additionalProperties: false
-      description: Response DTO representing the entity risk data
-    CollectionPropertyDto2:
-      type: object
-      properties:
-        items:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/CollectionItemDto'
-        collectionId:
-          type:
-          - string
-          - 'null'
-          format: uuid
-      additionalProperties: false
     ValidationErrorModel:
       type: object
       properties:
@@ -746,23 +727,49 @@ components:
           example: NotNullValidator
       additionalProperties: false
       description: Represents the details of validation error
-    CollectionItemDto:
+    AssociatedVersionedJurisdictionDto:
       type: object
       properties:
-        properties:
+        jurisdiction:
           type:
-          - object
+          - string
           - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/SinglePropertyDto2'
+          description: Jurisdiction Name
+          example: Global
+        versionId:
+          type: string
+          description: Jurisdiction Version Id
+          format: uuid
+          example: 7c4bc3ff-9d5b-4ccd-839b-637c227b1c65
+        isOffboarded:
+          type: boolean
+          description: Flag to determine if previously associated jurisdiction is now offboarded
+          example: false
       additionalProperties: false
-    StringServiceResponse:
+    MaskedPropertiesDto:
+      type: object
+      properties:
+        singleProperties:
+          uniqueItems: true
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Masked single data requirement properties
+          example:
+          - property1
+      additionalProperties: false
+      description: Property name list of sensitive data requirements with masked value
+    ValidationErrorModelListServiceResponse:
       type: object
       properties:
         data:
           type:
-          - string
+          - array
           - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
           description: The service response DTO
         messages:
           type:
@@ -773,54 +780,49 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    PropertyDto:
-      required:
-      - discriminator
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    AccessLayerDto:
       type: object
       properties:
-        discriminator:
-          allOf:
-          - $ref: '#/components/schemas/PropertyType'
-          description: Property is not used in generated models. We need it to deserialize correctly to specific type in generated DotNet Client.
-          readOnly: true
-        type:
-          allOf:
-          - $ref: '#/components/schemas/PropertyType'
-          description: Type of properties.
-          readOnly: true
+        geographic:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Collection of geographic access layers
+        businessRelated:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Collection of business related access layers
+        geographicDetails:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AccessLayerDetailsDto'
+          description: Collection of geographic access layers with details about inheritance
+        businessRelatedDetails:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AccessLayerDetailsDto'
+          description: Collection of business related access layers with details about inheritance
       additionalProperties: false
-      description: Abstraction that represents properties
-      discriminator:
-        propertyName: discriminator
-        mapping:
-          Collection: '#/components/schemas/CollectionPropertyDto'
-          Custom: '#/components/schemas/CustomPropertyDto'
-          Single: '#/components/schemas/SinglePropertyDto'
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-          description: The message
-          example: Success
-        type:
-          type:
-          - string
-          - 'null'
-          description: 'Type of the message
-
-            One of Info, Warning, Error, Forbidden'
-          example: Info
-        errorCode:
-          type:
-          - string
-          - 'null'
-          description: Error Code
-          example: INTERNAL_SERVER_ERROR
-      additionalProperties: false
-      description: The message associated to the service response
+      description: Response DTO representing associated access layers
     RiskConfigurationVersionDto:
       type: object
       properties:
@@ -847,49 +849,39 @@ components:
           description: The list of Threshold Models and their versions used in the Entity Draft
       additionalProperties: false
       description: Dto to store the risk configuration models and versions used in the Entity Draft
-    ObjectServiceResponse:
+    SinglePropertyDto2:
       type: object
       properties:
-        data:
-          description: The service response DTO
-        messages:
+        value:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    SearchEntityDraftsLightDtoItemsPageServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/SearchEntityDraftsLightDtoItemsPage'
-          description: Query Result Page
-        messages:
+        valueId:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
-      description: Service response data
-    SearchEntityDraftsLightDto:
+    PageOptions:
       type: object
       properties:
-        entityId:
-          type: string
-          format: uuid
-        entityDraftId:
-          type: string
-          format: uuid
-      additionalProperties: false
-      description: 'Light projection of an entity draft, for callers that only need to know
+        paginationToken:
+          type:
+          - string
+          - 'null'
+          description: 'Position token for the search results to start
 
-        which entities already have a draft in a journey (not the full draft body)'
+            (leave empty to start from the 1st item)'
+        pageSize:
+          type: integer
+          description: Size of the page (result set)
+          format: int32
+          example: 10
+        sortOrder:
+          allOf:
+          - $ref: '#/components/schemas/SortOrder'
+          description: Sort Order (Ascending or Descending)
+      additionalProperties: false
+      description: Options for setting up the results page
     SearchEntityDraftsLightRequestDtoServiceRequest:
       type: object
       properties:
@@ -921,27 +913,6 @@ components:
           description: Options for setting up the results page
       additionalProperties: false
       description: Request DTO representing entity drafts search criteria, paged via Fenergo.Nebula.EntityData.Query.Application.Dto.SearchEntityDraftsLightRequestDto.PageOptions
-    PageOptions:
-      type: object
-      properties:
-        paginationToken:
-          type:
-          - string
-          - 'null'
-          description: 'Position token for the search results to start
-
-            (leave empty to start from the 1st item)'
-        pageSize:
-          type: integer
-          description: Size of the page (result set)
-          format: int32
-          example: 10
-        sortOrder:
-          allOf:
-          - $ref: '#/components/schemas/SortOrder'
-          description: Sort Order (Ascending or Descending)
-      additionalProperties: false
-      description: Options for setting up the results page
     SearchEntityDraftsLightDtoItemsPage:
       type: object
       properties:
@@ -959,6 +930,19 @@ components:
           description: The token for retrieving the next page of results
       additionalProperties: false
       description: Query Result Page
+    SearchEntityDraftsLightDto:
+      type: object
+      properties:
+        entityId:
+          type: string
+          format: uuid
+        entityDraftId:
+          type: string
+          format: uuid
+      additionalProperties: false
+      description: 'Light projection of an entity draft, for callers that only need to know
+
+        which entities already have a draft in a journey (not the full draft body)'
     SortOrder:
       enum:
       - 0
@@ -966,6 +950,22 @@ components:
       type: integer
       description: Sort Order (Ascending or Descending)
       format: int32
+    SearchEntityDraftsLightDtoItemsPageServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/SearchEntityDraftsLightDtoItemsPage'
+          description: Query Result Page
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
   securitySchemes:
     Bearer:
       type: apiKey

@@ -759,31 +759,35 @@ paths:
                   errorCode: OBSOLETE_ENDPOINT
 components:
   schemas:
-    LoggingStatusQueryResultDto:
+    ServiceResponseMessage:
       type: object
       properties:
-        optInStatus:
-          type:
-          - boolean
-          - 'null'
         message:
           type:
           - string
           - 'null'
-        domains:
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
           type:
           - array
           - 'null'
           items:
-            type: string
-      additionalProperties: false
-    LogEntryQueryDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/LogEntryQueryDto'
-          description: Represents a query to search for log entries in the logging centre.
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
     ProblemDetails:
       type: object
@@ -810,68 +814,49 @@ components:
           - string
           - 'null'
       additionalProperties: {}
-    LogsQueryResultDto:
+    ObjectServiceResponse:
       type: object
       properties:
-        timestamp:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
           type:
           - string
           - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    OptInResultDto:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: ''
         message:
           type:
           - string
           - 'null'
-        correlationId:
-          type:
-          - string
-          - 'null'
-        componentType:
-          type:
-          - string
-          - 'null'
-        instanceId:
-          type:
-          - string
-          - 'null'
-        integrationName:
-          type:
-          - string
-          - 'null'
-        source:
-          type:
-          - string
-          - 'null'
-        severity:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-        description:
-          type:
-          - string
-          - 'null'
-        additionalInformation:
-          type:
-          - string
-          - 'null'
-        entityId:
-          type:
-          - string
-          - 'null'
-        journeyId:
-          type:
-          - string
-          - 'null'
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type: string
+          description: ''
       additionalProperties: false
+      description: The results of a query to retrieve log entries from CloudWatch.
+    LogStatus:
+      enum:
+      - InProgress
+      - Completed
+      type: string
     RequestMetadata:
       type: object
       properties:
@@ -900,21 +885,23 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    LogStatus:
-      enum:
-      - InProgress
-      - Completed
-      type: string
-    LogEntryQueryIdDto:
+    LoggingStatusQueryResultDto:
       type: object
       properties:
-        queryId:
+        optInStatus:
+          type:
+          - boolean
+          - 'null'
+        message:
           type:
           - string
           - 'null'
-        metadata:
-          allOf:
-          - $ref: '#/components/schemas/RequestMetadata'
+        domains:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
       additionalProperties: false
     LogsQueryResultsDtoServiceResponse:
       type: object
@@ -930,17 +917,41 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    OptInResultDto:
+    LogEntryQueryIdDtoServiceResponse:
       type: object
       properties:
-        success:
-          type: boolean
-          description: ''
-        message:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/LogEntryQueryIdDto'
+        messages:
           type:
-          - string
+          - array
           - 'null'
-          description: ''
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    LogEntryQueryDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/LogEntryQueryDto'
+          description: Represents a query to search for log entries in the logging centre.
+      additionalProperties: false
+    LogsQueryResultsDto:
+      type: object
+      properties:
+        values:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/LogsQueryResultDto'
+          description: Log entries
+        status:
+          allOf:
+          - $ref: '#/components/schemas/LogStatus'
+          description: Status of query
       additionalProperties: false
       description: The results of a query to retrieve log entries from CloudWatch.
     LoggingStatusQueryResultDtoServiceResponse:
@@ -949,6 +960,42 @@ components:
         data:
           allOf:
           - $ref: '#/components/schemas/LoggingStatusQueryResultDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    OptInRequestDto:
+      type: object
+      properties:
+        domains:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+      additionalProperties: false
+      description: Represents a request to opt in.
+    LogEntryQueryIdDto:
+      type: object
+      properties:
+        queryId:
+          type:
+          - string
+          - 'null'
+        metadata:
+          allOf:
+          - $ref: '#/components/schemas/RequestMetadata'
+      additionalProperties: false
+    OptInResultDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/OptInResultDto'
+          description: The results of a query to retrieve log entries from CloudWatch.
         messages:
           type:
           - array
@@ -1015,96 +1062,38 @@ components:
           - 'null'
       additionalProperties: false
       description: Represents a query to search for log entries in the logging centre.
-    OptInRequestDto:
+    LogsQueryResultDto:
       type: object
       properties:
-        domains:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-      additionalProperties: false
-      description: Represents a request to opt in.
-    LogsQueryResultsDto:
-      type: object
-      properties:
-        values:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/LogsQueryResultDto'
-          description: Log entries
-        status:
-          allOf:
-          - $ref: '#/components/schemas/LogStatus'
-          description: Status of query
-      additionalProperties: false
-      description: The results of a query to retrieve log entries from CloudWatch.
-    ServiceResponse:
-      type: object
-      properties:
-        data:
+        timestamp:
           type:
           - string
           - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    OptInResultDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/OptInResultDto'
-          description: The results of a query to retrieve log entries from CloudWatch.
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    LogEntryQueryIdDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/LogEntryQueryIdDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ServiceResponseMessage:
-      type: object
-      properties:
         message:
           type:
           - string
           - 'null'
-        type:
+        correlationId:
+          type:
+          - string
+          - 'null'
+        componentType:
+          type:
+          - string
+          - 'null'
+        instanceId:
+          type:
+          - string
+          - 'null'
+        integrationName:
+          type:
+          - string
+          - 'null'
+        source:
+          type:
+          - string
+          - 'null'
+        severity:
           type:
           - string
           - 'null'
@@ -1112,17 +1101,28 @@ components:
           type:
           - string
           - 'null'
-      additionalProperties: false
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
-        messages:
+        description:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+        additionalInformation:
+          type:
+          - string
+          - 'null'
+        entityId:
+          type:
+          - string
+          - 'null'
+        journeyId:
+          type:
+          - string
+          - 'null'
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: string
       additionalProperties: false
   securitySchemes:
     Bearer:

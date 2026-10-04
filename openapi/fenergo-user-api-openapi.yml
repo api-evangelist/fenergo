@@ -924,12 +924,12 @@ paths:
     - url: /authorizationquery
 components:
   schemas:
-    UserExtendedProfileDtoServiceResponse:
+    UserAuthorizationProfileDtoServiceResponse:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/UserExtendedProfileDto'
+          - $ref: '#/components/schemas/UserAuthorizationProfileDto'
           description: The service response DTO
         messages:
           type:
@@ -940,6 +940,35 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
     AccessLayerDataTypeDto:
       enum:
       - Field
@@ -951,87 +980,6 @@ components:
       - Product
       - ProductField
       type: string
-    ValidationErrorModel:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-          description: Name of the property
-          example: data
-        errorMessage:
-          type:
-          - string
-          - 'null'
-          description: User friendly error message
-          example: Data is required
-        attemptedValue:
-          description: Invalid value
-        errorCode:
-          type:
-          - string
-          - 'null'
-          description: Internal error code
-          example: NotNullValidator
-      additionalProperties: false
-      description: Represents the details of validation error
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    UserDto:
-      type: object
-      properties:
-        id:
-          type:
-          - string
-          - 'null'
-          description: The UiD of the user
-          example: 1bb44eba-d489-4138-8cfa-eee3d49250c9
-        username:
-          type:
-          - string
-          - 'null'
-          description: Username
-          example: user.name@fenergo.com
-        email:
-          type:
-          - string
-          - 'null'
-          description: User email
-          example: user.name@fenergo.com
-      additionalProperties: false
-      description: Response DTO representing user data
-    UserDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/UserDto'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
     ServiceResponseMessage:
       type: object
       properties:
@@ -1057,22 +1005,35 @@ components:
           example: INTERNAL_SERVER_ERROR
       additionalProperties: false
       description: The message associated to the service response
-    SensitiveDataKindDto:
-      enum:
-      - None
-      - SensitiveData
-      - SensitiveDataDelegate
-      type: string
-      description: Set of possible values for Sensitive Data parameter
-    UserDtoIEnumerableServiceResponse:
+    UserDto:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+          description: The UiD of the user
+          example: 1bb44eba-d489-4138-8cfa-eee3d49250c9
+        username:
+          type:
+          - string
+          - 'null'
+          description: Username
+          example: user.name@fenergo.com
+        email:
+          type:
+          - string
+          - 'null'
+          description: User email
+          example: user.name@fenergo.com
+      additionalProperties: false
+      description: Response DTO representing user data
+    UserExtendedProfileDtoServiceResponse:
       type: object
       properties:
         data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/UserDto'
+          allOf:
+          - $ref: '#/components/schemas/UserExtendedProfileDto'
           description: The service response DTO
         messages:
           type:
@@ -1083,6 +1044,42 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
+    UserAuthorizationProfileDto:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+          description: The UiD of the user
+          example: 1bb44eba-d489-4138-8cfa-eee3d49250c9
+        userName:
+          type:
+          - string
+          - 'null'
+          description: Username
+          example: John Doe
+        teams:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UserProfileTeamDto'
+          description: List of teams user belongs to
+        accessLayers:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/UserAccessLayerDto'
+          description: List of access layers assigned to the user
+      additionalProperties: false
+      description: Response DTO representing user authorization profile data
+    AccessLayerTypeDto:
+      enum:
+      - Geographic
+      - BusinessRelated
+      type: string
     UserProfileTeamDto:
       type: object
       properties:
@@ -1111,12 +1108,56 @@ components:
           description: Default landing page of the team
       additionalProperties: false
       description: Response DTO representing user profile team data
-    UserAuthorizationProfileDtoServiceResponse:
+    SensitiveDataKindDto:
+      enum:
+      - None
+      - SensitiveData
+      - SensitiveDataDelegate
+      type: string
+      description: Set of possible values for Sensitive Data parameter
+    UserAccessLayerDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The UiD of the access layer
+          format: uuid
+          example: 1bb44eba-d489-4138-8cfa-eee3d49250c9
+        dataKey:
+          type:
+          - string
+          - 'null'
+          description: Value of the access layer
+          example: PrivateBanking
+        label:
+          type:
+          - string
+          - 'null'
+          description: Label of the access layer
+          example: Private Banking
+        type:
+          allOf:
+          - $ref: '#/components/schemas/AccessLayerTypeDto'
+          description: Type of the access layer
+          example: Business Related
+        dataType:
+          allOf:
+          - $ref: '#/components/schemas/AccessLayerDataTypeDto'
+          description: Data type of the access layer
+          example: Search
+        sensitiveDataKind:
+          allOf:
+          - $ref: '#/components/schemas/SensitiveDataKindDto'
+          description: Value indicating if this access layer should be used to restrict access to Sensitive Data data
+      additionalProperties: false
+      description: Response DTO representing user profile access layer data
+    StringServiceResponse:
       type: object
       properties:
         data:
-          allOf:
-          - $ref: '#/components/schemas/UserAuthorizationProfileDto'
+          type:
+          - string
+          - 'null'
           description: The service response DTO
         messages:
           type:
@@ -1166,7 +1207,7 @@ components:
           description: Arbitrary set of custom properties set by the client.
       additionalProperties: false
       description: Response DTO representing user data
-    ValidationErrorModelListServiceResponse:
+    UserDtoIEnumerableServiceResponse:
       type: object
       properties:
         data:
@@ -1174,7 +1215,7 @@ components:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ValidationErrorModel'
+            $ref: '#/components/schemas/UserDto'
           description: The service response DTO
         messages:
           type:
@@ -1185,47 +1226,47 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
-    UserAuthorizationProfileDto:
+    UserDtoServiceResponse:
       type: object
       properties:
-        id:
-          type:
-          - string
-          - 'null'
-          description: The UiD of the user
-          example: 1bb44eba-d489-4138-8cfa-eee3d49250c9
-        userName:
-          type:
-          - string
-          - 'null'
-          description: Username
-          example: John Doe
-        teams:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UserDto'
+          description: The service response DTO
+        messages:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/UserProfileTeamDto'
-          description: List of teams user belongs to
-        accessLayers:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/UserAccessLayerDto'
-          description: List of access layers assigned to the user
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
-      description: Response DTO representing user authorization profile data
+      description: Service response data
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+          description: Name of the property
+          example: data
+        errorMessage:
+          type:
+          - string
+          - 'null'
+          description: User friendly error message
+          example: Data is required
+        attemptedValue:
+          description: Invalid value
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Internal error code
+          example: NotNullValidator
+      additionalProperties: false
+      description: Represents the details of validation error
     ObjectServiceResponse:
       type: object
       properties:
@@ -1240,47 +1281,6 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    AccessLayerTypeDto:
-      enum:
-      - Geographic
-      - BusinessRelated
-      type: string
-    UserAccessLayerDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The UiD of the access layer
-          format: uuid
-          example: 1bb44eba-d489-4138-8cfa-eee3d49250c9
-        dataKey:
-          type:
-          - string
-          - 'null'
-          description: Value of the access layer
-          example: PrivateBanking
-        label:
-          type:
-          - string
-          - 'null'
-          description: Label of the access layer
-          example: Private Banking
-        type:
-          allOf:
-          - $ref: '#/components/schemas/AccessLayerTypeDto'
-          description: Type of the access layer
-          example: Business Related
-        dataType:
-          allOf:
-          - $ref: '#/components/schemas/AccessLayerDataTypeDto'
-          description: Data type of the access layer
-          example: Search
-        sensitiveDataKind:
-          allOf:
-          - $ref: '#/components/schemas/SensitiveDataKindDto'
-          description: Value indicating if this access layer should be used to restrict access to Sensitive Data data
-      additionalProperties: false
-      description: Response DTO representing user profile access layer data
   securitySchemes:
     Bearer:
       type: apiKey

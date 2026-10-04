@@ -338,6 +338,72 @@ paths:
                   errorCode: OBSOLETE_ENDPOINT
 components:
   schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AuthConfigurationDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/AuthConfigurationDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AuthConfigurationDto:
+      type: object
+      properties:
+        flowId:
+          type: string
+          format: uuid
+        flowKey:
+          type:
+          - string
+          - 'null'
+        configurationDetails:
+          type:
+          - array
+          - 'null'
+          items:
+            oneOf:
+            - $ref: '#/components/schemas/IpWhitelistingAuthConfigurationDto'
+            - $ref: '#/components/schemas/SharedKeyAuthConfigurationDto'
+            - $ref: '#/components/schemas/HmacAuthConfigurationDto'
+        callbackDetails:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/CallbackAuthConfigDetailDto'
+      additionalProperties: false
     ServiceResponse:
       type: object
       properties:
@@ -368,38 +434,33 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
+    SharedKeyLocation:
+      enum:
+      - Header
+      - QueryParameter
+      type: string
+    IpWhitelistingAuthConfigurationDto:
+      allOf:
+      - $ref: '#/components/schemas/AuthConfigDetailDto'
+      - type: object
+        properties:
+          authenticationMethod:
+            allOf:
+            - $ref: '#/components/schemas/AuthenticationMethod'
+            example: IpWhitelist
+          ips:
+            type:
+            - array
+            - 'null'
+            items:
+              type: string
+        additionalProperties: false
     AuthConfigDetailDto:
       type: object
       properties:
         authenticationMethod:
           allOf:
           - $ref: '#/components/schemas/AuthenticationMethod'
-      additionalProperties: false
-    AuthConfigurationDto:
-      type: object
-      properties:
-        flowId:
-          type: string
-          format: uuid
-        flowKey:
-          type:
-          - string
-          - 'null'
-        configurationDetails:
-          type:
-          - array
-          - 'null'
-          items:
-            oneOf:
-            - $ref: '#/components/schemas/IpWhitelistingAuthConfigurationDto'
-            - $ref: '#/components/schemas/SharedKeyAuthConfigurationDto'
-            - $ref: '#/components/schemas/HmacAuthConfigurationDto'
-        callbackDetails:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/CallbackAuthConfigDetailDto'
       additionalProperties: false
     StringServiceResponse:
       type: object
@@ -432,6 +493,44 @@ components:
             - $ref: '#/components/schemas/SharedKeyAuthConfigurationDto'
             - $ref: '#/components/schemas/HmacAuthConfigurationDto'
       additionalProperties: false
+    SaveAuthConfigurationRequestDto:
+      type: object
+      properties:
+        configurationDetails:
+          type:
+          - array
+          - 'null'
+          items:
+            oneOf:
+            - $ref: '#/components/schemas/IpWhitelistingAuthConfigurationDto'
+            - $ref: '#/components/schemas/SharedKeyAuthConfigurationDto'
+            - $ref: '#/components/schemas/HmacAuthConfigurationDto'
+        callbackDetails:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/CallbackAuthConfigDetailDto'
+      additionalProperties: false
+    HmacAuthConfigurationDto:
+      allOf:
+      - $ref: '#/components/schemas/AuthConfigDetailDto'
+      - type: object
+        properties:
+          authenticationMethod:
+            allOf:
+            - $ref: '#/components/schemas/AuthenticationMethod'
+            example: Hmac
+          headerKey:
+            type:
+            - string
+            - 'null'
+            example: X-Auth-Signature
+          secret:
+            type:
+            - string
+            - 'null'
+        additionalProperties: false
     SharedKeyAuthConfigurationDto:
       allOf:
       - $ref: '#/components/schemas/AuthConfigDetailDto'
@@ -454,111 +553,12 @@ components:
             - string
             - 'null'
         additionalProperties: false
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    HmacAuthConfigurationDto:
-      allOf:
-      - $ref: '#/components/schemas/AuthConfigDetailDto'
-      - type: object
-        properties:
-          authenticationMethod:
-            allOf:
-            - $ref: '#/components/schemas/AuthenticationMethod'
-            example: Hmac
-          headerKey:
-            type:
-            - string
-            - 'null'
-            example: X-Auth-Signature
-          secret:
-            type:
-            - string
-            - 'null'
-        additionalProperties: false
-    SaveAuthConfigurationRequestDto:
-      type: object
-      properties:
-        configurationDetails:
-          type:
-          - array
-          - 'null'
-          items:
-            oneOf:
-            - $ref: '#/components/schemas/IpWhitelistingAuthConfigurationDto'
-            - $ref: '#/components/schemas/SharedKeyAuthConfigurationDto'
-            - $ref: '#/components/schemas/HmacAuthConfigurationDto'
-        callbackDetails:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/CallbackAuthConfigDetailDto'
-      additionalProperties: false
-    SharedKeyLocation:
-      enum:
-      - Header
-      - QueryParameter
-      type: string
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    AuthConfigurationDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/AuthConfigurationDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
     AuthenticationMethod:
       enum:
       - IpWhitelist
       - SharedKey
       - Hmac
       type: string
-    IpWhitelistingAuthConfigurationDto:
-      allOf:
-      - $ref: '#/components/schemas/AuthConfigDetailDto'
-      - type: object
-        properties:
-          authenticationMethod:
-            allOf:
-            - $ref: '#/components/schemas/AuthenticationMethod'
-            example: IpWhitelist
-          ips:
-            type:
-            - array
-            - 'null'
-            items:
-              type: string
-        additionalProperties: false
   securitySchemes:
     Bearer:
       type: apiKey

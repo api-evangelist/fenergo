@@ -520,11 +520,43 @@ paths:
                 message: Unauthorized
 components:
   schemas:
-    JourneyDashboardDtoServiceResponse:
+    JourneyMilestonesTasksDto:
+      type: object
+      properties:
+        tasks:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/JourneyTaskDto'
+        milestones:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/JourneyMilestoneDto'
+      additionalProperties: false
+    JourneyOwnerDto:
+      type: object
+      properties:
+        teamId:
+          type: string
+          format: uuid
+        ownerId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        ownerName:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    JourneyMilestonesTasksDtoServiceResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/JourneyDashboardDto'
+          $ref: '#/components/schemas/JourneyMilestonesTasksDto'
         messages:
           type:
           - array
@@ -534,102 +566,68 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    JourneyTaskDto:
+    ServiceResponseMessage:
       type: object
       properties:
-        taskId:
-          type: string
-          format: uuid
-        taskName:
+        message:
           type:
           - string
           - 'null'
-        assignedTeamId:
+          description: The message
+          example: Success
+        type:
           type:
           - string
           - 'null'
-        assignedTeam:
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
           type:
           - string
           - 'null'
-        taskStatus:
-          type:
-          - string
-          - 'null'
-        journeyId:
-          type:
-          - string
-          - 'null'
-        daysOpen:
-          type:
-          - string
-          - 'null'
-        slaPeriod:
-          type:
-          - string
-          - 'null'
-        started:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        completed:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        paused:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        unpaused:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        taskType:
-          type:
-          - string
-          - 'null'
-        assignedTo:
-          type:
-          - string
-          - 'null'
-        assignedToId:
-          type:
-          - string
-          - 'null'
-        isFavourite:
-          type: boolean
-        serviceLevelAgreement:
-          $ref: '#/components/schemas/ServiceLevelAgreementDto'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
       additionalProperties: false
-    JourneyStatsDto:
+      description: The message associated to the service response
+    ServiceLevelAgreementDto:
       type: object
       properties:
-        completed:
-          type: integer
+        committedHours:
+          type:
+          - integer
+          - 'null'
           format: int32
-        total:
-          type: integer
-          format: int32
-        progress:
-          type: number
-          format: float
-      additionalProperties: false
-    StringListServiceRequest:
-      type: object
-      properties:
-        data:
+        dueDate:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            type: string
-          description: The service request DTO
+          format: date-time
+        approachingDueHours:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        approachingDueDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        status:
+          type:
+          - string
+          - 'null'
+        duePeriod:
+          type:
+          - string
+          - 'null'
+        pausedPeriodSec:
+          type:
+          - integer
+          - 'null'
+          format: int32
       additionalProperties: false
-      description: Service request data
     ServiceResponse:
       type: object
       properties:
@@ -647,55 +645,41 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    MilestoneStageDto:
+    StringListServiceRequest:
       type: object
       properties:
-        stageId:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: The service request DTO
+      additionalProperties: false
+      description: Service request data
+    JourneyMilestoneDto:
+      type: object
+      properties:
+        id:
           type: string
           format: uuid
         name:
           type:
           - string
           - 'null'
+        order:
+          type: integer
+          format: int32
         status:
           type:
           - string
           - 'null'
-        started:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        completed:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        paused:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        statistics:
-          $ref: '#/components/schemas/JourneyStatsDto'
-        serviceLevelAgreement:
-          $ref: '#/components/schemas/ServiceLevelAgreementDto'
-      additionalProperties: false
-    JourneyMilestonesTasksDto:
-      type: object
-      properties:
-        tasks:
+        stages:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/JourneyTaskDto'
-        milestones:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/JourneyMilestoneDto'
+            $ref: '#/components/schemas/MilestoneStageDto'
       additionalProperties: false
     JourneySummaryDto:
       type: object
@@ -796,61 +780,6 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-          description: The message
-          example: Success
-        type:
-          type:
-          - string
-          - 'null'
-          description: 'Type of the message
-
-            One of Info, Warning, Error, Forbidden'
-          example: Info
-        errorCode:
-          type:
-          - string
-          - 'null'
-          description: Error Code
-          example: INTERNAL_SERVER_ERROR
-      additionalProperties: false
-      description: The message associated to the service response
-    JourneyMilestonesTasksDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/JourneyMilestonesTasksDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    JourneyOwnerDto:
-      type: object
-      properties:
-        teamId:
-          type: string
-          format: uuid
-        ownerId:
-          type:
-          - string
-          - 'null'
-          format: uuid
-        ownerName:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
     JourneyDashboardDto:
       type: object
       properties:
@@ -860,6 +789,19 @@ components:
           - 'null'
           items:
             $ref: '#/components/schemas/JourneySummaryDto'
+      additionalProperties: false
+    JourneyStatsDto:
+      type: object
+      properties:
+        completed:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int32
+        progress:
+          type: number
+          format: float
       additionalProperties: false
     JourneyTaskDtoListServiceResponse:
       type: object
@@ -880,29 +822,124 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    JourneyMilestoneDto:
+    JourneyTaskDto:
       type: object
       properties:
-        id:
+        taskId:
+          type: string
+          format: uuid
+        taskName:
+          type:
+          - string
+          - 'null'
+        assignedTeamId:
+          type:
+          - string
+          - 'null'
+        assignedTeam:
+          type:
+          - string
+          - 'null'
+        taskStatus:
+          type:
+          - string
+          - 'null'
+        journeyId:
+          type:
+          - string
+          - 'null'
+        daysOpen:
+          type:
+          - string
+          - 'null'
+        slaPeriod:
+          type:
+          - string
+          - 'null'
+        started:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        completed:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        paused:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        unpaused:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        taskType:
+          type:
+          - string
+          - 'null'
+        assignedTo:
+          type:
+          - string
+          - 'null'
+        assignedToId:
+          type:
+          - string
+          - 'null'
+        isFavourite:
+          type: boolean
+        serviceLevelAgreement:
+          $ref: '#/components/schemas/ServiceLevelAgreementDto'
+      additionalProperties: false
+    JourneyDashboardDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/JourneyDashboardDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    MilestoneStageDto:
+      type: object
+      properties:
+        stageId:
           type: string
           format: uuid
         name:
           type:
           - string
           - 'null'
-        order:
-          type: integer
-          format: int32
         status:
           type:
           - string
           - 'null'
-        stages:
+        started:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/MilestoneStageDto'
+          format: date-time
+        completed:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        paused:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        statistics:
+          $ref: '#/components/schemas/JourneyStatsDto'
+        serviceLevelAgreement:
+          $ref: '#/components/schemas/ServiceLevelAgreementDto'
       additionalProperties: false
     ObjectServiceResponse:
       type: object
@@ -918,43 +955,6 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    ServiceLevelAgreementDto:
-      type: object
-      properties:
-        committedHours:
-          type:
-          - integer
-          - 'null'
-          format: int32
-        dueDate:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        approachingDueHours:
-          type:
-          - integer
-          - 'null'
-          format: int32
-        approachingDueDate:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        status:
-          type:
-          - string
-          - 'null'
-        duePeriod:
-          type:
-          - string
-          - 'null'
-        pausedPeriodSec:
-          type:
-          - integer
-          - 'null'
-          format: int32
-      additionalProperties: false
   securitySchemes:
     Bearer:
       type: apiKey

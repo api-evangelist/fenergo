@@ -795,14 +795,57 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    ComparisonMatchType:
-      enum:
-      - Exact
-      - Equivalent
-      - Different
-      - FenergoPolicy
-      - New
-      type: string
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+          description: The message
+          example: Success
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
+      additionalProperties: false
+      description: The message associated to the service response
+    PageReferenceDto:
+      type: object
+      properties:
+        visualPageNumber:
+          type: integer
+          format: int32
+        physicalPageNumber:
+          type: integer
+          format: int32
+      additionalProperties: false
+    RequirementFieldChange:
+      type: object
+      properties:
+        field:
+          type:
+          - string
+          - 'null'
+        before:
+          type:
+          - string
+          - 'null'
+        after:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
     PushItemStatus:
       enum:
       - Pending
@@ -811,12 +854,249 @@ components:
       - Error
       - Skipped
       type: string
-    RequirementType:
+    RequirementReviewHistoryEntry:
+      type: object
+      properties:
+        version:
+          type: integer
+          format: int32
+        changeType:
+          allOf:
+          - $ref: '#/components/schemas/ReviewChangeType'
+        snapshot:
+          allOf:
+          - $ref: '#/components/schemas/RequirementReviewDto'
+        reviewedBy:
+          type:
+          - string
+          - 'null'
+        reviewedDate:
+          type: string
+          format: date-time
+        changes:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RequirementFieldChange'
+      additionalProperties: false
+    KeepFenergoValueResponse:
+      type: object
+      properties:
+        comparisonId:
+          type:
+          - string
+          - 'null'
+        version:
+          type: integer
+          format: int32
+        review:
+          allOf:
+          - $ref: '#/components/schemas/RequirementReviewDto'
+      additionalProperties: false
+    RequirementMapping:
       enum:
-      - PolicyField
-      - Document
-      - RelatedParty
+      - ClientSpecific
+      - Equivalent
       type: string
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data:
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
+    PushMessageDto:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        messageType:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    RequirementReviewDto:
+      type: object
+      properties:
+        version:
+          type: integer
+          format: int32
+        changeType:
+          allOf:
+          - $ref: '#/components/schemas/ReviewChangeType'
+        mapping:
+          allOf:
+          - $ref: '#/components/schemas/RequirementMapping'
+        mandatory:
+          type:
+          - boolean
+          - 'null'
+        requirementName:
+          type:
+          - string
+          - 'null'
+        jurisdictions:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        notes:
+          type:
+          - string
+          - 'null'
+        fenergoTargetFieldId:
+          type:
+          - string
+          - 'null'
+        reviewedBy:
+          type:
+          - string
+          - 'null'
+        reviewedDate:
+          type: string
+          format: date-time
+      additionalProperties: false
+    ComparisonMatchType:
+      enum:
+      - Exact
+      - Equivalent
+      - Different
+      - FenergoPolicy
+      - New
+      type: string
+    ComparisonItem:
+      type: object
+      properties:
+        requirementType:
+          allOf:
+          - $ref: '#/components/schemas/RequirementType'
+        comparisonId:
+          type:
+          - string
+          - 'null'
+        entityType:
+          allOf:
+          - $ref: '#/components/schemas/EntityType'
+        pageReferences:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/PageReferenceDto'
+        policyExtractionId:
+          type:
+          - string
+          - 'null'
+        policyExtractionRequirementIds:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        policyAgentData:
+          allOf:
+          - $ref: '#/components/schemas/ComparisonAgentOutput'
+        extractedData:
+          allOf:
+          - $ref: '#/components/schemas/ComparisonExtractedData'
+        policyConfigData:
+          allOf:
+          - $ref: '#/components/schemas/ComparisonConfigData'
+      additionalProperties: false
+    ExtractedRequirementsResponse:
+      type: object
+      properties:
+        documentId:
+          type:
+          - string
+          - 'null'
+        documentName:
+          type:
+          - string
+          - 'null'
+        version:
+          type:
+          - string
+          - 'null'
+        requirements:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/SimplifiedRequirement'
+      additionalProperties: false
+    ExportComparisonResponse:
+      type: object
+      properties:
+        presignedUrl:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    HttpValidationProblemDetails:
+      type: object
+      properties:
+        type:
+          type:
+          - string
+          - 'null'
+        title:
+          type:
+          - string
+          - 'null'
+        status:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        detail:
+          type:
+          - string
+          - 'null'
+        instance:
+          type:
+          - string
+          - 'null'
+        errors:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: array
+            items:
+              type: string
+      additionalProperties: {}
+    ReviewChangeType:
+      enum:
+      - Approved
+      - Reset
+      - FenergoValueKept
+      type: string
+    GetRequirementReviewHistoryResponse:
+      type: object
+      properties:
+        comparisonId:
+          type:
+          - string
+          - 'null'
+        versions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RequirementReviewHistoryEntry'
+      additionalProperties: false
     ComparisonConfigData:
       type: object
       properties:
@@ -965,93 +1245,6 @@ components:
           items:
             type: string
       additionalProperties: false
-    HttpValidationProblemDetails:
-      type: object
-      properties:
-        type:
-          type:
-          - string
-          - 'null'
-        title:
-          type:
-          - string
-          - 'null'
-        status:
-          type:
-          - integer
-          - 'null'
-          format: int32
-        detail:
-          type:
-          - string
-          - 'null'
-        instance:
-          type:
-          - string
-          - 'null'
-        errors:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type: array
-            items:
-              type: string
-      additionalProperties: {}
-    SaveRequirementReviewResponse:
-      type: object
-      properties:
-        comparisonId:
-          type:
-          - string
-          - 'null'
-        version:
-          type: integer
-          format: int32
-        review:
-          allOf:
-          - $ref: '#/components/schemas/RequirementReviewDto'
-      additionalProperties: false
-    ConfidenceLevel:
-      enum:
-      - High
-      - Medium
-      - Low
-      type: string
-    PolicyFieldClassification:
-      enum:
-      - PolicyField
-      - DocumentRequirement
-      - RelatedPartyRequirement
-      type: string
-    PushMessageDto:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        messageType:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    RequirementFieldChange:
-      type: object
-      properties:
-        field:
-          type:
-          - string
-          - 'null'
-        before:
-          type:
-          - string
-          - 'null'
-        after:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
     ComparisonExtractedData:
       type: object
       properties:
@@ -1132,24 +1325,38 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    RequirementMapping:
+    PolicyFieldClassification:
       enum:
-      - ClientSpecific
-      - Equivalent
+      - PolicyField
+      - DocumentRequirement
+      - RelatedPartyRequirement
       type: string
-    ComparisonAgentOutput:
+    ResetRequirementReviewResponse:
       type: object
       properties:
-        comparisonSummary:
+        comparisonId:
           type:
           - string
           - 'null'
-        matchType:
-          allOf:
-          - $ref: '#/components/schemas/ComparisonMatchType'
-        policyFieldClassification:
-          allOf:
-          - $ref: '#/components/schemas/PolicyFieldClassification'
+        version:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        wasReset:
+          type: boolean
+      additionalProperties: false
+    FieldTypeInfo:
+      type: object
+      properties:
+        fieldType:
+          type:
+          - string
+          - 'null'
+        fieldTypeId:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
     PushRequirementsResponse:
       type: object
@@ -1161,19 +1368,39 @@ components:
           type: integer
           format: int32
       additionalProperties: false
-    PushRequirementsApiRequest:
+    ComparisonReference:
       type: object
       properties:
-        entityType:
+        note:
           type:
           - string
           - 'null'
-        entityPolicyId:
-          type: string
-          format: uuid
-        workspaceId:
-          type: string
-          format: uuid
+        description:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        url:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    SaveRequirementReviewResponse:
+      type: object
+      properties:
+        comparisonId:
+          type:
+          - string
+          - 'null'
+        version:
+          type: integer
+          format: int32
+        review:
+          allOf:
+          - $ref: '#/components/schemas/RequirementReviewDto'
       additionalProperties: false
     PushStatusResponse:
       type: object
@@ -1209,131 +1436,6 @@ components:
           - 'null'
           items:
             $ref: '#/components/schemas/PushMessageDto'
-      additionalProperties: false
-    ComparisonReference:
-      type: object
-      properties:
-        note:
-          type:
-          - string
-          - 'null'
-        description:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        url:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    KeepFenergoValueResponse:
-      type: object
-      properties:
-        comparisonId:
-          type:
-          - string
-          - 'null'
-        version:
-          type: integer
-          format: int32
-        review:
-          allOf:
-          - $ref: '#/components/schemas/RequirementReviewDto'
-      additionalProperties: false
-    EntityType:
-      enum:
-      - Individual
-      - Company
-      - Trust
-      - Other
-      - EntityGroup
-      type: string
-    RequirementReviewDto:
-      type: object
-      properties:
-        version:
-          type: integer
-          format: int32
-        changeType:
-          allOf:
-          - $ref: '#/components/schemas/ReviewChangeType'
-        mapping:
-          allOf:
-          - $ref: '#/components/schemas/RequirementMapping'
-        mandatory:
-          type:
-          - boolean
-          - 'null'
-        requirementName:
-          type:
-          - string
-          - 'null'
-        jurisdictions:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-        notes:
-          type:
-          - string
-          - 'null'
-        fenergoTargetFieldId:
-          type:
-          - string
-          - 'null'
-        reviewedBy:
-          type:
-          - string
-          - 'null'
-        reviewedDate:
-          type: string
-          format: date-time
-      additionalProperties: false
-    ReviewedComparisonItem:
-      type: object
-      properties:
-        comparison:
-          allOf:
-          - $ref: '#/components/schemas/ComparisonItem'
-        review:
-          allOf:
-          - $ref: '#/components/schemas/RequirementReviewDto'
-      additionalProperties: false
-    PushItemDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        comparisonId:
-          type:
-          - string
-          - 'null'
-        requirementName:
-          type:
-          - string
-          - 'null'
-        commandName:
-          type:
-          - string
-          - 'null'
-        status:
-          allOf:
-          - $ref: '#/components/schemas/PushItemStatus'
-        policyResourceId:
-          type:
-          - string
-          - 'null'
-          format: uuid
-        message:
-          type:
-          - string
-          - 'null'
       additionalProperties: false
     SimplifiedRequirement:
       type: object
@@ -1388,24 +1490,103 @@ components:
           items:
             type: string
       additionalProperties: false
-    FieldTypeInfo:
+    ReviewedComparisonItem:
       type: object
       properties:
-        fieldType:
+        comparison:
+          allOf:
+          - $ref: '#/components/schemas/ComparisonItem'
+        review:
+          allOf:
+          - $ref: '#/components/schemas/RequirementReviewDto'
+      additionalProperties: false
+    ComparisonAgentOutput:
+      type: object
+      properties:
+        comparisonSummary:
           type:
           - string
           - 'null'
-        fieldTypeId:
+        matchType:
+          allOf:
+          - $ref: '#/components/schemas/ComparisonMatchType'
+        policyFieldClassification:
+          allOf:
+          - $ref: '#/components/schemas/PolicyFieldClassification'
+      additionalProperties: false
+    ConfidenceLevel:
+      enum:
+      - High
+      - Medium
+      - Low
+      type: string
+    PushRequirementsApiRequest:
+      type: object
+      properties:
+        entityType:
+          type:
+          - string
+          - 'null'
+        entityPolicyId:
+          type: string
+          format: uuid
+        workspaceId:
+          type: string
+          format: uuid
+      additionalProperties: false
+    PushItemDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        comparisonId:
+          type:
+          - string
+          - 'null'
+        requirementName:
+          type:
+          - string
+          - 'null'
+        commandName:
+          type:
+          - string
+          - 'null'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/PushItemStatus'
+        policyResourceId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        message:
           type:
           - string
           - 'null'
       additionalProperties: false
-    ReviewChangeType:
+    RequirementType:
       enum:
-      - Approved
-      - Reset
-      - FenergoValueKept
+      - PolicyField
+      - Document
+      - RelatedParty
       type: string
+    EntityType:
+      enum:
+      - Individual
+      - Company
+      - Trust
+      - Other
+      - EntityGroup
+      type: string
+    ExportRequirementsResponse:
+      type: object
+      properties:
+        presignedUrl:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
     SaveRequirementReviewApiRequest:
       type: object
       properties:
@@ -1432,187 +1613,6 @@ components:
           type:
           - string
           - 'null'
-      additionalProperties: false
-    PageReferenceDto:
-      type: object
-      properties:
-        visualPageNumber:
-          type: integer
-          format: int32
-        physicalPageNumber:
-          type: integer
-          format: int32
-      additionalProperties: false
-    GetRequirementReviewHistoryResponse:
-      type: object
-      properties:
-        comparisonId:
-          type:
-          - string
-          - 'null'
-        versions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/RequirementReviewHistoryEntry'
-      additionalProperties: false
-    RequirementReviewHistoryEntry:
-      type: object
-      properties:
-        version:
-          type: integer
-          format: int32
-        changeType:
-          allOf:
-          - $ref: '#/components/schemas/ReviewChangeType'
-        snapshot:
-          allOf:
-          - $ref: '#/components/schemas/RequirementReviewDto'
-        reviewedBy:
-          type:
-          - string
-          - 'null'
-        reviewedDate:
-          type: string
-          format: date-time
-        changes:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/RequirementFieldChange'
-      additionalProperties: false
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-          description: The message
-          example: Success
-        type:
-          type:
-          - string
-          - 'null'
-          description: 'Type of the message
-
-            One of Info, Warning, Error, Forbidden'
-          example: Info
-        errorCode:
-          type:
-          - string
-          - 'null'
-          description: Error Code
-          example: INTERNAL_SERVER_ERROR
-      additionalProperties: false
-      description: The message associated to the service response
-    ExtractedRequirementsResponse:
-      type: object
-      properties:
-        documentId:
-          type:
-          - string
-          - 'null'
-        documentName:
-          type:
-          - string
-          - 'null'
-        version:
-          type:
-          - string
-          - 'null'
-        requirements:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/SimplifiedRequirement'
-      additionalProperties: false
-    ExportRequirementsResponse:
-      type: object
-      properties:
-        presignedUrl:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ExportComparisonResponse:
-      type: object
-      properties:
-        presignedUrl:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data:
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    ComparisonItem:
-      type: object
-      properties:
-        requirementType:
-          allOf:
-          - $ref: '#/components/schemas/RequirementType'
-        comparisonId:
-          type:
-          - string
-          - 'null'
-        entityType:
-          allOf:
-          - $ref: '#/components/schemas/EntityType'
-        pageReferences:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/PageReferenceDto'
-        policyExtractionId:
-          type:
-          - string
-          - 'null'
-        policyExtractionRequirementIds:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-        policyAgentData:
-          allOf:
-          - $ref: '#/components/schemas/ComparisonAgentOutput'
-        extractedData:
-          allOf:
-          - $ref: '#/components/schemas/ComparisonExtractedData'
-        policyConfigData:
-          allOf:
-          - $ref: '#/components/schemas/ComparisonConfigData'
-      additionalProperties: false
-    ResetRequirementReviewResponse:
-      type: object
-      properties:
-        comparisonId:
-          type:
-          - string
-          - 'null'
-        version:
-          type:
-          - integer
-          - 'null'
-          format: int32
-        wasReset:
-          type: boolean
       additionalProperties: false
   securitySchemes:
     Bearer:

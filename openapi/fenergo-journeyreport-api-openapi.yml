@@ -372,11 +372,36 @@ paths:
                 message: Unauthorized
 components:
   schemas:
-    DateRangeReportFileResponseServiceResponse:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+          description: The message
+          example: Success
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
+      additionalProperties: false
+      description: The message associated to the service response
+    JourneyStartedDtoDateRangeReportResponseServiceResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/DateRangeReportFileResponse'
+          $ref: '#/components/schemas/JourneyStartedDtoDateRangeReportResponse'
         messages:
           type:
           - array
@@ -386,27 +411,79 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    DateRangeReportFileRequest:
+    JourneyCompletedDtoDateRangeReportResponse:
       type: object
       properties:
-        startDate:
+        count:
+          type: integer
+          description: Count of items returned
+          format: int32
+          readOnly: true
+          example: 22
+        datasetSizeAccepted:
+          type: boolean
+          description: Boolean flag indicating if returned dataset size is appropriate
+          readOnly: true
+          example: true
+        items:
           type:
-          - string
+          - array
           - 'null'
-          description: Start Date
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        endDate:
-          type:
-          - string
-          - 'null'
-          description: End Date
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        fileFormat:
-          $ref: '#/components/schemas/FileFormat'
+          items:
+            $ref: '#/components/schemas/JourneyCompletedDto'
+          description: List of !:TDto
       additionalProperties: false
-      description: Request representing file report
+    JourneyCompletedDto:
+      type: object
+      properties:
+        completedTime:
+          type: string
+          description: Completed Time
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        startedTime:
+          type: string
+          description: Started Time
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        duration:
+          type: integer
+          description: Duration (in seconds)
+          format: int32
+          example: 234
+        journeyId:
+          type: string
+          description: Journey Id
+          format: uuid
+          example: 8d631fde-505e-4101-a7cd-83ab6c054a5a
+        journeyType:
+          type:
+          - string
+          - 'null'
+          description: Journey Type
+          example: Client Onboarding
+        journeySchemaId:
+          type: string
+          description: Journey Schema Id
+          format: uuid
+          example: 8d631fde-505e-4101-a7cd-83ab6c054a5a
+        legalEntityId:
+          type: string
+          description: Legal Entity Id
+          format: uuid
+          example: 8d631fde-505e-4101-a7cd-83ab6c054a5a
+        businessRelatedAccessLayers:
+          type:
+          - string
+          - 'null'
+          description: Business Access Layers
+        geographicAccessLayers:
+          type:
+          - string
+          - 'null'
+          description: Geographic Access Layers
+      additionalProperties: false
+      description: Response DTO representing completed journey
     JourneyUpdatedDtoDateRangeReportResponseServiceResponse:
       type: object
       properties:
@@ -421,48 +498,6 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    DateRangeReportRequestServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/DateRangeReportRequest'
-      additionalProperties: false
-      description: Service request data
-    JourneyCompletedDtoDateRangeReportResponseServiceResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/JourneyCompletedDtoDateRangeReportResponse'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    DateRangeReportFileResponse:
-      type: object
-      properties:
-        reportFileUrl:
-          type:
-          - string
-          - 'null'
-          description: Report File URL
-          example: https://google.com/report.csv
-        count:
-          type: integer
-          description: Count
-          format: int32
-          example: 23
-        expirationDate:
-          type: string
-          description: Link expiration date
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-      additionalProperties: false
-      description: Response representing file report
     JourneyStartedDto:
       type: object
       properties:
@@ -517,11 +552,11 @@ components:
           $ref: '#/components/schemas/DateRangeReportFileRequest'
       additionalProperties: false
       description: Service request data
-    JourneyStartedDtoDateRangeReportResponseServiceResponse:
+    ObjectServiceResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/JourneyStartedDtoDateRangeReportResponse'
+          description: The service response DTO
         messages:
           type:
           - array
@@ -531,63 +566,71 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    JourneyCompletedDto:
+    JourneyCompletedDtoDateRangeReportResponseServiceResponse:
       type: object
       properties:
-        completedTime:
-          type: string
-          description: Completed Time
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        startedTime:
-          type: string
-          description: Started Time
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        duration:
-          type: integer
-          description: Duration (in seconds)
-          format: int32
-          example: 234
-        journeyId:
-          type: string
-          description: Journey Id
-          format: uuid
-          example: 8d631fde-505e-4101-a7cd-83ab6c054a5a
-        journeyType:
+        data:
+          $ref: '#/components/schemas/JourneyCompletedDtoDateRangeReportResponse'
+        messages:
           type:
-          - string
+          - array
           - 'null'
-          description: Journey Type
-          example: Client Onboarding
-        journeySchemaId:
-          type: string
-          description: Journey Schema Id
-          format: uuid
-          example: 8d631fde-505e-4101-a7cd-83ab6c054a5a
-        legalEntityId:
-          type: string
-          description: Legal Entity Id
-          format: uuid
-          example: 8d631fde-505e-4101-a7cd-83ab6c054a5a
-        businessRelatedAccessLayers:
-          type:
-          - string
-          - 'null'
-          description: Business Access Layers
-        geographicAccessLayers:
-          type:
-          - string
-          - 'null'
-          description: Geographic Access Layers
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
-      description: Response DTO representing completed journey
+      description: Service response data
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+          description: The service response DTO
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
     FileFormat:
       enum:
       - csv
       - json
       type: string
-    JourneyCompletedDtoDateRangeReportResponse:
+    DateRangeReportFileResponse:
+      type: object
+      properties:
+        reportFileUrl:
+          type:
+          - string
+          - 'null'
+          description: Report File URL
+          example: https://google.com/report.csv
+        count:
+          type: integer
+          description: Count
+          format: int32
+          example: 23
+        expirationDate:
+          type: string
+          description: Link expiration date
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+      additionalProperties: false
+      description: Response representing file report
+    DateRangeReportRequestServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/DateRangeReportRequest'
+      additionalProperties: false
+      description: Service request data
+    JourneyStartedDtoDateRangeReportResponse:
       type: object
       properties:
         count:
@@ -606,28 +649,45 @@ components:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/JourneyCompletedDto'
+            $ref: '#/components/schemas/JourneyStartedDto'
           description: List of !:TDto
       additionalProperties: false
-    DateRangeReportRequest:
+    JourneyUpdatedDtoDateRangeReportResponse:
       type: object
       properties:
-        startDate:
+        count:
+          type: integer
+          description: Count of items returned
+          format: int32
+          readOnly: true
+          example: 22
+        datasetSizeAccepted:
+          type: boolean
+          description: Boolean flag indicating if returned dataset size is appropriate
+          readOnly: true
+          example: true
+        items:
           type:
-          - string
+          - array
           - 'null'
-          description: Start Date
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        endDate:
-          type:
-          - string
-          - 'null'
-          description: End Date
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
+          items:
+            $ref: '#/components/schemas/JourneyUpdatedDto'
+          description: List of !:TDto
       additionalProperties: false
-      description: Request representing report
+    DateRangeReportFileResponseServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/DateRangeReportFileResponse'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
+      additionalProperties: false
+      description: Service response data
     JourneyUpdatedDto:
       type: object
       properties:
@@ -686,106 +746,46 @@ components:
           description: Geographic Access Layers
       additionalProperties: false
       description: Response DTO representing updated journey
-    ServiceResponse:
+    DateRangeReportFileRequest:
       type: object
       properties:
-        data:
+        startDate:
           type:
           - string
           - 'null'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    JourneyStartedDtoDateRangeReportResponse:
-      type: object
-      properties:
-        count:
-          type: integer
-          description: Count of items returned
-          format: int32
-          readOnly: true
-          example: 22
-        datasetSizeAccepted:
-          type: boolean
-          description: Boolean flag indicating if returned dataset size is appropriate
-          readOnly: true
-          example: true
-        items:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/JourneyStartedDto'
-          description: List of !:TDto
-      additionalProperties: false
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
+          description: Start Date
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        endDate:
           type:
           - string
           - 'null'
-          description: The message
-          example: Success
-        type:
+          description: End Date
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        fileFormat:
+          $ref: '#/components/schemas/FileFormat'
+      additionalProperties: false
+      description: Request representing file report
+    DateRangeReportRequest:
+      type: object
+      properties:
+        startDate:
           type:
           - string
           - 'null'
-          description: 'Type of the message
-
-            One of Info, Warning, Error, Forbidden'
-          example: Info
-        errorCode:
+          description: Start Date
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        endDate:
           type:
           - string
           - 'null'
-          description: Error Code
-          example: INTERNAL_SERVER_ERROR
+          description: End Date
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
       additionalProperties: false
-      description: The message associated to the service response
-    JourneyUpdatedDtoDateRangeReportResponse:
-      type: object
-      properties:
-        count:
-          type: integer
-          description: Count of items returned
-          format: int32
-          readOnly: true
-          example: 22
-        datasetSizeAccepted:
-          type: boolean
-          description: Boolean flag indicating if returned dataset size is appropriate
-          readOnly: true
-          example: true
-        items:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/JourneyUpdatedDto'
-          description: List of !:TDto
-      additionalProperties: false
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data:
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
+      description: Request representing report
   securitySchemes:
     Bearer:
       type: apiKey

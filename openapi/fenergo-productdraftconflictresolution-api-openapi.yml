@@ -320,30 +320,15 @@ paths:
                   errorCode: OBSOLETE_ENDPOINT
 components:
   schemas:
-    ValidationErrorModel:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-        attemptedValue: {}
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    StringServiceResponse:
+    ValidationErrorModelListServiceResponse:
       type: object
       properties:
         data:
           type:
-          - string
+          - array
           - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
         messages:
           type:
           - array
@@ -351,79 +336,16 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    PropertyDto:
-      required:
-      - discriminator
-      - type
-      type: object
-      properties:
-        type:
-          allOf:
-          - $ref: '#/components/schemas/PropertyType'
-          readOnly: true
-        discriminator:
-          allOf:
-          - $ref: '#/components/schemas/PropertyType'
-          readOnly: true
-        isValid:
-          type:
-          - boolean
-          - 'null'
-      additionalProperties: false
-    DraftConflictDto:
-      type: object
-      properties:
-        productVersion:
-          type:
-          - integer
-          - 'null'
-          description: Used to determine if passed draft is outdated
-          format: int32
-        pushChanges:
-          type: boolean
-          description: If true updates the product Draft when all conflicts are resolved
-          example: true
-        dataConflictResolutions:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-          description: Data conflict resolutions properties
-          example:
-            firstName:
-              type: Single
-              value: Tom
-            dateOfBirth:
-              type: Single
-              value: '2021-07-15'
-            address:
-              type: Collection
-              dataGroupId: 674ccef1-cfdc-46af-97f8-340b24ab7f43
-              collections:
-                54a25d24-1a4b-45c6-a5b4-980e5d3a1df5:
-                  properties:
-                    country: Spain
-                    city: Madrid
-                    street: C. de Sevilla
-                93468632-1a9e-4ad0-b2e1-c5ec0f65d7b2:
-                  properties:
-                    country: Spain
-                    city: Barcelona
-                    street: Carrer de Girona
-      additionalProperties: false
-      description: Request DTO representing the conflict resolution data
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
         messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
     ServiceResponseMessage:
       type: object
       properties:
@@ -440,12 +362,34 @@ components:
           - string
           - 'null'
       additionalProperties: false
+    DraftConflictDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/DraftConflictDto'
+          description: Request DTO representing the conflict resolution data
+      additionalProperties: false
     PropertyType:
       enum:
       - Single
       - Custom
       - Collection
       type: string
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
     BulkDraftConflictDto:
       type: object
       properties:
@@ -496,32 +440,42 @@ components:
           description: The Product Draft Id
           format: uuid
       additionalProperties: false
-    ValidationErrorModelListServiceResponse:
+    ValidationErrorModel:
       type: object
       properties:
-        data:
+        propertyName:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel'
-        messages:
+        errorMessage:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
+    PropertyDto:
+      required:
+      - discriminator
+      - type
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        discriminator:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        isValid:
+          type:
+          - boolean
+          - 'null'
+      additionalProperties: false
     BulkDraftConflictDtoListServiceRequest:
       type: object
       properties:
@@ -532,6 +486,49 @@ components:
           items:
             $ref: '#/components/schemas/BulkDraftConflictDto'
       additionalProperties: false
+    DraftConflictDto:
+      type: object
+      properties:
+        productVersion:
+          type:
+          - integer
+          - 'null'
+          description: Used to determine if passed draft is outdated
+          format: int32
+        pushChanges:
+          type: boolean
+          description: If true updates the product Draft when all conflicts are resolved
+          example: true
+        dataConflictResolutions:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+          description: Data conflict resolutions properties
+          example:
+            firstName:
+              type: Single
+              value: Tom
+            dateOfBirth:
+              type: Single
+              value: '2021-07-15'
+            address:
+              type: Collection
+              dataGroupId: 674ccef1-cfdc-46af-97f8-340b24ab7f43
+              collections:
+                54a25d24-1a4b-45c6-a5b4-980e5d3a1df5:
+                  properties:
+                    country: Spain
+                    city: Madrid
+                    street: C. de Sevilla
+                93468632-1a9e-4ad0-b2e1-c5ec0f65d7b2:
+                  properties:
+                    country: Spain
+                    city: Barcelona
+                    street: Carrer de Girona
+      additionalProperties: false
+      description: Request DTO representing the conflict resolution data
     CompleteInaccessibleConflictsDto:
       type: object
       properties:
@@ -556,13 +553,16 @@ components:
             - 'null'
           description: Map of field data key to its product category, used to determine the category of each conflicted field.
       additionalProperties: false
-    DraftConflictDtoServiceRequest:
+    ObjectServiceResponse:
       type: object
       properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/DraftConflictDto'
-          description: Request DTO representing the conflict resolution data
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
   securitySchemes:
     Bearer:

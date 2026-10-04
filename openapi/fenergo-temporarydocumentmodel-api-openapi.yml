@@ -278,55 +278,15 @@ paths:
     - url: /documentmanagementcommand
 components:
   schemas:
-    AccessLayerDto:
-      type: object
-      properties:
-        geographic:
-          uniqueItems: true
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: Collection of geographic access layers
-          example:
-          - Global
-        businessRelated:
-          uniqueItems: true
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: Collection of business related access layers
-          example:
-          - Enterprise
-      additionalProperties: false
-      description: DTO representing access layers attached
-    ValidationErrorModel:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-        attemptedValue: {}
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    StringServiceResponse:
+    ValidationErrorModelListServiceResponse:
       type: object
       properties:
         data:
           type:
-          - string
+          - array
           - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
         messages:
           type:
           - array
@@ -334,69 +294,16 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    DocumentRequirementDto:
-      type: object
-      properties:
-        Id:
-          type: string
-          description: The Id of the requirement the document requirement belongs to
-          format: uuid
-          example: dc30fd5b-120b-4aaa-bed7-8d8508e24de5
-        RequirementId:
-          type: string
-          description: 'Alternative JSON property name for RequirementId to support internal generic lambda client implementations.
-
-            Maps to the same underlying value as RequirementId.'
-          format: uuid
-        DocumentDataKey:
-          type:
-          - string
-          - 'null'
-          description: The unique identifier of the document requirement defined in policy configuration
-          example: identificationDocuments
-        DataKey:
-          type:
-          - string
-          - 'null'
-          description: 'Alternative JSON property name for DataKey to support internal generic lambda client implementations.
-
-            Maps to the same underlying value as DataKey.'
-        Name:
-          type:
-          - string
-          - 'null'
-          description: The Name of the document requirement defined in policy configuration
-          example: Driver License
-        RequirementName:
-          type:
-          - string
-          - 'null'
-          description: 'Alternative JSON property name for RequirementName to support internal generic lambda client implementations.
-
-            Maps to the same underlying value as RequirementName.'
-        IsMandatory:
-          type: boolean
-          description: IsMandatory attribute of the document requirement defined in policy configuration
-          example: false
-        DocumentAccessLayers:
-          allOf:
-          - $ref: '#/components/schemas/AccessLayerDto'
-          description: Policy set access layers
-        requirementModelId:
-          type:
-          - string
-          - 'null'
-          description: Id of the requirement aggregate model the document is linked to
-          format: uuid
-          example: 4719bcc0-9a73-46ea-9857-5fe5edb97d63
-        targetEntity:
-          type:
-          - string
-          - 'null'
-          description: The target entity of the requirement
-          example: Client
-      additionalProperties: false
-      description: Contains document requirement attributes need to be deserialized as input of Initialize Lambda
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
     CreateSignedUrlToUploadTemporaryFileMultipleRequirementsRequest:
       required:
       - entityId
@@ -496,56 +403,6 @@ components:
       description: 'Metadata needed to create Temporary Document models to fulfill multiple requirements and generate signed Url to upload file.
 
         Contains all properties needed to fill the metadata of the document being uploaded.'
-    PropertyDto:
-      type: object
-      properties:
-        value:
-          type:
-          - string
-          - 'null'
-          description: The custom property value
-          example: Ireland
-        type:
-          type:
-          - string
-          - 'null'
-          description: The custom property type
-          example: Country
-        customTypeId:
-          type: string
-          description: The custom property type identifier
-          format: uuid
-          example: baee4b61-7ebb-48b2-a44b-18ce814b703b
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type: object
-          description: Nested properties that compose our custom property
-          example:
-            firstName:
-              type: Single
-              value: Tom
-            dateOfBirth:
-              type: Single
-              value: '2021-07-15'
-            address:
-              type: Collection
-              dataGroupId: dfde9f06-040a-4127-b9a0-2c802a6502fc
-              collections:
-                54a25d24-1a4b-45c6-a5b4-980e5d3a1df5:
-                  properties:
-                    country: Ireland
-                    city: Dublin
-                    street: Mayor Street
-                47010265-3b85-4407-be61-90d04525f020:
-                  properties:
-                    country: Ireland
-                    city: Dublin
-                    street: E Wall Rd
-      additionalProperties: false
-      description: Contains all the attributes needed in order to add custom fields to the document metadata
     ServiceResponseMessage:
       type: object
       properties:
@@ -562,57 +419,13 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    CreateSignedUrlToUploadFileMultipleRequirementsResponse:
-      type: object
-      properties:
-        DocumentRequirements:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/DocumentRequirementBulkDto'
-          description: List of Document Requirement properties that the document Models are linked to
-        documentType:
-          type:
-          - string
-          - 'null'
-          description: The type of the document
-          example: Driver license
-        status:
-          type:
-          - string
-          - 'null'
-          description: The status of the uploaded document
-          example: Complete
-        signedUrlToUpload:
-          type:
-          - string
-          - 'null'
-          description: 'Presigned URL to upload the file into S3 bucket.
-
-            When this response originates from the temporary document endpoint, the URL''s signature includes
-
-            the `x-amz-tagging` header. The caller must include `x-amz-tagging: TTL=enabled` as an
-
-            HTTP header in the PUT request, otherwise the upload will fail with a 403 error.'
-        warnings:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: List of warnings generated during document upload (e.g., DocuSign size limit warnings)
-      additionalProperties: false
-      description: Basic information from the upload document api for multiple requirements
-    ValidationErrorModelListServiceResponse:
+    CreateSignedUrlToUploadFileMultipleRequirementsResponseServiceResponse:
       type: object
       properties:
         data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel'
+          allOf:
+          - $ref: '#/components/schemas/CreateSignedUrlToUploadFileMultipleRequirementsResponse'
+          description: Basic information from the upload document api for multiple requirements
         messages:
           type:
           - array
@@ -620,16 +433,6 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
     DocumentRequirementBulkDto:
       type: object
       properties:
@@ -708,13 +511,55 @@ components:
 
             Contains all properties needed to fill the metadata of the document being uploaded.'
       additionalProperties: false
-    CreateSignedUrlToUploadFileMultipleRequirementsResponseServiceResponse:
+    CreateSignedUrlToUploadFileMultipleRequirementsResponse:
+      type: object
+      properties:
+        DocumentRequirements:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/DocumentRequirementBulkDto'
+          description: List of Document Requirement properties that the document Models are linked to
+        documentType:
+          type:
+          - string
+          - 'null'
+          description: The type of the document
+          example: Driver license
+        status:
+          type:
+          - string
+          - 'null'
+          description: The status of the uploaded document
+          example: Complete
+        signedUrlToUpload:
+          type:
+          - string
+          - 'null'
+          description: 'Presigned URL to upload the file into S3 bucket.
+
+            When this response originates from the temporary document endpoint, the URL''s signature includes
+
+            the `x-amz-tagging` header. The caller must include `x-amz-tagging: TTL=enabled` as an
+
+            HTTP header in the PUT request, otherwise the upload will fail with a 403 error.'
+        warnings:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of warnings generated during document upload (e.g., DocuSign size limit warnings)
+      additionalProperties: false
+      description: Basic information from the upload document api for multiple requirements
+    StringServiceResponse:
       type: object
       properties:
         data:
-          allOf:
-          - $ref: '#/components/schemas/CreateSignedUrlToUploadFileMultipleRequirementsResponse'
-          description: Basic information from the upload document api for multiple requirements
+          type:
+          - string
+          - 'null'
         messages:
           type:
           - array
@@ -722,6 +567,161 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    PropertyDto:
+      type: object
+      properties:
+        value:
+          type:
+          - string
+          - 'null'
+          description: The custom property value
+          example: Ireland
+        type:
+          type:
+          - string
+          - 'null'
+          description: The custom property type
+          example: Country
+        customTypeId:
+          type: string
+          description: The custom property type identifier
+          format: uuid
+          example: baee4b61-7ebb-48b2-a44b-18ce814b703b
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: object
+          description: Nested properties that compose our custom property
+          example:
+            firstName:
+              type: Single
+              value: Tom
+            dateOfBirth:
+              type: Single
+              value: '2021-07-15'
+            address:
+              type: Collection
+              dataGroupId: dfde9f06-040a-4127-b9a0-2c802a6502fc
+              collections:
+                54a25d24-1a4b-45c6-a5b4-980e5d3a1df5:
+                  properties:
+                    country: Ireland
+                    city: Dublin
+                    street: Mayor Street
+                47010265-3b85-4407-be61-90d04525f020:
+                  properties:
+                    country: Ireland
+                    city: Dublin
+                    street: E Wall Rd
+      additionalProperties: false
+      description: Contains all the attributes needed in order to add custom fields to the document metadata
+    AccessLayerDto:
+      type: object
+      properties:
+        geographic:
+          uniqueItems: true
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Collection of geographic access layers
+          example:
+          - Global
+        businessRelated:
+          uniqueItems: true
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Collection of business related access layers
+          example:
+          - Enterprise
+      additionalProperties: false
+      description: DTO representing access layers attached
+    DocumentRequirementDto:
+      type: object
+      properties:
+        Id:
+          type: string
+          description: The Id of the requirement the document requirement belongs to
+          format: uuid
+          example: dc30fd5b-120b-4aaa-bed7-8d8508e24de5
+        RequirementId:
+          type: string
+          description: 'Alternative JSON property name for RequirementId to support internal generic lambda client implementations.
+
+            Maps to the same underlying value as RequirementId.'
+          format: uuid
+        DocumentDataKey:
+          type:
+          - string
+          - 'null'
+          description: The unique identifier of the document requirement defined in policy configuration
+          example: identificationDocuments
+        DataKey:
+          type:
+          - string
+          - 'null'
+          description: 'Alternative JSON property name for DataKey to support internal generic lambda client implementations.
+
+            Maps to the same underlying value as DataKey.'
+        Name:
+          type:
+          - string
+          - 'null'
+          description: The Name of the document requirement defined in policy configuration
+          example: Driver License
+        RequirementName:
+          type:
+          - string
+          - 'null'
+          description: 'Alternative JSON property name for RequirementName to support internal generic lambda client implementations.
+
+            Maps to the same underlying value as RequirementName.'
+        IsMandatory:
+          type: boolean
+          description: IsMandatory attribute of the document requirement defined in policy configuration
+          example: false
+        DocumentAccessLayers:
+          allOf:
+          - $ref: '#/components/schemas/AccessLayerDto'
+          description: Policy set access layers
+        requirementModelId:
+          type:
+          - string
+          - 'null'
+          description: Id of the requirement aggregate model the document is linked to
+          format: uuid
+          example: 4719bcc0-9a73-46ea-9857-5fe5edb97d63
+        targetEntity:
+          type:
+          - string
+          - 'null'
+          description: The target entity of the requirement
+          example: Client
+      additionalProperties: false
+      description: Contains document requirement attributes need to be deserialized as input of Initialize Lambda
     ObjectServiceResponse:
       type: object
       properties:

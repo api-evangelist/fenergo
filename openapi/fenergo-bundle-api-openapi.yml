@@ -681,6 +681,176 @@ paths:
                   errorCode: OBSOLETE_ENDPOINT
 components:
   schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    AddConfigItemDto:
+      required:
+      - configId
+      type: object
+      properties:
+        configId:
+          minLength: 1
+          type: string
+        configVersion:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    CreateBundleRequestDto:
+      required:
+      - name
+      type: object
+      properties:
+        name:
+          maxLength: 100
+          minLength: 1
+          type: string
+        description:
+          maxLength: 400
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    SelectedItemDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/SelectedItemDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    SaveBundleVersionDto:
+      required:
+      - configurationAsOfDate
+      - name
+      type: object
+      properties:
+        name:
+          maxLength: 100
+          minLength: 1
+          type: string
+        description:
+          maxLength: 400
+          type:
+          - string
+          - 'null'
+        versionNotes:
+          maxLength: 400
+          type:
+          - string
+          - 'null'
+        configurationAsOfDate:
+          minLength: 1
+          type: string
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    BundleStatus:
+      enum:
+      - Draft
+      - Pending
+      - Failed
+      - Published
+      - Deleted
+      type: string
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    SelectedItemStatus:
+      enum:
+      - DependencyCalculation
+      - Error
+      - Ready
+      type: string
+    CreateBundleRequestDtoServiceRequest:
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateBundleRequestDto'
+      additionalProperties: false
+    AddConfigRequestDto:
+      required:
+      - configItems
+      - configKey
+      type: object
+      properties:
+        configKey:
+          minLength: 1
+          type: string
+        configItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/AddConfigItemDto'
+      additionalProperties: false
+    AddConfigRequestDtoListServiceRequest:
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AddConfigRequestDto'
+      additionalProperties: false
     BundleVersionDtoServiceResponse:
       type: object
       properties:
@@ -694,15 +864,56 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    SaveBundleVersionDtoServiceRequest:
-      required:
-      - data
+    SelectedItemDto:
       type: object
       properties:
-        data:
+        configId:
+          type:
+          - string
+          - 'null'
+        configName:
+          type:
+          - string
+          - 'null'
+        configVersionKey:
+          type:
+          - string
+          - 'null'
+        versionLabel:
+          type:
+          - string
+          - 'null'
+        versionNotes:
+          type:
+          - string
+          - 'null'
+        dependencies:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/DependencyRecordDto'
+        effectiveFrom:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        type:
           allOf:
-          - $ref: '#/components/schemas/SaveBundleVersionDto'
+          - $ref: '#/components/schemas/SelectConfigItemType'
+        configKey:
+          type:
+          - string
+          - 'null'
+        selectedItemStatus:
+          allOf:
+          - $ref: '#/components/schemas/SelectedItemStatus'
       additionalProperties: false
+    SelectConfigItemType:
+      enum:
+      - Auto
+      - Manual
+      type: string
     BundleVersionDto:
       type: object
       properties:
@@ -750,6 +961,32 @@ components:
           allOf:
           - $ref: '#/components/schemas/BundleStatus'
       additionalProperties: false
+    SaveBundleVersionDtoServiceRequest:
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/SaveBundleVersionDto'
+      additionalProperties: false
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
     ValidationErrorModelListServiceResponse:
       type: object
       properties:
@@ -776,185 +1013,6 @@ components:
         - message: Data is required
           type: Error
           errorCode: Error Code
-    SelectedItemStatus:
-      enum:
-      - DependencyCalculation
-      - Error
-      - Ready
-      type: string
-    AddConfigItemDto:
-      required:
-      - configId
-      type: object
-      properties:
-        configId:
-          minLength: 1
-          type: string
-        configVersion:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    SaveBundleVersionDto:
-      required:
-      - configurationAsOfDate
-      - name
-      type: object
-      properties:
-        name:
-          maxLength: 100
-          minLength: 1
-          type: string
-        description:
-          maxLength: 400
-          type:
-          - string
-          - 'null'
-        versionNotes:
-          maxLength: 400
-          type:
-          - string
-          - 'null'
-        configurationAsOfDate:
-          minLength: 1
-          type: string
-      additionalProperties: false
-    AddConfigRequestDto:
-      required:
-      - configItems
-      - configKey
-      type: object
-      properties:
-        configKey:
-          minLength: 1
-          type: string
-        configItems:
-          type: array
-          items:
-            $ref: '#/components/schemas/AddConfigItemDto'
-      additionalProperties: false
-    CreateBundleRequestDtoServiceRequest:
-      required:
-      - data
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateBundleRequestDto'
-      additionalProperties: false
-    CreateBundleRequestDto:
-      required:
-      - name
-      type: object
-      properties:
-        name:
-          maxLength: 100
-          minLength: 1
-          type: string
-        description:
-          maxLength: 400
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    BundleStatus:
-      enum:
-      - Draft
-      - Pending
-      - Failed
-      - Published
-      - Deleted
-      type: string
-    ServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ValidationErrorModel:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-        attemptedValue: {}
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    SelectedItemDto:
-      type: object
-      properties:
-        configId:
-          type:
-          - string
-          - 'null'
-        configName:
-          type:
-          - string
-          - 'null'
-        configVersionKey:
-          type:
-          - string
-          - 'null'
-        versionLabel:
-          type:
-          - string
-          - 'null'
-        versionNotes:
-          type:
-          - string
-          - 'null'
-        dependencies:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/DependencyRecordDto'
-        effectiveFrom:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        type:
-          allOf:
-          - $ref: '#/components/schemas/SelectConfigItemType'
-        configKey:
-          type:
-          - string
-          - 'null'
-        selectedItemStatus:
-          allOf:
-          - $ref: '#/components/schemas/SelectedItemStatus'
-      additionalProperties: false
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
     DependencyRecordDto:
       type: object
       properties:
@@ -975,64 +1033,6 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    SelectedItemDtoIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/SelectedItemDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    AddConfigRequestDtoListServiceRequest:
-      required:
-      - data
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/AddConfigRequestDto'
-      additionalProperties: false
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    SelectConfigItemType:
-      enum:
-      - Auto
-      - Manual
-      type: string
   securitySchemes:
     Bearer:
       type: apiKey

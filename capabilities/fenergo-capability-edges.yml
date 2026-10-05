@@ -1,0 +1,238 @@
+slug: fenergo
+provider: Fenergo
+generated_by: planning/capability-mapping/scripts/classify_capabilities.py
+model: claude-opus-5
+frame:
+- Software & Technology
+min_confidence: 0.7
+capability_model:
+  source: https://github.com/vincentmakes/turbo-ea-capabilities
+  license: CC-BY-4.0
+  attribution: Turbo EA Capabilities by Vincent Verdet — Turbo EA, https://github.com/vincentmakes/turbo-ea-capabilities,
+    CC BY 4.0
+  notice: NOTICE
+edge_count: 20
+edges:
+- tag: Webhooks
+  spec_file: fenergo-webhooks-api-openapi.yml
+  capability_id: BC-4270.80
+  capability_id_l1: BC-4270
+  capability_name: Webhook & Event Subscription Management
+  confidence: 0.92
+  evidence: '"Webhooks allow you to build or setup integrations which subscribe to certain events from
+    Fen-X"; "Add a webhook configuration"; "List all available event notification types"; schema DeliveryAttempt'
+  reason: Explicit lifecycle of outbound webhook subscriptions, event notification types and delivery
+    testing — exactly webhook & event subscription management.
+- tag: AccessLayer
+  spec_file: fenergo-accesslayer-api-openapi.yml
+  capability_id: BC-620.20
+  capability_id_l1: BC-620
+  capability_name: Identity & Access Management
+  confidence: 0.8
+  evidence: Assign user to the access layer; Unassign user from the access layer; Batch update user access
+    layers; SensitiveDataKindDto
+  reason: Operations from the authorization command/query APIs create access layers and assign users to
+    them, governing access to sensitive data kinds — authorisation/entitlement administration, i.e. Identity
+    & Access Management.
+- tag: DataProtectionRegime
+  spec_file: fenergo-dataprotectionregime-api-openapi.yml
+  capability_id: BC-130.50
+  capability_id_l1: BC-130
+  capability_name: Privacy & Data Protection Management
+  confidence: 0.8
+  evidence: '''Create data protection regime'' / ''Update data protection regime'', schemas DataProtectionRegimeDto
+    and DataRetentionPeriodDto'
+  reason: Full CRUD over data-protection regimes with jurisdictional data-retention periods — configuration
+    of privacy/data-protection policy, i.e. Privacy & Data Protection Management rather than generic data
+    governance.
+- tag: Query
+  spec_file: fenergo-query-api-openapi.yml
+  capability_id: BC-610.50
+  capability_id_l1: BC-610
+  capability_name: Analytics & BI Management
+  confidence: 0.8
+  evidence: POST /api/Query — "Create a new Query definition"; GET /api/v2/Query — "Get all stored Query
+    definitions"; schema CreateSqlQueryDefinitionDto, GetReportingHistoryDtoItemsPage
+  reason: 'From the Reports Command/Query specs: full CRUD over stored SQL query definitions plus reporting
+    history, i.e. authoring and managing the reporting/BI layer. That is analytics and BI delivery rather
+    than any domain business process. 0.8 because it is clearly reporting tooling, with mild ambiguity
+    versus data architecture.'
+- tag: Query Definition
+  spec_file: fenergo-query-definition-api-openapi.yml
+  capability_id: BC-610.50
+  capability_id_l1: BC-610
+  capability_name: Analytics & BI Management
+  confidence: 0.8
+  evidence: GET /api/QueryDefinition — "Get all stored Query definitions"; description "Query Definitions
+    retrieval Generated Reports retrieval Schema retrieval"
+  reason: 'Read side of the Reports API: retrieval of stored query definitions and generated reports.
+    This is reporting/BI delivery, mapped to Analytics & BI Management; some residual ambiguity because
+    the endpoints are read-only metadata lookups.'
+- tag: Batch
+  spec_file: fenergo-batch-api-openapi.yml
+  capability_id: BC-130.10
+  capability_id_l1: BC-130
+  capability_name: Regulatory Compliance Management
+  confidence: 0.75
+  evidence: POST /api/batch "Create a new screening batch to screen one or more entities"; PUT /api/batch/{id}/matches
+    "Update a list of matches in a batch"; "Update the materiality assessment of an Entity's related party
+    in ongoing…"
+  reason: Despite the generic tag, the operations perform AML/sanctions screening of entities and adjudication
+    of screening matches — a regulatory compliance capability. The candidate frame has no dedicated financial-crime
+    node, so BC-130.10 is the closest honest fit.
+- tag: DataDeletionProcess
+  spec_file: fenergo-datadeletionprocess-api-openapi.yml
+  capability_id: BC-130.50
+  capability_id_l1: BC-130
+  capability_name: Privacy & Data Protection Management
+  confidence: 0.75
+  evidence: POST /api/datadeletionprocess/{entityId}  CreateDataDeletionProcess  Create data deletion
+    process; schemas DataRetentionPeriodDto, GetEntitiesUntilRetentionDateRequestDtoServiceRequest
+  reason: Full lifecycle (create, update, pause, unpause, query by retention trigger date) of data deletion
+    processes for client entities, published from the data-protection command/query definitions. This
+    is operationalised data retention and erasure under privacy regulation.
+- tag: Global Settings
+  spec_file: fenergo-global-settings-api-openapi.yml
+  capability_id: BC-4230.20
+  capability_id_l1: BC-4230
+  capability_name: Tenant Configuration Management
+  confidence: 0.75
+  evidence: '"PUT /api/tenant-global-settings UpdateGlobalPortalTenantSettings Updates the global portal
+    tenant settings"; schema "UpdateUserManagementSettingsDto"'
+  reason: Read/write of per-tenant portal settings (including user-management settings) in a multi-tenant
+    SaaS platform is tenant configuration management, not a business-domain capability. The tag is admin
+    configuration but it is specifically tenant-scoped configuration, which the frame treats as a named
+    capability.
+- tag: Match
+  spec_file: fenergo-match-api-openapi.yml
+  capability_id: BC-130.10
+  capability_id_l1: BC-130
+  capability_name: Regulatory Compliance Management
+  confidence: 0.75
+  evidence: '"Screening Query API retrieves screening results for screened clients and their associated
+    parties"; "Get all matches for an entity"'
+  reason: Matches here are AML/sanctions screening hits returned for screened client entities, i.e. the
+    review surface of regulatory client-screening obligations. Best available fit is regulatory compliance
+    management; the frame has no dedicated financial-crime capability, so confidence is held below 0.8.
+- tag: User
+  spec_file: fenergo-user-api-openapi.yml
+  capability_id: BC-620.20
+  capability_id_l1: BC-620
+  capability_name: Identity & Access Management
+  confidence: 0.75
+  evidence: Get current user authorization profile; UserAuthorizationProfileDto, UserAccessLayerDto, AccessLayerTypeDto
+    (fenergo-authorizationquery-v1-0)
+  reason: Operations read users and their authorization profiles, access layers and sensitive-data kinds
+    from the authorization service — identity and access management. It is read-only query surface rather
+    than full IAM administration, so confidence is high but not maximal.
+- tag: Domain
+  spec_file: fenergo-domain-api-openapi.yml
+  capability_id: BC-4230.20
+  capability_id_l1: BC-4230
+  capability_name: Tenant Configuration Management
+  confidence: 0.72
+  evidence: GET /api/domains/brand-config Returns the brand configuration for a specific domain and tenant;
+    PUT /api/domains/brand-email-settings ... for a given portal URL
+  reason: Operations manage per-tenant portal domains, branding and email sender settings (DomainBrandConfigurationDto,
+    ThemeDto, LoginPageMessagesDto), which is tenant-level branding/configuration above the shared product
+    baseline.
+- tag: Legal Hold
+  spec_file: fenergo-legal-hold-api-openapi.yml
+  capability_id: BC-130.50
+  capability_id_l1: BC-130
+  capability_name: Privacy & Data Protection Management
+  confidence: 0.72
+  evidence: '"Data Protection Query API provides ... The ability to query for Data Protection Regimes";
+    GET /api/legalholds/active "Get all active legal holds for a tenant"'
+  reason: Legal holds are exposed by the vendor's Data Protection API and suspend data deletion/retention
+    obligations for entities — a privacy and data-protection control rather than litigation case handling.
+    Mapped to Privacy & Data Protection Management; some residual chance it is better framed as litigation
+    hold under Legal Management.
+- tag: Team
+  spec_file: fenergo-team-api-openapi.yml
+  capability_id: BC-620.20
+  capability_id_l1: BC-620
+  capability_name: Identity & Access Management
+  confidence: 0.72
+  evidence: '''Add User to the team'', ''Remove user from the team'', ''Batch update user teams'' — published
+    in fenergo-authorizationcommand-v1-0-openapi.json'
+  reason: Team membership managed inside the platform's authorization service is group-based access administration,
+    i.e. identity and access management. Not HR organisational structure. Confidence moderated because
+    teams may also drive work routing rather than purely entitlements.
+- tag: Clients
+  spec_file: fenergo-clients-api-openapi.yml
+  capability_id: BC-4270.40
+  capability_id_l1: BC-4270
+  capability_name: Developer Identity & Credential Management
+  confidence: 0.7
+  evidence: '"Adds a new secret to the client"; "Returns all scopes"; published in fenergo-identitymanagementcommand/query'
+  reason: 'Homograph: ''Clients'' here are OAuth API clients with secrets and scopes, not customers. Matches
+    issuance and stewardship of API/OAuth client credentials; an IAM reading (BC-620.20) is the plausible
+    alternative, hence 0.7.'
+- tag: Data Deletion
+  spec_file: fenergo-data-deletion-api-openapi.yml
+  capability_id: BC-130.50
+  capability_id_l1: BC-130
+  capability_name: Privacy & Data Protection Management
+  confidence: 0.7
+  evidence: POST /api/datadeletion/deleteEntityData  DeleteEntityData  Delete entity data; published in
+    fenergo-dataprotectioncommand-v1-0-openapi.json
+  reason: Operations delete or mark client entity data for deletion and are published from a data-protection
+    command definition, which is the erasure/retention side of privacy compliance. Confidence moderated
+    because one of the three paths is a product-draft deletion flag, i.e. ordinary record lifecycle.
+- tag: DataRetentionCheck
+  spec_file: fenergo-dataretentioncheck-api-openapi.yml
+  capability_id: BC-130.50
+  capability_id_l1: BC-130
+  capability_name: Privacy & Data Protection Management
+  confidence: 0.7
+  evidence: POST /api/dataretentioncheck/triggerdataretentioncheck 'Trigger Data Retention Check' within
+    the 'Data Protection Command API ... related to the client Data Protection policies'
+  reason: Operational enforcement of data-retention rules defined by data-protection regimes; sits squarely
+    in privacy/data-protection compliance. Single operation keeps confidence moderate.
+- tag: Entity
+  spec_file: fenergo-entity-api-openapi.yml
+  capability_id: BC-420.10
+  capability_id_l1: BC-420
+  capability_name: Customer Data Management
+  confidence: 0.7
+  evidence: PUT /api/entity/{id} UpdateEntity  Update an existing entity; POST /api/entity CreateEntity  Create
+    entity; EntityDto
+  reason: In this Client Lifecycle Management platform the 'entity' is the client/counterparty master
+    record; CRUD plus field-level audit of that record is customer/client master data management. Some
+    ambiguity remains since 'entity' is generic, hence not higher.
+- tag: LegalHoldEntity
+  spec_file: fenergo-legalholdentity-api-openapi.yml
+  capability_id: BC-130.50
+  capability_id_l1: BC-130
+  capability_name: Privacy & Data Protection Management
+  confidence: 0.7
+  evidence: '"Data Protection Command API provides both configurational and operational methods related
+    to the client Data Protection policies"; POST /api/legalholdentity/{id} CreateLegalHoldEntity "Create
+    legal hold entity"'
+  reason: Command-side counterpart that creates, updates and deletes legal holds on entities within the
+    Data Protection domain, i.e. enforcement of retention/erasure exceptions under privacy policy. Same
+    reading and same residual ambiguity as the query-side Legal Hold tag.
+- tag: MatchDocument
+  spec_file: fenergo-matchdocument-api-openapi.yml
+  capability_id: BC-130.10
+  capability_id_l1: BC-130
+  capability_name: Regulatory Compliance Management
+  confidence: 0.7
+  evidence: '"Screening Query API retrieves screening results for screened clients"; "Get all documents
+    for a given match within a batch"'
+  reason: Retrieval of supporting documents attached to screening matches, part of the client screening/due-diligence
+    evidence trail. Mapped to regulatory compliance management as the nearest candidate; document retrieval
+    alone keeps confidence moderate.
+- tag: ScreeningEntity
+  spec_file: fenergo-screeningentity-api-openapi.yml
+  capability_id: BC-130.10
+  capability_id_l1: BC-130
+  capability_name: Regulatory Compliance Management
+  confidence: 0.7
+  evidence: POST /api/entity/getentitieslist  GetEntitiesList  Get a list of all screening entities found
+    corresponding to a list of legal…
+  reason: Query surface over screening entities (ScreeningEntityDto, OngoingScreeningProviderDto) used
+    for AML/sanctions screening of legal entities — a regulatory compliance screening function. Mapped
+    to the cross-industry Regulatory Compliance Management capability as the frame offers no financial-crime-specific
+    option.

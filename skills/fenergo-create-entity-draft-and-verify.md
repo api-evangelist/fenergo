@@ -2,7 +2,7 @@
 name: Create, update and verify a Fenergo entity draft
 description: Run the draft/verify write path on the Entity Data Command API inside a journey, including the concurrency and rejection rules.
 api: openapi/fenergo-entitydatacommand-v3-0-openapi.json
-operations: [CreateEntityDraft, UpdateEntityDraftV3, EntityDraftConflicts, VerifyEntityDraft, RejectEntityDraft, GetEntityDraftById, GetEntityDraftProposedChanges]
+operations: [postApiV3EntityByEntityIdDraft, UpdateEntityDraftV3, putApiV3EntityByEntityIdDraftByIdConflicts, putApiV3EntityByEntityIdDraftByIdVerify, putApiV3EntityByEntityIdDraftByIdReject, getApiV2EntityByEntityIdDraftById, getApiV2EntityProposedchangesDraftByEntityDraftId]
 generated: '2026-09-09'
 method: generated
 source: openapi/ + https://docs.fenergox.com/developer-hub/api-overview/api-principles-and-patterns

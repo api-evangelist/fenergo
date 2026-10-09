@@ -2,7 +2,7 @@
 name: Authenticate and read a Fenergo legal entity
 description: Obtain a Fen-X access token with least-privilege scopes and read a legal entity and its journeys from the Query APIs.
 api: openapi/fenergo-entitydataquery-v2-0-openapi.json
-operations: [GetEntityById, EntityAdvancedSearch, SearchByName, GetEntitiesPagedListV2, GetInstancesByEntityId, GetLifecycleStatusByEntityId]
+operations: [getApiV2EntityById, postApiV2EntityEntityadvancedsearch, postApiV2EntitySearchbyname, GetEntitiesPagedListV2, GetInstancesByEntityId, GetLifecycleStatusByEntityId]
 generated: '2026-09-09'
 method: generated
 source: openapi/ + https://docs.fenergox.com/api-docs/tenant-access

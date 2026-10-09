@@ -2,7 +2,7 @@
 name: Provision Fen-X users with SCIM 2.0
 description: Create, search, patch and deprovision users and groups on the Fenergo SCIM 2.0 identity service, and assign teams afterwards.
 api: openapi/fenergo-identity-scim-v1-openapi.json
-operations: [CreateUser, GetAllUsers, SearchUsers, GetUserById, UpdateUser, PatchUser, DeleteUser, CreateGroup, GetAllGroups, SearchGroups, PatchGroup, Bulk, GetServiceProviderConfig, GetAllSchemas]
+operations: [postApiUsers, getApiV2User, SearchUsers, getApiUsersById, putApiUsersById, patchApiUsersById, deleteApiUsersById, CreateGroup, GetAllGroups, SearchGroups, PatchGroup, Bulk, GetServiceProviderConfig, GetAllSchemas]
 generated: '2026-09-09'
 method: generated
 source: openapi/ + https://docs.fenergox.com/developer-hub/api-and-system-security/scim-overview

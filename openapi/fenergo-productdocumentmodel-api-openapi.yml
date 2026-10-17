@@ -1212,6 +1212,36 @@ paths:
                   errorCode: OBSOLETE_ENDPOINT
 components:
   schemas:
+    PagedEntityDocumentsStatusRequestDto:
+      type: object
+      properties:
+        entityId:
+          type: string
+          description: Gets or sets the entity ID that the documents are associated with
+          format: uuid
+          example: 8e7c1e5d-3875-2c81-a2ae-5506f9a98b75
+        startIndex:
+          type: integer
+          description: Gets or sets the starting index for pagination or sublist operations
+          format: int32
+          example: 0
+        pageSize:
+          type: integer
+          description: Gets or sets the size of the page (result set)
+          format: int32
+          example: 1000
+        deduplicationEnabled:
+          type: boolean
+          description: Gets or sets a flag indicating whether deduplication of document models is to be applied
+          example: false
+        status:
+          type:
+          - string
+          - 'null'
+          description: Gets or sets a document status to be either excluded or included based on the query type
+          example: Processing | Completed | Auto Classifying
+      additionalProperties: false
+      description: Represents options for setting up the results page
     StringIEnumerableServiceResponse:
       type: object
       properties:
@@ -1221,20 +1251,6 @@ components:
           - 'null'
           items:
             type: string
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    DocumentModelDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/DocumentModelDto'
-          description: Document metadata
         messages:
           type:
           - array
@@ -1268,71 +1284,90 @@ components:
         - message: Data is required
           type: Error
           errorCode: Error Code
-    PagedEntityDocumentsRequestDtoServiceRequest:
+    AccessLayerDto:
+      type: object
+      properties:
+        geographic:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Collection of geographic access layers
+          example:
+          - Global
+        businessRelated:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Collection of business related access layers
+          example:
+          - Enterprise
+      additionalProperties: false
+      description: DTO representing access layers attached
+    PagedEntityDocumentsResponseDto:
+      type: object
+      properties:
+        items:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/DocumentModelDto'
+          description: The items result set
+        itemsCount:
+          type: integer
+          description: The count of the items result set
+          format: int32
+        totalPagedItemsReturned:
+          type: integer
+          description: The number of items returned collectively
+          format: int32
+        hasMoreItems:
+          type: boolean
+          description: Indicates if there is any more items to retrieve
+      additionalProperties: false
+    PagedEntityDocumentsRequestDto:
+      type: object
+      properties:
+        entityId:
+          type: string
+          description: Gets or sets the entity ID that the documents are associated with
+          format: uuid
+          example: 8e7c1e5d-3875-2c81-a2ae-5506f9a98b75
+        startIndex:
+          type: integer
+          description: Gets or sets the starting index for pagination or sublist operations
+          format: int32
+          example: 0
+        pageSize:
+          type: integer
+          description: Gets or sets the size of the page (result set)
+          format: int32
+          example: 1000
+        deduplicationEnabled:
+          type: boolean
+          description: Gets or sets a flag indicating whether deduplication of document models is to be applied
+          example: false
+      additionalProperties: false
+      description: Represents options for setting up the results page
+    DocumentModelDtoIEnumerableServiceResponse:
       type: object
       properties:
         data:
-          allOf:
-          - $ref: '#/components/schemas/PagedEntityDocumentsRequestDto'
-          description: Represents options for setting up the results page
-      additionalProperties: false
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
           type:
-          - string
+          - array
           - 'null'
-        type:
+          items:
+            $ref: '#/components/schemas/DocumentModelDto'
+        messages:
           type:
-          - string
+          - array
           - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    Property:
-      type: object
-      properties:
-        value:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        customTypeId:
-          type: string
-          format: uuid
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/Property'
-          example:
-            firstName:
-              type: Single
-              value: Tom
-            dateOfBirth:
-              type: Single
-              value: '2021-07-15'
-            address:
-              type: Collection
-              dataGroupId: dfde9f06-040a-4127-b9a0-2c802a6502fc
-              collections:
-                54a25d24-1a4b-45c6-a5b4-980e5d3a1df5:
-                  properties:
-                    country: Ireland
-                    city: Dublin
-                    street: Mayor Street
-                47010265-3b85-4407-be61-90d04525f020:
-                  properties:
-                    country: Ireland
-                    city: Dublin
-                    street: E Wall Rd
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
     DocumentModelDto:
       type: object
@@ -1540,15 +1575,12 @@ components:
           format: uuid
       additionalProperties: false
       description: Document metadata
-    DocumentModelDtoIEnumerableServiceResponse:
+    PagedEntityDocumentsResponseDtoServiceResponse:
       type: object
       properties:
         data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/DocumentModelDto'
+          allOf:
+          - $ref: '#/components/schemas/PagedEntityDocumentsResponseDto'
         messages:
           type:
           - array
@@ -1556,36 +1588,6 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    PagedEntityDocumentsStatusRequestDto:
-      type: object
-      properties:
-        entityId:
-          type: string
-          description: Gets or sets the entity ID that the documents are associated with
-          format: uuid
-          example: 8e7c1e5d-3875-2c81-a2ae-5506f9a98b75
-        startIndex:
-          type: integer
-          description: Gets or sets the starting index for pagination or sublist operations
-          format: int32
-          example: 0
-        pageSize:
-          type: integer
-          description: Gets or sets the size of the page (result set)
-          format: int32
-          example: 1000
-        deduplicationEnabled:
-          type: boolean
-          description: Gets or sets a flag indicating whether deduplication of document models is to be applied
-          example: false
-        status:
-          type:
-          - string
-          - 'null'
-          description: Gets or sets a document status to be either excluded or included based on the query type
-          example: Processing | Completed | Auto Classifying
-      additionalProperties: false
-      description: Represents options for setting up the results page
     StringServiceResponse:
       type: object
       properties:
@@ -1600,20 +1602,18 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    PagedEntityDocumentsStatusRequestDtoServiceRequest:
+    PagedEntityDocumentsRequestDtoServiceRequest:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/PagedEntityDocumentsStatusRequestDto'
+          - $ref: '#/components/schemas/PagedEntityDocumentsRequestDto'
           description: Represents options for setting up the results page
       additionalProperties: false
-    PagedEntityDocumentsResponseDtoServiceResponse:
+    ObjectServiceResponse:
       type: object
       properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/PagedEntityDocumentsResponseDto'
+        data: {}
         messages:
           type:
           - array
@@ -1621,30 +1621,20 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    PagedEntityDocumentsRequestDto:
+    DocumentModelDtoServiceResponse:
       type: object
       properties:
-        entityId:
-          type: string
-          description: Gets or sets the entity ID that the documents are associated with
-          format: uuid
-          example: 8e7c1e5d-3875-2c81-a2ae-5506f9a98b75
-        startIndex:
-          type: integer
-          description: Gets or sets the starting index for pagination or sublist operations
-          format: int32
-          example: 0
-        pageSize:
-          type: integer
-          description: Gets or sets the size of the page (result set)
-          format: int32
-          example: 1000
-        deduplicationEnabled:
-          type: boolean
-          description: Gets or sets a flag indicating whether deduplication of document models is to be applied
-          example: false
+        data:
+          allOf:
+          - $ref: '#/components/schemas/DocumentModelDto'
+          description: Document metadata
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-      description: Represents options for setting up the results page
     DocumentEntityType:
       type: object
       properties:
@@ -1657,28 +1647,6 @@ components:
           type: integer
           format: int32
           readOnly: true
-      additionalProperties: false
-    PagedEntityDocumentsResponseDto:
-      type: object
-      properties:
-        items:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/DocumentModelDto'
-          description: The items result set
-        itemsCount:
-          type: integer
-          description: The count of the items result set
-          format: int32
-        totalPagedItemsReturned:
-          type: integer
-          description: The number of items returned collectively
-          format: int32
-        hasMoreItems:
-          type: boolean
-          description: Indicates if there is any more items to retrieve
       additionalProperties: false
     ValidationErrorModel:
       type: object
@@ -1697,39 +1665,71 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    AccessLayerDto:
+    Property:
       type: object
       properties:
-        geographic:
+        value:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            type: string
-          description: Collection of geographic access layers
-          example:
-          - Global
-        businessRelated:
+        type:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            type: string
-          description: Collection of business related access layers
+        customTypeId:
+          type: string
+          format: uuid
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/Property'
           example:
-          - Enterprise
+            firstName:
+              type: Single
+              value: Tom
+            dateOfBirth:
+              type: Single
+              value: '2021-07-15'
+            address:
+              type: Collection
+              dataGroupId: dfde9f06-040a-4127-b9a0-2c802a6502fc
+              collections:
+                54a25d24-1a4b-45c6-a5b4-980e5d3a1df5:
+                  properties:
+                    country: Ireland
+                    city: Dublin
+                    street: Mayor Street
+                47010265-3b85-4407-be61-90d04525f020:
+                  properties:
+                    country: Ireland
+                    city: Dublin
+                    street: E Wall Rd
       additionalProperties: false
-      description: DTO representing access layers attached
-    ObjectServiceResponse:
+    ServiceResponseMessage:
       type: object
       properties:
-        data: {}
-        messages:
+        message:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    PagedEntityDocumentsStatusRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/PagedEntityDocumentsStatusRequestDto'
+          description: Represents options for setting up the results page
       additionalProperties: false
   securitySchemes:
     Bearer:

@@ -1938,21 +1938,120 @@ paths:
     - url: /localisationquery
 components:
   schemas:
-    ServiceResponseMessage:
+    LocalisationDtoServiceResponse:
       type: object
       properties:
-        message:
+        data:
+          $ref: '#/components/schemas/LocalisationDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    VersionStatus:
+      enum:
+      - Draft
+      - Pending
+      - Rejected
+      - Published
+      - Archived
+      - Deleted
+      type: string
+    LocalisationVersionSignResponse:
+      type: object
+      properties:
+        localisationId:
+          type: string
+          description: The Id of the Localisation Link the version belongs to
+          format: uuid
+        versionNumber:
+          type: integer
+          description: The number of the version that has been signed
+          format: int32
+        status:
+          $ref: '#/components/schemas/VersionStatus'
+      additionalProperties: false
+      description: Contains the new version Status, after a version sign operation
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    LocalisationDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/LocalisationDto'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
           type:
           - string
           - 'null'
-        type:
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    Approver:
+      type: object
+      properties:
+        subject:
           type:
           - string
           - 'null'
-        errorCode:
+        successor:
+          $ref: '#/components/schemas/Approver'
+        action:
+          $ref: '#/components/schemas/ApproveAction'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
+      additionalProperties: false
+    Decision:
+      enum:
+      - Approve
+      - Reject
+      type: string
+    ApproveAction:
+      type: object
+      properties:
+        comment:
           type:
           - string
           - 'null'
+        decision:
+          $ref: '#/components/schemas/Decision'
+        created:
+          type: string
+          format: date-time
       additionalProperties: false
     UpdateLocalisationVersionDto:
       type: object
@@ -1995,13 +2094,38 @@ components:
           description: The defined list of signees for the version
       additionalProperties: false
       description: Set of properties which define new version of Localisation
-    StringServiceResponse:
+    UpdateLocalisationVersionDtoServiceRequest:
       type: object
       properties:
         data:
+          $ref: '#/components/schemas/UpdateLocalisationVersionDto'
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
           type:
           - string
           - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ApproveActionServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ApproveAction'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
         messages:
           type:
           - array
@@ -2009,7 +2133,44 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    Approver:
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    LocalisationVersionSignResponseServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/LocalisationVersionSignResponse'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    UpdateLocalisationDto:
+      type: object
+      properties:
+        isDefaultLocalisation:
+          type: boolean
+          description: '`true` to set System, Localisation `false` standard Localisation'
+          example: true
+      additionalProperties: false
+    Signee:
       type: object
       properties:
         subject:
@@ -2024,38 +2185,6 @@ components:
           type: boolean
           readOnly: true
       additionalProperties: false
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    UpdateLocalisationVersionDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/UpdateLocalisationVersionDto'
-      additionalProperties: false
-    LocalisationVersionSignResponse:
-      type: object
-      properties:
-        localisationId:
-          type: string
-          description: The Id of the Localisation Link the version belongs to
-          format: uuid
-        versionNumber:
-          type: integer
-          description: The number of the version that has been signed
-          format: int32
-        status:
-          $ref: '#/components/schemas/VersionStatus'
-      additionalProperties: false
-      description: Contains the new version Status, after a version sign operation
     LocalisationDto:
       type: object
       properties:
@@ -2104,295 +2233,40 @@ components:
           description: The defined list of signees for the version
       additionalProperties: false
       description: Localisation representation
-    LocalisationDtoServiceRequest:
+    ContextDto:
       type: object
       properties:
-        data:
-          $ref: '#/components/schemas/LocalisationDto'
-      additionalProperties: false
-    LocalisationDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/LocalisationDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    Decision:
-      enum:
-      - Approve
-      - Reject
-      type: string
-    Signee:
-      type: object
-      properties:
-        subject:
+        name:
           type:
           - string
           - 'null'
-        successor:
-          $ref: '#/components/schemas/Approver'
-        action:
-          $ref: '#/components/schemas/ApproveAction'
-        hasProcessedRequest:
-          type: boolean
-          readOnly: true
-      additionalProperties: false
-    UpdateLocalisationDto:
-      type: object
-      properties:
-        isDefaultLocalisation:
-          type: boolean
-          description: '`true` to set System, Localisation `false` standard Localisation'
-          example: true
-      additionalProperties: false
-    ValidationErrorModel:
-      type: object
-      properties:
-        propertyName:
+          description: Name of column
+          example: Text name
+        description:
           type:
           - string
           - 'null'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-        attemptedValue: {}
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ValidationErrorModelListServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
-    LocalisationVersionSignResponseServiceResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/LocalisationVersionSignResponse'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ApproveAction:
-      type: object
-      properties:
-        comment:
-          type:
-          - string
-          - 'null'
-        decision:
-          $ref: '#/components/schemas/Decision'
-        created:
-          type: string
-          format: date-time
-      additionalProperties: false
-    VersionStatus:
-      enum:
-      - Draft
-      - Pending
-      - Rejected
-      - Published
-      - Archived
-      - Deleted
-      type: string
-    ApproveActionServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/ApproveAction'
-      additionalProperties: false
-    LocalisationLiteVersionDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The UiD of the version
-          format: uuid
-          example: e1809731-77df-4e72-98e7-0d314b7a5151
-        localisationId:
-          type: string
-          description: The UiD of the Localisation that the version belongs to
-          format: uuid
-          example: e1809731-77df-4e72-98e7-0d314b7a5152
-        localisationName:
-          type:
-          - string
-          - 'null'
-          description: Display name of the model
-          example: TestLocalisation
-        isNumberSeparatorEnabled:
-          type: boolean
-          description: The flag to show if the number separator is enabled
-          example: false
-        isMasterFileEnabled:
-          type: boolean
-          description: The flag to show if master file for the language pack is enabled
-          example: false
-        localisationIsoCode:
-          type:
-          - string
-          - 'null'
-          description: Display iso code of the model
-          example: en
-        versionNumber:
-          type: integer
-          description: The versions number
-          format: int32
-          example: 1
-        effectiveFrom:
-          type: string
-          description: The date that the version takes effect when published
-          format: date-time
-          example: '2021-12-12T15:55:00.000Z'
-        effectiveUntil:
-          type:
-          - string
-          - 'null'
-          description: The calculated date that the version ceases being active
-          format: date-time
-          example: '2021-12-12T15:55:00.000Z'
-        publicationDate:
-          type:
-          - string
-          - 'null'
-          description: The date that the version got published
-          format: date-time
-          example: '2021-12-12T15:55:00.000Z'
-        status:
-          allOf:
-          - $ref: '#/components/schemas/VersionStatus'
-          description: The status of the version
-          example: Draft
-        created:
-          type: string
-          description: The creation date of the version
-          format: date-time
-          example: '2021-12-12T15:55:00.000Z'
-        isActive:
-          type: boolean
-          description: 'The calculated flag to annotate whether this is the model''s active version
-
-            at the time of the query'
-          example: true
-        localisationValuesList:
+          description: Description of the context
+          example: Translation for Chinese
+        localisationList:
           type:
           - object
           - 'null'
-          additionalProperties:
-            type:
-            - object
-            - 'null'
-            additionalProperties: {}
+          additionalProperties: {}
           description: Type of column
-        isDefaultLocalisation:
-          type: boolean
-          description: Flag to display if this is a System Localisation
-          example: false
-      additionalProperties: false
-      description: Instance of a Localisation Version.
-    Approver_2:
-      type: object
-      properties:
-        subject:
+        displayName:
           type:
           - string
           - 'null'
-        successor:
-          allOf:
-          - $ref: '#/components/schemas/Approver_2'
-        action:
-          allOf:
-          - $ref: '#/components/schemas/ApproveAction_2'
-        hasProcessedRequest:
-          type: boolean
-          readOnly: true
-      additionalProperties: false
-    StringIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    SystemLanguageDto:
-      type: object
-      properties:
-        languageCode:
-          type:
-          - string
-          - 'null'
-          description: Language code of returned system language
-          example: zh-CN
-        lastUpdatedOn:
+          description: Display name of the context
+          example: ThaiTranslation
+        lastUpdatedTime:
           type: string
-          description: Last updated time of system language file
+          description: Last updated time of context file
           format: date-time
-          example: '2021-12-12T15:55:00.000Z'
-        signedUrl:
-          type:
-          - string
-          - 'null'
-          description: Presigned url to request system language file
-          example: text
+          example: 2022-5-25
       additionalProperties: false
       description: Defines column with metadata for localisation values
-    LocalisationDtoIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/LocalisationDto_2'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
     LocalisationVersionDto:
       type: object
       properties:
@@ -2482,6 +2356,239 @@ components:
           description: Localisation metadata column collection
       additionalProperties: false
       description: Instance of a Localisation Version.
+    SystemLanguageDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/SystemLanguageDto'
+          description: Defines column with metadata for localisation values
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    StringIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    Approver_2:
+      type: object
+      properties:
+        subject:
+          type:
+          - string
+          - 'null'
+        successor:
+          allOf:
+          - $ref: '#/components/schemas/Approver_2'
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction_2'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
+      additionalProperties: false
+    LocalisationLiteVersionDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/LocalisationLiteVersionDto'
+          description: Instance of a Localisation Version.
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    SystemLanguageDto:
+      type: object
+      properties:
+        languageCode:
+          type:
+          - string
+          - 'null'
+          description: Language code of returned system language
+          example: zh-CN
+        lastUpdatedOn:
+          type: string
+          description: Last updated time of system language file
+          format: date-time
+          example: '2021-12-12T15:55:00.000Z'
+        signedUrl:
+          type:
+          - string
+          - 'null'
+          description: Presigned url to request system language file
+          example: text
+      additionalProperties: false
+      description: Defines column with metadata for localisation values
+    LocalisationLiteVersionDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The UiD of the version
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        localisationId:
+          type: string
+          description: The UiD of the Localisation that the version belongs to
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5152
+        localisationName:
+          type:
+          - string
+          - 'null'
+          description: Display name of the model
+          example: TestLocalisation
+        isNumberSeparatorEnabled:
+          type: boolean
+          description: The flag to show if the number separator is enabled
+          example: false
+        isMasterFileEnabled:
+          type: boolean
+          description: The flag to show if master file for the language pack is enabled
+          example: false
+        localisationIsoCode:
+          type:
+          - string
+          - 'null'
+          description: Display iso code of the model
+          example: en
+        versionNumber:
+          type: integer
+          description: The versions number
+          format: int32
+          example: 1
+        effectiveFrom:
+          type: string
+          description: The date that the version takes effect when published
+          format: date-time
+          example: '2021-12-12T15:55:00.000Z'
+        effectiveUntil:
+          type:
+          - string
+          - 'null'
+          description: The calculated date that the version ceases being active
+          format: date-time
+          example: '2021-12-12T15:55:00.000Z'
+        publicationDate:
+          type:
+          - string
+          - 'null'
+          description: The date that the version got published
+          format: date-time
+          example: '2021-12-12T15:55:00.000Z'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+          description: The status of the version
+          example: Draft
+        created:
+          type: string
+          description: The creation date of the version
+          format: date-time
+          example: '2021-12-12T15:55:00.000Z'
+        isActive:
+          type: boolean
+          description: 'The calculated flag to annotate whether this is the model''s active version
+
+            at the time of the query'
+          example: true
+        localisationValuesList:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type:
+            - object
+            - 'null'
+            additionalProperties: {}
+          description: Type of column
+        isDefaultLocalisation:
+          type: boolean
+          description: Flag to display if this is a System Localisation
+          example: false
+      additionalProperties: false
+      description: Instance of a Localisation Version.
+    ApproveAction_2:
+      type: object
+      properties:
+        comment:
+          type:
+          - string
+          - 'null'
+        decision:
+          allOf:
+          - $ref: '#/components/schemas/Decision'
+        created:
+          type: string
+          format: date-time
+      additionalProperties: false
+    LocalisationVersionDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/LocalisationVersionDto'
+          description: Instance of a Localisation Version.
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    LocalisationDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/LocalisationDto_2'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    Signee_2:
+      type: object
+      properties:
+        subject:
+          type:
+          - string
+          - 'null'
+        successor:
+          allOf:
+          - $ref: '#/components/schemas/Approver_2'
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction_2'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
+      additionalProperties: false
     LocalisationDto_2:
       type: object
       properties:
@@ -2503,113 +2610,6 @@ components:
           description: List of available localisation versions
       additionalProperties: false
       description: Localisation Data
-    Signee_2:
-      type: object
-      properties:
-        subject:
-          type:
-          - string
-          - 'null'
-        successor:
-          allOf:
-          - $ref: '#/components/schemas/Approver_2'
-        action:
-          allOf:
-          - $ref: '#/components/schemas/ApproveAction_2'
-        hasProcessedRequest:
-          type: boolean
-          readOnly: true
-      additionalProperties: false
-    SystemLanguageDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/SystemLanguageDto'
-          description: Defines column with metadata for localisation values
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ApproveAction_2:
-      type: object
-      properties:
-        comment:
-          type:
-          - string
-          - 'null'
-        decision:
-          allOf:
-          - $ref: '#/components/schemas/Decision'
-        created:
-          type: string
-          format: date-time
-      additionalProperties: false
-    ContextDto:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-          description: Name of column
-          example: Text name
-        description:
-          type:
-          - string
-          - 'null'
-          description: Description of the context
-          example: Translation for Chinese
-        localisationList:
-          type:
-          - object
-          - 'null'
-          additionalProperties: {}
-          description: Type of column
-        displayName:
-          type:
-          - string
-          - 'null'
-          description: Display name of the context
-          example: ThaiTranslation
-        lastUpdatedTime:
-          type: string
-          description: Last updated time of context file
-          format: date-time
-          example: 2022-5-25
-      additionalProperties: false
-      description: Defines column with metadata for localisation values
-    LocalisationLiteVersionDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/LocalisationLiteVersionDto'
-          description: Instance of a Localisation Version.
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    LocalisationVersionDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/LocalisationVersionDto'
-          description: Instance of a Localisation Version.
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
   securitySchemes:
     Bearer:
       type: apiKey

@@ -110,24 +110,25 @@ paths:
       - Profiles
 components:
   schemas:
-    ProfileMetadata:
-      properties:
-        ui:
-          $ref: '#/components/schemas/ProfileMetadataUIDetails'
-      additionalProperties: false
-      type: object
-      required:
-      - ui
-      title: ProfileMetadata
-      description: Profile metadata.
-    ValueType:
+    ProfileFieldType:
       type: string
       enum:
-      - bool
-      - str
-      - int
-      title: ValueType
-      description: Explicitly define the type of certain values.
+      - aggregation
+      - peer_belongship
+      - value
+      - occurrence
+      title: ProfileFieldType
+      description: Allowed profile field types.
+    AggregationType:
+      type: string
+      enum:
+      - avg
+      - value_count
+      - sum
+      - std_deviation
+      - cardinality
+      title: AggregationType
+      description: Allowed aggregation types definition.
     ProfileMetadataUIDetailsDisplayLocation:
       properties:
         column_header:
@@ -143,136 +144,54 @@ components:
       - row_name
       title: ProfileMetadataUIDetailsDisplayLocation
       description: Display location details for a profile.
-    ProfileType:
-      type: string
-      enum:
-      - entity
-      - entity_property
-      - entity_combination
-      - peergroup_belongship
-      - peergroup
-      - redshift
-      - custom
-      title: ProfileType
-      description: Defines a ProfileType Profile Model to use for validation.
-    AggregationMeta:
+    Filter:
       properties:
         field_name:
           type: string
           title: Field Name
         type:
-          $ref: '#/components/schemas/AggregationType'
-        group_by:
+          $ref: '#/components/schemas/FilterType'
+        source_type:
+          $ref: '#/components/schemas/FilterSourceType'
+        value_type:
+          $ref: '#/components/schemas/ValueType'
+        value:
+          anyOf:
+          - type: boolean
+          - type: string
+          - type: integer
+          title: Value
+        from_range:
           type: string
-          title: Group By
+          title: From Range
+        to_range:
+          type: string
+          title: To Range
       additionalProperties: false
       type: object
       required:
       - field_name
       - type
-      title: AggregationMeta
-      description: Aggregation Meta definition.
-    HTTPValidationError:
+      - source_type
+      title: Filter
+      description: Filter definition.
+    ProfileMetadataUIDetailsDynamo:
       properties:
-        detail:
-          items:
-            $ref: '#/components/schemas/ValidationError'
-          type: array
-          title: Detail
-      type: object
-      title: HTTPValidationError
-    ProfileMetadataUIDetails:
-      properties:
-        profile_group:
-          $ref: '#/components/schemas/ProfileMetadataUIDetailsProfileGroup'
-        dynamo:
-          $ref: '#/components/schemas/ProfileMetadataUIDetailsDynamo'
-        display_location:
-          $ref: '#/components/schemas/ProfileMetadataUIDetailsDisplayLocation'
-      additionalProperties: false
-      type: object
-      required:
-      - profile_group
-      - dynamo
-      - display_location
-      title: ProfileMetadataUIDetails
-      description: Profile metadata UI details.
-    ProfileFieldType:
-      type: string
-      enum:
-      - aggregation
-      - peer_belongship
-      - value
-      - occurrence
-      title: ProfileFieldType
-      description: Allowed profile field types.
-    FilterSourceType:
-      type: string
-      enum:
-      - extracted_fields
-      - transaction
-      - peergroup
-      - scan
-      title: FilterSourceType
-      description: Allowed filter source types.
-    OccurrenceMeta:
-      properties:
-        type:
-          $ref: '#/components/schemas/OccurrenceType'
-      additionalProperties: false
-      type: object
-      required:
-      - type
-      title: OccurrenceMeta
-      description: Occurrence Meta definition.
-    AggregationType:
-      type: string
-      enum:
-      - avg
-      - value_count
-      - sum
-      - std_deviation
-      - cardinality
-      title: AggregationType
-      description: Allowed aggregation types definition.
-    ProfileField:
-      properties:
-        name:
+        key_pattern:
           type: string
-          title: Name
-        type:
-          $ref: '#/components/schemas/ProfileFieldType'
-        filters:
-          items:
-            $ref: '#/components/schemas/Filter'
-          type: array
-          title: Filters
-        aggregation_meta:
-          $ref: '#/components/schemas/AggregationMeta'
-        occurrence_meta:
-          $ref: '#/components/schemas/OccurrenceMeta'
+          title: Key Pattern
+        field_id:
+          type: string
+          title: Field Id
+        value:
+          title: Value
       additionalProperties: false
       type: object
       required:
-      - name
-      - type
-      title: ProfileField
-      description: Profile field definition.
-    ProfileIdSelector:
-      properties:
-        field_name:
-          type: string
-          title: Field Name
-        type:
-          type: string
-          title: Type
-      additionalProperties: false
-      type: object
-      required:
-      - field_name
-      - type
-      title: ProfileIdSelector
-      description: Profile field id selector definition.
+      - key_pattern
+      - field_id
+      title: ProfileMetadataUIDetailsDynamo
+      description: DynamoDB key template for a profile.
     ProfileDTO:
       properties:
         id:
@@ -321,23 +240,101 @@ components:
       - id_selectors
       title: ProfileDTO
       description: Defines a PorifleDTO.
-    ProfileMetadataUIDetailsDynamo:
+    OccurrenceType:
+      type: string
+      enum:
+      - last_occurrence
+      title: OccurrenceType
+      description: Allowed Occurrence types definition.
+    ProfileSummaryDTO:
       properties:
-        key_pattern:
+        id:
           type: string
-          title: Key Pattern
-        field_id:
+          title: Id
+        description:
           type: string
-          title: Field Id
-        value:
-          title: Value
+          title: Description
+        lookback_until:
+          type: string
+          title: Lookback Until
+        aggregation_type:
+          type: string
+          title: Aggregation Type
+        profile_type:
+          type: string
+          title: Profile Type
+      type: object
+      required:
+      - id
+      - description
+      - lookback_until
+      - aggregation_type
+      - profile_type
+      title: ProfileSummaryDTO
+      description: Defines a PorifleSummaryDTO.
+    ProfileIdSelector:
+      properties:
+        field_name:
+          type: string
+          title: Field Name
+        type:
+          type: string
+          title: Type
       additionalProperties: false
       type: object
       required:
-      - key_pattern
-      - field_id
-      title: ProfileMetadataUIDetailsDynamo
-      description: DynamoDB key template for a profile.
+      - field_name
+      - type
+      title: ProfileIdSelector
+      description: Profile field id selector definition.
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    FilterType:
+      type: string
+      enum:
+      - exact_match
+      - range
+      - exist
+      title: FilterType
+      description: Allowed filter types.
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ProfileMetadata:
+      properties:
+        ui:
+          $ref: '#/components/schemas/ProfileMetadataUIDetails'
+      additionalProperties: false
+      type: object
+      required:
+      - ui
+      title: ProfileMetadata
+      description: Profile metadata.
     ProfileMetadataUIDetailsProfileGroup:
       properties:
         name:
@@ -374,77 +371,55 @@ components:
       - name
       title: ProfileMetadataUIDetailsProfileGroup
       description: Profile-group details.
-    Filter:
+    ProfileField:
+      properties:
+        name:
+          type: string
+          title: Name
+        type:
+          $ref: '#/components/schemas/ProfileFieldType'
+        filters:
+          items:
+            $ref: '#/components/schemas/Filter'
+          type: array
+          title: Filters
+        aggregation_meta:
+          $ref: '#/components/schemas/AggregationMeta'
+        occurrence_meta:
+          $ref: '#/components/schemas/OccurrenceMeta'
+      additionalProperties: false
+      type: object
+      required:
+      - name
+      - type
+      title: ProfileField
+      description: Profile field definition.
+    FilterSourceType:
+      type: string
+      enum:
+      - extracted_fields
+      - transaction
+      - peergroup
+      - scan
+      title: FilterSourceType
+      description: Allowed filter source types.
+    AggregationMeta:
       properties:
         field_name:
           type: string
           title: Field Name
         type:
-          $ref: '#/components/schemas/FilterType'
-        source_type:
-          $ref: '#/components/schemas/FilterSourceType'
-        value_type:
-          $ref: '#/components/schemas/ValueType'
-        value:
-          anyOf:
-          - type: boolean
-          - type: string
-          - type: integer
-          title: Value
-        from_range:
+          $ref: '#/components/schemas/AggregationType'
+        group_by:
           type: string
-          title: From Range
-        to_range:
-          type: string
-          title: To Range
+          title: Group By
       additionalProperties: false
       type: object
       required:
       - field_name
       - type
-      - source_type
-      title: Filter
-      description: Filter definition.
-    OccurrenceType:
-      type: string
-      enum:
-      - last_occurrence
-      title: OccurrenceType
-      description: Allowed Occurrence types definition.
-    ProfileSummaryDTO:
-      properties:
-        id:
-          type: string
-          title: Id
-        description:
-          type: string
-          title: Description
-        lookback_until:
-          type: string
-          title: Lookback Until
-        aggregation_type:
-          type: string
-          title: Aggregation Type
-        profile_type:
-          type: string
-          title: Profile Type
-      type: object
-      required:
-      - id
-      - description
-      - lookback_until
-      - aggregation_type
-      - profile_type
-      title: ProfileSummaryDTO
-      description: Defines a PorifleSummaryDTO.
-    FilterType:
-      type: string
-      enum:
-      - exact_match
-      - range
-      - exist
-      title: FilterType
-      description: Allowed filter types.
+      title: AggregationMeta
+      description: Aggregation Meta definition.
     ProfileMetadataUIDetailsProfileGroupType:
       type: string
       enum:
@@ -456,27 +431,52 @@ components:
       - custom_profile
       title: ProfileMetadataUIDetailsProfileGroupType
       description: Profile-group types for metadata.
-    ValidationError:
+    ProfileType:
+      type: string
+      enum:
+      - entity
+      - entity_property
+      - entity_combination
+      - peergroup_belongship
+      - peergroup
+      - redshift
+      - custom
+      title: ProfileType
+      description: Defines a ProfileType Profile Model to use for validation.
+    ProfileMetadataUIDetails:
       properties:
-        loc:
-          items:
-            anyOf:
-            - type: string
-            - type: integer
-          type: array
-          title: Location
-        msg:
-          type: string
-          title: Message
-        type:
-          type: string
-          title: Error Type
+        profile_group:
+          $ref: '#/components/schemas/ProfileMetadataUIDetailsProfileGroup'
+        dynamo:
+          $ref: '#/components/schemas/ProfileMetadataUIDetailsDynamo'
+        display_location:
+          $ref: '#/components/schemas/ProfileMetadataUIDetailsDisplayLocation'
+      additionalProperties: false
       type: object
       required:
-      - loc
-      - msg
+      - profile_group
+      - dynamo
+      - display_location
+      title: ProfileMetadataUIDetails
+      description: Profile metadata UI details.
+    ValueType:
+      type: string
+      enum:
+      - bool
+      - str
+      - int
+      title: ValueType
+      description: Explicitly define the type of certain values.
+    OccurrenceMeta:
+      properties:
+        type:
+          $ref: '#/components/schemas/OccurrenceType'
+      additionalProperties: false
+      type: object
+      required:
       - type
-      title: ValidationError
+      title: OccurrenceMeta
+      description: Occurrence Meta definition.
   securitySchemes:
     HTTPBearer:
       type: http

@@ -768,13 +768,21 @@ paths:
     - url: /collateralquery
 components:
   schemas:
-    CollateralDtoServiceRequest:
+    PropertyDto:
       type: object
       properties:
-        data:
+        type:
           allOf:
-          - $ref: '#/components/schemas/CollateralDto2'
-          description: "Class to represent the collateral uploaded. \nContains all properties needed to fill the metadata of the collateral being uploaded."
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        discriminator:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        isValid:
+          type:
+          - boolean
+          - 'null'
       additionalProperties: false
     ServiceResponseMessage:
       type: object
@@ -792,13 +800,19 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    ServiceResponse:
+    PropertyType:
+      enum:
+      - Single
+      - Custom
+      - Collection
+      type: string
+    CollateralDtoServiceResponse:
       type: object
       properties:
         data:
-          type:
-          - string
-          - 'null'
+          allOf:
+          - $ref: '#/components/schemas/CollateralDto2'
+          description: "Class to represent the collateral uploaded. \nContains all properties needed to fill the metadata of the collateral being uploaded."
         messages:
           type:
           - array
@@ -873,20 +887,6 @@ components:
           format: date-time
       additionalProperties: false
       description: "Class to represent the collateral uploaded. \nContains all properties needed to fill the metadata of the collateral being uploaded."
-    CollateralDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CollateralDto2'
-          description: "Class to represent the collateral uploaded. \nContains all properties needed to fill the metadata of the collateral being uploaded."
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
     StringServiceResponse:
       type: object
       properties:
@@ -901,28 +901,6 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    PropertyType:
-      enum:
-      - Single
-      - Custom
-      - Collection
-      type: string
-    PropertyDto:
-      type: object
-      properties:
-        type:
-          allOf:
-          - $ref: '#/components/schemas/PropertyType'
-          readOnly: true
-        discriminator:
-          allOf:
-          - $ref: '#/components/schemas/PropertyType'
-          readOnly: true
-        isValid:
-          type:
-          - boolean
-          - 'null'
-      additionalProperties: false
     ObjectServiceResponse:
       type: object
       properties:
@@ -934,7 +912,63 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    ManualCreditScreeningDataSource:
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CollateralDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CollateralDto2'
+          description: "Class to represent the collateral uploaded. \nContains all properties needed to fill the metadata of the collateral being uploaded."
+      additionalProperties: false
+    CollateralSnapshotDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CollateralSnapshotDto'
+          description: A Collateral snapshot object
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AllocationValidationResultDto:
+      type: object
+      properties:
+        collateralId:
+          type:
+          - string
+          - 'null'
+        collateralType:
+          type:
+          - string
+          - 'null'
+        isValid:
+          type: boolean
+        errorMessages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorDto'
+      additionalProperties: false
+    AutoCreditScreeningDataSource:
       type: object
       properties:
         dataSource:
@@ -947,35 +981,43 @@ components:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ManualCreditScreeningDto'
+            $ref: '#/components/schemas/AutoCreditScreeningDto'
         relatedPartyCreditScreenings:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ManualCreditScreeningDto'
+            $ref: '#/components/schemas/AutoCreditScreeningDto'
       additionalProperties: false
-    RelatedProductDto:
+    DataSourcesLambdaResponseServiceResponse:
       type: object
       properties:
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-        lifecycleStatus:
-          type:
-          - string
-          - 'null'
-        relationshipTypes:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/DataSourcesLambdaResponse'
+        messages:
           type:
           - array
           - 'null'
           items:
-            type: string
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    CurrentDataGroupItemDataSource:
+    CollateralDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        collaterals:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/CollateralDto2_2'
+      additionalProperties: false
+    MainEntityDataSource:
       type: object
       properties:
         dataSource:
@@ -984,29 +1026,311 @@ components:
           - 'null'
           readOnly: true
         properties:
+          allOf:
+          - $ref: '#/components/schemas/PropertiesDto'
+      additionalProperties: false
+    ManualCreditAssessmentV2DataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        creditAssessments:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/CreditAssessmentDto'
+      additionalProperties: false
+    AutoCreditAssessmentDto:
+      type: object
+      properties:
+        properties:
           type:
           - object
           - 'null'
           additionalProperties:
-            type:
-            - string
-            - 'null'
+            $ref: '#/components/schemas/PropertyDto'
+        assessmentOutcome:
+          type:
+          - string
+          - 'null'
+        providerInternalIdentifier:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
-    CollateralDtoIEnumerableServiceResponse:
+    ValidateDealCollateralAllocationRequestDto:
+      type: object
+      properties:
+        dealIds:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+            format: uuid
+          description: Deal Ids
+        jurisdictions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/VersionedJurisdictionDto'
+          description: Jurisdictions that apply to current entity
+        entityType:
+          type:
+          - string
+          - 'null'
+          description: Entity type
+          example: Individual
+        categories:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Deal Collateral Categories
+      additionalProperties: false
+      description: Class to represent the collaterals allocations validations input
+    ValidateDealCollateralAllocationRequestDtoServiceRequest:
       type: object
       properties:
         data:
+          allOf:
+          - $ref: '#/components/schemas/ValidateDealCollateralAllocationRequestDto'
+          description: Class to represent the collaterals allocations validations input
+      additionalProperties: false
+    CollateralDto2_2:
+      type: object
+      properties:
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+      additionalProperties: false
+    AutoCreditScreeningDto:
+      type: object
+      properties:
+        entityId:
+          type: string
+          format: uuid
+        creditScreeningOutcome:
+          type:
+          - string
+          - 'null'
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+        providerInternalIdentifier:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    VersionedJurisdictionDto:
+      type: object
+      properties:
+        Jurisdiction:
+          type:
+          - string
+          - 'null'
+        VersionId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+      additionalProperties: false
+    RelatedAssociationsDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        relatedAssociations:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RelatedAssociationDto'
+      additionalProperties: false
+    CreditAssessmentDto:
+      type: object
+      properties:
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+        assessmentOutcome:
+          type:
+          - string
+          - 'null'
+        assessmentComment:
+          type:
+          - string
+          - 'null'
+        taskId:
+          type:
+          - string
+          - 'null'
+        taskDataKey:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    EventIngressDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        eventType:
+          type:
+          - string
+          - 'null'
+        eventSubtype:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    RelatedProductsDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        products:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RelatedProductDto'
+      additionalProperties: false
+    CollateralSnapshotDto:
+      type: object
+      properties:
+        collaterals:
           type:
           - array
           - 'null'
           items:
             $ref: '#/components/schemas/CollateralDto'
+          description: List of Collaterals
+        collateralDrafts:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/CollateralDraftDto'
+          description: List of Collateral drafts
+      additionalProperties: false
+      description: A Collateral snapshot object
+    DataSourcesLambdaResponse:
+      type: object
+      properties:
+        dataSources:
+          allOf:
+          - $ref: '#/components/schemas/DataSourcesDto'
+      additionalProperties: false
+    ValidateDealCollateralAllocationResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ValidateDealCollateralAllocationResponseDto'
         messages:
           type:
           - array
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ChangedFieldDto:
+      type: object
+      properties:
+        key:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    AccountRelatedFundDto:
+      type: object
+      properties:
+        properties:
+          allOf:
+          - $ref: '#/components/schemas/PropertiesDto'
+      additionalProperties: false
+    SignificanceEngineDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        significanceEngine:
+          allOf:
+          - $ref: '#/components/schemas/SignificanceEngineDto'
+      additionalProperties: false
+    ManualCreditScreeningDto:
+      type: object
+      properties:
+        taskDataKey:
+          type:
+          - string
+          - 'null'
+        taskId:
+          type: string
+          format: uuid
+        entityId:
+          type: string
+          format: uuid
+        creditScreeningOutcome:
+          type:
+          - string
+          - 'null'
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+      additionalProperties: false
+    PropertiesDto:
+      type: object
+      properties:
+        singleProperties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/SinglePropertyDto2'
+        collectionProperties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/CollectionPropertyDto2'
+        customProperties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/CustomPropertyDto2'
       additionalProperties: false
     ExternalDataAdapterDataSource:
       type: object
@@ -1025,6 +1349,23 @@ components:
           - string
           - 'null'
       additionalProperties: false
+    CurrentDataGroupItemDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type:
+            - string
+            - 'null'
+      additionalProperties: false
     RelatedClientDataSource:
       type: object
       properties:
@@ -1039,22 +1380,6 @@ components:
           - 'null'
           additionalProperties:
             $ref: '#/components/schemas/PropertyDto'
-      additionalProperties: false
-    CustomPropertyDto2:
-      type: object
-      properties:
-        singleProperties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/SinglePropertyDto2'
-        customProperties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/CustomPropertyDto2'
       additionalProperties: false
     RelatedAssociationDto:
       type: object
@@ -1076,145 +1401,6 @@ components:
           allOf:
           - $ref: '#/components/schemas/PropertiesDto'
       additionalProperties: false
-    JourneyLevelDataDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        properties:
-          allOf:
-          - $ref: '#/components/schemas/PropertiesDto'
-      additionalProperties: false
-    RelatedDealsDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        relatedDeals:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/RelatedDealDto'
-      additionalProperties: false
-    DataSourcesLambdaResponse:
-      type: object
-      properties:
-        dataSources:
-          allOf:
-          - $ref: '#/components/schemas/DataSourcesDto'
-      additionalProperties: false
-    CollateralSnapshotDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CollateralSnapshotDto'
-          description: A Collateral snapshot object
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    CollateralDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The Collateral Id
-          format: uuid
-          example: e1809731-77df-4e72-98e7-0d314b7a5151
-        type:
-          type:
-          - string
-          - 'null'
-          description: The Collateral Type
-          example: Financial Asset
-        alternateId:
-          type:
-          - string
-          - 'null'
-          description: Collateral Id from data migration
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-          description: 'List of custom properties for a collateral separate from the standard
-
-            out of the box properties.'
-        lifecycleStatus:
-          type:
-          - string
-          - 'null'
-          description: The lifecycle status of the collateral
-        created:
-          type:
-          - string
-          - 'null'
-          description: The creation date of the Collateral
-          format: date-time
-      additionalProperties: false
-      description: "Class to represent the collateral uploaded. \nContains all properties needed to fill the metadata of the collateral being uploaded."
-    AllocationValidationResultDto:
-      type: object
-      properties:
-        collateralId:
-          type:
-          - string
-          - 'null'
-        collateralType:
-          type:
-          - string
-          - 'null'
-        isValid:
-          type: boolean
-        errorMessages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorDto'
-      additionalProperties: false
-    CollectionPropertyDto2:
-      type: object
-      properties:
-        items:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/CollectionItemDto'
-        collectionId:
-          type:
-          - string
-          - 'null'
-          format: uuid
-      additionalProperties: false
-    RelatedAssetsDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        assets:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/RelatedAssetDto'
-      additionalProperties: false
     ValidateDealCollateralAllocationResponseDto:
       type: object
       properties:
@@ -1228,6 +1414,74 @@ components:
             - 'null'
             items:
               $ref: '#/components/schemas/AllocationValidationResultDto'
+      additionalProperties: false
+    RelatedPartyDto:
+      type: object
+      properties:
+        properties:
+          allOf:
+          - $ref: '#/components/schemas/PropertiesDto'
+        metadata:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type:
+            - string
+            - 'null'
+      additionalProperties: false
+    CollateralDtoListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/CollateralDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AutoCreditAssessmentDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        autoCreditAssessments:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AutoCreditAssessmentDto'
+      additionalProperties: false
+    RelatedDealDto:
+      type: object
+      properties:
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+      additionalProperties: false
+    JourneyLevelDataDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        properties:
+          allOf:
+          - $ref: '#/components/schemas/PropertiesDto'
       additionalProperties: false
     EntityAssociationDataSource:
       type: object
@@ -1253,140 +1507,6 @@ components:
         properties:
           allOf:
           - $ref: '#/components/schemas/PropertiesDto'
-      additionalProperties: false
-    VersionedJurisdictionDto:
-      type: object
-      properties:
-        Jurisdiction:
-          type:
-          - string
-          - 'null'
-        VersionId:
-          type:
-          - string
-          - 'null'
-          format: uuid
-      additionalProperties: false
-    ValidateDealCollateralAllocationResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ValidateDealCollateralAllocationResponseDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    SignificanceEngineDto:
-      type: object
-      properties:
-        singleFields:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-        collections:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type:
-            - object
-            - 'null'
-            additionalProperties:
-              type: array
-              items:
-                type: string
-      additionalProperties: false
-    RelatedPartyDto:
-      type: object
-      properties:
-        properties:
-          allOf:
-          - $ref: '#/components/schemas/PropertiesDto'
-        metadata:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type:
-            - string
-            - 'null'
-      additionalProperties: false
-    PropertiesDto:
-      type: object
-      properties:
-        singleProperties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/SinglePropertyDto2'
-        collectionProperties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/CollectionPropertyDto2'
-        customProperties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/CustomPropertyDto2'
-      additionalProperties: false
-    AutoCreditScreeningDto:
-      type: object
-      properties:
-        entityId:
-          type: string
-          format: uuid
-        creditScreeningOutcome:
-          type:
-          - string
-          - 'null'
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-        providerInternalIdentifier:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    CurrentFieldDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        currentField:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ManualCreditAssessmentV2DataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        creditAssessments:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/CreditAssessmentDto'
       additionalProperties: false
     AccountRelatedFundsDataSource:
       type: object
@@ -1419,7 +1539,7 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    ChangedFieldsDataSource:
+    RelatedPartiesDataSource:
       type: object
       properties:
         dataSource:
@@ -1427,67 +1547,12 @@ components:
           - string
           - 'null'
           readOnly: true
-        changedFields:
+        relatedParties:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ChangedFieldDto'
-      additionalProperties: false
-    CurrentJourneysDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        inProgressJourneyTypes:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-      additionalProperties: false
-    AutoCreditScreeningDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        creditScreenings:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/AutoCreditScreeningDto'
-        relatedPartyCreditScreenings:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/AutoCreditScreeningDto'
-      additionalProperties: false
-    CurrentProductDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-        lifecycleStatus:
-          type:
-          - string
-          - 'null'
+            $ref: '#/components/schemas/RelatedPartyDto'
       additionalProperties: false
     EntityDataMetadataDataSource:
       type: object
@@ -1501,33 +1566,6 @@ components:
           type:
           - string
           - 'null'
-      additionalProperties: false
-    EventIngressDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        eventType:
-          type:
-          - string
-          - 'null'
-        eventSubtype:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    CollectionItemDto:
-      type: object
-      properties:
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/SinglePropertyDto2'
       additionalProperties: false
     DataSourcesDto:
       type: object
@@ -1605,7 +1643,7 @@ components:
           allOf:
           - $ref: '#/components/schemas/SignificanceEngineDataSource'
       additionalProperties: false
-    RelatedProductsDataSource:
+    CurrentJourneysDataSource:
       type: object
       properties:
         dataSource:
@@ -1613,87 +1651,14 @@ components:
           - string
           - 'null'
           readOnly: true
-        products:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/RelatedProductDto'
-      additionalProperties: false
-    ValidateDealCollateralAllocationRequestDto:
-      type: object
-      properties:
-        dealIds:
+        inProgressJourneyTypes:
           type:
           - array
           - 'null'
           items:
             type: string
-            format: uuid
-          description: Deal Ids
-        jurisdictions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/VersionedJurisdictionDto'
-          description: Jurisdictions that apply to current entity
-        entityType:
-          type:
-          - string
-          - 'null'
-          description: Entity type
-          example: Individual
-        categories:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: Deal Collateral Categories
       additionalProperties: false
-      description: Class to represent the collaterals allocations validations input
-    CollateralDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        collaterals:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/CollateralDto2_2'
-      additionalProperties: false
-    MainEntityDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        properties:
-          allOf:
-          - $ref: '#/components/schemas/PropertiesDto'
-      additionalProperties: false
-    DataSourcesLambdaResponseServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/DataSourcesLambdaResponse'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    CollateralDto2_2:
+    RelatedProductDto:
       type: object
       properties:
         properties:
@@ -1702,6 +1667,217 @@ components:
           - 'null'
           additionalProperties:
             $ref: '#/components/schemas/PropertyDto'
+        lifecycleStatus:
+          type:
+          - string
+          - 'null'
+        relationshipTypes:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+      additionalProperties: false
+    CollateralQueryDto:
+      type: object
+      properties:
+        ids:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: The list of Collateral Ids to fetch
+        attributes:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: The list of attributes to fetch the data for
+      additionalProperties: false
+    CurrentProductDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+        lifecycleStatus:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    CustomPropertyDto2:
+      type: object
+      properties:
+        singleProperties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/SinglePropertyDto2'
+        customProperties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/CustomPropertyDto2'
+      additionalProperties: false
+    CurrentFieldDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        currentField:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ManualCreditScreeningDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        creditScreenings:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ManualCreditScreeningDto'
+        relatedPartyCreditScreenings:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ManualCreditScreeningDto'
+      additionalProperties: false
+    CollateralDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/CollateralDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    RelatedDealsDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        relatedDeals:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RelatedDealDto'
+      additionalProperties: false
+    CollectionItemDto:
+      type: object
+      properties:
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/SinglePropertyDto2'
+      additionalProperties: false
+    ChangedFieldsDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        changedFields:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ChangedFieldDto'
+      additionalProperties: false
+    CollateralQueryDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CollateralQueryDto'
+      additionalProperties: false
+    CollectionPropertyDto2:
+      type: object
+      properties:
+        items:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/CollectionItemDto'
+        collectionId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+      additionalProperties: false
+    CollateralDtoServiceResponse_2:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CollateralDto'
+          description: "Class to represent the collateral uploaded. \nContains all properties needed to fill the metadata of the collateral being uploaded."
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    RelatedAssetDto:
+      type: object
+      properties:
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+      additionalProperties: false
+    SinglePropertyDto2:
+      type: object
+      properties:
+        value:
+          type:
+          - string
+          - 'null'
+        valueId:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
     CollateralDraftDto:
       type: object
@@ -1759,260 +1935,84 @@ components:
           format: date-time
       additionalProperties: false
       description: "A Collateral object. \nContains all properties needed to fill the metadata of the collateral."
-    CollateralDtoServiceResponse_2:
+    SignificanceEngineDto:
       type: object
       properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CollateralDto'
-          description: "Class to represent the collateral uploaded. \nContains all properties needed to fill the metadata of the collateral being uploaded."
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    CollateralQueryDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CollateralQueryDto'
-      additionalProperties: false
-    CollateralDtoListServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/CollateralDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    RelatedAssetDto:
-      type: object
-      properties:
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-      additionalProperties: false
-    RelatedAssociationsDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        relatedAssociations:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/RelatedAssociationDto'
-      additionalProperties: false
-    AutoCreditAssessmentDto:
-      type: object
-      properties:
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-        assessmentOutcome:
-          type:
-          - string
-          - 'null'
-        providerInternalIdentifier:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ValidateDealCollateralAllocationRequestDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ValidateDealCollateralAllocationRequestDto'
-          description: Class to represent the collaterals allocations validations input
-      additionalProperties: false
-    RelatedDealDto:
-      type: object
-      properties:
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-      additionalProperties: false
-    CreditAssessmentDto:
-      type: object
-      properties:
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-        assessmentOutcome:
-          type:
-          - string
-          - 'null'
-        assessmentComment:
-          type:
-          - string
-          - 'null'
-        taskId:
-          type:
-          - string
-          - 'null'
-        taskDataKey:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    RelatedPartiesDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        relatedParties:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/RelatedPartyDto'
-      additionalProperties: false
-    AutoCreditAssessmentDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        autoCreditAssessments:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/AutoCreditAssessmentDto'
-      additionalProperties: false
-    CollateralSnapshotDto:
-      type: object
-      properties:
-        collaterals:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/CollateralDto'
-          description: List of Collaterals
-        collateralDrafts:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/CollateralDraftDto'
-          description: List of Collateral drafts
-      additionalProperties: false
-      description: A Collateral snapshot object
-    ChangedFieldDto:
-      type: object
-      properties:
-        key:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    AccountRelatedFundDto:
-      type: object
-      properties:
-        properties:
-          allOf:
-          - $ref: '#/components/schemas/PropertiesDto'
-      additionalProperties: false
-    ManualCreditScreeningDto:
-      type: object
-      properties:
-        taskDataKey:
-          type:
-          - string
-          - 'null'
-        taskId:
-          type: string
-          format: uuid
-        entityId:
-          type: string
-          format: uuid
-        creditScreeningOutcome:
-          type:
-          - string
-          - 'null'
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-      additionalProperties: false
-    SignificanceEngineDataSource:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-          readOnly: true
-        significanceEngine:
-          allOf:
-          - $ref: '#/components/schemas/SignificanceEngineDto'
-      additionalProperties: false
-    CollateralQueryDto:
-      type: object
-      properties:
-        ids:
+        singleFields:
           type:
           - array
           - 'null'
           items:
             type: string
-          description: The list of Collateral Ids to fetch
-        attributes:
+        collections:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type:
+            - object
+            - 'null'
+            additionalProperties:
+              type: array
+              items:
+                type: string
+      additionalProperties: false
+    RelatedAssetsDataSource:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        assets:
           type:
           - array
           - 'null'
           items:
-            type: string
-          description: The list of attributes to fetch the data for
+            $ref: '#/components/schemas/RelatedAssetDto'
       additionalProperties: false
-    SinglePropertyDto2:
+    CollateralDto:
       type: object
       properties:
-        value:
+        id:
+          type: string
+          description: The Collateral Id
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        type:
           type:
           - string
           - 'null'
-        valueId:
+          description: The Collateral Type
+          example: Financial Asset
+        alternateId:
           type:
           - string
           - 'null'
+          description: Collateral Id from data migration
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+          description: 'List of custom properties for a collateral separate from the standard
+
+            out of the box properties.'
+        lifecycleStatus:
+          type:
+          - string
+          - 'null'
+          description: The lifecycle status of the collateral
+        created:
+          type:
+          - string
+          - 'null'
+          description: The creation date of the Collateral
+          format: date-time
       additionalProperties: false
+      description: "Class to represent the collateral uploaded. \nContains all properties needed to fill the metadata of the collateral being uploaded."
   securitySchemes:
     Bearer:
       type: apiKey

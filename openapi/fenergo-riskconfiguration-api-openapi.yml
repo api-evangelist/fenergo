@@ -1785,69 +1785,6 @@ paths:
     - url: /riskquery
 components:
   schemas:
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    RiskConfigurationModelDto:
-      required:
-      - riskConfigurationModelVersion
-      type: object
-      properties:
-        id:
-          type: string
-          description: The UiD of the risk configuration model
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        riskConfigurationModelVersion:
-          allOf:
-          - $ref: '#/components/schemas/RiskConfigurationModelVersionDto'
-          description: The version of the model
-      additionalProperties: false
-      description: RiskConfiguration model version wrapper
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    Approver:
-      type: object
-      properties:
-        subject:
-          type:
-          - string
-          - 'null'
-        successor:
-          allOf:
-          - $ref: '#/components/schemas/Approver'
-        action:
-          allOf:
-          - $ref: '#/components/schemas/ApproveAction'
-        hasProcessedRequest:
-          type: boolean
-          readOnly: true
-      additionalProperties: false
     RiskConfigurationCollectionDto:
       required:
       - name
@@ -1898,13 +1835,49 @@ components:
           description: The custom thresholds defined for this collection
       additionalProperties: false
       description: A risk configuration collection of Items and Thresholds
-    RiskConfigurationCollectionDtoServiceResponse:
+    RiskConfigurationItemDto:
+      required:
+      - name
+      type: object
+      properties:
+        name:
+          minLength: 1
+          type: string
+          description: Display name of the item
+          example: Tourism
+        riskLevel:
+          type: number
+          description: The risk level assigned to the item
+          format: double
+          example: 99.88
+        minRangeValue:
+          type: number
+          description: If the type of the collection is Numeric, the minimum of valid risk level values for the item
+          format: double
+          example: 3.01
+        maxRangeValue:
+          type: number
+          description: If the type of the collection is Numeric, the maximum of valid risk level values for the item
+          format: double
+          example: 142.14
+      additionalProperties: false
+      description: A risk configuration collection item
+    VersionStatus:
+      enum:
+      - Draft
+      - Pending
+      - Rejected
+      - Published
+      - Archived
+      - Deleted
+      type: string
+    ModelVersionSignResponseServiceResponse:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/RiskConfigurationCollectionDto'
-          description: A risk configuration collection of Items and Thresholds
+          - $ref: '#/components/schemas/ModelVersionSignResponse'
+          description: Contains the new version Status, after a version sign operation
         messages:
           type:
           - array
@@ -1912,16 +1885,100 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    ObjectServiceResponse:
+    Approver:
       type: object
       properties:
-        data: {}
+        subject:
+          type:
+          - string
+          - 'null'
+        successor:
+          allOf:
+          - $ref: '#/components/schemas/Approver'
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
+      additionalProperties: false
+    RiskConfigurationModelDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/RiskConfigurationModelDto'
+          description: RiskConfiguration model version wrapper
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
         messages:
           type:
           - array
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ModelVersionSignResponse:
+      type: object
+      properties:
+        parentModelId:
+          type: string
+          description: The Id of the model the version belongs to
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        versionNumber:
+          type: integer
+          description: The number of the version that has been signed
+          format: int32
+          example: 3
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+          description: The new version status
+          example: Published
+      additionalProperties: false
+      description: Contains the new version Status, after a version sign operation
+    RiskConfigurationCollectionDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/RiskConfigurationCollectionDto'
+          description: A risk configuration collection of Items and Thresholds
+      additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ApproveAction:
+      type: object
+      properties:
+        comment:
+          type:
+          - string
+          - 'null'
+        decision:
+          allOf:
+          - $ref: '#/components/schemas/Decision'
+        created:
+          type: string
+          format: date-time
       additionalProperties: false
     RiskConfigurationModelVersionDto:
       required:
@@ -1976,28 +2033,6 @@ components:
           example: Example Notes
       additionalProperties: false
       description: A RiskConfiguration model Version
-    ServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    RiskConfigurationModelDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/RiskConfigurationModelDto'
-          description: RiskConfiguration model version wrapper
-      additionalProperties: false
     RiskConfigurationModelDtoServiceResponse:
       type: object
       properties:
@@ -2012,58 +2047,43 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    Decision:
-      enum:
-      - Approve
-      - Reject
-      type: string
-    RiskConfigurationItemDto:
-      required:
-      - name
+    ServiceResponseMessage:
       type: object
       properties:
-        name:
-          minLength: 1
-          type: string
-          description: Display name of the item
-          example: Tourism
-        riskLevel:
-          type: number
-          description: The risk level assigned to the item
-          format: double
-          example: 99.88
-        minRangeValue:
-          type: number
-          description: If the type of the collection is Numeric, the minimum of valid risk level values for the item
-          format: double
-          example: 3.01
-        maxRangeValue:
-          type: number
-          description: If the type of the collection is Numeric, the maximum of valid risk level values for the item
-          format: double
-          example: 142.14
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
-      description: A risk configuration collection item
-    ModelVersionSignResponse:
+    RiskConfigurationCollectionDtoServiceResponse:
       type: object
       properties:
-        parentModelId:
-          type: string
-          description: The Id of the model the version belongs to
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        versionNumber:
-          type: integer
-          description: The number of the version that has been signed
-          format: int32
-          example: 3
-        status:
+        data:
           allOf:
-          - $ref: '#/components/schemas/VersionStatus'
-          description: The new version status
-          example: Published
+          - $ref: '#/components/schemas/RiskConfigurationCollectionDto'
+          description: A risk configuration collection of Items and Thresholds
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-      description: Contains the new version Status, after a version sign operation
+    ApproveActionServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+      additionalProperties: false
     ThresholdDto:
       required:
       - name
@@ -2106,6 +2126,38 @@ components:
           example: '#FF0000'
       additionalProperties: false
       description: A range of values that define a threshold
+    RiskConfigurationModelDto:
+      required:
+      - riskConfigurationModelVersion
+      type: object
+      properties:
+        id:
+          type: string
+          description: The UiD of the risk configuration model
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        riskConfigurationModelVersion:
+          allOf:
+          - $ref: '#/components/schemas/RiskConfigurationModelVersionDto'
+          description: The version of the model
+      additionalProperties: false
+      description: RiskConfiguration model version wrapper
+    Decision:
+      enum:
+      - Approve
+      - Reject
+      type: string
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
     Signee:
       type: object
       properties:
@@ -2123,13 +2175,32 @@ components:
           type: boolean
           readOnly: true
       additionalProperties: false
-    ModelVersionSignResponseServiceResponse:
+    RiskConfigurationItem:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+        riskLevel:
+          type: number
+          format: double
+        minRangeValue:
+          type: number
+          format: double
+        maxRangeValue:
+          type: number
+          format: double
+      additionalProperties: false
+    RiskConfigurationModelDtoIEnumerableServiceResponse:
       type: object
       properties:
         data:
-          allOf:
-          - $ref: '#/components/schemas/ModelVersionSignResponse'
-          description: Contains the new version Status, after a version sign operation
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/RiskConfigurationModelDto_2'
         messages:
           type:
           - array
@@ -2137,43 +2208,45 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    ApproveAction:
+    RiskConfigurationCollectionServiceResponse:
       type: object
       properties:
-        comment:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/RiskConfigurationCollection'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    Threshold:
+      type: object
+      properties:
+        name:
           type:
           - string
           - 'null'
-        decision:
-          allOf:
-          - $ref: '#/components/schemas/Decision'
-        created:
-          type: string
-          format: date-time
-      additionalProperties: false
-    RiskConfigurationCollectionDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/RiskConfigurationCollectionDto'
-          description: A risk configuration collection of Items and Thresholds
-      additionalProperties: false
-    VersionStatus:
-      enum:
-      - Draft
-      - Pending
-      - Rejected
-      - Published
-      - Archived
-      - Deleted
-      type: string
-    ApproveActionServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ApproveAction'
+        minimumValue:
+          type:
+          - number
+          - 'null'
+          format: double
+        maximumValue:
+          type:
+          - number
+          - 'null'
+          format: double
+        nextReviewPeriod:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        thresholdColor:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
     RiskConfigurationModelVersionDto_2:
       type: object
@@ -2252,33 +2325,6 @@ components:
           example: Example Notes
       additionalProperties: false
       description: RiskConfiguration model version data
-    Threshold:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-        minimumValue:
-          type:
-          - number
-          - 'null'
-          format: double
-        maximumValue:
-          type:
-          - number
-          - 'null'
-          format: double
-        nextReviewPeriod:
-          type:
-          - integer
-          - 'null'
-          format: int32
-        thresholdColor:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
     RiskConfigurationItemServiceResponse:
       type: object
       properties:
@@ -2292,15 +2338,13 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    RiskConfigurationModelDtoIEnumerableServiceResponse:
+    RiskConfigurationModelVersionDtoServiceResponse:
       type: object
       properties:
         data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/RiskConfigurationModelDto_2'
+          allOf:
+          - $ref: '#/components/schemas/RiskConfigurationModelVersionDto_2'
+          description: RiskConfiguration model version data
         messages:
           type:
           - array
@@ -2344,36 +2388,6 @@ components:
           type: boolean
           readOnly: true
       additionalProperties: false
-    RiskConfigurationItem:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-        riskLevel:
-          type: number
-          format: double
-        minRangeValue:
-          type: number
-          format: double
-        maxRangeValue:
-          type: number
-          format: double
-      additionalProperties: false
-    RiskConfigurationCollectionServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/RiskConfigurationCollection'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
     RiskConfigurationModelDto_2:
       type: object
       properties:
@@ -2391,20 +2405,6 @@ components:
           description: A list of the model versions metadata and calculated properties
       additionalProperties: false
       description: RiskConfiguration model with all version metadata
-    RiskConfigurationModelVersionDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/RiskConfigurationModelVersionDto_2'
-          description: RiskConfiguration model version data
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
   securitySchemes:
     Bearer:
       type: apiKey

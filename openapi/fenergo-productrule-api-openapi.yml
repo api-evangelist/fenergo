@@ -285,57 +285,28 @@ paths:
                   errorCode: OBSOLETE_ENDPOINT
 components:
   schemas:
-    ProductRuleVersionDtoServiceResponse:
+    ProductRuleDto:
       type: object
       properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ProductRuleVersionDto'
-          description: Response DTO representing product rule version data
-        messages:
+        id:
+          type: string
+          description: The UiD of the product rule
+          format: uuid
+          example: 118313c6-91e6-4b05-a537-5a1ab906418f
+        versions:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+            $ref: '#/components/schemas/ProductRuleVersionDto'
+          description: Versions associated to this product rule
+        version:
+          type: integer
+          description: Version number for given Aggregate (concurrency check)
+          format: int32
+          example: 1
       additionalProperties: false
-    Decision:
-      enum:
-      - Approve
-      - Reject
-      type: string
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ProductRuleDtoIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ProductRuleDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
+      description: Response DTO representing product rule
     ConditionDefinitionDto:
       type: object
       properties:
@@ -381,6 +352,43 @@ components:
           allOf:
           - $ref: '#/components/schemas/ValueField'
       additionalProperties: false
+    ValueField:
+      type: object
+      properties:
+        dataSource:
+          type:
+          - string
+          - 'null'
+        field:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ConditionDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type:
+          - string
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+        logicalOperation:
+          type:
+          - string
+          - 'null'
+        operands:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConditionDefinitionDto'
+      additionalProperties: false
     ServiceResponse:
       type: object
       properties:
@@ -388,6 +396,20 @@ components:
           type:
           - string
           - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ProductRuleVersionDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ProductRuleVersionDto'
+          description: Response DTO representing product rule version data
         messages:
           type:
           - array
@@ -409,6 +431,90 @@ components:
           type: string
           format: date-time
       additionalProperties: false
+    VersionStatus:
+      enum:
+      - Draft
+      - Pending
+      - Rejected
+      - Published
+      - Archived
+      - Deleted
+      type: string
+    BaseVersionDto:
+      type: object
+      properties:
+        versionNumber:
+          type: integer
+          description: The versions number
+          format: int32
+          example: 1
+        effectiveFrom:
+          type: string
+          description: The date that the version takes effect when published
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        effectiveUntil:
+          type:
+          - string
+          - 'null'
+          description: The calculated date that the version ceases being active
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        publicationDate:
+          type:
+          - string
+          - 'null'
+          description: The date that the version got published
+          format: date-time
+          readOnly: true
+          example: '2021-01-01T14:48:00.000Z'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+          description: The status of the version
+          example: Published
+        created:
+          type: string
+          description: The creation date of the version
+          format: date-time
+          example: '2021-01-01T14:48:00.000Z'
+        isActive:
+          type: boolean
+          description: 'The calculated flag to annotate whether this is the model''s latest version
+
+            at the time of the query (not necessarily published)'
+          example: true
+        signees:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/Signee'
+          description: The defined list of signees for the version
+        version:
+          type: integer
+          description: Version number for given Aggregate (concurrency check)
+          format: int32
+          example: 1
+      additionalProperties: false
+      description: Response DTO representing data group version data
+    Approver:
+      type: object
+      properties:
+        subject:
+          type:
+          - string
+          - 'null'
+        successor:
+          allOf:
+          - $ref: '#/components/schemas/Approver'
+        action:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
+      additionalProperties: false
     StringServiceResponse:
       type: object
       properties:
@@ -423,6 +529,11 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
+    Decision:
+      enum:
+      - Approve
+      - Reject
+      type: string
     ProductRuleVersionDto:
       allOf:
       - $ref: '#/components/schemas/BaseVersionDto'
@@ -497,6 +608,33 @@ components:
             example: '2021-01-01T14:48:00.000Z'
         additionalProperties: false
       description: Response DTO representing product rule version data
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
     Signee:
       type: object
       properties:
@@ -514,153 +652,15 @@ components:
           type: boolean
           readOnly: true
       additionalProperties: false
-    Approver:
+    ProductRuleDtoIEnumerableServiceResponse:
       type: object
       properties:
-        subject:
-          type:
-          - string
-          - 'null'
-        successor:
-          allOf:
-          - $ref: '#/components/schemas/Approver'
-        action:
-          allOf:
-          - $ref: '#/components/schemas/ApproveAction'
-        hasProcessedRequest:
-          type: boolean
-          readOnly: true
-      additionalProperties: false
-    ProductRuleDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The UiD of the product rule
-          format: uuid
-          example: 118313c6-91e6-4b05-a537-5a1ab906418f
-        versions:
+        data:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ProductRuleVersionDto'
-          description: Versions associated to this product rule
-        version:
-          type: integer
-          description: Version number for given Aggregate (concurrency check)
-          format: int32
-          example: 1
-      additionalProperties: false
-      description: Response DTO representing product rule
-    ConditionDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type:
-          - string
-          - 'null'
-        description:
-          type:
-          - string
-          - 'null'
-        logicalOperation:
-          type:
-          - string
-          - 'null'
-        operands:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConditionDefinitionDto'
-      additionalProperties: false
-    VersionStatus:
-      enum:
-      - Draft
-      - Pending
-      - Rejected
-      - Published
-      - Archived
-      - Deleted
-      type: string
-    ValueField:
-      type: object
-      properties:
-        dataSource:
-          type:
-          - string
-          - 'null'
-        field:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    BaseVersionDto:
-      type: object
-      properties:
-        versionNumber:
-          type: integer
-          description: The versions number
-          format: int32
-          example: 1
-        effectiveFrom:
-          type: string
-          description: The date that the version takes effect when published
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        effectiveUntil:
-          type:
-          - string
-          - 'null'
-          description: The calculated date that the version ceases being active
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        publicationDate:
-          type:
-          - string
-          - 'null'
-          description: The date that the version got published
-          format: date-time
-          readOnly: true
-          example: '2021-01-01T14:48:00.000Z'
-        status:
-          allOf:
-          - $ref: '#/components/schemas/VersionStatus'
-          description: The status of the version
-          example: Published
-        created:
-          type: string
-          description: The creation date of the version
-          format: date-time
-          example: '2021-01-01T14:48:00.000Z'
-        isActive:
-          type: boolean
-          description: 'The calculated flag to annotate whether this is the model''s latest version
-
-            at the time of the query (not necessarily published)'
-          example: true
-        signees:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/Signee'
-          description: The defined list of signees for the version
-        version:
-          type: integer
-          description: Version number for given Aggregate (concurrency check)
-          format: int32
-          example: 1
-      additionalProperties: false
-      description: Response DTO representing data group version data
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
+            $ref: '#/components/schemas/ProductRuleDto'
         messages:
           type:
           - array

@@ -105,6 +105,41 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
+    PropertyDto:
+      required:
+      - discriminator
+      - type
+      type: object
+      properties:
+        discriminator:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        type:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        isValid:
+          type:
+          - boolean
+          - 'null'
+      additionalProperties: false
+      discriminator:
+        propertyName: discriminator
+        mapping:
+          Collection: '#/components/schemas/CollectionPropertyDto'
+          Custom: '#/components/schemas/CustomPropertyDto'
+          Single: '#/components/schemas/SinglePropertyDto'
+    EvaluateProductDynamicConfigurationRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/EvaluateProductDynamicConfigurationRequestDto'
+          description: 'Request DTO for evaluating which Product access layers would be assigned based on a set of product properties.
+
+            Used by the Manage Products screen to warn users they would lose access to a product before they save.'
+      additionalProperties: false
     ValidationErrorModelListServiceResponse:
       type: object
       properties:
@@ -131,21 +166,89 @@ components:
         - message: Data is required
           type: Error
           errorCode: Error Code
-    ServiceResponseMessage:
+    EvaluateProductDynamicConfigurationResponseDtoServiceResponse:
       type: object
       properties:
-        message:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/EvaluateProductDynamicConfigurationResponseDto'
+          description: 'Response DTO for the evaluate-product dynamic configuration endpoint.
+
+            Contains the access layers that would be assigned to the product given the supplied field values,
+
+            and a flag indicating whether any dynamic configuration rules matched.'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
           type:
           - string
           - 'null'
-        type:
+        errorMessage:
           type:
           - string
           - 'null'
+        attemptedValue: {}
         errorCode:
           type:
           - string
           - 'null'
+      additionalProperties: false
+    PropertyType:
+      enum:
+      - Single
+      - Custom
+      - Collection
+      type: string
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    EvaluateProductDynamicConfigurationResponseDto:
+      type: object
+      properties:
+        evaluatedProductAccessLayers:
+          allOf:
+          - $ref: '#/components/schemas/EvaluateProductDynamicConditionsResponseDto'
+          description: The Geographic and BusinessRelated access layers that would be written to the product on save.
+        shouldApplyResultToProduct:
+          type: boolean
+          description: 'When `false`, no dynamic configuration rules matched the supplied field values and the product
+
+            is effectively open-access — access layers will not be enforced by policy.'
+      additionalProperties: false
+      description: 'Response DTO for the evaluate-product dynamic configuration endpoint.
+
+        Contains the access layers that would be assigned to the product given the supplied field values,
+
+        and a flag indicating whether any dynamic configuration rules matched.'
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
     EvaluateProductDynamicConfigurationRequestDto:
       type: object
@@ -207,54 +310,6 @@ components:
       description: 'Request DTO for evaluating which Product access layers would be assigned based on a set of product properties.
 
         Used by the Manage Products screen to warn users they would lose access to a product before they save.'
-    EvaluateProductDynamicConfigurationRequestDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/EvaluateProductDynamicConfigurationRequestDto'
-          description: 'Request DTO for evaluating which Product access layers would be assigned based on a set of product properties.
-
-            Used by the Manage Products screen to warn users they would lose access to a product before they save.'
-      additionalProperties: false
-    EvaluateProductDynamicConfigurationResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/EvaluateProductDynamicConfigurationResponseDto'
-          description: 'Response DTO for the evaluate-product dynamic configuration endpoint.
-
-            Contains the access layers that would be assigned to the product given the supplied field values,
-
-            and a flag indicating whether any dynamic configuration rules matched.'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    PropertyType:
-      enum:
-      - Single
-      - Custom
-      - Collection
-      type: string
     EvaluateProductDynamicConditionItemResponseDto:
       type: object
       properties:
@@ -273,48 +328,6 @@ components:
           description: The data key of the access layer (e.g. "EMEA", "Canada").
       additionalProperties: false
       description: A single evaluated dynamic configuration condition result, representing one access layer candidate.
-    ValidationErrorModel:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-        attemptedValue: {}
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    PropertyDto:
-      required:
-      - discriminator
-      - type
-      type: object
-      properties:
-        discriminator:
-          allOf:
-          - $ref: '#/components/schemas/PropertyType'
-          readOnly: true
-        type:
-          allOf:
-          - $ref: '#/components/schemas/PropertyType'
-          readOnly: true
-        isValid:
-          type:
-          - boolean
-          - 'null'
-      additionalProperties: false
-      discriminator:
-        propertyName: discriminator
-        mapping:
-          Collection: '#/components/schemas/CollectionPropertyDto'
-          Custom: '#/components/schemas/CustomPropertyDto'
-          Single: '#/components/schemas/SinglePropertyDto'
     EvaluateProductDynamicConditionsResponseDto:
       type: object
       properties:
@@ -334,34 +347,21 @@ components:
           description: Access layers assignable to the product with type BusinessRelated.
       additionalProperties: false
       description: The evaluated product access layers that would be assigned after dynamic configuration rule evaluation.
-    EvaluateProductDynamicConfigurationResponseDto:
+    ServiceResponseMessage:
       type: object
       properties:
-        evaluatedProductAccessLayers:
-          allOf:
-          - $ref: '#/components/schemas/EvaluateProductDynamicConditionsResponseDto'
-          description: The Geographic and BusinessRelated access layers that would be written to the product on save.
-        shouldApplyResultToProduct:
-          type: boolean
-          description: 'When `false`, no dynamic configuration rules matched the supplied field values and the product
-
-            is effectively open-access — access layers will not be enforced by policy.'
-      additionalProperties: false
-      description: 'Response DTO for the evaluate-product dynamic configuration endpoint.
-
-        Contains the access layers that would be assigned to the product given the supplied field values,
-
-        and a flag indicating whether any dynamic configuration rules matched.'
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
-        messages:
+        message:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
   securitySchemes:
     Bearer:

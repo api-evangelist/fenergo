@@ -1407,10 +1407,26 @@ paths:
     - url: /creditassessmentquery
 components:
   schemas:
-    ServiceResponseMessage:
+    SnapshotSetServiceResponse:
       type: object
       properties:
-        message:
+        data:
+          $ref: '#/components/schemas/SnapshotSet'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    Requirement:
+      type: object
+      properties:
+        key:
+          type:
+          - string
+          - 'null'
+        label:
           type:
           - string
           - 'null'
@@ -1418,12 +1434,23 @@ components:
           type:
           - string
           - 'null'
-        errorCode:
+        order:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        separator:
           type:
           - string
           - 'null'
+        category:
+          type:
+          - string
+          - 'null'
+        validationRule:
+          $ref: '#/components/schemas/ValidationRuleDto'
       additionalProperties: false
-    RegexRuleDto:
+    CollectionMaximumCountRuleDto:
       type: object
       properties:
         active:
@@ -1432,12 +1459,241 @@ components:
           type:
           - string
           - 'null'
-        isCaseSensitive:
-          type: boolean
-        regexValue:
+        requiredTypesMaxCount:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type:
+            - integer
+            - 'null'
+            format: int32
+        overallMaximumCount:
+          type:
+          - integer
+          - 'null'
+          format: int32
+      additionalProperties: false
+    CreditAssessmentRequestDto:
+      type: object
+      properties:
+        taskId:
+          type: string
+          description: Identifier of the Credit Decision task
+          format: uuid
+          example: 53eeadd4-b177-451f-9a78-0311b52b3e72
+        name:
           type:
           - string
           - 'null'
+          description: Name of this Credit Assessment
+          example: Credit Assessment Name
+        taskDataKey:
+          type:
+          - string
+          - 'null'
+          description: Task DataKey
+          example: Key One
+        version:
+          $ref: '#/components/schemas/CreditAssessmentVersionDto'
+      additionalProperties: false
+      description: Request DTO containing Credit Decision data for use when creating a new set
+    CreditAssessmentSetRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/CreditAssessmentSetRequestDto'
+      additionalProperties: false
+    VersionedJurisdictionDto:
+      type: object
+      properties:
+        jurisdiction:
+          type:
+          - string
+          - 'null'
+          description: Jurisdiction Name
+          example: Global
+        versionId:
+          type: string
+          description: Jurisdiction Version Id
+          format: uuid
+          example: 254428e9-d232-4738-81c9-151409b296a3
+      additionalProperties: false
+      description: Defines the jurisdiction requirement for the credit assessment
+    CreditAssessmentDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Credit Decision identifier
+          format: uuid
+          example: cc91d893-7643-433a-9b7c-00813178dc76
+        setId:
+          type: string
+          description: Identifier of the Credit Decision set this belongs to
+          format: uuid
+          example: 78e59d67-9f80-4f5a-b25a-036d603cb37e
+        taskId:
+          type: string
+          description: Identifier of the Credit Decision task
+          format: uuid
+          example: 53eeadd4-b177-451f-9a78-0311b52b3e72
+        taskDataKey:
+          type:
+          - string
+          - 'null'
+          description: Task DataKey
+          example: ket one
+        name:
+          type:
+          - string
+          - 'null'
+          description: Name of this credit assessment.
+        version:
+          $ref: '#/components/schemas/CreditAssessmentVersionDto'
+      additionalProperties: false
+      description: DTO representing Credit Decision data
+    PropertiesValidatorResponse:
+      type: object
+      properties:
+        isValid:
+          type: boolean
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+        errors:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/PolicyValidationResponseError'
+      additionalProperties: false
+    CreditAssessmentSetResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Credit Decision Set identifier
+          format: uuid
+          example: 661cbc05-4a6d-4d08-aaed-a9d334e9ad9c
+        journeyId:
+          type: string
+          description: Journey Id which the Credit Decision set belongs to
+          format: uuid
+          example: 549bfca3-1cc0-4186-b4c3-751be5fc2ced
+        status:
+          type:
+          - string
+          - 'null'
+          description: Status of the Credit Decision set
+          example: Verified
+        creditAssessments:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/CreditAssessmentDto'
+          description: List of credit assessments
+      additionalProperties: false
+      description: Response DTO representing Credit Decision set data
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    GroupSetDto:
+      type: object
+      properties:
+        items:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/GroupSetItemDto'
+          description: A collection of items.
+      additionalProperties: false
+    CreditApproverDto:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+          description: Credit Approver identifier
+          example: 41e1dfa3-9e93-467d-8fdb-7ae0aecea913
+        order:
+          type: integer
+          description: Number indicating which order the approver will make a decision in
+          format: int32
+          example: 1
+        role:
+          type:
+          - string
+          - 'null'
+          description: Role/Team the approver belongs to
+          example: Relationship Manager 1
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/PropertyDto'
+          description: Credit Approver metadata
+      additionalProperties: false
+      description: DTO representing Credit Approver data
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    SpecialCharactersRuleDto:
+      type: object
+      properties:
+        active:
+          type: boolean
+        message:
+          type:
+          - string
+          - 'null'
+        excludedCharacters:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
       additionalProperties: false
     CreditAssessmentVersionDto:
       type: object
@@ -1519,84 +1775,82 @@ components:
           description: Jurisdiction metadata of Credit Assessment
       additionalProperties: false
       description: DTO representing Credit Decision version data
-    CreditApproverDto:
+    PolicyValidationResponseError:
       type: object
       properties:
-        id:
+        propertyName:
           type:
           - string
           - 'null'
-          description: Credit Approver identifier
-          example: 41e1dfa3-9e93-467d-8fdb-7ae0aecea913
-        order:
-          type: integer
-          description: Number indicating which order the approver will make a decision in
-          format: int32
-          example: 1
-        role:
+        propertyValue:
           type:
           - string
           - 'null'
-          description: Role/Team the approver belongs to
-          example: Relationship Manager 1
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/PropertyDto'
-          description: Credit Approver metadata
-      additionalProperties: false
-      description: DTO representing Credit Approver data
-    GroupSetDto:
-      type: object
-      properties:
-        items:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/GroupSetItemDto'
-          description: A collection of items.
-      additionalProperties: false
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
+        errorMessage:
           type:
           - string
           - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    CreditAssessmentRequestDto:
+    GroupRequirement:
       type: object
       properties:
-        taskId:
-          type: string
-          description: Identifier of the Credit Decision task
-          format: uuid
-          example: 53eeadd4-b177-451f-9a78-0311b52b3e72
         name:
           type:
           - string
           - 'null'
-          description: Name of this Credit Assessment
-          example: Credit Assessment Name
-        taskDataKey:
+        key:
           type:
           - string
           - 'null'
-          description: Task DataKey
-          example: Key One
-        version:
-          $ref: '#/components/schemas/CreditAssessmentVersionDto'
+        primaryDataGroupField:
+          type:
+          - string
+          - 'null'
+        snapshotPropertyItems:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/GroupRequirementItem'
+        validationRule:
+          $ref: '#/components/schemas/ValidationRuleDto'
       additionalProperties: false
-      description: Request DTO containing Credit Decision data for use when creating a new set
+    GroupRequirementItem:
+      type: object
+      properties:
+        key:
+          type:
+          - string
+          - 'null'
+        label:
+          type:
+          - string
+          - 'null'
+        valueType:
+          type:
+          - string
+          - 'null'
+        order:
+          type: integer
+          format: int32
+        isAdditionalField:
+          type: boolean
+        validationRule:
+          $ref: '#/components/schemas/ValidationRuleDto'
+      additionalProperties: false
+    ExternalProviderRuleDto:
+      type: object
+      properties:
+        active:
+          type: boolean
+        message:
+          type:
+          - string
+          - 'null'
+        providerId:
+          type: string
+          format: uuid
+      additionalProperties: false
     CreditAssessmentVersionDtoServiceResponse:
       type: object
       properties:
@@ -1609,57 +1863,86 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    PropertyDto:
+    CreditAssessmentVersionDtoServiceRequest:
       type: object
       properties:
-        type:
-          type:
-          - string
-          - 'null'
-          description: The property Type
-          example: Single
-        discriminator:
-          type:
-          - string
-          - 'null'
-          description: The property discriminator
-          example: Single
-        value:
-          type:
-          - string
-          - 'null'
-          description: The property value
-          example: Australia
+        data:
+          $ref: '#/components/schemas/CreditAssessmentVersionDto'
       additionalProperties: false
-      description: Defines the metadata type
-    CreditAssessmentSetResponseDto:
+    CollectionMinimumCountRuleDto:
       type: object
       properties:
-        id:
-          type: string
-          description: Credit Decision Set identifier
-          format: uuid
-          example: 661cbc05-4a6d-4d08-aaed-a9d334e9ad9c
-        journeyId:
-          type: string
-          description: Journey Id which the Credit Decision set belongs to
-          format: uuid
-          example: 549bfca3-1cc0-4186-b4c3-751be5fc2ced
-        status:
+        active:
+          type: boolean
+        message:
           type:
           - string
           - 'null'
-          description: Status of the Credit Decision set
-          example: Verified
-        creditAssessments:
+        requiredTypesMinCount:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type:
+            - integer
+            - 'null'
+            format: int32
+        overallMinimumCount:
+          type: integer
+          format: int32
+      additionalProperties: false
+    PropertiesValidatorResponseServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/PropertiesValidatorResponse'
+        messages:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/CreditAssessmentDto'
-          description: List of credit assessments
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-      description: Response DTO representing Credit Decision set data
+    CreditAssessmentDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/CreditAssessmentDto'
+      additionalProperties: false
+    ValidationRuleDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        setId:
+          type: string
+          format: uuid
+        propertyId:
+          type: string
+          format: uuid
+        dataGroupId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        isDataGroup:
+          type: boolean
+        propertyName:
+          type:
+          - string
+          - 'null'
+        friendlyName:
+          type:
+          - string
+          - 'null'
+        validationType:
+          type:
+          - string
+          - 'null'
+        validationData:
+          $ref: '#/components/schemas/ValidationDataDto'
+      additionalProperties: false
     ValidationDataDto:
       type: object
       properties:
@@ -1696,42 +1979,48 @@ components:
         externalProvider:
           $ref: '#/components/schemas/ExternalProviderRuleDto'
       additionalProperties: false
-    ObjectServiceResponse:
+    SnapshotSetServiceRequest:
       type: object
       properties:
-        data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+        data:
+          $ref: '#/components/schemas/SnapshotSet'
       additionalProperties: false
-    GroupSetItemDto:
+    DateLimitRuleDto:
       type: object
       properties:
-        key:
+        active:
+          type: boolean
+        message:
           type:
           - string
           - 'null'
-          description: The dataKey of the item
-        value:
+        minDate:
           type:
           - string
           - 'null'
-          description: Value of the item
-        valueType:
+          format: date-time
+        maxDate:
           type:
           - string
           - 'null'
-          description: The type of the value of the item.
-        separator:
-          type:
-          - string
-          - 'null'
-          description: The separator character to be used for grouping multiple values.
+          format: date-time
       additionalProperties: false
-      description: An individual item from a group.
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
     SnapshotSet:
       type: object
       properties:
@@ -1762,307 +2051,65 @@ components:
             $ref: '#/components/schemas/GroupRequirement'
           description: List of Group Requirements
       additionalProperties: false
-    GroupRequirementItem:
+    GroupSetItemDto:
       type: object
       properties:
         key:
           type:
           - string
           - 'null'
-        label:
+          description: The dataKey of the item
+        value:
           type:
           - string
           - 'null'
+          description: Value of the item
         valueType:
           type:
           - string
           - 'null'
-        order:
-          type: integer
-          format: int32
-        isAdditionalField:
-          type: boolean
-        validationRule:
-          $ref: '#/components/schemas/ValidationRuleDto'
-      additionalProperties: false
-    VersionedJurisdictionDto:
-      type: object
-      properties:
-        jurisdiction:
+          description: The type of the value of the item.
+        separator:
           type:
           - string
           - 'null'
-          description: Jurisdiction Name
-          example: Global
-        versionId:
-          type: string
-          description: Jurisdiction Version Id
-          format: uuid
-          example: 254428e9-d232-4738-81c9-151409b296a3
+          description: The separator character to be used for grouping multiple values.
       additionalProperties: false
-      description: Defines the jurisdiction requirement for the credit assessment
-    CreditAssessmentVersionDtoServiceRequest:
+      description: An individual item from a group.
+    PropertyDto:
+      type: object
+      properties:
+        type:
+          type:
+          - string
+          - 'null'
+          description: The property Type
+          example: Single
+        discriminator:
+          type:
+          - string
+          - 'null'
+          description: The property discriminator
+          example: Single
+        value:
+          type:
+          - string
+          - 'null'
+          description: The property value
+          example: Australia
+      additionalProperties: false
+      description: Defines the metadata type
+    CreditAssessmentSetResponseDtoServiceResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/CreditAssessmentVersionDto'
-      additionalProperties: false
-    PropertiesValidatorResponse:
-      type: object
-      properties:
-        isValid:
-          type: boolean
+          $ref: '#/components/schemas/CreditAssessmentSetResponseDto'
         messages:
           type:
           - array
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
-        errors:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/PolicyValidationResponseError'
-      additionalProperties: false
-    SnapshotSetServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/SnapshotSet'
-      additionalProperties: false
-    CreditAssessmentDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/CreditAssessmentDto'
-      additionalProperties: false
-    PolicyValidationResponseError:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-        propertyValue:
-          type:
-          - string
-          - 'null'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    BasicRuleDto:
-      type: object
-      properties:
-        active:
-          type: boolean
-        message:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    CollectionMinimumCountRuleDto:
-      type: object
-      properties:
-        active:
-          type: boolean
-        message:
-          type:
-          - string
-          - 'null'
-        requiredTypesMinCount:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type:
-            - integer
-            - 'null'
-            format: int32
-        overallMinimumCount:
-          type: integer
-          format: int32
-      additionalProperties: false
-    ExternalProviderRuleDto:
-      type: object
-      properties:
-        active:
-          type: boolean
-        message:
-          type:
-          - string
-          - 'null'
-        providerId:
-          type: string
-          format: uuid
-      additionalProperties: false
-    ValidationErrorModel:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-        attemptedValue: {}
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    CreditAssessmentSetRequestDto:
-      type: object
-      properties:
-        journeyId:
-          type: string
-          description: Journey Id which the Credit Decision set belongs to
-          format: uuid
-          example: 549bfca3-1cc0-4186-b4c3-751be5fc2ced
-        creditAssessment:
-          $ref: '#/components/schemas/CreditAssessmentRequestDto'
-      additionalProperties: false
-      description: Request DTO representing Credit Decision set data
-    CollectionMaximumCountRuleDto:
-      type: object
-      properties:
-        active:
-          type: boolean
-        message:
-          type:
-          - string
-          - 'null'
-        requiredTypesMaxCount:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type:
-            - integer
-            - 'null'
-            format: int32
-        overallMaximumCount:
-          type:
-          - integer
-          - 'null'
-          format: int32
-      additionalProperties: false
-    SnapshotSetServiceResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/SnapshotSet'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    SpecialCharactersRuleDto:
-      type: object
-      properties:
-        active:
-          type: boolean
-        message:
-          type:
-          - string
-          - 'null'
-        excludedCharacters:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-      additionalProperties: false
-    GroupDto:
-      type: object
-      properties:
-        sets:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/GroupSetDto'
-          description: A collection of sets of items to be used for grouped data.
-      additionalProperties: false
-    PropertiesValidatorResponseServiceResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/PropertiesValidatorResponse'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    CreditAssessmentDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/CreditAssessmentDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ValidationErrorModelListServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
-    GroupRequirement:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-        key:
-          type:
-          - string
-          - 'null'
-        primaryDataGroupField:
-          type:
-          - string
-          - 'null'
-        snapshotPropertyItems:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/GroupRequirementItem'
-        validationRule:
-          $ref: '#/components/schemas/ValidationRuleDto'
       additionalProperties: false
     ValueLimitRuleDto:
       type: object
@@ -2084,46 +2131,109 @@ components:
           - 'null'
           format: int32
       additionalProperties: false
-    CreditAssessmentDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Credit Decision identifier
-          format: uuid
-          example: cc91d893-7643-433a-9b7c-00813178dc76
-        setId:
-          type: string
-          description: Identifier of the Credit Decision set this belongs to
-          format: uuid
-          example: 78e59d67-9f80-4f5a-b25a-036d603cb37e
-        taskId:
-          type: string
-          description: Identifier of the Credit Decision task
-          format: uuid
-          example: 53eeadd4-b177-451f-9a78-0311b52b3e72
-        taskDataKey:
-          type:
-          - string
-          - 'null'
-          description: Task DataKey
-          example: ket one
-        name:
-          type:
-          - string
-          - 'null'
-          description: Name of this credit assessment.
-        version:
-          $ref: '#/components/schemas/CreditAssessmentVersionDto'
-      additionalProperties: false
-      description: DTO representing Credit Decision data
-    CreditAssessmentSetRequestDtoServiceRequest:
+    CreditAssessmentDtoServiceResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/CreditAssessmentSetRequestDto'
+          $ref: '#/components/schemas/CreditAssessmentDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    Requirement:
+    CreditAssessmentSetRequestDto:
+      type: object
+      properties:
+        journeyId:
+          type: string
+          description: Journey Id which the Credit Decision set belongs to
+          format: uuid
+          example: 549bfca3-1cc0-4186-b4c3-751be5fc2ced
+        creditAssessment:
+          $ref: '#/components/schemas/CreditAssessmentRequestDto'
+      additionalProperties: false
+      description: Request DTO representing Credit Decision set data
+    RegexRuleDto:
+      type: object
+      properties:
+        active:
+          type: boolean
+        message:
+          type:
+          - string
+          - 'null'
+        isCaseSensitive:
+          type: boolean
+        regexValue:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    GroupDto:
+      type: object
+      properties:
+        sets:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/GroupSetDto'
+          description: A collection of sets of items to be used for grouped data.
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    BasicRuleDto:
+      type: object
+      properties:
+        active:
+          type: boolean
+        message:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    SnapshotSetServiceResponse_2:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/SnapshotSet_2'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    Requirement_2:
       type: object
       properties:
         key:
@@ -2152,67 +2262,59 @@ components:
           - string
           - 'null'
         validationRule:
-          $ref: '#/components/schemas/ValidationRuleDto'
+          allOf:
+          - $ref: '#/components/schemas/ValidationRuleDto_2'
       additionalProperties: false
-    DateLimitRuleDto:
-      type: object
-      properties:
-        active:
-          type: boolean
-        message:
-          type:
-          - string
-          - 'null'
-        minDate:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        maxDate:
-          type:
-          - string
-          - 'null'
-          format: date-time
-      additionalProperties: false
-    ValidationRuleDto:
+    CreditAssessmentDto_2:
       type: object
       properties:
         id:
           type: string
+          description: Credit Decision identifier
           format: uuid
+          example: cc91d893-7643-433a-9b7c-00813178dc76
         setId:
           type: string
+          description: Identifier of the set this Credit Decision belongs to
           format: uuid
-        propertyId:
+          example: 78e59d67-9f80-4f5a-b25a-036d603cb37e
+        taskId:
           type: string
+          description: Identifier of the Credit Decision task
           format: uuid
-        dataGroupId:
+          example: 53eeadd4-b177-451f-9a78-0311b52b3e72
+        taskDataKey:
           type:
           - string
           - 'null'
-          format: uuid
-        isDataGroup:
-          type: boolean
-        propertyName:
+          description: Task DataKey
+          example: ket one
+        name:
           type:
           - string
           - 'null'
-        friendlyName:
+          description: Name of this Credit Assessment
+          example: Name
+        version:
+          allOf:
+          - $ref: '#/components/schemas/CreditAssessmentVersionDto_2'
+          description: Request DTO containing latest credit decision version data
+        versions:
           type:
-          - string
+          - array
           - 'null'
-        validationType:
-          type:
-          - string
-          - 'null'
-        validationData:
-          $ref: '#/components/schemas/ValidationDataDto'
+          items:
+            $ref: '#/components/schemas/CreditAssessmentVersionDto_2'
+          description: All versions for the current credit assessment
       additionalProperties: false
-    CreditAssessmentSetResponseDtoServiceResponse:
+      description: DTO representing Credit Decision data
+    CreditAssessmentSetDtoServiceResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/CreditAssessmentSetResponseDto'
+          allOf:
+          - $ref: '#/components/schemas/CreditAssessmentSetDto'
+          description: DTO representing Credit Decision set data
         messages:
           type:
           - array
@@ -2302,6 +2404,125 @@ components:
           description: Jurisdictions for entity
       additionalProperties: false
       description: DTO representing Credit Assessment version data
+    GroupRequirement_2:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+        key:
+          type:
+          - string
+          - 'null'
+        primaryDataGroupField:
+          type:
+          - string
+          - 'null'
+        snapshotPropertyItems:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/GroupRequirementItem_2'
+        validationRule:
+          allOf:
+          - $ref: '#/components/schemas/ValidationRuleDto_2'
+      additionalProperties: false
+    HistoryDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/HistoryDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    HistoryDto:
+      type: object
+      properties:
+        historyItems:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/HistoryItemDto'
+          description: A list of all history items for a given criteria. To represent automated and manual credit assessments.
+      additionalProperties: false
+    GroupRequirementItem_2:
+      type: object
+      properties:
+        key:
+          type:
+          - string
+          - 'null'
+        label:
+          type:
+          - string
+          - 'null'
+        valueType:
+          type:
+          - string
+          - 'null'
+        order:
+          type: integer
+          format: int32
+        isAdditionalField:
+          type: boolean
+        validationRule:
+          allOf:
+          - $ref: '#/components/schemas/ValidationRuleDto_2'
+      additionalProperties: false
+    HistoryItemDto:
+      type: object
+      properties:
+        versions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/HistoryVersionDto'
+          description: All versions for a given credit assessment.
+      additionalProperties: false
+    ValidationRuleDto_2:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        setId:
+          type: string
+          format: uuid
+        propertyId:
+          type: string
+          format: uuid
+        dataGroupId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        isDataGroup:
+          type: boolean
+        propertyName:
+          type:
+          - string
+          - 'null'
+        friendlyName:
+          type:
+          - string
+          - 'null'
+        validationType:
+          type:
+          - string
+          - 'null'
+        validationData:
+          allOf:
+          - $ref: '#/components/schemas/ValidationDataDto_2'
+      additionalProperties: false
     ValidationDataDto_2:
       type: object
       properties:
@@ -2386,29 +2607,19 @@ components:
             $ref: '#/components/schemas/GroupRequirement_2'
           description: List of Group Requirements
       additionalProperties: false
-    GroupRequirementItem_2:
+    CreditAssessmentDtoServiceResponse_2:
       type: object
       properties:
-        key:
-          type:
-          - string
-          - 'null'
-        label:
-          type:
-          - string
-          - 'null'
-        valueType:
-          type:
-          - string
-          - 'null'
-        order:
-          type: integer
-          format: int32
-        isAdditionalField:
-          type: boolean
-        validationRule:
+        data:
           allOf:
-          - $ref: '#/components/schemas/ValidationRuleDto_2'
+          - $ref: '#/components/schemas/CreditAssessmentDto_2'
+          description: DTO representing Credit Decision data
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
     HistoryVersionDto:
       type: object
@@ -2464,28 +2675,6 @@ components:
           - 'null'
           description: The name of the provider the assessment data was obtained from. Only for automated credit assessment
       additionalProperties: false
-    HistoryItemDto:
-      type: object
-      properties:
-        versions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/HistoryVersionDto'
-          description: All versions for a given credit assessment.
-      additionalProperties: false
-    HistoryDto:
-      type: object
-      properties:
-        historyItems:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/HistoryItemDto'
-          description: A list of all history items for a given criteria. To represent automated and manual credit assessments.
-      additionalProperties: false
     CreditAssessmentSetDto:
       type: object
       properties:
@@ -2519,195 +2708,6 @@ components:
           description: List of Credit Decisions in set
       additionalProperties: false
       description: DTO representing Credit Decision set data
-    HistoryDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/HistoryDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    SnapshotSetServiceResponse_2:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/SnapshotSet_2'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    CreditAssessmentSetDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreditAssessmentSetDto'
-          description: DTO representing Credit Decision set data
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    CreditAssessmentDtoServiceResponse_2:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreditAssessmentDto_2'
-          description: DTO representing Credit Decision data
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    GroupRequirement_2:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-        key:
-          type:
-          - string
-          - 'null'
-        primaryDataGroupField:
-          type:
-          - string
-          - 'null'
-        snapshotPropertyItems:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/GroupRequirementItem_2'
-        validationRule:
-          allOf:
-          - $ref: '#/components/schemas/ValidationRuleDto_2'
-      additionalProperties: false
-    CreditAssessmentDto_2:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Credit Decision identifier
-          format: uuid
-          example: cc91d893-7643-433a-9b7c-00813178dc76
-        setId:
-          type: string
-          description: Identifier of the set this Credit Decision belongs to
-          format: uuid
-          example: 78e59d67-9f80-4f5a-b25a-036d603cb37e
-        taskId:
-          type: string
-          description: Identifier of the Credit Decision task
-          format: uuid
-          example: 53eeadd4-b177-451f-9a78-0311b52b3e72
-        taskDataKey:
-          type:
-          - string
-          - 'null'
-          description: Task DataKey
-          example: ket one
-        name:
-          type:
-          - string
-          - 'null'
-          description: Name of this Credit Assessment
-          example: Name
-        version:
-          allOf:
-          - $ref: '#/components/schemas/CreditAssessmentVersionDto_2'
-          description: Request DTO containing latest credit decision version data
-        versions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/CreditAssessmentVersionDto_2'
-          description: All versions for the current credit assessment
-      additionalProperties: false
-      description: DTO representing Credit Decision data
-    Requirement_2:
-      type: object
-      properties:
-        key:
-          type:
-          - string
-          - 'null'
-        label:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        order:
-          type:
-          - integer
-          - 'null'
-          format: int32
-        separator:
-          type:
-          - string
-          - 'null'
-        category:
-          type:
-          - string
-          - 'null'
-        validationRule:
-          allOf:
-          - $ref: '#/components/schemas/ValidationRuleDto_2'
-      additionalProperties: false
-    ValidationRuleDto_2:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        setId:
-          type: string
-          format: uuid
-        propertyId:
-          type: string
-          format: uuid
-        dataGroupId:
-          type:
-          - string
-          - 'null'
-          format: uuid
-        isDataGroup:
-          type: boolean
-        propertyName:
-          type:
-          - string
-          - 'null'
-        friendlyName:
-          type:
-          - string
-          - 'null'
-        validationType:
-          type:
-          - string
-          - 'null'
-        validationData:
-          allOf:
-          - $ref: '#/components/schemas/ValidationDataDto_2'
-      additionalProperties: false
   securitySchemes:
     Bearer:
       type: apiKey

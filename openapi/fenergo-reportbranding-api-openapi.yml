@@ -359,6 +359,36 @@ components:
           - $ref: '#/components/schemas/ConfigureReportBrandingDto'
           description: Request payload for configuring tenant-level report branding.
       additionalProperties: false
+    EmailFooterDto:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          description: Whether the email footer is included.
+        text:
+          type:
+          - string
+          - 'null'
+          description: Footer text content.
+      additionalProperties: false
+      description: Configuration for the footer block appended to report notification emails.
+    XlsxConfigDto:
+      type: object
+      properties:
+        coverSheet:
+          allOf:
+          - $ref: '#/components/schemas/CoverSheetDto'
+          description: Cover sheet settings for the XLSX report.
+        headerRow:
+          allOf:
+          - $ref: '#/components/schemas/HeaderRowDto'
+          description: Header row styling settings for the XLSX report.
+        disclaimer:
+          allOf:
+          - $ref: '#/components/schemas/DisclaimerDto'
+          description: Disclaimer block settings for the XLSX report.
+      additionalProperties: false
+      description: Top-level XLSX-specific branding configuration.
     ValidationErrorModelListServiceResponse:
       type: object
       properties:
@@ -385,36 +415,78 @@ components:
         - message: Data is required
           type: Error
           errorCode: Error Code
-    CoverSheetDto:
+    DisclaimerDto:
       type: object
       properties:
         enabled:
           type: boolean
-          description: Whether the cover sheet is included in the report.
-        showLogo:
-          type: boolean
-          description: Whether the tenant logo is displayed on the cover sheet.
-        showGeneratedDate:
-          type: boolean
-          description: Whether the report generation date is shown on the cover sheet.
+          description: Whether the disclaimer block is included in the report.
+        text:
+          type:
+          - string
+          - 'null'
+          description: Disclaimer text content.
       additionalProperties: false
-      description: Configuration for the cover sheet injected into XLSX reports.
-    ServiceResponseMessage:
+      description: Configuration for the disclaimer block appended to XLSX reports.
+    UploadLogoResponseDtoServiceResponse:
       type: object
       properties:
-        message:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UploadLogoResponseDto'
+          description: Response payload returned after a logo file has been successfully uploaded to S3.
+        messages:
           type:
-          - string
+          - array
           - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
+    UploadLogoResponseDto:
+      type: object
+      properties:
+        s3Key:
+          type:
+          - string
+          - 'null'
+          description: The S3 object key under which the uploaded logo was stored.
+        mimeType:
+          type:
+          - string
+          - 'null'
+          description: The MIME type the file was stored as.
+        sizeBytes:
+          type: integer
+          description: The size of the uploaded file in bytes.
+          format: int64
+      additionalProperties: false
+      description: Response payload returned after a logo file has been successfully uploaded to S3.
+    LogoDto:
+      type: object
+      properties:
+        s3Key:
+          type:
+          - string
+          - 'null'
+          description: S3 object key for the stored logo file.
+        filename:
+          type:
+          - string
+          - 'null'
+          description: Original filename of the uploaded logo.
+        sizeBytes:
+          type:
+          - integer
+          - 'null'
+          description: Size of the logo file in bytes.
+          format: int64
+        mimeType:
+          type:
+          - string
+          - 'null'
+          description: MIME type of the logo file (e.g. "image/png").
+      additionalProperties: false
+      description: Represents the logo asset associated with tenant report branding.
     HeaderRowDto:
       type: object
       properties:
@@ -436,31 +508,45 @@ components:
           description: Whether columns are auto-fitted to their content width.
       additionalProperties: false
       description: Configuration for the header row styling in XLSX reports.
-    ConfigureReportBrandingDto:
+    CoverSheetDto:
       type: object
       properties:
         enabled:
           type: boolean
-          description: Whether tenant report branding is enabled.
-        logo:
-          allOf:
-          - $ref: '#/components/schemas/LogoDto'
-          description: Logo asset details. Null if no logo has been configured.
-        pdfFooter:
+          description: Whether the cover sheet is included in the report.
+        showLogo:
+          type: boolean
+          description: Whether the tenant logo is displayed on the cover sheet.
+        showGeneratedDate:
+          type: boolean
+          description: Whether the report generation date is shown on the cover sheet.
+      additionalProperties: false
+      description: Configuration for the cover sheet injected into XLSX reports.
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
           type:
           - string
           - 'null'
-          description: Text content placed in the footer of generated PDF reports.
-        xlsx:
-          allOf:
-          - $ref: '#/components/schemas/XlsxConfigDto'
-          description: XLSX-specific branding configuration.
-        email:
-          allOf:
-          - $ref: '#/components/schemas/EmailConfigDto'
-          description: Email-specific branding configuration.
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-      description: Request payload for configuring tenant-level report branding.
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
     GuidServiceResponse:
       type: object
       properties:
@@ -474,19 +560,23 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    DisclaimerDto:
+    ValidationErrorModel:
       type: object
       properties:
-        enabled:
-          type: boolean
-          description: Whether the disclaimer block is included in the report.
-        text:
+        propertyName:
           type:
           - string
           - 'null'
-          description: Disclaimer text content.
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
-      description: Configuration for the disclaimer block appended to XLSX reports.
     EmailConfigDto:
       type: object
       properties:
@@ -514,164 +604,47 @@ components:
           description: Whether the tenant logo is displayed in the email.
       additionalProperties: false
       description: Email-specific branding configuration applied to report notification emails.
-    LogoDto:
+    ServiceResponseMessage:
       type: object
       properties:
-        s3Key:
+        message:
           type:
           - string
           - 'null'
-          description: S3 object key for the stored logo file.
-        filename:
+        type:
           type:
           - string
           - 'null'
-          description: Original filename of the uploaded logo.
-        sizeBytes:
-          type:
-          - integer
-          - 'null'
-          description: Size of the logo file in bytes.
-          format: int64
-        mimeType:
-          type:
-          - string
-          - 'null'
-          description: MIME type of the logo file (e.g. "image/png").
-      additionalProperties: false
-      description: Represents the logo asset associated with tenant report branding.
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ValidationErrorModel:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-        attemptedValue: {}
         errorCode:
           type:
           - string
           - 'null'
       additionalProperties: false
-    XlsxConfigDto:
-      type: object
-      properties:
-        coverSheet:
-          allOf:
-          - $ref: '#/components/schemas/CoverSheetDto'
-          description: Cover sheet settings for the XLSX report.
-        headerRow:
-          allOf:
-          - $ref: '#/components/schemas/HeaderRowDto'
-          description: Header row styling settings for the XLSX report.
-        disclaimer:
-          allOf:
-          - $ref: '#/components/schemas/DisclaimerDto'
-          description: Disclaimer block settings for the XLSX report.
-      additionalProperties: false
-      description: Top-level XLSX-specific branding configuration.
-    EmailFooterDto:
+    ConfigureReportBrandingDto:
       type: object
       properties:
         enabled:
           type: boolean
-          description: Whether the email footer is included.
-        text:
-          type:
-          - string
-          - 'null'
-          description: Footer text content.
-      additionalProperties: false
-      description: Configuration for the footer block appended to report notification emails.
-    UploadLogoResponseDto:
-      type: object
-      properties:
-        s3Key:
-          type:
-          - string
-          - 'null'
-          description: The S3 object key under which the uploaded logo was stored.
-        mimeType:
-          type:
-          - string
-          - 'null'
-          description: The MIME type the file was stored as.
-        sizeBytes:
-          type: integer
-          description: The size of the uploaded file in bytes.
-          format: int64
-      additionalProperties: false
-      description: Response payload returned after a logo file has been successfully uploaded to S3.
-    UploadLogoResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
+          description: Whether tenant report branding is enabled.
+        logo:
           allOf:
-          - $ref: '#/components/schemas/UploadLogoResponseDto'
-          description: Response payload returned after a logo file has been successfully uploaded to S3.
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    EmailConfigResponseDto:
-      type: object
-      properties:
-        senderDisplayName:
+          - $ref: '#/components/schemas/LogoDto'
+          description: Logo asset details. Null if no logo has been configured.
+        pdfFooter:
           type:
           - string
           - 'null'
-          description: Display name shown in the From field of outgoing report emails.
-        subjectLine:
-          type:
-          - string
-          - 'null'
-          description: Subject line for outgoing report emails.
-        body:
-          type:
-          - string
-          - 'null'
-          description: Body content of outgoing report emails.
-        footer:
+          description: Text content placed in the footer of generated PDF reports.
+        xlsx:
           allOf:
-          - $ref: '#/components/schemas/EmailFooterResponseDto'
-          description: Footer settings for outgoing report emails.
-        showLogo:
-          type: boolean
-          description: Whether the tenant logo is displayed in the email.
+          - $ref: '#/components/schemas/XlsxConfigDto'
+          description: XLSX-specific branding configuration.
+        email:
+          allOf:
+          - $ref: '#/components/schemas/EmailConfigDto'
+          description: Email-specific branding configuration.
       additionalProperties: false
-      description: Email-specific branding configuration applied to report notification emails.
+      description: Request payload for configuring tenant-level report branding.
     ReportBrandingResponseDto:
       type: object
       properties:
@@ -704,13 +677,40 @@ components:
           description: Email-specific branding configuration.
       additionalProperties: false
       description: Response payload representing the current tenant report branding configuration.
-    ServiceResponse:
+    EmailConfigResponseDto:
       type: object
       properties:
-        data:
+        senderDisplayName:
           type:
           - string
           - 'null'
+          description: Display name shown in the From field of outgoing report emails.
+        subjectLine:
+          type:
+          - string
+          - 'null'
+          description: Subject line for outgoing report emails.
+        body:
+          type:
+          - string
+          - 'null'
+          description: Body content of outgoing report emails.
+        footer:
+          allOf:
+          - $ref: '#/components/schemas/EmailFooterResponseDto'
+          description: Footer settings for outgoing report emails.
+        showLogo:
+          type: boolean
+          description: Whether the tenant logo is displayed in the email.
+      additionalProperties: false
+      description: Email-specific branding configuration applied to report notification emails.
+    ReportBrandingResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ReportBrandingResponseDto'
+          description: Response payload representing the current tenant report branding configuration.
         messages:
           type:
           - array
@@ -731,6 +731,23 @@ components:
           description: Disclaimer text content.
       additionalProperties: false
       description: Configuration for the disclaimer block appended to XLSX reports.
+    XlsxConfigResponseDto:
+      type: object
+      properties:
+        coverSheet:
+          allOf:
+          - $ref: '#/components/schemas/CoverSheetResponseDto'
+          description: Cover sheet settings for the XLSX report.
+        headerRow:
+          allOf:
+          - $ref: '#/components/schemas/HeaderRowResponseDto'
+          description: Header row styling settings for the XLSX report.
+        disclaimer:
+          allOf:
+          - $ref: '#/components/schemas/DisclaimerResponseDto'
+          description: Disclaimer block settings for the XLSX report.
+      additionalProperties: false
+      description: Top-level XLSX-specific branding configuration.
     CoverSheetResponseDto:
       type: object
       properties:
@@ -758,23 +775,6 @@ components:
           description: Footer text content.
       additionalProperties: false
       description: Configuration for the footer block appended to report notification emails.
-    XlsxConfigResponseDto:
-      type: object
-      properties:
-        coverSheet:
-          allOf:
-          - $ref: '#/components/schemas/CoverSheetResponseDto'
-          description: Cover sheet settings for the XLSX report.
-        headerRow:
-          allOf:
-          - $ref: '#/components/schemas/HeaderRowResponseDto'
-          description: Header row styling settings for the XLSX report.
-        disclaimer:
-          allOf:
-          - $ref: '#/components/schemas/DisclaimerResponseDto'
-          description: Disclaimer block settings for the XLSX report.
-      additionalProperties: false
-      description: Top-level XLSX-specific branding configuration.
     LogoResponseDto:
       type: object
       properties:
@@ -822,13 +822,13 @@ components:
           description: Whether columns are auto-fitted to their content width.
       additionalProperties: false
       description: Configuration for the header row styling in XLSX reports.
-    ReportBrandingResponseDtoServiceResponse:
+    ServiceResponse:
       type: object
       properties:
         data:
-          allOf:
-          - $ref: '#/components/schemas/ReportBrandingResponseDto'
-          description: Response payload representing the current tenant report branding configuration.
+          type:
+          - string
+          - 'null'
         messages:
           type:
           - array

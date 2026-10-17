@@ -1573,21 +1573,31 @@ paths:
     - url: /advanceddashboardquery
 components:
   schemas:
-    ServiceResponseMessage:
+    DashboardFieldSource:
+      enum:
+      - Journey
+      - Task
+      - Entity
+      - EntityProperty
+      type: string
+    PolicyFieldDtoIEnumerableServiceRequest:
+      required:
+      - data
       type: object
       properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyFieldDto'
+      additionalProperties: false
+    DashboardConfigurationVersionUpdateDtoServiceRequest:
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/DashboardConfigurationVersionUpdateDto'
       additionalProperties: false
     DashboardConfigurationVersionDtoServiceResponse:
       type: object
@@ -1602,13 +1612,15 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    StringServiceResponse:
+    ValidationErrorModelListServiceResponse:
       type: object
       properties:
         data:
           type:
-          - string
+          - array
           - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
         messages:
           type:
           - array
@@ -1616,44 +1628,46 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    DashboardConfigurationVersionUpdateDtoServiceRequest:
-      required:
-      - data
-      type: object
-      properties:
+      example:
         data:
-          allOf:
-          - $ref: '#/components/schemas/DashboardConfigurationVersionUpdateDto'
-      additionalProperties: false
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
         messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    DashboardViewDtoServiceRequest:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    DashboardColumnDto:
       required:
-      - data
+      - field
+      - label
       type: object
       properties:
-        data:
+        field:
           allOf:
-          - $ref: '#/components/schemas/DashboardViewDto'
-      additionalProperties: false
-    PolicyFieldDtoIEnumerableServiceRequest:
-      required:
-      - data
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/PolicyFieldDto'
+          - $ref: '#/components/schemas/DashboardField'
+        label:
+          maxLength: 50
+          minLength: 1
+          type: string
+        filterable:
+          type: boolean
+        order:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        isHidden:
+          type: boolean
+        customProperties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type:
+            - string
+            - 'null'
       additionalProperties: false
     DashboardViewDto:
       required:
@@ -1675,7 +1689,58 @@ components:
           items:
             $ref: '#/components/schemas/DashboardColumnDto'
       additionalProperties: false
-    DashboardConfigurationVersionCreateDto:
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    DashboardConfigurationVersionStatus:
+      enum:
+      - Draft
+      - Pending
+      - Published
+      - Failed
+      - Deleted
+      type: string
+    DashboardViewDtoServiceRequest:
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/DashboardViewDto'
+      additionalProperties: false
+    DashboardConfigurationVersionCreateDtoServiceRequest:
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/DashboardConfigurationVersionCreateDto'
+      additionalProperties: false
+    DashboardFieldType:
+      enum:
+      - Id
+      - Text
+      - Number
+      - Date
+      - Lookup
+      - Object
+      - Collection
+      - Boolean
+      type: string
+    DashboardConfigurationVersionUpdateDto:
       type: object
       properties:
         notes:
@@ -1683,18 +1748,67 @@ components:
           type:
           - string
           - 'null'
-        policyFields:
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/PolicyFieldDto'
-        views:
+        type:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/DashboardViewDto'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    PolicyFieldDto:
+      required:
+      - dataKey
+      - name
+      - policyPropertyType
+      - policyReferenceId
+      type: object
+      properties:
+        name:
+          maxLength: 100
+          minLength: 1
+          type: string
+        dataKey:
+          maxLength: 100
+          minLength: 1
+          type: string
+        policyReferenceId:
+          minLength: 1
+          type: string
+          format: uuid
+        policyPropertyType:
+          maxLength: 100
+          minLength: 1
+          type: string
+        policyPropertyTypeId:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    DashboardField:
+      required:
+      - name
+      type: object
+      properties:
+        name:
+          maxLength: 100
+          minLength: 1
+          type: string
+        source:
+          allOf:
+          - $ref: '#/components/schemas/DashboardFieldSource'
+        type:
+          allOf:
+          - $ref: '#/components/schemas/DashboardFieldType'
       additionalProperties: false
     DashboardConfigurationVersionDto:
       type: object
@@ -1733,38 +1847,20 @@ components:
           items:
             $ref: '#/components/schemas/DashboardViewDto'
       additionalProperties: false
-    DashboardColumnDto:
-      required:
-      - field
-      - label
+    DashboardViewDtoServiceResponse:
       type: object
       properties:
-        field:
+        data:
           allOf:
-          - $ref: '#/components/schemas/DashboardField'
-        label:
-          maxLength: 50
-          minLength: 1
-          type: string
-        filterable:
-          type: boolean
-        order:
+          - $ref: '#/components/schemas/DashboardViewDto'
+        messages:
           type:
-          - integer
+          - array
           - 'null'
-          format: int32
-        isHidden:
-          type: boolean
-        customProperties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type:
-            - string
-            - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    DashboardConfigurationVersionUpdateDto:
+    DashboardConfigurationVersionCreateDto:
       type: object
       properties:
         notes:
@@ -1772,6 +1868,29 @@ components:
           type:
           - string
           - 'null'
+        policyFields:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/PolicyFieldDto'
+        views:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/DashboardViewDto'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
     ValidationErrorModel:
       type: object
@@ -1790,16 +1909,7 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    DashboardConfigurationVersionCreateDtoServiceRequest:
-      required:
-      - data
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/DashboardConfigurationVersionCreateDto'
-      additionalProperties: false
-    ValidationErrorModelListServiceResponse:
+    DashboardConfigurationVersionLiteDtoIEnumerableServiceResponse:
       type: object
       properties:
         data:
@@ -1807,7 +1917,7 @@ components:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ValidationErrorModel'
+            $ref: '#/components/schemas/DashboardConfigurationVersionLiteDto'
         messages:
           type:
           - array
@@ -1815,93 +1925,25 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
-    DashboardConfigurationVersionStatus:
-      enum:
-      - Draft
-      - Pending
-      - Published
-      - Failed
-      - Deleted
-      type: string
-    PolicyFieldDto:
-      required:
-      - dataKey
-      - name
-      - policyPropertyType
-      - policyReferenceId
+    DashboardViewLiteDto:
       type: object
       properties:
+        id:
+          type:
+          - string
+          - 'null'
         name:
-          maxLength: 100
-          minLength: 1
-          type: string
-        dataKey:
-          maxLength: 100
-          minLength: 1
-          type: string
-        policyReferenceId:
-          minLength: 1
-          type: string
-          format: uuid
-        policyPropertyType:
-          maxLength: 100
-          minLength: 1
-          type: string
-        policyPropertyTypeId:
           type:
           - string
           - 'null'
       additionalProperties: false
-    DashboardFieldSource:
-      enum:
-      - Journey
-      - Task
-      - Entity
-      - EntityProperty
-      type: string
-    DashboardFieldType:
-      enum:
-      - Id
-      - Text
-      - Number
-      - Date
-      - Lookup
-      - Object
-      - Collection
-      - Boolean
-      type: string
-    DashboardViewDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/DashboardViewDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    DashboardField:
-      required:
-      - name
+    DashboardFieldDto:
       type: object
       properties:
         name:
-          maxLength: 100
-          minLength: 1
-          type: string
+          type:
+          - string
+          - 'null'
         source:
           allOf:
           - $ref: '#/components/schemas/DashboardFieldSource'
@@ -1909,7 +1951,7 @@ components:
           allOf:
           - $ref: '#/components/schemas/DashboardFieldType'
       additionalProperties: false
-    PolicyFieldDtoIEnumerableServiceResponse:
+    DashboardViewLiteDtoIEnumerableServiceResponse:
       type: object
       properties:
         data:
@@ -1917,7 +1959,7 @@ components:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/PolicyFieldDto_2'
+            $ref: '#/components/schemas/DashboardViewLiteDto'
         messages:
           type:
           - array
@@ -1925,12 +1967,31 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    DashboardConfigurationVersionLiteDtoServiceResponse:
+    DashboardViewDto_2:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+        name:
+          type:
+          - string
+          - 'null'
+        columns:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/DashboardColumn'
+      additionalProperties: false
+    ServiceResponse:
       type: object
       properties:
         data:
-          allOf:
-          - $ref: '#/components/schemas/DashboardConfigurationVersionLiteDto'
+          type:
+          - string
+          - 'null'
         messages:
           type:
           - array
@@ -1966,53 +2027,28 @@ components:
             - string
             - 'null'
       additionalProperties: false
-    ServiceResponse:
+    PolicyFieldDto_2:
       type: object
       properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    DashboardConfigurationVersionLiteDtoIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/DashboardConfigurationVersionLiteDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    DashboardViewDto_2:
-      type: object
-      properties:
-        id:
-          type:
-          - string
-          - 'null'
         name:
           type:
           - string
           - 'null'
-        columns:
+        dataKey:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/DashboardColumn'
+        policyReferenceId:
+          type: string
+          format: uuid
+        policyPropertyType:
+          type:
+          - string
+          - 'null'
+        policyPropertyTypeId:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
     DashboardConfigurationVersionLiteDto:
       type: object
@@ -2039,7 +2075,7 @@ components:
           type: integer
           format: int32
       additionalProperties: false
-    DashboardFieldDto:
+    DashboardField_2:
       type: object
       properties:
         name:
@@ -2052,6 +2088,19 @@ components:
         type:
           allOf:
           - $ref: '#/components/schemas/DashboardFieldType'
+      additionalProperties: false
+    DashboardConfigurationVersionLiteDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/DashboardConfigurationVersionLiteDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
     DashboardFieldDtoIEnumerableServiceResponse:
       type: object
@@ -2069,19 +2118,7 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    DashboardViewLiteDto:
-      type: object
-      properties:
-        id:
-          type:
-          - string
-          - 'null'
-        name:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    DashboardViewLiteDtoIEnumerableServiceResponse:
+    PolicyFieldDtoIEnumerableServiceResponse:
       type: object
       properties:
         data:
@@ -2089,50 +2126,13 @@ components:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/DashboardViewLiteDto'
+            $ref: '#/components/schemas/PolicyFieldDto_2'
         messages:
           type:
           - array
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    PolicyFieldDto_2:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-        dataKey:
-          type:
-          - string
-          - 'null'
-        policyReferenceId:
-          type: string
-          format: uuid
-        policyPropertyType:
-          type:
-          - string
-          - 'null'
-        policyPropertyTypeId:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    DashboardField_2:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-        source:
-          allOf:
-          - $ref: '#/components/schemas/DashboardFieldSource'
-        type:
-          allOf:
-          - $ref: '#/components/schemas/DashboardFieldType'
       additionalProperties: false
   securitySchemes:
     Bearer:

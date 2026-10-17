@@ -840,57 +840,79 @@ paths:
     - url: /screeningquery
 components:
   schemas:
-    MatchDataExternalIdDto:
+    MatchDto:
       type: object
       properties:
-        entityAliasId:
-          type:
-          - string
-          - 'null'
-          description: What entity Alias this externalId is associated with. Will be "PrimaryName" for the PrimaryName external ids
-          example: e7b8f7c2-3c4a-4b2a-9e2d-1f2a3b4c5d6e
-        value:
-          type:
-          - string
-          - 'null'
-          description: The value of the ID
-          example: '1234'
-      additionalProperties: false
-      description: Class to represent a match external id
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    AdditionalInfoDto:
-      type: object
-      properties:
-        title:
-          type:
-          - string
-          - 'null'
-          description: Title of additional information
-          example: Title
-        content:
+        id:
+          type: string
+          description: The unique ID for the match on a Legal Entity. A single entity can have no matches or more than one match.
+          format: uuid
+          example: 6fbfa5f9-124f-4159-b947-d9294ad48370
+        entityAliasIds:
           type:
           - array
           - 'null'
           items:
             type: string
-          description: Content  of additional information
+          description: 'List of the Entity AliasIds that this match is associated with. When it''s associated with the primary name of the entity, one of them will be "PrimaryName".
+
+            If the array is null or empty, it means that the match only belongs to the PrimaryName of the entity.'
+        status:
+          type:
+          - string
+          - 'null'
+          description: The match status. This will be match/no match/unresolved
+          example: No Match
+        reason:
+          type:
+          - string
+          - 'null'
+          description: Connected to the match status
+          example: No Name Match
+        comments:
+          type:
+          - string
+          - 'null'
+          description: Any additional comments
+          example: Additional comments
+        matchData:
+          allOf:
+          - $ref: '#/components/schemas/MatchDataDto'
+          description: Data related to the match
+        lastActionedBy:
+          allOf:
+          - $ref: '#/components/schemas/LastActionedByDto'
+          description: User/System who actioned the match
       additionalProperties: false
-      description: Represents the additional info about the matching entity
+      description: Represents a Screening Match
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    MatchDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/MatchDto'
+          description: Represents a Screening Match
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
     MatchDataAliasDto:
       type: object
       properties:
@@ -908,20 +930,6 @@ components:
           example: Acronym
       additionalProperties: false
       description: Represent the alias of an entity
-    ServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
     AssociationDto:
       type: object
       properties:
@@ -966,20 +974,89 @@ components:
           example: 19.74
       additionalProperties: false
       description: Represents a relationship with another entity
-    MatchDtoServiceResponse:
+    AdditionalInfoDto:
       type: object
       properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/MatchDto'
-          description: Represents a Screening Match
-        messages:
+        title:
+          type:
+          - string
+          - 'null'
+          description: Title of additional information
+          example: Title
+        content:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+            type: string
+          description: Content  of additional information
       additionalProperties: false
+      description: Represents the additional info about the matching entity
+    AddressDto:
+      type: object
+      properties:
+        addressLine1:
+          type:
+          - string
+          - 'null'
+          description: The first line in the address
+          example: 7107 Andell Rd
+        addressLine2:
+          type:
+          - string
+          - 'null'
+          description: The second line in the address
+          example: Portobello
+        city:
+          type:
+          - string
+          - 'null'
+          description: The city
+          example: Dublin
+        postalCode:
+          type:
+          - string
+          - 'null'
+          description: The postal code
+          example: D08 YY66
+        country:
+          type:
+          - string
+          - 'null'
+          description: The country
+          example: Ireland
+        countryISO2:
+          type:
+          - string
+          - 'null'
+          description: The country ISO2 code
+          example: IE
+        countryISO3:
+          type:
+          - string
+          - 'null'
+          description: The country ISO3 code
+          example: IRL
+        stateProvince:
+          type:
+          - string
+          - 'null'
+          description: The state or province
+          example: Leinster
+        type:
+          type:
+          - string
+          - 'null'
+          description: The type
+          example: Personal
+        category:
+          type:
+          - string
+          - 'null'
+          description: The category of the address
+          example: Residential
+      additionalProperties: false
+      description: Represents the address of an entity
     StringServiceResponse:
       type: object
       properties:
@@ -993,6 +1070,78 @@ components:
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    LastActionedByDto:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+          description: The id of the user taht actioned the resolution of the match
+          example: 42fc9261-6343-4fb0-aea1-6023645ff84f
+        type:
+          type:
+          - string
+          - 'null'
+          description: The type of the user that actioned the resolution of the match
+          example: User
+        reusedFromPreviousBatch:
+          type: boolean
+          description: Used to identify if the user that actioned the resolution of the match is reused from a previous batch
+        actionedOn:
+          type:
+          - string
+          - 'null'
+          description: 'The date and time when the match was last actioned (server-generated, UTC).
+
+            Null for matches actioned before this field was introduced (March 2026).'
+          format: date-time
+      additionalProperties: false
+      description: Represents the details of a screening match
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    MatchDataExternalIdDto:
+      type: object
+      properties:
+        entityAliasId:
+          type:
+          - string
+          - 'null'
+          description: What entity Alias this externalId is associated with. Will be "PrimaryName" for the PrimaryName external ids
+          example: e7b8f7c2-3c4a-4b2a-9e2d-1f2a3b4c5d6e
+        value:
+          type:
+          - string
+          - 'null'
+          description: The value of the ID
+          example: '1234'
+      additionalProperties: false
+      description: Class to represent a match external id
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
     MatchDataDto:
       required:
@@ -1167,99 +1316,6 @@ components:
           description: An optional property to store additional details about the match in rich text format
       additionalProperties: false
       description: Represents the details of a screening match
-    AddressDto:
-      type: object
-      properties:
-        addressLine1:
-          type:
-          - string
-          - 'null'
-          description: The first line in the address
-          example: 7107 Andell Rd
-        addressLine2:
-          type:
-          - string
-          - 'null'
-          description: The second line in the address
-          example: Portobello
-        city:
-          type:
-          - string
-          - 'null'
-          description: The city
-          example: Dublin
-        postalCode:
-          type:
-          - string
-          - 'null'
-          description: The postal code
-          example: D08 YY66
-        country:
-          type:
-          - string
-          - 'null'
-          description: The country
-          example: Ireland
-        countryISO2:
-          type:
-          - string
-          - 'null'
-          description: The country ISO2 code
-          example: IE
-        countryISO3:
-          type:
-          - string
-          - 'null'
-          description: The country ISO3 code
-          example: IRL
-        stateProvince:
-          type:
-          - string
-          - 'null'
-          description: The state or province
-          example: Leinster
-        type:
-          type:
-          - string
-          - 'null'
-          description: The type
-          example: Personal
-        category:
-          type:
-          - string
-          - 'null'
-          description: The category of the address
-          example: Residential
-      additionalProperties: false
-      description: Represents the address of an entity
-    LastActionedByDto:
-      type: object
-      properties:
-        id:
-          type:
-          - string
-          - 'null'
-          description: The id of the user taht actioned the resolution of the match
-          example: 42fc9261-6343-4fb0-aea1-6023645ff84f
-        type:
-          type:
-          - string
-          - 'null'
-          description: The type of the user that actioned the resolution of the match
-          example: User
-        reusedFromPreviousBatch:
-          type: boolean
-          description: Used to identify if the user that actioned the resolution of the match is reused from a previous batch
-        actionedOn:
-          type:
-          - string
-          - 'null'
-          description: 'The date and time when the match was last actioned (server-generated, UTC).
-
-            Null for matches actioned before this field was introduced (March 2026).'
-          format: date-time
-      additionalProperties: false
-      description: Represents the details of a screening match
     MatchDtoIEnumerableServiceResponse:
       type: object
       properties:
@@ -1276,55 +1332,15 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    MatchDto:
+    MatchDtoV4IEnumerableServiceResponse:
       type: object
       properties:
-        id:
-          type: string
-          description: The unique ID for the match on a Legal Entity. A single entity can have no matches or more than one match.
-          format: uuid
-          example: 6fbfa5f9-124f-4159-b947-d9294ad48370
-        entityAliasIds:
+        data:
           type:
           - array
           - 'null'
           items:
-            type: string
-          description: 'List of the Entity AliasIds that this match is associated with. When it''s associated with the primary name of the entity, one of them will be "PrimaryName".
-
-            If the array is null or empty, it means that the match only belongs to the PrimaryName of the entity.'
-        status:
-          type:
-          - string
-          - 'null'
-          description: The match status. This will be match/no match/unresolved
-          example: No Match
-        reason:
-          type:
-          - string
-          - 'null'
-          description: Connected to the match status
-          example: No Name Match
-        comments:
-          type:
-          - string
-          - 'null'
-          description: Any additional comments
-          example: Additional comments
-        matchData:
-          allOf:
-          - $ref: '#/components/schemas/MatchDataDto'
-          description: Data related to the match
-        lastActionedBy:
-          allOf:
-          - $ref: '#/components/schemas/LastActionedByDto'
-          description: User/System who actioned the match
-      additionalProperties: false
-      description: Represents a Screening Match
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
+            $ref: '#/components/schemas/MatchDtoV4'
         messages:
           type:
           - array
@@ -1332,6 +1348,23 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
+    CategoryDetailFieldDto:
+      type: object
+      properties:
+        label:
+          type:
+          - string
+          - 'null'
+          description: The label of the field
+          example: Status
+        value:
+          type:
+          - string
+          - 'null'
+          description: The value of the field
+          example: Active
+      additionalProperties: false
+      description: One labelled field within a structured category detail row
     MatchDtoV4ServiceResponse:
       type: object
       properties:
@@ -1367,184 +1400,6 @@ components:
           description: An optional per-row nested table (e.g. SOE's per-country ownership breakdown)
       additionalProperties: false
       description: One row of a structured category detail table
-    MatchDtoV4:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The unique ID for the match on a Legal Entity. A single entity can have no matches or more than one match.
-          format: uuid
-          example: 6fbfa5f9-124f-4159-b947-d9294ad48370
-        entityAliasIds:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: 'List of the Entity AliasIds that this match is associated with. When it''s associated with the primary name of the entity, one of them will be "PrimaryName".
-
-            If the array is null or empty, it means that the match only belongs to the PrimaryName of the entity.'
-        status:
-          type:
-          - string
-          - 'null'
-          description: The match status. This will be match/no match/unresolved
-          example: No Match
-        reason:
-          type:
-          - string
-          - 'null'
-          description: Connected to the match status
-          example: No Name Match
-        comments:
-          type:
-          - string
-          - 'null'
-          description: Any additional comments
-          example: Additional comments
-        matchData:
-          allOf:
-          - $ref: '#/components/schemas/MatchDataDtoV4'
-          description: Data related to the match
-        lastActionedBy:
-          allOf:
-          - $ref: '#/components/schemas/LastActionedByDto'
-          description: User/System who actioned the match
-        classificationData:
-          allOf:
-          - $ref: '#/components/schemas/ClassificationDataDto'
-          description: Classification data for matched result.
-        classificationDataReviewed:
-          type:
-          - boolean
-          - 'null'
-          description: 'Indicates whether the classification data for this match has been reviewed/confirmed.
-
-            Null or false means not yet reviewed.'
-        entityUniqueId:
-          type:
-          - string
-          - 'null'
-          description: 'The unique ID of the match returned by the Screening provider.
-
-            This will be null for any matches that were created before April 2024.
-
-            For matches created before April 2024, fallback to MatchData.IdsList to get the unique entity ID, which is stored under the type "EntityUniqueId" (or "EntityUniqueID" for WCO).'
-      additionalProperties: false
-      description: Represents a Screening Match
-    CategoryDetailFieldDto:
-      type: object
-      properties:
-        label:
-          type:
-          - string
-          - 'null'
-          description: The label of the field
-          example: Status
-        value:
-          type:
-          - string
-          - 'null'
-          description: The value of the field
-          example: Active
-      additionalProperties: false
-      description: One labelled field within a structured category detail row
-    ClassificationDataDto:
-      type: object
-      properties:
-        singleProperties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/ClassificationDataSinglePropertyDto'
-      additionalProperties: false
-    IdDetails:
-      type: object
-      properties:
-        type:
-          type:
-          - string
-          - 'null'
-          description: The Type of Id of the entity
-          example: Passport, Driving License
-        value:
-          type:
-          - string
-          - 'null'
-          description: This is the Value of the ID of the entity
-          example: D0999971, 000012ABCD
-        country:
-          type:
-          - string
-          - 'null'
-          description: ID Issuing Country
-          example: Ireland, USA
-        label:
-          type:
-          - string
-          - 'null'
-          description: The human-readable name of the ID scheme, as reported by the underlying provider (e.g. the name of a registry or identifier scheme)
-          example: National Registry of Legal Entities (CNPJ)
-        issueDate:
-          type:
-          - string
-          - 'null'
-          description: Date on which Id is Issued.
-          example: 31/12/1989
-        expiryDate:
-          type:
-          - string
-          - 'null'
-          description: Date on which ID expires
-          example: 31/12/1989
-      additionalProperties: false
-    MatchDtoV4IEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/MatchDtoV4'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ClassificationDataSinglePropertyDto:
-      type: object
-      properties:
-        value:
-          type:
-          - string
-          - 'null'
-        label:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    CategoryDetailDto:
-      type: object
-      properties:
-        kind:
-          type:
-          - string
-          - 'null'
-          description: The category this table's rows belong to
-          example: Pep
-        rows:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/CategoryDetailRowDto'
-          description: The rows of this category's table
-      additionalProperties: false
-      description: One category's worth of structured detail rows (e.g. every PEP hit for this match)
     MatchDataDtoV4:
       required:
       - providerId
@@ -1745,6 +1600,151 @@ components:
           example: e7b8f7c2-3c4a-4b2a-9e2d-1f2a3b4c5d6e
       additionalProperties: false
       description: Represents a URL link to the match on the provider's side, with an optional label.
+    CategoryDetailDto:
+      type: object
+      properties:
+        kind:
+          type:
+          - string
+          - 'null'
+          description: The category this table's rows belong to
+          example: Pep
+        rows:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/CategoryDetailRowDto'
+          description: The rows of this category's table
+      additionalProperties: false
+      description: One category's worth of structured detail rows (e.g. every PEP hit for this match)
+    MatchDtoV4:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique ID for the match on a Legal Entity. A single entity can have no matches or more than one match.
+          format: uuid
+          example: 6fbfa5f9-124f-4159-b947-d9294ad48370
+        entityAliasIds:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'List of the Entity AliasIds that this match is associated with. When it''s associated with the primary name of the entity, one of them will be "PrimaryName".
+
+            If the array is null or empty, it means that the match only belongs to the PrimaryName of the entity.'
+        status:
+          type:
+          - string
+          - 'null'
+          description: The match status. This will be match/no match/unresolved
+          example: No Match
+        reason:
+          type:
+          - string
+          - 'null'
+          description: Connected to the match status
+          example: No Name Match
+        comments:
+          type:
+          - string
+          - 'null'
+          description: Any additional comments
+          example: Additional comments
+        matchData:
+          allOf:
+          - $ref: '#/components/schemas/MatchDataDtoV4'
+          description: Data related to the match
+        lastActionedBy:
+          allOf:
+          - $ref: '#/components/schemas/LastActionedByDto'
+          description: User/System who actioned the match
+        classificationData:
+          allOf:
+          - $ref: '#/components/schemas/ClassificationDataDto'
+          description: Classification data for matched result.
+        classificationDataReviewed:
+          type:
+          - boolean
+          - 'null'
+          description: 'Indicates whether the classification data for this match has been reviewed/confirmed.
+
+            Null or false means not yet reviewed.'
+        entityUniqueId:
+          type:
+          - string
+          - 'null'
+          description: 'The unique ID of the match returned by the Screening provider.
+
+            This will be null for any matches that were created before April 2024.
+
+            For matches created before April 2024, fallback to MatchData.IdsList to get the unique entity ID, which is stored under the type "EntityUniqueId" (or "EntityUniqueID" for WCO).'
+      additionalProperties: false
+      description: Represents a Screening Match
+    IdDetails:
+      type: object
+      properties:
+        type:
+          type:
+          - string
+          - 'null'
+          description: The Type of Id of the entity
+          example: Passport, Driving License
+        value:
+          type:
+          - string
+          - 'null'
+          description: This is the Value of the ID of the entity
+          example: D0999971, 000012ABCD
+        country:
+          type:
+          - string
+          - 'null'
+          description: ID Issuing Country
+          example: Ireland, USA
+        label:
+          type:
+          - string
+          - 'null'
+          description: The human-readable name of the ID scheme, as reported by the underlying provider (e.g. the name of a registry or identifier scheme)
+          example: National Registry of Legal Entities (CNPJ)
+        issueDate:
+          type:
+          - string
+          - 'null'
+          description: Date on which Id is Issued.
+          example: 31/12/1989
+        expiryDate:
+          type:
+          - string
+          - 'null'
+          description: Date on which ID expires
+          example: 31/12/1989
+      additionalProperties: false
+    ClassificationDataSinglePropertyDto:
+      type: object
+      properties:
+        value:
+          type:
+          - string
+          - 'null'
+        label:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ClassificationDataDto:
+      type: object
+      properties:
+        singleProperties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/ClassificationDataSinglePropertyDto'
+      additionalProperties: false
   securitySchemes:
     Bearer:
       type: apiKey

@@ -765,19 +765,110 @@ paths:
     - url: /reviewquery
 components:
   schemas:
-    ReviewDtoServiceRequest:
+    PatchReviewDtoServiceRequest:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/ReviewDto'
+          - $ref: '#/components/schemas/PatchReviewDto'
       additionalProperties: false
-    ReviewOrigin:
-      enum:
-      - System
-      - JourneyScheduler
-      - ETL
-      type: string
+    UpdateReviewDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        ruleId:
+          type: string
+          format: uuid
+        entityId:
+          type: string
+          format: uuid
+        deferredDocumentRequirements:
+          allOf:
+          - $ref: '#/components/schemas/DeferredDocumentRequirements'
+        status:
+          type:
+          - string
+          - 'null'
+        launchDate:
+          type: string
+          format: date-time
+        calculatedDate:
+          type: string
+          format: date-time
+        offset:
+          type: integer
+          format: int32
+      additionalProperties: false
+    DeferredDocumentRequirementsReviewProperties:
+      required:
+      - documentRequirements
+      - jurisdictions
+      - policyCategories
+      type: object
+      properties:
+        documentRequirements:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/DeferredDocumentRequirementsReviewPropertiesDocRequirement'
+        policyCategories:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        jurisdictions:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+      additionalProperties: false
+    PatchReviewDto:
+      type: object
+      properties:
+        launchDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+      additionalProperties: false
+    UpdateReviewDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UpdateReviewDto'
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    DeferredDocumentRequirements:
+      type: object
+      properties:
+        client:
+          allOf:
+          - $ref: '#/components/schemas/DeferredDocumentRequirementsReviewProperties'
+        relatedParties:
+          allOf:
+          - $ref: '#/components/schemas/DeferredDocumentRequirementsReviewProperties'
+      additionalProperties: false
     ValidationErrorModelListServiceResponse:
       type: object
       properties:
@@ -804,22 +895,6 @@ components:
         - message: Data is required
           type: Error
           errorCode: Error Code
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
     DeferredDocumentRequirementsReviewPropertiesDocRequirement:
       type: object
       properties:
@@ -845,6 +920,13 @@ components:
           items:
             $ref: '#/components/schemas/DeferredDocumentRequirementsReviewPropertiesJourney'
       additionalProperties: false
+    ReviewDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ReviewDto'
+      additionalProperties: false
     DeferredDocumentRequirementsReviewPropertiesJourney:
       type: object
       properties:
@@ -869,34 +951,6 @@ components:
         completedDate:
           type: string
           format: date-time
-      additionalProperties: false
-    PatchReviewDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/PatchReviewDto'
-      additionalProperties: false
-    ServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    UpdateReviewDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/UpdateReviewDto'
       additionalProperties: false
     ReviewDto:
       type: object
@@ -941,41 +995,24 @@ components:
           allOf:
           - $ref: '#/components/schemas/ReviewOrigin'
       additionalProperties: false
-    DeferredDocumentRequirements:
+    ReviewOrigin:
+      enum:
+      - System
+      - JourneyScheduler
+      - ETL
+      type: string
+    ReviewDtoServiceResponse:
       type: object
       properties:
-        client:
+        data:
           allOf:
-          - $ref: '#/components/schemas/DeferredDocumentRequirementsReviewProperties'
-        relatedParties:
-          allOf:
-          - $ref: '#/components/schemas/DeferredDocumentRequirementsReviewProperties'
-      additionalProperties: false
-    DeferredDocumentRequirementsReviewProperties:
-      required:
-      - documentRequirements
-      - jurisdictions
-      - policyCategories
-      type: object
-      properties:
-        documentRequirements:
+          - $ref: '#/components/schemas/ReviewDto'
+        messages:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/DeferredDocumentRequirementsReviewPropertiesDocRequirement'
-        policyCategories:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-        jurisdictions:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
     StringServiceResponse:
       type: object
@@ -984,74 +1021,6 @@ components:
           type:
           - string
           - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    UpdateReviewDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        ruleId:
-          type: string
-          format: uuid
-        entityId:
-          type: string
-          format: uuid
-        deferredDocumentRequirements:
-          allOf:
-          - $ref: '#/components/schemas/DeferredDocumentRequirements'
-        status:
-          type:
-          - string
-          - 'null'
-        launchDate:
-          type: string
-          format: date-time
-        calculatedDate:
-          type: string
-          format: date-time
-        offset:
-          type: integer
-          format: int32
-      additionalProperties: false
-    PatchReviewDto:
-      type: object
-      properties:
-        launchDate:
-          type:
-          - string
-          - 'null'
-          format: date-time
-      additionalProperties: false
-    ValidationErrorModel:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-        attemptedValue: {}
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ReviewDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ReviewDto'
         messages:
           type:
           - array
@@ -1070,15 +1039,30 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    ReviewDtoIEnumerableServiceResponse:
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ServiceResponse:
       type: object
       properties:
         data:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/ReviewDto_2'
         messages:
           type:
           - array
@@ -1161,6 +1145,22 @@ components:
           allOf:
           - $ref: '#/components/schemas/ReviewDto_2'
           description: "A Review object. \nContains all properties needed to fill the metadata of the review object."
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ReviewDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ReviewDto_2'
         messages:
           type:
           - array

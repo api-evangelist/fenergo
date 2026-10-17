@@ -1036,31 +1036,39 @@ paths:
     - url: /smartdocs
 components:
   schemas:
-    ServiceResponseMessage:
+    HttpValidationProblemDetails:
       type: object
       properties:
-        message:
-          type:
-          - string
-          - 'null'
-          description: The message
-          example: Success
         type:
           type:
           - string
           - 'null'
-          description: 'Type of the message
-
-            One of Info, Warning, Error, Forbidden'
-          example: Info
-        errorCode:
+        title:
           type:
           - string
           - 'null'
-          description: Error Code
-          example: INTERNAL_SERVER_ERROR
-      additionalProperties: false
-      description: The message associated to the service response
+        status:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        detail:
+          type:
+          - string
+          - 'null'
+        instance:
+          type:
+          - string
+          - 'null'
+        errors:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: array
+            items:
+              type: string
+      additionalProperties: {}
     ExtractionHistoryResponse:
       type: object
       properties:
@@ -1079,64 +1087,6 @@ components:
         pageSize:
           type: integer
           format: int32
-      additionalProperties: false
-    AddExtractionRequest:
-      type: object
-      properties:
-        documentName:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ExtractionHistoryItemDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        createdDate:
-          type: string
-          format: date-time
-        createdBy:
-          type:
-          - string
-          - 'null'
-        status:
-          allOf:
-          - $ref: '#/components/schemas/ExtractionStatus'
-        documents:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ExtractionHistoryDocumentDto'
-        documentName:
-          type:
-          - string
-          - 'null'
-        version:
-          type:
-          - integer
-          - 'null'
-          format: int32
-        errorDetails:
-          allOf:
-          - $ref: '#/components/schemas/ErrorDetails'
-      additionalProperties: false
-    ErrorDetails:
-      required:
-      - code
-      type: object
-      properties:
-        code:
-          allOf:
-          - $ref: '#/components/schemas/ExtractionErrorCode'
-        data:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type: string
       additionalProperties: false
     ExtractionDto:
       type: object
@@ -1178,26 +1128,12 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    UpdateExtractionStatusApiRequest:
+    ExtractionVersionResponse:
       type: object
       properties:
-        status:
-          allOf:
-          - $ref: '#/components/schemas/ExtractionStatus'
-        sendWebSocketNotification:
-          type:
-          - boolean
-          - 'null'
-        errorDetails:
-          allOf:
-          - $ref: '#/components/schemas/ErrorDetails'
-      additionalProperties: false
-    AddExtractionResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
+        current:
+          type: integer
+          format: int32
       additionalProperties: false
     ExtractionHistoryDocumentDto:
       type: object
@@ -1221,20 +1157,6 @@ components:
         downloadAvailable:
           type: boolean
       additionalProperties: false
-    ExtractionVersionResponse:
-      type: object
-      properties:
-        current:
-          type: integer
-          format: int32
-      additionalProperties: false
-    DocumentStatus:
-      enum:
-      - 0
-      - 1
-      - 2
-      type: integer
-      format: int32
     ExtractionStatus:
       enum:
       - 0
@@ -1253,48 +1175,62 @@ components:
       - UnreadableDocument
       - KnowledgeBaseSyncTimeout
       type: string
-    HttpValidationProblemDetails:
-      type: object
-      properties:
-        type:
-          type:
-          - string
-          - 'null'
-        title:
-          type:
-          - string
-          - 'null'
-        status:
-          type:
-          - integer
-          - 'null'
-          format: int32
-        detail:
-          type:
-          - string
-          - 'null'
-        instance:
-          type:
-          - string
-          - 'null'
-        errors:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type: array
-            items:
-              type: string
-      additionalProperties: {}
-    UpdateExtractionStatusResponse:
+    ExtractionHistoryItemDto:
       type: object
       properties:
         id:
           type: string
           format: uuid
+        createdDate:
+          type: string
+          format: date-time
+        createdBy:
+          type:
+          - string
+          - 'null'
         status:
           allOf:
           - $ref: '#/components/schemas/ExtractionStatus'
+        documents:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ExtractionHistoryDocumentDto'
+        documentName:
+          type:
+          - string
+          - 'null'
+        version:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        errorDetails:
+          allOf:
+          - $ref: '#/components/schemas/ErrorDetails'
+      additionalProperties: false
+    UpdateExtractionStatusApiRequest:
+      type: object
+      properties:
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ExtractionStatus'
+        sendWebSocketNotification:
+          type:
+          - boolean
+          - 'null'
+        errorDetails:
+          allOf:
+          - $ref: '#/components/schemas/ErrorDetails'
+      additionalProperties: false
+    AddExtractionRequest:
+      type: object
+      properties:
+        documentName:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
     ObjectServiceResponse:
       type: object
@@ -1310,184 +1246,99 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    GroupedDocumentDataExtraction:
+    DocumentStatus:
+      enum:
+      - 0
+      - 1
+      - 2
+      type: integer
+      format: int32
+    ErrorDetails:
+      required:
+      - code
       type: object
       properties:
-        extractedData:
+        code:
+          allOf:
+          - $ref: '#/components/schemas/ExtractionErrorCode'
+        data:
           type:
           - object
           - 'null'
           additionalProperties:
-            type: array
-            items:
-              $ref: '#/components/schemas/EntityDataExtraction'
-        extractedCollections:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type: array
-            items:
-              $ref: '#/components/schemas/EntityDataCollectionExtraction'
+            type: string
       additionalProperties: false
-    ServiceResponseMessage_2:
+    ServiceResponseMessage:
       type: object
       properties:
         message:
           type:
           - string
           - 'null'
+          description: The message
+          example: Success
         type:
           type:
           - string
           - 'null'
+          description: 'Type of the message
+
+            One of Info, Warning, Error, Forbidden'
+          example: Info
         errorCode:
           type:
           - string
           - 'null'
+          description: Error Code
+          example: INTERNAL_SERVER_ERROR
       additionalProperties: false
-    CollectionState:
-      allOf:
-      - $ref: '#/components/schemas/BaseState'
-      - type: object
-        properties:
-          overridenValues:
-            type:
-            - object
-            - 'null'
-            additionalProperties:
-              type: string
-        additionalProperties: false
-    StringServiceResponse:
+      description: The message associated to the service response
+    UpdateExtractionStatusResponse:
       type: object
       properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_2'
-      additionalProperties: false
-    BaseState:
-      type: object
-      properties:
-        documentModelId:
-          type:
-          - string
-          - 'null'
+        id:
+          type: string
           format: uuid
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ExtractionStatus'
+      additionalProperties: false
+    AddExtractionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+      additionalProperties: false
+    EntityDataCollectionExtractionValue:
+      type: object
+      properties:
+        values:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: string
+        explanations:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: string
+        pageNumbers:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: array
+            items:
+              type: integer
+              format: int32
         id:
           type:
           - string
           - 'null'
       additionalProperties: false
-    ObjectServiceResponse_2:
-      type: object
-      properties:
-        data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_2'
-      additionalProperties: false
-    EntityDataExtraction:
-      allOf:
-      - $ref: '#/components/schemas/EntityDataBaseExtraction'
-      - type: object
-        properties:
-          value:
-            type:
-            - string
-            - 'null'
-          id:
-            type:
-            - string
-            - 'null'
-          pageNumbers:
-            type:
-            - array
-            - 'null'
-            items:
-              type: integer
-              format: int32
-        additionalProperties: false
-    DocumentEntityDataExtractionServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/DocumentEntityDataExtraction'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_2'
-      additionalProperties: false
-    GroupedDocumentDataExtractionServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/GroupedDocumentDataExtraction'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_2'
-      additionalProperties: false
-    AccessLayer:
-      type: object
-      properties:
-        geographic:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-        businessRelated:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-      additionalProperties: false
-    ExtractionStatusServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ExtractionStatus_2'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_2'
-      additionalProperties: false
-    EntityDataCollectionExtraction:
-      allOf:
-      - $ref: '#/components/schemas/EntityDataBaseExtraction'
-      - type: object
-        properties:
-          dataGroupId:
-            type:
-            - string
-            - 'null'
-          collections:
-            type:
-            - array
-            - 'null'
-            items:
-              $ref: '#/components/schemas/EntityDataCollectionExtractionValue'
-        additionalProperties: false
     ExtractionStateServiceResponse:
       type: object
       properties:
@@ -1500,24 +1351,6 @@ components:
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage_2'
-      additionalProperties: false
-    ExtractionState:
-      type: object
-      properties:
-        singleValues:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/FieldState'
-        collectionValues:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type: array
-            items:
-              $ref: '#/components/schemas/CollectionState'
       additionalProperties: false
     EntityDataBaseExtraction:
       type: object
@@ -1546,33 +1379,111 @@ components:
           allOf:
           - $ref: '#/components/schemas/AccessLayer'
       additionalProperties: false
-    FieldState:
+    CollectionState:
       allOf:
       - $ref: '#/components/schemas/BaseState'
       - type: object
         properties:
-          overridenValue:
+          overridenValues:
             type:
-            - string
+            - object
             - 'null'
+            additionalProperties:
+              type: string
         additionalProperties: false
-    ValidationErrorModel:
+    GroupedDocumentDataExtraction:
       type: object
       properties:
-        propertyName:
+        extractedData:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/EntityDataExtraction'
+        extractedCollections:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/EntityDataCollectionExtraction'
+      additionalProperties: false
+    DocumentEntityDataExtractionIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/DocumentEntityDataExtraction'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_2'
+      additionalProperties: false
+    BaseState:
+      type: object
+      properties:
+        documentModelId:
           type:
           - string
           - 'null'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-        attemptedValue: {}
-        errorCode:
+          format: uuid
+        id:
           type:
           - string
           - 'null'
       additionalProperties: false
+    ExtractionState:
+      type: object
+      properties:
+        singleValues:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/FieldState'
+        collectionValues:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/CollectionState'
+      additionalProperties: false
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_2'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
     ExtractionStatus_2:
       type: object
       properties:
@@ -1611,6 +1522,77 @@ components:
           - string
           - 'null'
       additionalProperties: false
+    GroupedDocumentDataExtractionServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GroupedDocumentDataExtraction'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_2'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_2'
+      additionalProperties: false
+    EntityDataExtraction:
+      allOf:
+      - $ref: '#/components/schemas/EntityDataBaseExtraction'
+      - type: object
+        properties:
+          value:
+            type:
+            - string
+            - 'null'
+          id:
+            type:
+            - string
+            - 'null'
+          pageNumbers:
+            type:
+            - array
+            - 'null'
+            items:
+              type: integer
+              format: int32
+        additionalProperties: false
+    FieldState:
+      allOf:
+      - $ref: '#/components/schemas/BaseState'
+      - type: object
+        properties:
+          overridenValue:
+            type:
+            - string
+            - 'null'
+        additionalProperties: false
+    DocumentEntityDataExtractionServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/DocumentEntityDataExtraction'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_2'
+      additionalProperties: false
     DocumentEntityDataExtraction:
       type: object
       properties:
@@ -1631,76 +1613,94 @@ components:
           items:
             $ref: '#/components/schemas/EntityDataCollectionExtraction'
       additionalProperties: false
-    ValidationErrorModelListServiceResponse:
+    ServiceResponseMessage_2:
       type: object
       properties:
-        data:
+        message:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel'
-        messages:
+        type:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage_2'
-      additionalProperties: false
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
-    EntityDataCollectionExtractionValue:
-      type: object
-      properties:
-        values:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type: string
-        explanations:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type: string
-        pageNumbers:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type: array
-            items:
-              type: integer
-              format: int32
-        id:
+        errorCode:
           type:
           - string
           - 'null'
       additionalProperties: false
-    DocumentEntityDataExtractionIEnumerableServiceResponse:
+    EntityDataCollectionExtraction:
+      allOf:
+      - $ref: '#/components/schemas/EntityDataBaseExtraction'
+      - type: object
+        properties:
+          dataGroupId:
+            type:
+            - string
+            - 'null'
+          collections:
+            type:
+            - array
+            - 'null'
+            items:
+              $ref: '#/components/schemas/EntityDataCollectionExtractionValue'
+        additionalProperties: false
+    ExtractionStatusServiceResponse:
       type: object
       properties:
         data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/DocumentEntityDataExtraction'
+          allOf:
+          - $ref: '#/components/schemas/ExtractionStatus_2'
         messages:
           type:
           - array
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage_2'
+      additionalProperties: false
+    AccessLayer:
+      type: object
+      properties:
+        geographic:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        businessRelated:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+      additionalProperties: false
+    ObjectServiceResponse_2:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage_2'
+      additionalProperties: false
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
   securitySchemes:
     Bearer:

@@ -1241,23 +1241,19 @@ paths:
     - url: /covenantsconditionsquery
 components:
   schemas:
-    ServiceResponseMessage:
+    SnapshotSetServiceResponse:
       type: object
       properties:
-        message:
+        data:
+          $ref: '#/components/schemas/SnapshotSet'
+        messages:
           type:
-          - string
+          - array
           - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    RegexRuleDto:
+    CollectionMaximumCountRuleDto:
       type: object
       properties:
         active:
@@ -1266,13 +1262,98 @@ components:
           type:
           - string
           - 'null'
-        isCaseSensitive:
-          type: boolean
-        regexValue:
+        requiredTypesMaxCount:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type:
+            - integer
+            - 'null'
+            format: int32
+        overallMaximumCount:
+          type:
+          - integer
+          - 'null'
+          format: int32
+      additionalProperties: false
+    StatusDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/StatusDto'
+      additionalProperties: false
+    PropertyType:
+      enum:
+      - Single
+      type: string
+    CovenantConditionVersionDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/CovenantConditionVersionDto'
+      additionalProperties: false
+    CovenantConditionItemDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        dataKey:
+          type:
+          - string
+          - 'null'
+        value:
+          type:
+          - string
+          - 'null'
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/SinglePropertyDto'
+        associations:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/CovenantConditionAssociationDto'
+      additionalProperties: false
+    StatusDto:
+      type: object
+      properties:
+        status:
           type:
           - string
           - 'null'
       additionalProperties: false
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
     CovenantConditionAssociationDto:
       type: object
       properties:
@@ -1302,17 +1383,11 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    CovenantConditionVersionDtoServiceResponse:
+    CovenantConditionSetDtoServiceRequest:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/CovenantConditionVersionDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+          $ref: '#/components/schemas/CovenantConditionSetDto'
       additionalProperties: false
     StringServiceResponse:
       type: object
@@ -1328,34 +1403,191 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    CovenantConditionGroupDto:
+    SpecialCharactersRuleDto:
+      type: object
+      properties:
+        active:
+          type: boolean
+        message:
+          type:
+          - string
+          - 'null'
+        excludedCharacters:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+      additionalProperties: false
+    CovenantConditionVersionDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/CovenantConditionVersionDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    GroupRequirement:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+        key:
+          type:
+          - string
+          - 'null'
+        primaryDataGroupField:
+          type:
+          - string
+          - 'null'
+        snapshotPropertyItems:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/GroupRequirementItem'
+        validationRule:
+          $ref: '#/components/schemas/ValidationRuleDto'
+      additionalProperties: false
+    GroupRequirementItem:
+      type: object
+      properties:
+        key:
+          type:
+          - string
+          - 'null'
+        label:
+          type:
+          - string
+          - 'null'
+        valueType:
+          type:
+          - string
+          - 'null'
+        order:
+          type: integer
+          format: int32
+        isAdditionalField:
+          type: boolean
+        validationRule:
+          $ref: '#/components/schemas/ValidationRuleDto'
+      additionalProperties: false
+    ExternalProviderRuleDto:
+      type: object
+      properties:
+        active:
+          type: boolean
+        message:
+          type:
+          - string
+          - 'null'
+        providerId:
+          type: string
+          format: uuid
+      additionalProperties: false
+    SinglePropertyDto:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/PropertyType'
+        discriminator:
+          $ref: '#/components/schemas/PropertyType'
+        value:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    CovenantConditionSetDto:
       type: object
       properties:
         id:
           type: string
           format: uuid
-        dataGroupId:
+        parentId:
           type: string
           format: uuid
-        dataGroupVersionNumber:
-          type:
-          - integer
-          - 'null'
-          format: int32
-        name:
+        parentType:
           type:
           - string
           - 'null'
-        type:
+        status:
           type:
           - string
           - 'null'
-        covenantConditionItems:
+      additionalProperties: false
+    StatusDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/StatusDto'
+        messages:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/CovenantConditionItemDto'
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CollectionMinimumCountRuleDto:
+      type: object
+      properties:
+        active:
+          type: boolean
+        message:
+          type:
+          - string
+          - 'null'
+        requiredTypesMinCount:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type:
+            - integer
+            - 'null'
+            format: int32
+        overallMinimumCount:
+          type: integer
+          format: int32
+      additionalProperties: false
+    ValidationRuleDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        setId:
+          type: string
+          format: uuid
+        propertyId:
+          type: string
+          format: uuid
+        dataGroupId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        isDataGroup:
+          type: boolean
+        propertyName:
+          type:
+          - string
+          - 'null'
+        friendlyName:
+          type:
+          - string
+          - 'null'
+        validationType:
+          type:
+          - string
+          - 'null'
+        validationData:
+          $ref: '#/components/schemas/ValidationDataDto'
       additionalProperties: false
     ValidationDataDto:
       type: object
@@ -1393,16 +1625,47 @@ components:
         externalProvider:
           $ref: '#/components/schemas/ExternalProviderRuleDto'
       additionalProperties: false
-    ObjectServiceResponse:
+    SnapshotSetServiceRequest:
       type: object
       properties:
-        data: {}
-        messages:
+        data:
+          $ref: '#/components/schemas/SnapshotSet'
+      additionalProperties: false
+    DateLimitRuleDto:
+      type: object
+      properties:
+        active:
+          type: boolean
+        message:
           type:
-          - array
+          - string
           - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+        minDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        maxDate:
+          type:
+          - string
+          - 'null'
+          format: date-time
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
     SnapshotSet:
       type: object
@@ -1423,39 +1686,71 @@ components:
           items:
             $ref: '#/components/schemas/GroupRequirement'
       additionalProperties: false
-    GroupRequirementItem:
+    CovenantConditionGroupDto:
       type: object
       properties:
-        key:
+        id:
+          type: string
+          format: uuid
+        dataGroupId:
+          type: string
+          format: uuid
+        dataGroupVersionNumber:
           type:
-          - string
+          - integer
           - 'null'
-        label:
-          type:
-          - string
-          - 'null'
-        valueType:
-          type:
-          - string
-          - 'null'
-        order:
-          type: integer
           format: int32
-        isAdditionalField:
-          type: boolean
-        validationRule:
-          $ref: '#/components/schemas/ValidationRuleDto'
+        name:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        covenantConditionItems:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/CovenantConditionItemDto'
       additionalProperties: false
-    SnapshotSetServiceRequest:
+    ValueLimitRuleDto:
       type: object
       properties:
-        data:
-          $ref: '#/components/schemas/SnapshotSet'
+        active:
+          type: boolean
+        message:
+          type:
+          - string
+          - 'null'
+        minValue:
+          type:
+          - integer
+          - 'null'
+          format: int32
+        maxValue:
+          type:
+          - integer
+          - 'null'
+          format: int32
       additionalProperties: false
-    PropertyType:
-      enum:
-      - Single
-      type: string
+    RegexRuleDto:
+      type: object
+      properties:
+        active:
+          type: boolean
+        message:
+          type:
+          - string
+          - 'null'
+        isCaseSensitive:
+          type: boolean
+        regexValue:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
     CovenantConditionVersionDto:
       type: object
       properties:
@@ -1495,107 +1790,6 @@ components:
           type: integer
           format: int32
       additionalProperties: false
-    CovenantConditionSetDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        parentId:
-          type: string
-          format: uuid
-        parentType:
-          type:
-          - string
-          - 'null'
-        status:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    StatusDto:
-      type: object
-      properties:
-        status:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    BasicRuleDto:
-      type: object
-      properties:
-        active:
-          type: boolean
-        message:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    CollectionMinimumCountRuleDto:
-      type: object
-      properties:
-        active:
-          type: boolean
-        message:
-          type:
-          - string
-          - 'null'
-        requiredTypesMinCount:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type:
-            - integer
-            - 'null'
-            format: int32
-        overallMinimumCount:
-          type: integer
-          format: int32
-      additionalProperties: false
-    ExternalProviderRuleDto:
-      type: object
-      properties:
-        active:
-          type: boolean
-        message:
-          type:
-          - string
-          - 'null'
-        providerId:
-          type: string
-          format: uuid
-      additionalProperties: false
-    StatusDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/StatusDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    SinglePropertyDto:
-      type: object
-      properties:
-        type:
-          $ref: '#/components/schemas/PropertyType'
-        discriminator:
-          $ref: '#/components/schemas/PropertyType'
-        value:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    CovenantConditionSetDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/CovenantConditionSetDto'
-      additionalProperties: false
     ValidationErrorModel:
       type: object
       properties:
@@ -1613,57 +1807,10 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    CovenantConditionVersionDtoServiceRequest:
+    ObjectServiceResponse:
       type: object
       properties:
-        data:
-          $ref: '#/components/schemas/CovenantConditionVersionDto'
-      additionalProperties: false
-    CollectionMaximumCountRuleDto:
-      type: object
-      properties:
-        active:
-          type: boolean
-        message:
-          type:
-          - string
-          - 'null'
-        requiredTypesMaxCount:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type:
-            - integer
-            - 'null'
-            format: int32
-        overallMaximumCount:
-          type:
-          - integer
-          - 'null'
-          format: int32
-      additionalProperties: false
-    SpecialCharactersRuleDto:
-      type: object
-      properties:
-        active:
-          type: boolean
-        message:
-          type:
-          - string
-          - 'null'
-        excludedCharacters:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-      additionalProperties: false
-    SnapshotSetServiceResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/SnapshotSet'
+        data: {}
         messages:
           type:
           - array
@@ -1671,15 +1818,22 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    ValidationErrorModelListServiceResponse:
+    BasicRuleDto:
+      type: object
+      properties:
+        active:
+          type: boolean
+        message:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    SnapshotSetServiceResponse_2:
       type: object
       properties:
         data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel'
+          allOf:
+          - $ref: '#/components/schemas/SnapshotSet'
         messages:
           type:
           - array
@@ -1687,92 +1841,14 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
-    GroupRequirement:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-        key:
-          type:
-          - string
-          - 'null'
-        primaryDataGroupField:
-          type:
-          - string
-          - 'null'
-        snapshotPropertyItems:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/GroupRequirementItem'
-        validationRule:
-          $ref: '#/components/schemas/ValidationRuleDto'
-      additionalProperties: false
-    ValueLimitRuleDto:
-      type: object
-      properties:
-        active:
-          type: boolean
-        message:
-          type:
-          - string
-          - 'null'
-        minValue:
-          type:
-          - integer
-          - 'null'
-          format: int32
-        maxValue:
-          type:
-          - integer
-          - 'null'
-          format: int32
-      additionalProperties: false
-    StatusDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/StatusDto'
-      additionalProperties: false
-    DateLimitRuleDto:
-      type: object
-      properties:
-        active:
-          type: boolean
-        message:
-          type:
-          - string
-          - 'null'
-        minDate:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        maxDate:
-          type:
-          - string
-          - 'null'
-          format: date-time
-      additionalProperties: false
-    CovenantConditionItemDto:
+    CovenantConditionItemDto_2:
       type: object
       properties:
         id:
           type: string
+          description: Covenant Condition Item GUiD
           format: uuid
+          example: 88009731-77df-4e72-98e7-0d314b7a5151
         dataKey:
           type:
           - string
@@ -1781,261 +1857,24 @@ components:
           type:
           - string
           - 'null'
+          description: Covenant Condition Item Value
+          example: Covenant 1
         properties:
           type:
           - object
           - 'null'
           additionalProperties:
-            $ref: '#/components/schemas/SinglePropertyDto'
+            $ref: '#/components/schemas/SinglePropertyDto_2'
+          description: Properties of a Covenant Condition Item
         associations:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/CovenantConditionAssociationDto'
+            $ref: '#/components/schemas/CovenantConditionAssociationDto_2'
+          description: List of Covenant Condition Associations
       additionalProperties: false
-    ValidationRuleDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        setId:
-          type: string
-          format: uuid
-        propertyId:
-          type: string
-          format: uuid
-        dataGroupId:
-          type:
-          - string
-          - 'null'
-          format: uuid
-        isDataGroup:
-          type: boolean
-        propertyName:
-          type:
-          - string
-          - 'null'
-        friendlyName:
-          type:
-          - string
-          - 'null'
-        validationType:
-          type:
-          - string
-          - 'null'
-        validationData:
-          $ref: '#/components/schemas/ValidationDataDto'
-      additionalProperties: false
-    CovenantConditionTaskDetailsDto:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Covenant Condition Set Id
-          format: uuid
-          example: e1809731-77df-4e72-98e7-0d314b7a5151
-        parentId:
-          type: string
-          description: Parent Id which Covenant Condition belongs
-          format: uuid
-          example: 950c8f8f-a367-4f0e-a6ea-23cc3c104cc4
-        parentType:
-          type:
-          - string
-          - 'null'
-          description: Parent Type which Covenant Condition belongs
-          example: Deal
-        status:
-          type:
-          - string
-          - 'null'
-          description: Covenant Condition Set Status
-          example: Draft
-        covenantConditionVersions:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/CovenantConditionVersionDto_2'
-          description: List of All Covenant Condition Versions for Task
-        latestVersion:
-          allOf:
-          - $ref: '#/components/schemas/CovenantConditionVersionDto_2'
-          description: Latest Covenant Condition Version for TaskId
-      additionalProperties: false
-      description: Covenant Condition Details for ParentId, JourneyId and TaskId
-    CovenantConditionAssociationDto_2:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Covenant Condition Association Guid
-          format: uuid
-          example: 2db5d6e8-4f16-4c88-8b43-837f03d7b45f
-        sourceId:
-          type: string
-          description: Association Source Id
-          format: uuid
-          example: a1f2c3e4-5678-49ab-9cde-0f1a2b3c4d5e
-        targetId:
-          type: string
-          description: Association Target Id
-          format: uuid
-          example: f6e7d8c9-0a1b-2c3d-4e5f-6a7b8c9d0e1f
-        targetType:
-          type:
-          - string
-          - 'null'
-          description: Association Target Type
-          example: Entity
-      additionalProperties: false
-      description: Covenant Condition Association DTO
-    CovenantConditionSetDtoServiceResponse_2:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CovenantConditionSetDto_2'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    CovenantConditionVersionDtoServiceResponse_2:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CovenantConditionVersionDto_2'
-          description: Covenant Condition Version representation
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    CovenantConditionGroupDto_2:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Covenant Condition Group Id
-          format: uuid
-          example: 51209731-77df-4e72-98e7-0d314b7a5151
-        dataGroupId:
-          type: string
-          description: Data Group Id
-          format: uuid
-          example: e6af5a6d-1f91-49b2-ae75-8d299ebc613d
-        dataGroupVersionNumber:
-          type:
-          - integer
-          - 'null'
-          description: Data Group Version Number.
-          format: int32
-          example: 1
-        name:
-          type:
-          - string
-          - 'null'
-          description: Covenant Condition Group Name
-          example: Financial Covenants 1
-        type:
-          type:
-          - string
-          - 'null'
-          description: Covenant Condition Group Type
-          example: Financial Covenants
-        covenantConditionItems:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/CovenantConditionItemDto_2'
-          description: List of Covenant Condition Items
-      additionalProperties: false
-      description: Covenant Condition Group
-    ValidationDataDto_2:
-      type: object
-      properties:
-        isMandatory:
-          allOf:
-          - $ref: '#/components/schemas/BasicRuleDto'
-        specialCharacters:
-          allOf:
-          - $ref: '#/components/schemas/SpecialCharactersRuleDto'
-        noNumbers:
-          allOf:
-          - $ref: '#/components/schemas/BasicRuleDto'
-        onlyInteger:
-          allOf:
-          - $ref: '#/components/schemas/BasicRuleDto'
-        noNegative:
-          allOf:
-          - $ref: '#/components/schemas/BasicRuleDto'
-        onlyDecimal:
-          allOf:
-          - $ref: '#/components/schemas/BasicRuleDto'
-        regex:
-          allOf:
-          - $ref: '#/components/schemas/RegexRuleDto'
-        characterLimit:
-          allOf:
-          - $ref: '#/components/schemas/ValueLimitRuleDto'
-        numberLimit:
-          allOf:
-          - $ref: '#/components/schemas/ValueLimitRuleDto'
-        noFutureDates:
-          allOf:
-          - $ref: '#/components/schemas/BasicRuleDto'
-        noPastDates:
-          allOf:
-          - $ref: '#/components/schemas/BasicRuleDto'
-        dateLimit:
-          allOf:
-          - $ref: '#/components/schemas/DateLimitRuleDto'
-        multiSelectLimit:
-          allOf:
-          - $ref: '#/components/schemas/ValueLimitRuleDto'
-        collectionMinimumCount:
-          allOf:
-          - $ref: '#/components/schemas/CollectionMinimumCountRuleDto'
-        collectionMaximumCount:
-          allOf:
-          - $ref: '#/components/schemas/CollectionMaximumCountRuleDto'
-        externalProvider:
-          allOf:
-          - $ref: '#/components/schemas/ExternalProviderRuleDto'
-      additionalProperties: false
-    GroupRequirementItem_2:
-      type: object
-      properties:
-        key:
-          type:
-          - string
-          - 'null'
-        label:
-          type:
-          - string
-          - 'null'
-        valueType:
-          type:
-          - string
-          - 'null'
-        order:
-          type: integer
-          format: int32
-        isAdditionalField:
-          type: boolean
-        validationRule:
-          allOf:
-          - $ref: '#/components/schemas/ValidationRuleDto_2'
-      additionalProperties: false
+      description: Covenant Condition Item
     CovenantConditionVersionDto_2:
       type: object
       properties:
@@ -2094,6 +1933,162 @@ components:
           example: 1
       additionalProperties: false
       description: Covenant Condition Version representation
+    CovenantConditionAssociationDto_2:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Covenant Condition Association Guid
+          format: uuid
+          example: 2db5d6e8-4f16-4c88-8b43-837f03d7b45f
+        sourceId:
+          type: string
+          description: Association Source Id
+          format: uuid
+          example: a1f2c3e4-5678-49ab-9cde-0f1a2b3c4d5e
+        targetId:
+          type: string
+          description: Association Target Id
+          format: uuid
+          example: f6e7d8c9-0a1b-2c3d-4e5f-6a7b8c9d0e1f
+        targetType:
+          type:
+          - string
+          - 'null'
+          description: Association Target Type
+          example: Entity
+      additionalProperties: false
+      description: Covenant Condition Association DTO
+    CovenantConditionSetDtoServiceResponse_2:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CovenantConditionSetDto_2'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CovenantConditionTaskDetailsDto:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Covenant Condition Set Id
+          format: uuid
+          example: e1809731-77df-4e72-98e7-0d314b7a5151
+        parentId:
+          type: string
+          description: Parent Id which Covenant Condition belongs
+          format: uuid
+          example: 950c8f8f-a367-4f0e-a6ea-23cc3c104cc4
+        parentType:
+          type:
+          - string
+          - 'null'
+          description: Parent Type which Covenant Condition belongs
+          example: Deal
+        status:
+          type:
+          - string
+          - 'null'
+          description: Covenant Condition Set Status
+          example: Draft
+        covenantConditionVersions:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/CovenantConditionVersionDto_2'
+          description: List of All Covenant Condition Versions for Task
+        latestVersion:
+          allOf:
+          - $ref: '#/components/schemas/CovenantConditionVersionDto_2'
+          description: Latest Covenant Condition Version for TaskId
+      additionalProperties: false
+      description: Covenant Condition Details for ParentId, JourneyId and TaskId
+    CovenantConditionVersionDtoServiceResponse_2:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CovenantConditionVersionDto_2'
+          description: Covenant Condition Version representation
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    GroupRequirement_2:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+        key:
+          type:
+          - string
+          - 'null'
+        primaryDataGroupField:
+          type:
+          - string
+          - 'null'
+        snapshotPropertyItems:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/GroupRequirementItem_2'
+        validationRule:
+          allOf:
+          - $ref: '#/components/schemas/ValidationRuleDto_2'
+      additionalProperties: false
+    GroupRequirementItem_2:
+      type: object
+      properties:
+        key:
+          type:
+          - string
+          - 'null'
+        label:
+          type:
+          - string
+          - 'null'
+        valueType:
+          type:
+          - string
+          - 'null'
+        order:
+          type: integer
+          format: int32
+        isAdditionalField:
+          type: boolean
+        validationRule:
+          allOf:
+          - $ref: '#/components/schemas/ValidationRuleDto_2'
+      additionalProperties: false
+    SinglePropertyDto_2:
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        discriminator:
+          allOf:
+          - $ref: '#/components/schemas/PropertyType'
+          readOnly: true
+        value:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
     CovenantConditionSetDto_2:
       type: object
       properties:
@@ -2127,108 +2122,6 @@ components:
             $ref: '#/components/schemas/CovenantConditionVersionDto_2'
           description: List of Covenant Condition Versions
       additionalProperties: false
-    SinglePropertyDto_2:
-      type: object
-      properties:
-        type:
-          allOf:
-          - $ref: '#/components/schemas/PropertyType'
-          readOnly: true
-        discriminator:
-          allOf:
-          - $ref: '#/components/schemas/PropertyType'
-          readOnly: true
-        value:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    SnapshotSetServiceResponse_2:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/SnapshotSet'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    GroupRequirement_2:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-        key:
-          type:
-          - string
-          - 'null'
-        primaryDataGroupField:
-          type:
-          - string
-          - 'null'
-        snapshotPropertyItems:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/GroupRequirementItem_2'
-        validationRule:
-          allOf:
-          - $ref: '#/components/schemas/ValidationRuleDto_2'
-      additionalProperties: false
-    CovenantConditionTaskDetailsDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CovenantConditionTaskDetailsDto'
-          description: Covenant Condition Details for ParentId, JourneyId and TaskId
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    CovenantConditionItemDto_2:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Covenant Condition Item GUiD
-          format: uuid
-          example: 88009731-77df-4e72-98e7-0d314b7a5151
-        dataKey:
-          type:
-          - string
-          - 'null'
-        value:
-          type:
-          - string
-          - 'null'
-          description: Covenant Condition Item Value
-          example: Covenant 1
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/SinglePropertyDto_2'
-          description: Properties of a Covenant Condition Item
-        associations:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/CovenantConditionAssociationDto_2'
-          description: List of Covenant Condition Associations
-      additionalProperties: false
-      description: Covenant Condition Item
     ValidationRuleDto_2:
       type: object
       properties:
@@ -2264,6 +2157,113 @@ components:
           allOf:
           - $ref: '#/components/schemas/ValidationDataDto_2'
       additionalProperties: false
+    ValidationDataDto_2:
+      type: object
+      properties:
+        isMandatory:
+          allOf:
+          - $ref: '#/components/schemas/BasicRuleDto'
+        specialCharacters:
+          allOf:
+          - $ref: '#/components/schemas/SpecialCharactersRuleDto'
+        noNumbers:
+          allOf:
+          - $ref: '#/components/schemas/BasicRuleDto'
+        onlyInteger:
+          allOf:
+          - $ref: '#/components/schemas/BasicRuleDto'
+        noNegative:
+          allOf:
+          - $ref: '#/components/schemas/BasicRuleDto'
+        onlyDecimal:
+          allOf:
+          - $ref: '#/components/schemas/BasicRuleDto'
+        regex:
+          allOf:
+          - $ref: '#/components/schemas/RegexRuleDto'
+        characterLimit:
+          allOf:
+          - $ref: '#/components/schemas/ValueLimitRuleDto'
+        numberLimit:
+          allOf:
+          - $ref: '#/components/schemas/ValueLimitRuleDto'
+        noFutureDates:
+          allOf:
+          - $ref: '#/components/schemas/BasicRuleDto'
+        noPastDates:
+          allOf:
+          - $ref: '#/components/schemas/BasicRuleDto'
+        dateLimit:
+          allOf:
+          - $ref: '#/components/schemas/DateLimitRuleDto'
+        multiSelectLimit:
+          allOf:
+          - $ref: '#/components/schemas/ValueLimitRuleDto'
+        collectionMinimumCount:
+          allOf:
+          - $ref: '#/components/schemas/CollectionMinimumCountRuleDto'
+        collectionMaximumCount:
+          allOf:
+          - $ref: '#/components/schemas/CollectionMaximumCountRuleDto'
+        externalProvider:
+          allOf:
+          - $ref: '#/components/schemas/ExternalProviderRuleDto'
+      additionalProperties: false
+    CovenantConditionTaskDetailsDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CovenantConditionTaskDetailsDto'
+          description: Covenant Condition Details for ParentId, JourneyId and TaskId
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CovenantConditionGroupDto_2:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Covenant Condition Group Id
+          format: uuid
+          example: 51209731-77df-4e72-98e7-0d314b7a5151
+        dataGroupId:
+          type: string
+          description: Data Group Id
+          format: uuid
+          example: e6af5a6d-1f91-49b2-ae75-8d299ebc613d
+        dataGroupVersionNumber:
+          type:
+          - integer
+          - 'null'
+          description: Data Group Version Number.
+          format: int32
+          example: 1
+        name:
+          type:
+          - string
+          - 'null'
+          description: Covenant Condition Group Name
+          example: Financial Covenants 1
+        type:
+          type:
+          - string
+          - 'null'
+          description: Covenant Condition Group Type
+          example: Financial Covenants
+        covenantConditionItems:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/CovenantConditionItemDto_2'
+          description: List of Covenant Condition Items
+      additionalProperties: false
+      description: Covenant Condition Group
   securitySchemes:
     Bearer:
       type: apiKey

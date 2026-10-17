@@ -318,6 +318,35 @@ paths:
     - url: /externaldataquery
 components:
   schemas:
+    SearchRequestDto:
+      required:
+      - searchCriteria
+      type: object
+      properties:
+        searchCriteria:
+          description: Search Criteria that we want to search for
+          example:
+            legalEntityName: Fenergo
+            countryOfIncorporation: Ireland
+        journeyId:
+          type:
+          - string
+          - 'null'
+          description: Id of the Journey instance that will be connected to this Search request
+          example: c0c7b87d-1fc3-4127-b87d-c5b76a13d159
+      additionalProperties: false
+      description: Request DTO to create a Search request
+    SearchRequestCreatedDto:
+      type: object
+      properties:
+        searchRequestId:
+          type:
+          - string
+          - 'null'
+          description: ID of the created Search request
+          example: 495669fb-e3c5-4538-8457-4dcbcb720578
+      additionalProperties: false
+      description: Response DTO representing the created Search request
     ServiceResponseMessage:
       type: object
       properties:
@@ -343,13 +372,12 @@ components:
           example: INTERNAL_SERVER_ERROR
       additionalProperties: false
       description: The message associated to the service response
-    ServiceResponse:
+    SearchRequestCreatedDtoServiceResponse:
       type: object
       properties:
         data:
-          type:
-          - string
-          - 'null'
+          allOf:
+          - $ref: '#/components/schemas/SearchRequestCreatedDto'
           description: The service response DTO
         messages:
           type:
@@ -369,35 +397,6 @@ components:
           description: The service request DTO
       additionalProperties: false
       description: Service request data
-    SearchRequestCreatedDto:
-      type: object
-      properties:
-        searchRequestId:
-          type:
-          - string
-          - 'null'
-          description: ID of the created Search request
-          example: 495669fb-e3c5-4538-8457-4dcbcb720578
-      additionalProperties: false
-      description: Response DTO representing the created Search request
-    SearchRequestDto:
-      required:
-      - searchCriteria
-      type: object
-      properties:
-        searchCriteria:
-          description: Search Criteria that we want to search for
-          example:
-            legalEntityName: Fenergo
-            countryOfIncorporation: Ireland
-        journeyId:
-          type:
-          - string
-          - 'null'
-          description: Id of the Journey instance that will be connected to this Search request
-          example: c0c7b87d-1fc3-4127-b87d-c5b76a13d159
-      additionalProperties: false
-      description: Request DTO to create a Search request
     StringServiceResponse:
       type: object
       properties:
@@ -405,22 +404,6 @@ components:
           type:
           - string
           - 'null'
-          description: The service response DTO
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
-      additionalProperties: false
-      description: Service response data
-    SearchRequestCreatedDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/SearchRequestCreatedDto'
           description: The service response DTO
         messages:
           type:
@@ -445,32 +428,23 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    SearchResponseResultDto:
+    ServiceResponse:
       type: object
       properties:
-        id:
+        data:
           type:
           - string
           - 'null'
-        entityType:
+          description: The service response DTO
+        messages:
           type:
-          - string
+          - array
           - 'null'
-        fullName:
-          type:
-          - string
-          - 'null'
-        matchHint:
-          type:
-          - string
-          - 'null'
-        matchScore:
-          type:
-          - number
-          - 'null'
-          format: double
-        data: {}
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+          description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
+      description: Service response data
     SearchResultsDtoServiceResponse:
       type: object
       properties:
@@ -487,71 +461,6 @@ components:
           description: List of Fenergo.Nebula.Platform.Core.Models.Response.ServiceResponseMessage associated to the service response
       additionalProperties: false
       description: Service response data
-    SearchResponseDto:
-      type: object
-      properties:
-        providerId:
-          type:
-          - string
-          - 'null'
-          description: Id of the Provider from which Search response is from
-          example: f47b539d-ffb8-4cf2-bf68-1af79e3b0040
-        status:
-          type:
-          - string
-          - 'null'
-          description: Status of the Search response
-          example: PublishInProgress
-        errorDetails:
-          allOf:
-          - $ref: '#/components/schemas/ErrorDetailsDto'
-          description: Error Details
-        results:
-          type:
-          - array
-          - 'null'
-          items: {}
-          description: List of results from this Search operation
-          deprecated: true
-        records:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/SearchResponseResultDto'
-          description: List of records from this Search operation
-        mappedSearchCriteria:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: List of search criteria which were mapped
-      additionalProperties: false
-      description: Class to represent Search response from specific Provider
-    ErrorDetailsDto:
-      type: object
-      properties:
-        source:
-          type:
-          - string
-          - 'null'
-          description: Source from where the error comes from
-          example: Invoker
-        errorCode:
-          type:
-          - string
-          - 'null'
-          description: Internal error code
-          example: E231
-        message:
-          type:
-          - string
-          - 'null'
-          description: Error message
-          example: 'Returned error code 403: Forbidden'
-      additionalProperties: false
-      description: Details of error that might occur
     SearchResultsDto:
       type: object
       properties:
@@ -612,6 +521,97 @@ components:
           example: Company
       additionalProperties: false
       description: Class to represent Search results
+    SearchResponseDto:
+      type: object
+      properties:
+        providerId:
+          type:
+          - string
+          - 'null'
+          description: Id of the Provider from which Search response is from
+          example: f47b539d-ffb8-4cf2-bf68-1af79e3b0040
+        status:
+          type:
+          - string
+          - 'null'
+          description: Status of the Search response
+          example: PublishInProgress
+        errorDetails:
+          allOf:
+          - $ref: '#/components/schemas/ErrorDetailsDto'
+          description: Error Details
+        results:
+          type:
+          - array
+          - 'null'
+          items: {}
+          description: List of results from this Search operation
+          deprecated: true
+        records:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/SearchResponseResultDto'
+          description: List of records from this Search operation
+        mappedSearchCriteria:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of search criteria which were mapped
+      additionalProperties: false
+      description: Class to represent Search response from specific Provider
+    SearchResponseResultDto:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+        entityType:
+          type:
+          - string
+          - 'null'
+        fullName:
+          type:
+          - string
+          - 'null'
+        matchHint:
+          type:
+          - string
+          - 'null'
+        matchScore:
+          type:
+          - number
+          - 'null'
+          format: double
+        data: {}
+      additionalProperties: false
+    ErrorDetailsDto:
+      type: object
+      properties:
+        source:
+          type:
+          - string
+          - 'null'
+          description: Source from where the error comes from
+          example: Invoker
+        errorCode:
+          type:
+          - string
+          - 'null'
+          description: Internal error code
+          example: E231
+        message:
+          type:
+          - string
+          - 'null'
+          description: Error message
+          example: 'Returned error code 403: Forbidden'
+      additionalProperties: false
+      description: Details of error that might occur
   securitySchemes:
     Bearer:
       type: apiKey

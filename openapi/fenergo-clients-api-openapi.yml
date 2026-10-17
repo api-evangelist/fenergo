@@ -876,6 +876,43 @@ paths:
     - url: /identitymanagementquery
 components:
   schemas:
+    CreatedClientSecretDto:
+      type: object
+      properties:
+        secretId:
+          type: integer
+          description: The id of the created client secret.
+          format: int32
+        secretValue:
+          type:
+          - string
+          - 'null'
+          description: The value of created secret token.
+      additionalProperties: false
+    ClientCreatedDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ClientCreatedDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ClientCreatedDto:
+      required:
+      - clientId
+      type: object
+      properties:
+        clientId:
+          minLength: 1
+          type: string
+          description: The id of the client created.
+          example: cli-tool-1_b2e58c3e-d66f-4d02-b40e-c8e6585a72a7
+      additionalProperties: false
+      description: Represents the data transfer object for a client created.
     ServiceResponseMessage:
       type: object
       properties:
@@ -891,6 +928,12 @@ components:
           type:
           - string
           - 'null'
+      additionalProperties: false
+    PatchClientDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/PatchClientDto'
       additionalProperties: false
     CreateClientDtoServiceRequest:
       type: object
@@ -914,13 +957,11 @@ components:
           description: The description of the client secret.
       additionalProperties: false
       description: Represents client secret.
-    ServiceResponse:
+    CreatedClientSecretDtoServiceResponse:
       type: object
       properties:
         data:
-          type:
-          - string
-          - 'null'
+          $ref: '#/components/schemas/CreatedClientSecretDto'
         messages:
           type:
           - array
@@ -928,17 +969,43 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    PatchClientDtoServiceRequest:
+    CreateClientDto:
+      required:
+      - allowedScopes
+      - clientEmails
+      - clientName
       type: object
       properties:
-        data:
-          $ref: '#/components/schemas/PatchClientDto'
+        clientName:
+          minLength: 1
+          type: string
+          description: The name of the client
+          example: cli-tool-1
+        allowedScopes:
+          type: array
+          items:
+            type: string
+          description: Scopes the client has access to
+          example:
+          - scimapi.resource.update
+          - scimapi.resource.query
+          - scimapi.resource.delete
+          - fenx.product.read
+        clientEmails:
+          maxLength: 2000
+          minLength: 1
+          type: string
+          description: Client emails used for notifications about certificate expiration.
+          example: Test@fenergo.com
       additionalProperties: false
-    CreatedClientSecretDtoServiceResponse:
+      description: Represents the data transfer object for creating a client.
+    StringServiceResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/CreatedClientSecretDto'
+          type:
+          - string
+          - 'null'
         messages:
           type:
           - array
@@ -977,93 +1044,6 @@ components:
           example: Test@fenergo.com
       additionalProperties: false
       description: Represents the data transfer object for patching a client (PATCH).
-    CreateClientDto:
-      required:
-      - allowedScopes
-      - clientEmails
-      - clientName
-      type: object
-      properties:
-        clientName:
-          minLength: 1
-          type: string
-          description: The name of the client
-          example: cli-tool-1
-        allowedScopes:
-          type: array
-          items:
-            type: string
-          description: Scopes the client has access to
-          example:
-          - scimapi.resource.update
-          - scimapi.resource.query
-          - scimapi.resource.delete
-          - fenx.product.read
-        clientEmails:
-          maxLength: 2000
-          minLength: 1
-          type: string
-          description: Client emails used for notifications about certificate expiration.
-          example: Test@fenergo.com
-      additionalProperties: false
-      description: Represents the data transfer object for creating a client.
-    CreateClientSecretDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/CreateClientSecretDto'
-      additionalProperties: false
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    CreatedClientSecretDto:
-      type: object
-      properties:
-        secretId:
-          type: integer
-          description: The id of the created client secret.
-          format: int32
-        secretValue:
-          type:
-          - string
-          - 'null'
-          description: The value of created secret token.
-      additionalProperties: false
-    ClientCreatedDto:
-      required:
-      - clientId
-      type: object
-      properties:
-        clientId:
-          minLength: 1
-          type: string
-          description: The id of the client created.
-          example: cli-tool-1_b2e58c3e-d66f-4d02-b40e-c8e6585a72a7
-      additionalProperties: false
-      description: Represents the data transfer object for a client created.
-    ClientCreatedDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/ClientCreatedDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
     ObjectServiceResponse:
       type: object
       properties:
@@ -1075,32 +1055,79 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    ClientSecretsDto:
+    CreateClientSecretDtoServiceRequest:
       type: object
       properties:
+        data:
+          $ref: '#/components/schemas/CreateClientSecretDto'
+      additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    SecretTypeDTO:
+      enum:
+      - ClientSecret
+      - Certificate
+      type: string
+    ClientSecretsDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ClientSecretsDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    SecretDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The id of the client secret.
+          format: int32
+        type:
+          $ref: '#/components/schemas/SecretTypeDTO'
+        created:
+          type: string
+          description: The creation date of the client secret.
+          format: date-time
+        expiration:
+          type:
+          - string
+          - 'null'
+          description: The expiration date of the client secret.
+          format: date-time
+        description:
+          type:
+          - string
+          - 'null'
+          description: The description of the client secret.
         clientId:
           type:
           - string
           - 'null'
           description: The id of the client.
-        secrets:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/SecretDto'
-          description: Paginated collection of client secrets.
-        totalRecords:
-          type: integer
-          description: The total number of secrets for the client.
-          format: int32
       additionalProperties: false
-      description: Represents the data transfer object for client secrets.
-    ClientApiDtoServiceResponse:
+      description: Represents the data transfer object for a client secret.
+    ScopesDtoServiceResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/ClientApiDto'
+          $ref: '#/components/schemas/ScopesDto'
         messages:
           type:
           - array
@@ -1120,6 +1147,18 @@ components:
           description: Collection of scope names.
       additionalProperties: false
       description: Represents the data transfer object for a scope.
+    SecretDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/SecretDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
     ClientApiDto:
       required:
       - allowedGrantTypes
@@ -1170,6 +1209,39 @@ components:
           example: Test@fenergo.com
       additionalProperties: false
       description: Represents the data transfer object for a client.
+    ClientApiDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ClientApiDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ClientSecretsDto:
+      type: object
+      properties:
+        clientId:
+          type:
+          - string
+          - 'null'
+          description: The id of the client.
+        secrets:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/SecretDto'
+          description: Paginated collection of client secrets.
+        totalRecords:
+          type: integer
+          description: The total number of secrets for the client.
+          format: int32
+      additionalProperties: false
+      description: Represents the data transfer object for client secrets.
     ClientApiDtoIEnumerableServiceResponse:
       type: object
       properties:
@@ -1179,78 +1251,6 @@ components:
           - 'null'
           items:
             $ref: '#/components/schemas/ClientApiDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    SecretDto:
-      type: object
-      properties:
-        id:
-          type: integer
-          description: The id of the client secret.
-          format: int32
-        type:
-          $ref: '#/components/schemas/SecretTypeDTO'
-        created:
-          type: string
-          description: The creation date of the client secret.
-          format: date-time
-        expiration:
-          type:
-          - string
-          - 'null'
-          description: The expiration date of the client secret.
-          format: date-time
-        description:
-          type:
-          - string
-          - 'null'
-          description: The description of the client secret.
-        clientId:
-          type:
-          - string
-          - 'null'
-          description: The id of the client.
-      additionalProperties: false
-      description: Represents the data transfer object for a client secret.
-    ClientSecretsDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/ClientSecretsDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    SecretTypeDTO:
-      enum:
-      - ClientSecret
-      - Certificate
-      type: string
-    SecretDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/SecretDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ScopesDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/ScopesDto'
         messages:
           type:
           - array

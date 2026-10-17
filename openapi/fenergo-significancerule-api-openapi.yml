@@ -623,6 +623,22 @@ paths:
     - url: /significancequery
 components:
   schemas:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
     ValidationErrorModelListServiceResponse:
       type: object
       properties:
@@ -649,21 +665,56 @@ components:
         - message: Data is required
           type: Error
           errorCode: Error Code
-    ServiceResponseMessage:
+    SignificanceRuleContext:
+      enum:
+      - MainEntityData
+      - RelationshipData
+      - RelatedPartyData
+      type: string
+    UpdateSignificanceRuleRequestServiceRequest:
       type: object
       properties:
-        message:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UpdateSignificanceRuleRequest'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
           type:
           - string
           - 'null'
-        type:
+        messages:
           type:
-          - string
+          - array
           - 'null'
-        errorCode:
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    UpdateSignificanceRuleRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        definition:
+          type: string
+        context:
+          allOf:
+          - $ref: '#/components/schemas/SignificanceRuleContext'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
           type:
-          - string
+          - array
           - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
     GuidServiceResponse:
       type: object
@@ -677,6 +728,23 @@ components:
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
     CreateSignificanceRuleRequest:
       type: object
@@ -705,39 +773,6 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    UpdateSignificanceRuleRequest:
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        definition:
-          type: string
-        context:
-          allOf:
-          - $ref: '#/components/schemas/SignificanceRuleContext'
-      additionalProperties: false
-    SignificanceRuleContext:
-      enum:
-      - MainEntityData
-      - RelationshipData
-      - RelatedPartyData
-      type: string
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
     CreateSignificanceRuleRequestServiceRequest:
       type: object
       properties:
@@ -745,53 +780,54 @@ components:
           allOf:
           - $ref: '#/components/schemas/CreateSignificanceRuleRequest'
       additionalProperties: false
-    UpdateSignificanceRuleRequestServiceRequest:
+    GetSignificanceRulesItemDto:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        definition:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+        context:
+          allOf:
+          - $ref: '#/components/schemas/SignificanceRuleContext'
+      additionalProperties: false
+    SimulateSignificanceRuleEvaluationRequestServiceRequest:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/UpdateSignificanceRuleRequest'
+          - $ref: '#/components/schemas/SimulateSignificanceRuleEvaluationRequest'
       additionalProperties: false
-    ValidationErrorModel:
+    GetSignificanceRulesByListOfIdsRequest:
       type: object
       properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-        attemptedValue: {}
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
-        messages:
-          type:
-          - array
-          - 'null'
+        ids:
+          type: array
           items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+            type: string
+            format: uuid
       additionalProperties: false
-    GetSignificanceRuleDtoServiceResponse:
+    GetSignificanceRulesByListOfIdsRequestServiceRequest:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/GetSignificanceRuleDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+          - $ref: '#/components/schemas/GetSignificanceRulesByListOfIdsRequest'
+      additionalProperties: false
+    SimulateSignificanceRuleEvaluationRequest:
+      type: object
+      properties:
+        ruleDefinition:
+          type: string
+        beforeValue: {}
+        afterValue: {}
       additionalProperties: false
     SimulateSignificanceRuleEvaluationDtoServiceResponse:
       type: object
@@ -805,6 +841,24 @@ components:
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    GetSignificanceRuleDto:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        definition:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+        context:
+          allOf:
+          - $ref: '#/components/schemas/SignificanceRuleContext'
       additionalProperties: false
     SignificanceRuleEvaluationProperty:
       type: object
@@ -840,47 +894,6 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    GetSignificanceRuleDto:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        description:
-          type: string
-        definition:
-          type: string
-        updatedAt:
-          type: string
-          format: date-time
-        context:
-          allOf:
-          - $ref: '#/components/schemas/SignificanceRuleContext'
-      additionalProperties: false
-    GetSignificanceRulesByListOfIdsRequest:
-      type: object
-      properties:
-        ids:
-          type: array
-          items:
-            type: string
-            format: uuid
-      additionalProperties: false
-    GetSignificanceRulesByListOfIdsRequestServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/GetSignificanceRulesByListOfIdsRequest'
-      additionalProperties: false
-    SimulateSignificanceRuleEvaluationRequestServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/SimulateSignificanceRuleEvaluationRequest'
-      additionalProperties: false
     GetSignificanceRulesItemDtoIEnumerableServiceResponse:
       type: object
       properties:
@@ -897,31 +910,18 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    SimulateSignificanceRuleEvaluationRequest:
+    GetSignificanceRuleDtoServiceResponse:
       type: object
       properties:
-        ruleDefinition:
-          type: string
-        beforeValue: {}
-        afterValue: {}
-      additionalProperties: false
-    GetSignificanceRulesItemDto:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        description:
-          type: string
-        definition:
-          type: string
-        updatedAt:
-          type: string
-          format: date-time
-        context:
+        data:
           allOf:
-          - $ref: '#/components/schemas/SignificanceRuleContext'
+          - $ref: '#/components/schemas/GetSignificanceRuleDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
     SimulateSignificanceRuleEvaluationDto:
       type: object

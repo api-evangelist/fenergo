@@ -896,40 +896,149 @@ paths:
       x-summary-source: derived
 components:
   schemas:
-    MatchDataExternalIdDto:
+    ResolveMatchesRequestMatchDataDto:
+      required:
+      - MatchId
+      - ProviderId
+      - Status
       type: object
       properties:
-        EntityAliasId:
+        MatchId:
+          minLength: 1
+          type: string
+          description: The Screening internal ID of the match
+          example: 06f6607f-79c4-4b75-b158-1d84831606f0
+        EntityAliasIds:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: 'List of the Entity AliasIds that this match is associated with. When it''s associated with the primary name of the entity, one of them will be "PrimaryName".
+
+            If the array is null or empty, it means that the match only belongs to the PrimaryName of the entity.'
+        ExternalId:
           type:
           - string
           - 'null'
-          description: What entity Alias this externalId is associated with. Will be "PrimaryName" for the PrimaryName external ids
-          example: e7b8f7c2-3c4a-4b2a-9e2d-1f2a3b4c5d6e
-        Value:
-          type:
-          - string
-          - 'null'
-          description: The value of the ID
+          description: "The unique identifier of the match outside of Fen-X (i.e. in the underlying provider). \n\nRequired to uniquely identify the match on the provider side."
           example: '1234'
-      additionalProperties: false
-      description: Class to represent a match external id
-    ServiceResponseMessage:
-      type: object
-      properties:
-        Message:
+          deprecated: true
+        ExternalIds:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/MatchDataExternalIdDto'
+          description: "The unique identifiers of the match outside of Fen-X (i.e. in the underlying provider). \n\nThey will be used later on to resolve the matches on the provider side. There will be one ExternalId\nfor each of the entity alias ids related to this match"
+        ProviderId:
+          minLength: 1
+          type: string
+          description: The ID of the Provider that returned the match.
+          example: MyProviderId
+        Status:
+          minLength: 1
+          enum:
+          - Match
+          - No Match
+          type: string
+          description: The status of the match
+          example: Match
+        Reason:
           type:
           - string
           - 'null'
+          description: The reason why the match has the status specified in the property "Status"
+          example: Matched Entity
+        Comments:
+          type:
+          - string
+          - 'null'
+          description: Additional comments about the match resolution
+          example: The name of the entity in the match is the same as the screened entity
+        SubsidiaryFields:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type:
+            - string
+            - 'null'
+          description: An optional dictionary used to add custom fields required by some adapters or providers
+      additionalProperties: false
+      description: Class to represent a match, with all the data that is needed to resolve it on the adapter side
+    TestRequestDto:
+      type: object
+      properties:
+        AdditionalSettings:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConfigurationSetPropertyDto'
+          description: The additional settings related to the Screening provider, associated to the configuration set used at the time of performing the test operation
+      additionalProperties: false
+      description: Class to represent the data required to perform a "Test" operation, to check if the provider configuration is valid
+    AddressDto:
+      type: object
+      properties:
+        AddressLine1:
+          type:
+          - string
+          - 'null'
+          description: The first line in the address
+          example: 158, Upper O'Connell Street
+        AddressLine2:
+          type:
+          - string
+          - 'null'
+          description: The second line in the address
+          example: Dublin 1
+        City:
+          type:
+          - string
+          - 'null'
+          description: The city
+          example: Dublin
+        PostalCode:
+          type:
+          - string
+          - 'null'
+          description: The postal code
+          example: D01YT95
+        Country:
+          type:
+          - string
+          - 'null'
+          description: The country
+          example: Ireland
+        CountryISO2:
+          type:
+          - string
+          - 'null'
+          description: The country ISO2 code
+          example: IE
+        CountryISO3:
+          type:
+          - string
+          - 'null'
+          description: The country ISO3 code
+          example: IRL
+        StateProvince:
+          type:
+          - string
+          - 'null'
+          description: The state or province
+          example: Leinster
         Type:
           type:
           - string
           - 'null'
-        ErrorCode:
-          type:
-          - string
-          - 'null'
+          description: The type of address
+          example: Main address
       additionalProperties: false
-    TestRequestDtoAdapterRequestDto:
+      description: Class to represent the address of an entity
+    ResolveMatchesRequestDtoAdapterRequestDto:
       required:
       - Id
       - ProviderId
@@ -965,15 +1074,98 @@ components:
           description: The type of the request
           example: Screen
         Data:
-          $ref: '#/components/schemas/TestRequestDto'
+          $ref: '#/components/schemas/ResolveMatchesRequestDto'
       additionalProperties: false
       description: Class to represent a request to a Screening adapter
-    ScreenRequestEntityDto:
+    ExternalIdDto:
       required:
+      - Name
+      - Source
+      type: object
+      properties:
+        Source:
+          minLength: 1
+          type: string
+          description: The source of this externalId (LN, WCO, etc)
+          example: MyProviderId
+        EntityAliasId:
+          type:
+          - string
+          - 'null'
+          description: What entity Alias this externalId is associated with. Will be null or "PrimaryName" for the PrimaryName external ids
+          example: e7b8f7c2-3c4a-4b2a-9e2d-1f2a3b4c5d6e
+        Name:
+          minLength: 1
+          type: string
+          description: The name of the ID in the provider
+          example: FieldInProvider
+        Value:
+          type:
+          - string
+          - 'null'
+          description: The value of the ID
+          example: '1234'
+      additionalProperties: false
+      description: Class to represent the external IDs fetched from the providers (runId, resultId, etc)
+    EntityAliasDto:
+      required:
+      - Id
+      type: object
+      properties:
+        Id:
+          minLength: 1
+          type: string
+          description: The id of the entity alias, which in FenX is the id of the Alternate Names DataGroup item.
+          example: 12be5a50-66c2-44bb-851e-afc4fc4a28c2
+        AliasType:
+          type:
+          - string
+          - 'null'
+          description: The type of the alias
+          example: Also Known As
+        FullName:
+          type:
+          - string
+          - 'null'
+          description: The Individual's firstname and surname. Alternatively use FirstName with LastName.
+          example: John Doe
+        FirstName:
+          type:
+          - string
+          - 'null'
+          description: The Individual's first name. Alternatively use FullName.
+          example: John
+        MiddleName:
+          type:
+          - string
+          - 'null'
+          description: The Individual's middle name
+          example: David
+        LastName:
+          type:
+          - string
+          - 'null'
+          description: The Individual's surname. Alternatively use FullName.
+          example: Doe
+        LegalEntityName:
+          type:
+          - string
+          - 'null'
+          description: Full Company name
+          example: Fenergo
+      additionalProperties: false
+      description: Class to represent a Screening entity Alias
+    OngoingScreeningRequestDto:
+      required:
+      - Enable
       - EntityId
       - SearchCriteria
       type: object
       properties:
+        Enable:
+          type: boolean
+          description: Flag to indicate if OGS is going to be enabled or disabled for the entity
+          example: true
         EntityId:
           minLength: 1
           type: string
@@ -987,41 +1179,73 @@ components:
           example: bb8cd902-1aa8-456e-a22d-a4fc470e8386
         SearchCriteria:
           $ref: '#/components/schemas/SearchCriteriaDto'
-        EntityAliases:
+        EntityAliasesForEnable:
           type:
           - array
           - 'null'
           items:
             $ref: '#/components/schemas/EntityAliasDto'
-          description: The Alias information of the entity that is going to be screened
-      additionalProperties: false
-      description: Class to represent a Screening entity
-    ResolveMatchesRequestDto:
-      required:
-      - Entities
-      type: object
-      properties:
-        BatchExternalIds:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/BatchExternalIdDto'
-          description: List of Batch-level external ids (i.e. IDs that are specific to the underlying providers and are equivalent to the "Batch" concept in Screening)
-        Entities:
-          type: array
-          items:
-            $ref: '#/components/schemas/ResolveMatchesRequestEntityDto'
-          description: The list of entities whose matches are going to be resolved
-        AdditionalSettings:
+          description: 'Aliases of the entity to be subscribed. In the case of Enable flag being false, this will be empty and the provider should unsubscribe the entity from all aliases it''s subscribed to.
+
+            In the case of Enable flag being true, the provider should also unsubscribe the entity from all aliases that are not present in this list and were previously subscribed to.'
+        AdditionalSettingsForEnable:
           type:
           - array
           - 'null'
           items:
             $ref: '#/components/schemas/ConfigurationSetPropertyDto'
-          description: The additional settings related to the Screening provider, associated to the configuration set used when creating a batch.
+          description: 'The additional settings related to the Screening provider, associated to the configuration set used at the time of performing the enable ogs operation
+
+            Only sent if Enable flag is true'
+        ConfigurationSetId:
+          type:
+          - string
+          - 'null'
+          description: 'The configuration set ID used at the time of performing the enable or disable ogs operation.
+
+            Can be null if no configuration set ID was associated or the provider is not set up to use the Segregation of OGS by Configuration Set feature.'
+          format: uuid
       additionalProperties: false
-      description: Class to represent the data required to perform a "ResolveMatches" operation, to resolve the matches of a batch on the provider side
+      description: Class to represent the data required to perform an "OngoingScreening" operation, to enable or disable OGS for an entity
+    OngoingScreeningRequestDtoAdapterRequestDto:
+      required:
+      - Id
+      - ProviderId
+      - Tenant
+      - Type
+      type: object
+      properties:
+        Id:
+          minLength: 1
+          type: string
+          description: "Field used to uniquely identify the request. \n\nIn most cases, the Screening BatchID is used here."
+          example: fd23f474-eff9-425f-a776-78e2176b36e4
+        Tenant:
+          minLength: 1
+          type: string
+          description: The tenant of the client
+          example: 095d6a21-b5cf-4369-9491-0de90438e26c
+        ProviderId:
+          minLength: 1
+          type: string
+          description: The Screening internal ID of the provider. Must match the ID of the provider in the configuration
+          example: MyProviderId
+        Type:
+          minLength: 1
+          enum:
+          - Screen
+          - ResolveMatches
+          - Test
+          - OngoingScreening
+          - OngoingScreeningUpdate
+          - OngoingScreeningGetResults
+          type: string
+          description: The type of the request
+          example: Screen
+        Data:
+          $ref: '#/components/schemas/OngoingScreeningRequestDto'
+      additionalProperties: false
+      description: Class to represent a request to a Screening adapter
     SearchCriteriaDto:
       required:
       - Type
@@ -1218,78 +1442,52 @@ components:
           example: 12-3456789
       additionalProperties: false
       description: Class to represent the search criteria of an entity
-    ResolveMatchesRequestMatchDataDto:
-      required:
-      - MatchId
-      - ProviderId
-      - Status
+    OverriddenBatchEntityAliasDto:
       type: object
       properties:
-        MatchId:
-          minLength: 1
-          type: string
-          description: The Screening internal ID of the match
-          example: 06f6607f-79c4-4b75-b158-1d84831606f0
-        EntityAliasIds:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: 'List of the Entity AliasIds that this match is associated with. When it''s associated with the primary name of the entity, one of them will be "PrimaryName".
-
-            If the array is null or empty, it means that the match only belongs to the PrimaryName of the entity.'
-        ExternalId:
+        Id:
           type:
           - string
           - 'null'
-          description: "The unique identifier of the match outside of Fen-X (i.e. in the underlying provider). \n\nRequired to uniquely identify the match on the provider side."
-          example: '1234'
-          deprecated: true
-        ExternalIds:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/MatchDataExternalIdDto'
-          description: "The unique identifiers of the match outside of Fen-X (i.e. in the underlying provider). \n\nThey will be used later on to resolve the matches on the provider side. There will be one ExternalId\nfor each of the entity alias ids related to this match"
-        ProviderId:
-          minLength: 1
-          type: string
-          description: The ID of the Provider that returned the match.
-          example: MyProviderId
-        Status:
-          minLength: 1
-          enum:
-          - Match
-          - No Match
-          type: string
-          description: The status of the match
-          example: Match
-        Reason:
-          type:
-          - string
-          - 'null'
-          description: The reason why the match has the status specified in the property "Status"
-          example: Matched Entity
-        Comments:
-          type:
-          - string
-          - 'null'
-          description: Additional comments about the match resolution
-          example: The name of the entity in the match is the same as the screened entity
-        SubsidiaryFields:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type:
-            - string
-            - 'null'
-          description: An optional dictionary used to add custom fields required by some adapters or providers
+          description: The unique ID of the entity's alias in Fen-X
+          example: bb8cd902-1aa8-456e-a22d-a4fc470e8386
+        MatchesCount:
+          type: integer
+          description: The number of matches returned by the provider for the entity's alias in the batch
+          format: int32
       additionalProperties: false
-      description: Class to represent a match, with all the data that is needed to resolve it on the adapter side
-    ResolveMatchesRequestDtoAdapterRequestDto:
+      description: Class to represent an alias of an entity of an overridden batch
+    OngoingScreeningUpdateRequestDto:
+      required:
+      - EntityId
+      - SearchCriteria
+      type: object
+      properties:
+        EntityId:
+          minLength: 1
+          type: string
+          description: The Screening internal ID of the entity.
+          example: 76ce4f1a-8676-4d4f-be0f-ae57b99b7e27
+        LegalEntityId:
+          type:
+          - string
+          - 'null'
+          description: The unique ID of the entity in Fen-X
+          example: bb8cd902-1aa8-456e-a22d-a4fc470e8386
+        SearchCriteria:
+          $ref: '#/components/schemas/SearchCriteriaDto'
+        EntityAliases:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/EntityAliasDto'
+          description: "Aliases of the entity to be updated. \nThe provider should also unsubscribe the entity from all aliases that are not present in this list and were previously subscribed to."
+      additionalProperties: false
+      description: 'Class to represent the data required to perform an "OngoingScreeningUpdate" operation,
+
+        to update the data of an existing entity that has OGS enabled'
+    TestRequestDtoAdapterRequestDto:
       required:
       - Id
       - ProviderId
@@ -1325,53 +1523,9 @@ components:
           description: The type of the request
           example: Screen
         Data:
-          $ref: '#/components/schemas/ResolveMatchesRequestDto'
+          $ref: '#/components/schemas/TestRequestDto'
       additionalProperties: false
       description: Class to represent a request to a Screening adapter
-    ServiceResponse:
-      type: object
-      properties:
-        Data:
-          type:
-          - string
-          - 'null'
-        Messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ExternalIdDto:
-      required:
-      - Name
-      - Source
-      type: object
-      properties:
-        Source:
-          minLength: 1
-          type: string
-          description: The source of this externalId (LN, WCO, etc)
-          example: MyProviderId
-        EntityAliasId:
-          type:
-          - string
-          - 'null'
-          description: What entity Alias this externalId is associated with. Will be null or "PrimaryName" for the PrimaryName external ids
-          example: e7b8f7c2-3c4a-4b2a-9e2d-1f2a3b4c5d6e
-        Name:
-          minLength: 1
-          type: string
-          description: The name of the ID in the provider
-          example: FieldInProvider
-        Value:
-          type:
-          - string
-          - 'null'
-          description: The value of the ID
-          example: '1234'
-      additionalProperties: false
-      description: Class to represent the external IDs fetched from the providers (runId, resultId, etc)
     ScreenRequestDto:
       required:
       - Entities
@@ -1412,66 +1566,7 @@ components:
           description: The additional settings related to the Screening provider, associated to the configuration set used when creating a batch
       additionalProperties: false
       description: Class to represent the data required to perform a "Screen" operation, to screen a list of entities
-    AddressDto:
-      type: object
-      properties:
-        AddressLine1:
-          type:
-          - string
-          - 'null'
-          description: The first line in the address
-          example: 158, Upper O'Connell Street
-        AddressLine2:
-          type:
-          - string
-          - 'null'
-          description: The second line in the address
-          example: Dublin 1
-        City:
-          type:
-          - string
-          - 'null'
-          description: The city
-          example: Dublin
-        PostalCode:
-          type:
-          - string
-          - 'null'
-          description: The postal code
-          example: D01YT95
-        Country:
-          type:
-          - string
-          - 'null'
-          description: The country
-          example: Ireland
-        CountryISO2:
-          type:
-          - string
-          - 'null'
-          description: The country ISO2 code
-          example: IE
-        CountryISO3:
-          type:
-          - string
-          - 'null'
-          description: The country ISO3 code
-          example: IRL
-        StateProvince:
-          type:
-          - string
-          - 'null'
-          description: The state or province
-          example: Leinster
-        Type:
-          type:
-          - string
-          - 'null'
-          description: The type of address
-          example: Main address
-      additionalProperties: false
-      description: Class to represent the address of an entity
-    OngoingScreeningUpdateRequestDto:
+    ScreenRequestEntityDto:
       required:
       - EntityId
       - SearchCriteria
@@ -1496,59 +1591,40 @@ components:
           - 'null'
           items:
             $ref: '#/components/schemas/EntityAliasDto'
-          description: "Aliases of the entity to be updated. \nThe provider should also unsubscribe the entity from all aliases that are not present in this list and were previously subscribed to."
+          description: The Alias information of the entity that is going to be screened
       additionalProperties: false
-      description: 'Class to represent the data required to perform an "OngoingScreeningUpdate" operation,
-
-        to update the data of an existing entity that has OGS enabled'
-    EntityAliasDto:
-      required:
-      - Id
+      description: Class to represent a Screening entity
+    MatchDataExternalIdDto:
       type: object
       properties:
-        Id:
-          minLength: 1
-          type: string
-          description: The id of the entity alias, which in FenX is the id of the Alternate Names DataGroup item.
-          example: 12be5a50-66c2-44bb-851e-afc4fc4a28c2
-        AliasType:
+        EntityAliasId:
           type:
           - string
           - 'null'
-          description: The type of the alias
-          example: Also Known As
-        FullName:
+          description: What entity Alias this externalId is associated with. Will be "PrimaryName" for the PrimaryName external ids
+          example: e7b8f7c2-3c4a-4b2a-9e2d-1f2a3b4c5d6e
+        Value:
           type:
           - string
           - 'null'
-          description: The Individual's firstname and surname. Alternatively use FirstName with LastName.
-          example: John Doe
-        FirstName:
-          type:
-          - string
-          - 'null'
-          description: The Individual's first name. Alternatively use FullName.
-          example: John
-        MiddleName:
-          type:
-          - string
-          - 'null'
-          description: The Individual's middle name
-          example: David
-        LastName:
-          type:
-          - string
-          - 'null'
-          description: The Individual's surname. Alternatively use FullName.
-          example: Doe
-        LegalEntityName:
-          type:
-          - string
-          - 'null'
-          description: Full Company name
-          example: Fenergo
+          description: The value of the ID
+          example: '1234'
       additionalProperties: false
-      description: Class to represent a Screening entity Alias
+      description: Class to represent a match external id
+    ServiceResponse:
+      type: object
+      properties:
+        Data:
+          type:
+          - string
+          - 'null'
+        Messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
     OverriddenBatchEntityDto:
       type: object
       properties:
@@ -1574,76 +1650,6 @@ components:
             $ref: '#/components/schemas/OverriddenBatchEntityAliasDto'
       additionalProperties: false
       description: Class to represent an entity of an overridden batch
-    OngoingScreeningUpdateRequestDtoAdapterRequestDto:
-      required:
-      - Id
-      - ProviderId
-      - Tenant
-      - Type
-      type: object
-      properties:
-        Id:
-          minLength: 1
-          type: string
-          description: "Field used to uniquely identify the request. \n\nIn most cases, the Screening BatchID is used here."
-          example: fd23f474-eff9-425f-a776-78e2176b36e4
-        Tenant:
-          minLength: 1
-          type: string
-          description: The tenant of the client
-          example: 095d6a21-b5cf-4369-9491-0de90438e26c
-        ProviderId:
-          minLength: 1
-          type: string
-          description: The Screening internal ID of the provider. Must match the ID of the provider in the configuration
-          example: MyProviderId
-        Type:
-          minLength: 1
-          enum:
-          - Screen
-          - ResolveMatches
-          - Test
-          - OngoingScreening
-          - OngoingScreeningUpdate
-          - OngoingScreeningGetResults
-          type: string
-          description: The type of the request
-          example: Screen
-        Data:
-          $ref: '#/components/schemas/OngoingScreeningUpdateRequestDto'
-      additionalProperties: false
-      description: Class to represent a request to a Screening adapter
-    OverriddenBatchDto:
-      required:
-      - Entities
-      - PreviousStatus
-      type: object
-      properties:
-        PreviousStatus:
-          minLength: 1
-          enum:
-          - Open
-          - Closed
-          - Overridden
-          type: string
-          description: The status before the batch was overridden
-          example: Closed
-        Entities:
-          type: array
-          items:
-            $ref: '#/components/schemas/OverriddenBatchEntityDto'
-          description: The list of entities in the batch
-        AdditionalSettings:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConfigurationSetPropertyDto'
-          description: 'The additional settings related to the Screening provider, associated to the configuration set used when this batch was created.
-
-            If the configuration set has since been deleted, the AdditionalSettings will not be sent.'
-      additionalProperties: false
-      description: Class to represent a batch that has been overridden
     ResolveMatchesRequestEntityDto:
       required:
       - EntityId
@@ -1711,7 +1717,54 @@ components:
           example: '1234'
       additionalProperties: false
       description: Class to represent the batch external IDs fetched from the providers (runId, resultId, etc)
-    OngoingScreeningRequestDtoAdapterRequestDto:
+    OverriddenBatchDto:
+      required:
+      - Entities
+      - PreviousStatus
+      type: object
+      properties:
+        PreviousStatus:
+          minLength: 1
+          enum:
+          - Open
+          - Closed
+          - Overridden
+          type: string
+          description: The status before the batch was overridden
+          example: Closed
+        Entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/OverriddenBatchEntityDto'
+          description: The list of entities in the batch
+        AdditionalSettings:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConfigurationSetPropertyDto'
+          description: 'The additional settings related to the Screening provider, associated to the configuration set used when this batch was created.
+
+            If the configuration set has since been deleted, the AdditionalSettings will not be sent.'
+      additionalProperties: false
+      description: Class to represent a batch that has been overridden
+    ServiceResponseMessage:
+      type: object
+      properties:
+        Message:
+          type:
+          - string
+          - 'null'
+        Type:
+          type:
+          - string
+          - 'null'
+        ErrorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    OngoingScreeningUpdateRequestDtoAdapterRequestDto:
       required:
       - Id
       - ProviderId
@@ -1747,9 +1800,35 @@ components:
           description: The type of the request
           example: Screen
         Data:
-          $ref: '#/components/schemas/OngoingScreeningRequestDto'
+          $ref: '#/components/schemas/OngoingScreeningUpdateRequestDto'
       additionalProperties: false
       description: Class to represent a request to a Screening adapter
+    ResolveMatchesRequestDto:
+      required:
+      - Entities
+      type: object
+      properties:
+        BatchExternalIds:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/BatchExternalIdDto'
+          description: List of Batch-level external ids (i.e. IDs that are specific to the underlying providers and are equivalent to the "Batch" concept in Screening)
+        Entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResolveMatchesRequestEntityDto'
+          description: The list of entities whose matches are going to be resolved
+        AdditionalSettings:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ConfigurationSetPropertyDto'
+          description: The additional settings related to the Screening provider, associated to the configuration set used when creating a batch.
+      additionalProperties: false
+      description: Class to represent the data required to perform a "ResolveMatches" operation, to resolve the matches of a batch on the provider side
     ScreenRequestDtoAdapterRequestDto:
       required:
       - Id
@@ -1806,82 +1885,3 @@ components:
           description: Value of entry
           example: '1234'
       additionalProperties: false
-    OngoingScreeningRequestDto:
-      required:
-      - Enable
-      - EntityId
-      - SearchCriteria
-      type: object
-      properties:
-        Enable:
-          type: boolean
-          description: Flag to indicate if OGS is going to be enabled or disabled for the entity
-          example: true
-        EntityId:
-          minLength: 1
-          type: string
-          description: The Screening internal ID of the entity.
-          example: 76ce4f1a-8676-4d4f-be0f-ae57b99b7e27
-        LegalEntityId:
-          type:
-          - string
-          - 'null'
-          description: The unique ID of the entity in Fen-X
-          example: bb8cd902-1aa8-456e-a22d-a4fc470e8386
-        SearchCriteria:
-          $ref: '#/components/schemas/SearchCriteriaDto'
-        EntityAliasesForEnable:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/EntityAliasDto'
-          description: 'Aliases of the entity to be subscribed. In the case of Enable flag being false, this will be empty and the provider should unsubscribe the entity from all aliases it''s subscribed to.
-
-            In the case of Enable flag being true, the provider should also unsubscribe the entity from all aliases that are not present in this list and were previously subscribed to.'
-        AdditionalSettingsForEnable:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConfigurationSetPropertyDto'
-          description: 'The additional settings related to the Screening provider, associated to the configuration set used at the time of performing the enable ogs operation
-
-            Only sent if Enable flag is true'
-        ConfigurationSetId:
-          type:
-          - string
-          - 'null'
-          description: 'The configuration set ID used at the time of performing the enable or disable ogs operation.
-
-            Can be null if no configuration set ID was associated or the provider is not set up to use the Segregation of OGS by Configuration Set feature.'
-          format: uuid
-      additionalProperties: false
-      description: Class to represent the data required to perform an "OngoingScreening" operation, to enable or disable OGS for an entity
-    TestRequestDto:
-      type: object
-      properties:
-        AdditionalSettings:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ConfigurationSetPropertyDto'
-          description: The additional settings related to the Screening provider, associated to the configuration set used at the time of performing the test operation
-      additionalProperties: false
-      description: Class to represent the data required to perform a "Test" operation, to check if the provider configuration is valid
-    OverriddenBatchEntityAliasDto:
-      type: object
-      properties:
-        Id:
-          type:
-          - string
-          - 'null'
-          description: The unique ID of the entity's alias in Fen-X
-          example: bb8cd902-1aa8-456e-a22d-a4fc470e8386
-        MatchesCount:
-          type: integer
-          description: The number of matches returned by the provider for the entity's alias in the batch
-          format: int32
-      additionalProperties: false
-      description: Class to represent an alias of an entity of an overridden batch

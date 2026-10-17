@@ -394,6 +394,32 @@ paths:
     - url: /externalauthenticationquery
 components:
   schemas:
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
     EndpointConfigurationCreatedDtoServiceResponse:
       type: object
       properties:
@@ -407,6 +433,22 @@ components:
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    FormPropertyDto:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+          description: Name of Property
+          example: property-name
+        value:
+          type:
+          - string
+          - 'null'
+          description: Name of Value
+          example: property-value
       additionalProperties: false
     ClientCredentialsConfigurationDto:
       required:
@@ -478,6 +520,30 @@ components:
 
             (optional)'
       additionalProperties: false
+    OAuthConfigurationDto:
+      type: object
+      properties:
+        clientCredentialsConfig:
+          allOf:
+          - $ref: '#/components/schemas/ClientCredentialsConfigurationDto'
+      additionalProperties: false
+    HeaderPropertyDto:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+          description: Name of Property
+          example: property-name
+        value:
+          type:
+          - string
+          - 'null'
+          description: Name of Value
+          example: property-value
+      additionalProperties: false
+      description: DTO to specify optional request headers
     EndpointCertificateDto:
       required:
       - certificate
@@ -497,55 +563,16 @@ components:
           example: '-----BEGIN CERTIFICATE-----\nMIICUTCCAfugAwIBAgIBADANBgkqhkiG9w0BAQQFADBXMQswCQYDVQQGEwJ...\n-----END CERTIFICATE-----\n'
       additionalProperties: false
       description: DTO to specify server certificate properties
-    ValidationErrorModelListServiceResponse:
+    EndpointConfigurationUpdatedDto:
       type: object
       properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+        configurationId:
+          type: string
+          description: The unique ID for the endpoint configuration.
+          format: uuid
+          example: 12be522e-66c2-44bb-851e-afc4fc4a33c2
       additionalProperties: false
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    OAuthConfigurationDto:
-      type: object
-      properties:
-        clientCredentialsConfig:
-          allOf:
-          - $ref: '#/components/schemas/ClientCredentialsConfigurationDto'
-      additionalProperties: false
+      description: Represents the data of a configuration that has been updated
     EndpointConfigurationUpdatedDtoServiceResponse:
       type: object
       properties:
@@ -559,14 +586,6 @@ components:
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    CreateEndpointConfigurationDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateEndpointConfigurationDto'
-          description: Request DTO to create or update endpoint configuration
       additionalProperties: false
     EndpointConfigurationCreatedDto:
       type: object
@@ -591,6 +610,14 @@ components:
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CreateEndpointConfigurationDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateEndpointConfigurationDto'
+          description: Request DTO to create or update endpoint configuration
       additionalProperties: false
     CreateEndpointConfigurationDto:
       type: object
@@ -625,22 +652,6 @@ components:
           - $ref: '#/components/schemas/OAuthConfigurationDto'
       additionalProperties: false
       description: Request DTO to create or update endpoint configuration
-    FormPropertyDto:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-          description: Name of Property
-          example: property-name
-        value:
-          type:
-          - string
-          - 'null'
-          description: Name of Value
-          example: property-value
-      additionalProperties: false
     ValidationErrorModel:
       type: object
       properties:
@@ -658,17 +669,89 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    EndpointConfigurationUpdatedDto:
+    ObjectServiceResponse:
       type: object
       properties:
-        configurationId:
-          type: string
-          description: The unique ID for the endpoint configuration.
-          format: uuid
-          example: 12be522e-66c2-44bb-851e-afc4fc4a33c2
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-      description: Represents the data of a configuration that has been updated
-    HeaderPropertyDto:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    GetAllOAuthConfigurationResponseDto:
+      type: object
+      properties:
+        authType:
+          allOf:
+          - $ref: '#/components/schemas/AuthType'
+          description: Contains Auth type
+        clientCredentials:
+          allOf:
+          - $ref: '#/components/schemas/GetAllClientCredentialsConfigurationResponseDto'
+          description: Contains client credentials configurations
+      additionalProperties: false
+      description: Query DTO to return list of Oauth configurations
+    GetByIdOAuthConfigurationResponseDto:
+      type: object
+      properties:
+        authType:
+          allOf:
+          - $ref: '#/components/schemas/AuthType'
+          description: Contains Auth type
+        clientCredentialsConfig:
+          allOf:
+          - $ref: '#/components/schemas/GetByIdClientCredentialsConfigurationResponseDto'
+          description: Contains client credentials configurations
+      additionalProperties: false
+      description: Query DTO to return list of Oauth configurations
+    GetByIdClientCredentialsConfigurationResponseDto:
+      type: object
+      properties:
+        clientId:
+          type:
+          - string
+          - 'null'
+          description: Client Id
+          example: my-client-id
+        clientSecret:
+          type:
+          - string
+          - 'null'
+          description: Client secret
+          example: my-client-secret
+        useBasicAuthentication:
+          type: boolean
+          description: Flag to determine if to use basic authentication type
+          example: true
+        tokenEndpoint:
+          allOf:
+          - $ref: '#/components/schemas/GetByIdUrlConfigurationResponseDto'
+          description: Contains the configuration setting for a token endpoint
+        useMtlsEndpointConfiguration:
+          type: boolean
+          description: Flag to determine if to use Mtls endpoint configuration
+          example: true
+      additionalProperties: false
+      description: Query DTO to return client credentials configuration
+    HeaderPropertyDto_2:
       type: object
       properties:
         name:
@@ -684,81 +767,37 @@ components:
           description: Name of Value
           example: property-value
       additionalProperties: false
-      description: DTO to specify optional request headers
-    ObjectServiceResponse:
+      description: Query DTO to specify headers
+    EndpointCertificateDto_2:
       type: object
       properties:
-        data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    GetAllClientCredentialsConfigurationResponseDto:
-      type: object
-      properties:
-        url:
+        isPublicCA:
+          type: boolean
+          description: Specifies that the certificate presented is a publicly signed certificate (or not)
+          example: true
+        certificate:
           type:
           - string
           - 'null'
-          description: Contains the URL that relates to this configuration
-          example: https://www.mydomain.com/oauth2/token
-        isMtlsEnabled:
-          type: boolean
-          description: Indicates if the URL specified above is mTLS enabled
-          example: true
-        isJwtClientAssertionEnabled:
+          description: 'Contains the PEM-encoded public key certificate for the specified url. Is required if ''isPublicCA'' is set to false
+
+            (optional)'
+          example: '-----BEGIN CERTIFICATE-----\nMIICUTCCAfugAwIBAgIBADANBgkqhkiG9w0BAQQFADBXMQswCQYDVQQGEwJ...\n-----END CERTIFICATE-----\n'
+        certificateDetails:
           type:
-          - boolean
+          - object
           - 'null'
-          description: Indicates if the URL specified above should use jwt client assertion authentication
-          example: true
-        hasFormValues:
-          type: boolean
-          description: Indicates if the endpoint contains form values
-          example: true
-        hasHeaders:
-          type: boolean
-          description: Indicates if the endpoint contains headers
-          example: true
-        containsCertificate:
-          type: boolean
-          description: Indicates if the endpoint is Oauth enabled
-          example: true
-        useBasicAuthentication:
-          type: boolean
-          description: Flag to determine if to use basic authentication type
-          example: true
-        useMtlsEndpointConfiguration:
-          type: boolean
-          description: Flag to determine if to use Mtls endpoint configuration
-          example: true
+          additionalProperties:
+            type:
+            - string
+            - 'null'
+          description: Contains all attributes of a certificate
       additionalProperties: false
-      description: Query DTO to return client credentials configurations
-    GetByIdEndpointConfigurationResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/GetByIdEndpointConfigurationResponseDto'
-          description: Query DTO to return endpoint configurations
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    GetByIdMtlsCertificateConfigurationResponseDto:
-      type: object
-      properties:
-        endpointCertificate:
-          allOf:
-          - $ref: '#/components/schemas/EndpointCertificateDto_2'
-          description: Contains the certificate settings
-      additionalProperties: false
+      description: Query DTO to return server certificate properties
+    AuthType:
+      enum:
+      - OAuthClientCredentials
+      type: string
     GetByIdEndpointConfigurationResponseDto:
       type: object
       properties:
@@ -807,6 +846,100 @@ components:
             (optional)'
       additionalProperties: false
       description: Query DTO to return endpoint configurations
+    GetByIdEndpointConfigurationResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetByIdEndpointConfigurationResponseDto'
+          description: Query DTO to return endpoint configurations
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    FormPropertyDto_2:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+          description: Name of Property
+          example: property-name
+        value:
+          type:
+          - string
+          - 'null'
+          description: Name of Value
+          example: property-value
+      additionalProperties: false
+      description: Query DTO to specify form properties
+    GetAllEndpointConfigurationResponseDto:
+      type: object
+      properties:
+        id:
+          type:
+          - string
+          - 'null'
+          description: Contains the unique ID that relates to this configuration
+          example: 4ce5403d-bc16-47bb-9c69-9797dccb49c6
+        url:
+          type:
+          - string
+          - 'null'
+          description: Contains the URL that relates to this configuration
+          example: https://www.mydomain.com/api
+        isMtlsEnabled:
+          type: boolean
+          description: Indicates if the URL specified above is mTLS enabled
+          example: true
+        hasHeaders:
+          type: boolean
+          description: Indicates if the endpoint contains headers
+          example: true
+        containsCertificate:
+          type: boolean
+          description: Indicates if the endpoint contains a certificate
+          example: true
+        isOauthEnabled:
+          type: boolean
+          description: Indicates if the endpoint is Oauth enabled
+          example: true
+        oAuthConfiguration:
+          allOf:
+          - $ref: '#/components/schemas/GetAllOAuthConfigurationResponseDto'
+          description: 'Contains Oauth configuration settings
+
+            (optional)'
+      additionalProperties: false
+      description: Query DTO to return list of endpoint configurations
+    GetByIdMtlsCertificateConfigurationResponseDto:
+      type: object
+      properties:
+        endpointCertificate:
+          allOf:
+          - $ref: '#/components/schemas/EndpointCertificateDto_2'
+          description: Contains the certificate settings
+      additionalProperties: false
+    GetAllEndpointConfigurationResponseDtoListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/GetAllEndpointConfigurationResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
     GetByIdUrlConfigurationResponseDto:
       type: object
       properties:
@@ -856,159 +989,28 @@ components:
 
             (optional)'
       additionalProperties: false
-    GetAllEndpointConfigurationResponseDtoListServiceResponse:
+    GetAllClientCredentialsConfigurationResponseDto:
       type: object
       properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/GetAllEndpointConfigurationResponseDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    GetByIdClientCredentialsConfigurationResponseDto:
-      type: object
-      properties:
-        clientId:
-          type:
-          - string
-          - 'null'
-          description: Client Id
-          example: my-client-id
-        clientSecret:
-          type:
-          - string
-          - 'null'
-          description: Client secret
-          example: my-client-secret
-        useBasicAuthentication:
-          type: boolean
-          description: Flag to determine if to use basic authentication type
-          example: true
-        tokenEndpoint:
-          allOf:
-          - $ref: '#/components/schemas/GetByIdUrlConfigurationResponseDto'
-          description: Contains the configuration setting for a token endpoint
-        useMtlsEndpointConfiguration:
-          type: boolean
-          description: Flag to determine if to use Mtls endpoint configuration
-          example: true
-      additionalProperties: false
-      description: Query DTO to return client credentials configuration
-    HeaderPropertyDto_2:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-          description: Name of Property
-          example: property-name
-        value:
-          type:
-          - string
-          - 'null'
-          description: Name of Value
-          example: property-value
-      additionalProperties: false
-      description: Query DTO to specify headers
-    FormPropertyDto_2:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-          description: Name of Property
-          example: property-name
-        value:
-          type:
-          - string
-          - 'null'
-          description: Name of Value
-          example: property-value
-      additionalProperties: false
-      description: Query DTO to specify form properties
-    GetAllOAuthConfigurationResponseDto:
-      type: object
-      properties:
-        authType:
-          allOf:
-          - $ref: '#/components/schemas/AuthType'
-          description: Contains Auth type
-        clientCredentials:
-          allOf:
-          - $ref: '#/components/schemas/GetAllClientCredentialsConfigurationResponseDto'
-          description: Contains client credentials configurations
-      additionalProperties: false
-      description: Query DTO to return list of Oauth configurations
-    GetByIdOAuthConfigurationResponseDto:
-      type: object
-      properties:
-        authType:
-          allOf:
-          - $ref: '#/components/schemas/AuthType'
-          description: Contains Auth type
-        clientCredentialsConfig:
-          allOf:
-          - $ref: '#/components/schemas/GetByIdClientCredentialsConfigurationResponseDto'
-          description: Contains client credentials configurations
-      additionalProperties: false
-      description: Query DTO to return list of Oauth configurations
-    AuthType:
-      enum:
-      - OAuthClientCredentials
-      type: string
-    EndpointCertificateDto_2:
-      type: object
-      properties:
-        isPublicCA:
-          type: boolean
-          description: Specifies that the certificate presented is a publicly signed certificate (or not)
-          example: true
-        certificate:
-          type:
-          - string
-          - 'null'
-          description: 'Contains the PEM-encoded public key certificate for the specified url. Is required if ''isPublicCA'' is set to false
-
-            (optional)'
-          example: '-----BEGIN CERTIFICATE-----\nMIICUTCCAfugAwIBAgIBADANBgkqhkiG9w0BAQQFADBXMQswCQYDVQQGEwJ...\n-----END CERTIFICATE-----\n'
-        certificateDetails:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type:
-            - string
-            - 'null'
-          description: Contains all attributes of a certificate
-      additionalProperties: false
-      description: Query DTO to return server certificate properties
-    GetAllEndpointConfigurationResponseDto:
-      type: object
-      properties:
-        id:
-          type:
-          - string
-          - 'null'
-          description: Contains the unique ID that relates to this configuration
-          example: 4ce5403d-bc16-47bb-9c69-9797dccb49c6
         url:
           type:
           - string
           - 'null'
           description: Contains the URL that relates to this configuration
-          example: https://www.mydomain.com/api
+          example: https://www.mydomain.com/oauth2/token
         isMtlsEnabled:
           type: boolean
           description: Indicates if the URL specified above is mTLS enabled
+          example: true
+        isJwtClientAssertionEnabled:
+          type:
+          - boolean
+          - 'null'
+          description: Indicates if the URL specified above should use jwt client assertion authentication
+          example: true
+        hasFormValues:
+          type: boolean
+          description: Indicates if the endpoint contains form values
           example: true
         hasHeaders:
           type: boolean
@@ -1016,20 +1018,18 @@ components:
           example: true
         containsCertificate:
           type: boolean
-          description: Indicates if the endpoint contains a certificate
-          example: true
-        isOauthEnabled:
-          type: boolean
           description: Indicates if the endpoint is Oauth enabled
           example: true
-        oAuthConfiguration:
-          allOf:
-          - $ref: '#/components/schemas/GetAllOAuthConfigurationResponseDto'
-          description: 'Contains Oauth configuration settings
-
-            (optional)'
+        useBasicAuthentication:
+          type: boolean
+          description: Flag to determine if to use basic authentication type
+          example: true
+        useMtlsEndpointConfiguration:
+          type: boolean
+          description: Flag to determine if to use Mtls endpoint configuration
+          example: true
       additionalProperties: false
-      description: Query DTO to return list of endpoint configurations
+      description: Query DTO to return client credentials configurations
   securitySchemes:
     Bearer:
       type: apiKey

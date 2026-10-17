@@ -475,17 +475,30 @@ paths:
                   errorCode: OBSOLETE_ENDPOINT
 components:
   schemas:
-    FileSource:
-      enum:
-      - PersistedStorage
-      - FenergoDocument
-      type: string
-    ImportFlowTemplateResponseDtoServiceResponse:
+    ParallelTaskConfigV1Dto:
+      allOf:
+      - $ref: '#/components/schemas/TaskConfigBaseDto'
+      - required:
+        - taskType
+        type: object
+        properties:
+          taskType:
+            allOf:
+            - $ref: '#/components/schemas/TaskType'
+            readOnly: true
+          branches:
+            type:
+            - array
+            - 'null'
+            items:
+              $ref: '#/components/schemas/ParallelBranchConfigV1Dto'
+        additionalProperties: false
+    UpdateManagedFlowResponseServiceResponse:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/ImportFlowTemplateResponseDto'
+          - $ref: '#/components/schemas/UpdateManagedFlowResponse'
         messages:
           type:
           - array
@@ -493,6 +506,265 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
+    ConstantVariableDto:
+      type: object
+      properties:
+        value:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ConditionOperator:
+      enum:
+      - Equals
+      - GreaterThan
+      - LowerThan
+      - GreaterThanOrEquals
+      - LowerThanOrEquals
+      - IsNull
+      - StringContains
+      - NotEquals
+      - IsNotNull
+      - StringNotContains
+      - IsTrue
+      - IsFalse
+      type: string
+    FlowTemplateLightDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/FlowTemplateLightDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    SuperGraphQueryBy:
+      enum:
+      - JourneyId
+      - EntityId
+      type: string
+    SuperGraphQueryFlagsDto:
+      type: object
+      properties:
+        includeStages:
+          type: boolean
+        includeEntity:
+          type: boolean
+        includeEntityDrafts:
+          type: boolean
+        includeRelatedParties:
+          type: boolean
+        includeProductDrafts:
+          type: boolean
+        includeProductAssociations:
+          type: boolean
+        includeJourneys:
+          type: boolean
+      additionalProperties: false
+    ImportFlowTemplateResponseDto:
+      type: object
+      properties:
+        configurationId:
+          type: string
+          format: uuid
+        dependentImports:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/DependentImportResultDto'
+      additionalProperties: false
+    TaskRetryRuleDto:
+      type: object
+      properties:
+        condition:
+          allOf:
+          - $ref: '#/components/schemas/ConditionDto'
+        definition:
+          allOf:
+          - $ref: '#/components/schemas/TaskRetryDefinitionDto'
+      additionalProperties: false
+    TaskConfigBaseDto:
+      required:
+      - taskType
+      type: object
+      properties:
+        taskType:
+          allOf:
+          - $ref: '#/components/schemas/TaskType'
+          readOnly: true
+        catch:
+          allOf:
+          - $ref: '#/components/schemas/TaskCatchDto'
+        retry:
+          allOf:
+          - $ref: '#/components/schemas/TaskRetryDto'
+      additionalProperties: false
+    FlowTemplateLightDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        templateKey:
+          type:
+          - string
+          - 'null'
+        name:
+          type:
+          - string
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+        category:
+          allOf:
+          - $ref: '#/components/schemas/TemplateCategory'
+        featureFlagName:
+          type:
+          - string
+          - 'null'
+        versionNumber:
+          type: integer
+          format: int32
+        status:
+          allOf:
+          - $ref: '#/components/schemas/TemplateStatus'
+        hasDependentFlows:
+          type: boolean
+        hasDependentSchemas:
+          type: boolean
+        hasDependentMappings:
+          type: boolean
+        isManagedOob:
+          type: boolean
+        majorVersion:
+          type: integer
+          format: int32
+        minorVersion:
+          type: integer
+          format: int32
+        fixVersion:
+          type: integer
+          format: int32
+      additionalProperties: false
+    MapperConfigV1Dto:
+      allOf:
+      - $ref: '#/components/schemas/TaskConfigBaseDto'
+      - required:
+        - taskType
+        type: object
+        properties:
+          taskType:
+            allOf:
+            - $ref: '#/components/schemas/TaskType'
+            readOnly: true
+          mappingId:
+            type:
+            - string
+            - 'null'
+          input:
+            allOf:
+            - $ref: '#/components/schemas/ComplexValueDto'
+        additionalProperties: false
+    InternalApiEndpoint:
+      enum:
+      - GetJourneyInstanceById
+      - CreateEntity
+      - UpdateEntityDraft
+      - LegalEntityIdentifierSearch
+      - LegalEntityAdvancedSearch
+      - CreateEntityDraft
+      - ReopenTask
+      - GetSignificanceResult
+      - GetInternalEntityIdByExDataSubscriptionId
+      - GetDocumentSignedUrl
+      - GetDataSources
+      type: string
+    FlowInvokerConfigV1Dto:
+      allOf:
+      - $ref: '#/components/schemas/TaskConfigBaseDto'
+      - required:
+        - taskType
+        type: object
+        properties:
+          taskType:
+            allOf:
+            - $ref: '#/components/schemas/TaskType'
+            readOnly: true
+          runMode:
+            allOf:
+            - $ref: '#/components/schemas/FlowInvokerRunMode'
+          flowKey:
+            type:
+            - string
+            - 'null'
+          flowRequest:
+            allOf:
+            - $ref: '#/components/schemas/ComplexValueDto'
+          mapToRequestBody:
+            type: boolean
+          callbackTimeout:
+            type:
+            - string
+            - 'null'
+        additionalProperties: false
+    WaitConfigV1Dto:
+      allOf:
+      - $ref: '#/components/schemas/TaskConfigBaseDto'
+      - required:
+        - taskType
+        type: object
+        properties:
+          taskType:
+            allOf:
+            - $ref: '#/components/schemas/TaskType'
+            readOnly: true
+          secondsToWait:
+            allOf:
+            - $ref: '#/components/schemas/StraightValueDto'
+          callbackTimeout:
+            type:
+            - string
+            - 'null'
+        additionalProperties: false
+    EventIngressRunMode:
+      enum:
+      - FireAndForget
+      - Sync
+      - Async
+      type: string
+    ComplexValueDto:
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/ComplexValueType'
+        variable:
+          allOf:
+          - $ref: '#/components/schemas/VariableDto'
+        json: {}
+        variables:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/VariableDto'
+      additionalProperties: false
+    VariableDefinitionType:
+      enum:
+      - Constant
+      - Single
+      - Func
+      type: string
     TaskConfigBaseDtoIntegrationTaskDto:
       required:
       - key
@@ -528,6 +800,137 @@ components:
           - $ref: '#/components/schemas/TransformerConfigV1Dto'
           - $ref: '#/components/schemas/WaitConfigV1Dto'
       additionalProperties: false
+    FlowTemplateDependencyDto:
+      type: object
+      properties:
+        templateKey:
+          type:
+          - string
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ComplexValueType:
+      enum:
+      - Variable
+      - Json
+      type: string
+    VariableCategory:
+      enum:
+      - Global
+      - Flow
+      - Execution
+      - Task
+      type: string
+    ConditionDto:
+      required:
+      - leftValue
+      - name
+      - operatorType
+      - rightValue
+      type: object
+      properties:
+        name:
+          minLength: 1
+          type: string
+        leftValue:
+          allOf:
+          - $ref: '#/components/schemas/StraightValueDto'
+        rightValue:
+          allOf:
+          - $ref: '#/components/schemas/StraightValueDto'
+        operatorType:
+          allOf:
+          - $ref: '#/components/schemas/ConditionOperator'
+      additionalProperties: false
+    VariableDefinitionFuncType:
+      enum:
+      - JsonPath
+      - Pattern
+      type: string
+    ContentType:
+      enum:
+      - None
+      - Json
+      - Xml
+      - Text
+      - FormUrlEncoded
+      - FormData
+      - BinaryFile
+      type: string
+    ConstantVariable:
+      type: object
+      properties:
+        value:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    FlowTemplateSchemaSnapshotDto:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    TaskRetryDto:
+      type: object
+      properties:
+        rules:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/TaskRetryRuleDto'
+        default:
+          allOf:
+          - $ref: '#/components/schemas/TaskRetryDefinitionDto'
+      additionalProperties: false
+    TaskCatchDto:
+      type: object
+      properties:
+        routes:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/TaskCatchRouteDto'
+        default:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
     ParallelBranchConfigV1Dto:
       type: object
       properties:
@@ -549,494 +952,6 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    TaskConfigBaseDto:
-      required:
-      - taskType
-      type: object
-      properties:
-        taskType:
-          allOf:
-          - $ref: '#/components/schemas/TaskType'
-          readOnly: true
-        catch:
-          allOf:
-          - $ref: '#/components/schemas/TaskCatchDto'
-        retry:
-          allOf:
-          - $ref: '#/components/schemas/TaskRetryDto'
-      additionalProperties: false
-    FuncVariable:
-      type: object
-      properties:
-        type:
-          allOf:
-          - $ref: '#/components/schemas/VariableDefinitionFuncType'
-        jsonPath:
-          type:
-          - string
-          - 'null'
-        variable:
-          allOf:
-          - $ref: '#/components/schemas/SingleVariable'
-      additionalProperties: false
-    FlowTemplateDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/FlowTemplateDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    TemplateStatus:
-      enum:
-      - Active
-      - Deprecated
-      type: string
-    RouterConfigV1Dto:
-      allOf:
-      - $ref: '#/components/schemas/TaskConfigBaseDto'
-      - required:
-        - taskType
-        type: object
-        properties:
-          taskType:
-            allOf:
-            - $ref: '#/components/schemas/TaskType'
-            readOnly: true
-          routes:
-            type:
-            - array
-            - 'null'
-            items:
-              $ref: '#/components/schemas/RouteDto'
-        additionalProperties: false
-    ResourceTemplateDependencyDto:
-      type: object
-      properties:
-        description:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    StorageTaskTTL:
-      enum:
-      - OneWeek
-      - OneMonth
-      type: string
-    StorageTaskOperation:
-      enum:
-      - QueryByKey
-      - QueryByPrefix
-      - PutRecord
-      - DeleteRecord
-      type: string
-    ObjectInitiatorDto:
-      type: object
-      properties:
-        type:
-          allOf:
-          - $ref: '#/components/schemas/SourceType'
-        config: {}
-      additionalProperties: false
-    UpdateManagedFlowResponseServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/UpdateManagedFlowResponse'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    MapperConfigV1Dto:
-      allOf:
-      - $ref: '#/components/schemas/TaskConfigBaseDto'
-      - required:
-        - taskType
-        type: object
-        properties:
-          taskType:
-            allOf:
-            - $ref: '#/components/schemas/TaskType'
-            readOnly: true
-          mappingId:
-            type:
-            - string
-            - 'null'
-          input:
-            allOf:
-            - $ref: '#/components/schemas/ComplexValueDto'
-        additionalProperties: false
-    EndConfigV1Dto:
-      allOf:
-      - $ref: '#/components/schemas/TaskConfigBaseDto'
-      - required:
-        - taskType
-        type: object
-        properties:
-          taskType:
-            allOf:
-            - $ref: '#/components/schemas/TaskType'
-            readOnly: true
-          flowOutput:
-            allOf:
-            - $ref: '#/components/schemas/ComplexValueDto'
-        additionalProperties: false
-    ReportTaskConfigV1Dto:
-      allOf:
-      - $ref: '#/components/schemas/TaskConfigBaseDto'
-      - required:
-        - taskType
-        type: object
-        properties:
-          taskType:
-            allOf:
-            - $ref: '#/components/schemas/TaskType'
-            readOnly: true
-          reportQueryId:
-            type: string
-            format: uuid
-          queryParameters:
-            type:
-            - object
-            - 'null'
-            additionalProperties:
-              $ref: '#/components/schemas/StraightValueDto'
-          reportFileName:
-            allOf:
-            - $ref: '#/components/schemas/StraightValueDto'
-          reportTTL:
-            allOf:
-            - $ref: '#/components/schemas/StorageTaskTTL'
-          reportSensitivity:
-            allOf:
-            - $ref: '#/components/schemas/StorageTaskSensitivity'
-        additionalProperties: false
-    TaskCatchRouteDto:
-      type: object
-      properties:
-        condition:
-          allOf:
-          - $ref: '#/components/schemas/ConditionDto'
-        next:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    TemplateCategory:
-      enum:
-      - ConfigurationTemplates
-      - DesignPatterns
-      - ScreeningProviderDemo
-      - AiTemplates
-      type: string
-    ConditionOperator:
-      enum:
-      - Equals
-      - GreaterThan
-      - LowerThan
-      - GreaterThanOrEquals
-      - LowerThanOrEquals
-      - IsNull
-      - StringContains
-      - NotEquals
-      - IsNotNull
-      - StringNotContains
-      - IsTrue
-      - IsFalse
-      type: string
-    TaskCatchDto:
-      type: object
-      properties:
-        routes:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/TaskCatchRouteDto'
-        default:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    FormDataPartType:
-      enum:
-      - Text
-      - File
-      type: string
-    ImportFlowTemplateResponseDto:
-      type: object
-      properties:
-        configurationId:
-          type: string
-          format: uuid
-        dependentImports:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/DependentImportResultDto'
-      additionalProperties: false
-    StorageTaskSensitivity:
-      enum:
-      - Sensitive
-      - NotSensitive
-      type: string
-    InternalApiConfigV1Dto:
-      allOf:
-      - $ref: '#/components/schemas/TaskConfigBaseDto'
-      - required:
-        - endpoint
-        - taskType
-        type: object
-        properties:
-          taskType:
-            allOf:
-            - $ref: '#/components/schemas/TaskType'
-            readOnly: true
-          endpoint:
-            allOf:
-            - $ref: '#/components/schemas/InternalApiEndpoint'
-          request:
-            allOf:
-            - $ref: '#/components/schemas/ComplexValueDto'
-        additionalProperties: false
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    FuncVariableDto:
-      type: object
-      properties:
-        type:
-          allOf:
-          - $ref: '#/components/schemas/VariableDefinitionFuncType'
-        jsonPath:
-          type:
-          - string
-          - 'null'
-        variable:
-          allOf:
-          - $ref: '#/components/schemas/SingleVariableDto'
-      additionalProperties: false
-    UpdateManagedFlowResponse:
-      type: object
-      properties:
-        updated:
-          type: boolean
-      additionalProperties: false
-    EventIngressRunMode:
-      enum:
-      - FireAndForget
-      - Sync
-      - Async
-      type: string
-    DependentImportResultDto:
-      type: object
-      properties:
-        templateKey:
-          type:
-          - string
-          - 'null'
-        configurationId:
-          type: string
-          format: uuid
-        flowKey:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    TransformerConfigV1Dto:
-      allOf:
-      - $ref: '#/components/schemas/TaskConfigBaseDto'
-      - required:
-        - taskType
-        type: object
-        properties:
-          taskType:
-            allOf:
-            - $ref: '#/components/schemas/TaskType'
-            readOnly: true
-          input:
-            allOf:
-            - $ref: '#/components/schemas/ComplexValueDto'
-          originalMapMethod:
-            type:
-            - string
-            - 'null'
-          transpiledMapMethod:
-            type:
-            - string
-            - 'null'
-          includeLookups:
-            type: boolean
-          inputSchemaId:
-            type:
-            - string
-            - 'null'
-          outputSchemaId:
-            type:
-            - string
-            - 'null'
-          includedSchemas:
-            type:
-            - array
-            - 'null'
-            items:
-              type: string
-          libraries:
-            type:
-            - array
-            - 'null'
-            items:
-              type: string
-        additionalProperties: false
-    TaskRetryDto:
-      type: object
-      properties:
-        rules:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/TaskRetryRuleDto'
-        default:
-          allOf:
-          - $ref: '#/components/schemas/TaskRetryDefinitionDto'
-      additionalProperties: false
-    FlowTemplateSchemaSnapshotDto:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    AiInvokerConfigV1Dto:
-      allOf:
-      - $ref: '#/components/schemas/TaskConfigBaseDto'
-      - required:
-        - taskType
-        type: object
-        properties:
-          taskType:
-            allOf:
-            - $ref: '#/components/schemas/TaskType'
-            readOnly: true
-          aiModel:
-            allOf:
-            - $ref: '#/components/schemas/AiModel'
-          requestType:
-            allOf:
-            - $ref: '#/components/schemas/AiRequestType'
-          id:
-            allOf:
-            - $ref: '#/components/schemas/StraightValueDto'
-          providerId:
-            allOf:
-            - $ref: '#/components/schemas/StraightValueDto'
-          apiKey:
-            allOf:
-            - $ref: '#/components/schemas/StraightValueDto'
-          userPrompt:
-            allOf:
-            - $ref: '#/components/schemas/StraightValueDto'
-          systemPrompt:
-            allOf:
-            - $ref: '#/components/schemas/StraightValueDto'
-          entityId:
-            allOf:
-            - $ref: '#/components/schemas/StraightValueDto'
-          searchCriteria:
-            type:
-            - object
-            - 'null'
-            additionalProperties:
-              $ref: '#/components/schemas/StraightValueDto'
-        additionalProperties: false
-    AiModel:
-      enum:
-      - GPT5
-      - GPT4o
-      - O3
-      - NovaPremier
-      type: string
-    StraightValue:
-      type: object
-      properties:
-        type:
-          allOf:
-          - $ref: '#/components/schemas/StraightValueType'
-        value:
-          type:
-          - string
-          - 'null'
-        variables:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/Variable'
-      additionalProperties: false
-    VariableDefinitionFuncType:
-      enum:
-      - JsonPath
-      - Pattern
-      type: string
-    SingleVariable:
-      type: object
-      properties:
-        category:
-          allOf:
-          - $ref: '#/components/schemas/VariableCategory'
-        taskName:
-          type:
-          - string
-          - 'null'
-        propertyName:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    SuperGraphConfigV1Dto:
-      allOf:
-      - $ref: '#/components/schemas/TaskConfigBaseDto'
-      - required:
-        - taskType
-        type: object
-        properties:
-          taskType:
-            allOf:
-            - $ref: '#/components/schemas/TaskType'
-            readOnly: true
-          queryFlags:
-            allOf:
-            - $ref: '#/components/schemas/SuperGraphQueryFlagsDto'
-          queryBy:
-            allOf:
-            - $ref: '#/components/schemas/SuperGraphQueryBy'
-          queryByValue:
-            allOf:
-            - $ref: '#/components/schemas/StraightValueDto'
-        additionalProperties: false
     StorageConfigV1Dto:
       allOf:
       - $ref: '#/components/schemas/TaskConfigBaseDto'
@@ -1081,12 +996,50 @@ components:
             allOf:
             - $ref: '#/components/schemas/StraightValueDto'
         additionalProperties: false
-    SuperGraphQueryBy:
+    InlineTransformerTaskOperation:
       enum:
-      - JourneyId
-      - EntityId
+      - JsonMerge
+      - JsonFormat
+      - ArrayMerge
+      - ArrayAppend
+      - Compress
+      - Uncompress
+      - ParseCsv
       type: string
-    ParallelTaskConfigV1Dto:
+    StraightValueDto:
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/StraightValueType'
+        value:
+          type:
+          - string
+          - 'null'
+        variables:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/VariableDto'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    FlowInvokerRunMode:
+      enum:
+      - FireAndForget
+      - Async
+      type: string
+    InlineTransformerConfigV1Dto:
       allOf:
       - $ref: '#/components/schemas/TaskConfigBaseDto'
       - required:
@@ -1097,13 +1050,99 @@ components:
             allOf:
             - $ref: '#/components/schemas/TaskType'
             readOnly: true
-          branches:
+          operation:
+            allOf:
+            - $ref: '#/components/schemas/InlineTransformerTaskOperation'
+          saveToState:
+            type: boolean
+          statePropertyName:
             type:
-            - array
+            - string
             - 'null'
-            items:
-              $ref: '#/components/schemas/ParallelBranchConfigV1Dto'
+          leftOperand:
+            allOf:
+            - $ref: '#/components/schemas/ComplexValueDto'
+          rightOperand:
+            allOf:
+            - $ref: '#/components/schemas/ComplexValueDto'
+          withHeaders:
+            type:
+            - boolean
+            - 'null'
         additionalProperties: false
+    StorageTaskTTL:
+      enum:
+      - OneWeek
+      - OneMonth
+      type: string
+    DependentImportResultDto:
+      type: object
+      properties:
+        templateKey:
+          type:
+          - string
+          - 'null'
+        configurationId:
+          type: string
+          format: uuid
+        flowKey:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    InternalApiConfigV1Dto:
+      allOf:
+      - $ref: '#/components/schemas/TaskConfigBaseDto'
+      - required:
+        - endpoint
+        - taskType
+        type: object
+        properties:
+          taskType:
+            allOf:
+            - $ref: '#/components/schemas/TaskType'
+            readOnly: true
+          endpoint:
+            allOf:
+            - $ref: '#/components/schemas/InternalApiEndpoint'
+          request:
+            allOf:
+            - $ref: '#/components/schemas/ComplexValueDto'
+        additionalProperties: false
+    FormDataPartType:
+      enum:
+      - Text
+      - File
+      type: string
+    TemplateStatus:
+      enum:
+      - Active
+      - Deprecated
+      type: string
+    ResourceTemplateDependencyDto:
+      type: object
+      properties:
+        description:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    TaskRetryDefinitionDto:
+      type: object
+      properties:
+        maxAttempts:
+          type: integer
+          format: int32
+        intervalSeconds:
+          type: integer
+          format: int32
+        backoffRate:
+          type: number
+          format: float
+        maxDelaySeconds:
+          type: integer
+          format: int32
+      additionalProperties: false
     FlowTemplateFlowDefinitionDto:
       type: object
       properties:
@@ -1127,6 +1166,138 @@ components:
           items:
             $ref: '#/components/schemas/TaskConfigBaseDtoIntegrationTaskDto'
       additionalProperties: false
+    VariableType:
+      enum:
+      - Text
+      - Number
+      - Json
+      - Guid
+      - Request
+      - Secret
+      - TaskError
+      type: string
+    FlowTemplateDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/FlowTemplateDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    UpdateManagedFlowResponse:
+      type: object
+      properties:
+        updated:
+          type: boolean
+      additionalProperties: false
+    SourceType:
+      enum:
+      - Unknown
+      - Journey
+      - ExternalData
+      - Api
+      - Policy
+      - Scheduler
+      type: string
+    TemplateCategory:
+      enum:
+      - ConfigurationTemplates
+      - DesignPatterns
+      - ScreeningProviderDemo
+      - AiTemplates
+      type: string
+    AiModel:
+      enum:
+      - GPT5
+      - GPT4o
+      - O3
+      - NovaPremier
+      type: string
+    StorageTaskSensitivity:
+      enum:
+      - Sensitive
+      - NotSensitive
+      type: string
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ObjectInitiatorDto:
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/SourceType'
+        config: {}
+      additionalProperties: false
+    VariableDto:
+      type: object
+      properties:
+        definitionType:
+          allOf:
+          - $ref: '#/components/schemas/VariableDefinitionType'
+        constantVariable:
+          allOf:
+          - $ref: '#/components/schemas/ConstantVariableDto'
+        singleVariable:
+          allOf:
+          - $ref: '#/components/schemas/SingleVariableDto'
+        funcVariable:
+          allOf:
+          - $ref: '#/components/schemas/FuncVariableDto'
+      additionalProperties: false
+    EventIngressConfigV1Dto:
+      allOf:
+      - $ref: '#/components/schemas/TaskConfigBaseDto'
+      - required:
+        - eventSubtype
+        - eventType
+        - payload
+        - runMode
+        - source
+        - taskType
+        type: object
+        properties:
+          taskType:
+            allOf:
+            - $ref: '#/components/schemas/TaskType'
+            readOnly: true
+          eventType:
+            minLength: 1
+            type: string
+          eventSubtype:
+            minLength: 1
+            type: string
+          source:
+            minLength: 1
+            type: string
+          payload:
+            allOf:
+            - $ref: '#/components/schemas/ComplexValueDto'
+          runMode:
+            allOf:
+            - $ref: '#/components/schemas/EventIngressRunMode'
+          priority:
+            allOf:
+            - $ref: '#/components/schemas/StraightValue'
+        additionalProperties: false
     FormDataPartDto:
       required:
       - name
@@ -1178,44 +1349,80 @@ components:
       - ReportTaskV1
       - AiInvokerV1
       type: string
-    FlowTemplateDependencyDto:
+    ForEachTasksConfigV1Dto:
       type: object
       properties:
-        templateKey:
-          type:
-          - string
-          - 'null'
-        description:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    Variable:
-      type: object
-      properties:
-        definitionType:
-          allOf:
-          - $ref: '#/components/schemas/VariableDefinitionType'
-        constantVariable:
-          allOf:
-          - $ref: '#/components/schemas/ConstantVariable'
-        singleVariable:
-          allOf:
-          - $ref: '#/components/schemas/SingleVariable'
-        funcVariable:
-          allOf:
-          - $ref: '#/components/schemas/FuncVariable'
-      additionalProperties: false
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
-        messages:
+        tasks:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+            $ref: '#/components/schemas/TaskConfigBaseDtoIntegrationTaskDto'
+        startTaskKey:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    TaskCatchRouteDto:
+      type: object
+      properties:
+        condition:
+          allOf:
+          - $ref: '#/components/schemas/ConditionDto'
+        next:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ForEachTaskConfigV1Dto:
+      allOf:
+      - $ref: '#/components/schemas/TaskConfigBaseDto'
+      - required:
+        - taskType
+        type: object
+        properties:
+          taskType:
+            allOf:
+            - $ref: '#/components/schemas/TaskType'
+            readOnly: true
+          itemsToProcess:
+            allOf:
+            - $ref: '#/components/schemas/ComplexValueDto'
+          processInput:
+            allOf:
+            - $ref: '#/components/schemas/ComplexValueDto'
+          iterationTasks:
+            allOf:
+            - $ref: '#/components/schemas/ForEachTasksConfigV1Dto'
+        additionalProperties: false
+    SingleVariable:
+      type: object
+      properties:
+        category:
+          allOf:
+          - $ref: '#/components/schemas/VariableCategory'
+        taskName:
+          type:
+          - string
+          - 'null'
+        propertyName:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    FuncVariable:
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/VariableDefinitionFuncType'
+        jsonPath:
+          type:
+          - string
+          - 'null'
+        variable:
+          allOf:
+          - $ref: '#/components/schemas/SingleVariable'
       additionalProperties: false
     FlowTemplateDto:
       type: object
@@ -1282,87 +1489,7 @@ components:
           additionalProperties:
             $ref: '#/components/schemas/ResourceTemplateDependencyDto'
       additionalProperties: false
-    ComplexValueDto:
-      type: object
-      properties:
-        type:
-          allOf:
-          - $ref: '#/components/schemas/ComplexValueType'
-        variable:
-          allOf:
-          - $ref: '#/components/schemas/VariableDto'
-        json: {}
-        variables:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/VariableDto'
-      additionalProperties: false
-    ServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    EventIngressConfigV1Dto:
-      allOf:
-      - $ref: '#/components/schemas/TaskConfigBaseDto'
-      - required:
-        - eventSubtype
-        - eventType
-        - payload
-        - runMode
-        - source
-        - taskType
-        type: object
-        properties:
-          taskType:
-            allOf:
-            - $ref: '#/components/schemas/TaskType'
-            readOnly: true
-          eventType:
-            minLength: 1
-            type: string
-          eventSubtype:
-            minLength: 1
-            type: string
-          source:
-            minLength: 1
-            type: string
-          payload:
-            allOf:
-            - $ref: '#/components/schemas/ComplexValueDto'
-          runMode:
-            allOf:
-            - $ref: '#/components/schemas/EventIngressRunMode'
-          priority:
-            allOf:
-            - $ref: '#/components/schemas/StraightValue'
-        additionalProperties: false
-    FlowInvokerRunMode:
-      enum:
-      - FireAndForget
-      - Async
-      type: string
-    SourceType:
-      enum:
-      - Unknown
-      - Journey
-      - ExternalData
-      - Api
-      - Policy
-      - Scheduler
-      type: string
-    ForEachTaskConfigV1Dto:
+    SuperGraphConfigV1Dto:
       allOf:
       - $ref: '#/components/schemas/TaskConfigBaseDto'
       - required:
@@ -1373,108 +1500,29 @@ components:
             allOf:
             - $ref: '#/components/schemas/TaskType'
             readOnly: true
-          itemsToProcess:
+          queryFlags:
             allOf:
-            - $ref: '#/components/schemas/ComplexValueDto'
-          processInput:
+            - $ref: '#/components/schemas/SuperGraphQueryFlagsDto'
+          queryBy:
             allOf:
-            - $ref: '#/components/schemas/ComplexValueDto'
-          iterationTasks:
+            - $ref: '#/components/schemas/SuperGraphQueryBy'
+          queryByValue:
             allOf:
-            - $ref: '#/components/schemas/ForEachTasksConfigV1Dto'
+            - $ref: '#/components/schemas/StraightValueDto'
         additionalProperties: false
-    FlowVariableDto:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-        value: {}
-        type:
-          allOf:
-          - $ref: '#/components/schemas/VariableType'
-      additionalProperties: false
-    SingleVariableDto:
-      type: object
-      properties:
-        category:
-          allOf:
-          - $ref: '#/components/schemas/VariableCategory'
-        taskName:
-          type:
-          - string
-          - 'null'
-        propertyName:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    InlineTransformerTaskOperation:
+    FileSource:
       enum:
-      - JsonMerge
-      - JsonFormat
-      - ArrayMerge
-      - ArrayAppend
-      - Compress
-      - Uncompress
-      - ParseCsv
+      - PersistedStorage
+      - FenergoDocument
       type: string
-    VariableDto:
-      type: object
-      properties:
-        definitionType:
-          allOf:
-          - $ref: '#/components/schemas/VariableDefinitionType'
-        constantVariable:
-          allOf:
-          - $ref: '#/components/schemas/ConstantVariableDto'
-        singleVariable:
-          allOf:
-          - $ref: '#/components/schemas/SingleVariableDto'
-        funcVariable:
-          allOf:
-          - $ref: '#/components/schemas/FuncVariableDto'
-      additionalProperties: false
-    SuperGraphQueryFlagsDto:
-      type: object
-      properties:
-        includeStages:
-          type: boolean
-        includeEntity:
-          type: boolean
-        includeEntityDrafts:
-          type: boolean
-        includeRelatedParties:
-          type: boolean
-        includeProductDrafts:
-          type: boolean
-        includeProductAssociations:
-          type: boolean
-        includeJourneys:
-          type: boolean
-      additionalProperties: false
-    TaskRetryDefinitionDto:
-      type: object
-      properties:
-        maxAttempts:
-          type: integer
-          format: int32
-        intervalSeconds:
-          type: integer
-          format: int32
-        backoffRate:
-          type: number
-          format: float
-        maxDelaySeconds:
-          type: integer
-          format: int32
-      additionalProperties: false
-    StraightValueType:
+    StorageTaskOperation:
       enum:
-      - Pattern
+      - QueryByKey
+      - QueryByPrefix
+      - PutRecord
+      - DeleteRecord
       type: string
-    InlineTransformerConfigV1Dto:
+    EndConfigV1Dto:
       allOf:
       - $ref: '#/components/schemas/TaskConfigBaseDto'
       - required:
@@ -1485,26 +1533,17 @@ components:
             allOf:
             - $ref: '#/components/schemas/TaskType'
             readOnly: true
-          operation:
-            allOf:
-            - $ref: '#/components/schemas/InlineTransformerTaskOperation'
-          saveToState:
-            type: boolean
-          statePropertyName:
-            type:
-            - string
-            - 'null'
-          leftOperand:
+          flowOutput:
             allOf:
             - $ref: '#/components/schemas/ComplexValueDto'
-          rightOperand:
-            allOf:
-            - $ref: '#/components/schemas/ComplexValueDto'
-          withHeaders:
-            type:
-            - boolean
-            - 'null'
         additionalProperties: false
+    AiRequestType:
+      enum:
+      - ExternalDataSearchAndCollect
+      - ExternalDataSearchCustomPrompt
+      - ExternalDataSearchGetSummary
+      - ExternalDataGetSchema
+      type: string
     FlowTemplateMappingSnapshotDto:
       type: object
       properties:
@@ -1513,146 +1552,6 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    FlowTemplateLightDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        templateKey:
-          type:
-          - string
-          - 'null'
-        name:
-          type:
-          - string
-          - 'null'
-        description:
-          type:
-          - string
-          - 'null'
-        category:
-          allOf:
-          - $ref: '#/components/schemas/TemplateCategory'
-        featureFlagName:
-          type:
-          - string
-          - 'null'
-        versionNumber:
-          type: integer
-          format: int32
-        status:
-          allOf:
-          - $ref: '#/components/schemas/TemplateStatus'
-        hasDependentFlows:
-          type: boolean
-        hasDependentSchemas:
-          type: boolean
-        hasDependentMappings:
-          type: boolean
-        isManagedOob:
-          type: boolean
-        majorVersion:
-          type: integer
-          format: int32
-        minorVersion:
-          type: integer
-          format: int32
-        fixVersion:
-          type: integer
-          format: int32
-      additionalProperties: false
-    ForEachTasksConfigV1Dto:
-      type: object
-      properties:
-        tasks:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/TaskConfigBaseDtoIntegrationTaskDto'
-        startTaskKey:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    FlowTemplateLightDtoIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/FlowTemplateLightDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ConstantVariableDto:
-      type: object
-      properties:
-        value:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ConditionDto:
-      required:
-      - leftValue
-      - name
-      - operatorType
-      - rightValue
-      type: object
-      properties:
-        name:
-          minLength: 1
-          type: string
-        leftValue:
-          allOf:
-          - $ref: '#/components/schemas/StraightValueDto'
-        rightValue:
-          allOf:
-          - $ref: '#/components/schemas/StraightValueDto'
-        operatorType:
-          allOf:
-          - $ref: '#/components/schemas/ConditionOperator'
-      additionalProperties: false
-    VariableDefinitionType:
-      enum:
-      - Constant
-      - Single
-      - Func
-      type: string
-    ContentType:
-      enum:
-      - None
-      - Json
-      - Xml
-      - Text
-      - FormUrlEncoded
-      - FormData
-      - BinaryFile
-      type: string
     RouteDto:
       required:
       - condition
@@ -1665,72 +1564,6 @@ components:
         next:
           minLength: 1
           type: string
-      additionalProperties: false
-    ConstantVariable:
-      type: object
-      properties:
-        value:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    InternalApiEndpoint:
-      enum:
-      - GetJourneyInstanceById
-      - CreateEntity
-      - UpdateEntityDraft
-      - LegalEntityIdentifierSearch
-      - LegalEntityAdvancedSearch
-      - CreateEntityDraft
-      - ReopenTask
-      - GetSignificanceResult
-      - GetInternalEntityIdByExDataSubscriptionId
-      - GetDocumentSignedUrl
-      - GetDataSources
-      type: string
-    ComplexValueType:
-      enum:
-      - Variable
-      - Json
-      type: string
-    VariableType:
-      enum:
-      - Text
-      - Number
-      - Json
-      - Guid
-      - Request
-      - Secret
-      - TaskError
-      type: string
-    WaitConfigV1Dto:
-      allOf:
-      - $ref: '#/components/schemas/TaskConfigBaseDto'
-      - required:
-        - taskType
-        type: object
-        properties:
-          taskType:
-            allOf:
-            - $ref: '#/components/schemas/TaskType'
-            readOnly: true
-          secondsToWait:
-            allOf:
-            - $ref: '#/components/schemas/StraightValueDto'
-          callbackTimeout:
-            type:
-            - string
-            - 'null'
-        additionalProperties: false
-    TaskRetryRuleDto:
-      type: object
-      properties:
-        condition:
-          allOf:
-          - $ref: '#/components/schemas/ConditionDto'
-        definition:
-          allOf:
-          - $ref: '#/components/schemas/TaskRetryDefinitionDto'
       additionalProperties: false
     HttpInvokerConfigV2Dto:
       allOf:
@@ -1817,7 +1650,70 @@ components:
             allOf:
             - $ref: '#/components/schemas/StraightValue'
         additionalProperties: false
-    FlowInvokerConfigV1Dto:
+    StraightValue:
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/StraightValueType'
+        value:
+          type:
+          - string
+          - 'null'
+        variables:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/Variable'
+      additionalProperties: false
+    StraightValueType:
+      enum:
+      - Pattern
+      type: string
+    Variable:
+      type: object
+      properties:
+        definitionType:
+          allOf:
+          - $ref: '#/components/schemas/VariableDefinitionType'
+        constantVariable:
+          allOf:
+          - $ref: '#/components/schemas/ConstantVariable'
+        singleVariable:
+          allOf:
+          - $ref: '#/components/schemas/SingleVariable'
+        funcVariable:
+          allOf:
+          - $ref: '#/components/schemas/FuncVariable'
+      additionalProperties: false
+    FuncVariableDto:
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/VariableDefinitionFuncType'
+        jsonPath:
+          type:
+          - string
+          - 'null'
+        variable:
+          allOf:
+          - $ref: '#/components/schemas/SingleVariableDto'
+      additionalProperties: false
+    FlowVariableDto:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+        value: {}
+        type:
+          allOf:
+          - $ref: '#/components/schemas/VariableType'
+      additionalProperties: false
+    TransformerConfigV1Dto:
       allOf:
       - $ref: '#/components/schemas/TaskConfigBaseDto'
       - required:
@@ -1828,30 +1724,40 @@ components:
             allOf:
             - $ref: '#/components/schemas/TaskType'
             readOnly: true
-          runMode:
-            allOf:
-            - $ref: '#/components/schemas/FlowInvokerRunMode'
-          flowKey:
-            type:
-            - string
-            - 'null'
-          flowRequest:
+          input:
             allOf:
             - $ref: '#/components/schemas/ComplexValueDto'
-          mapToRequestBody:
-            type: boolean
-          callbackTimeout:
+          originalMapMethod:
             type:
             - string
             - 'null'
+          transpiledMapMethod:
+            type:
+            - string
+            - 'null'
+          includeLookups:
+            type: boolean
+          inputSchemaId:
+            type:
+            - string
+            - 'null'
+          outputSchemaId:
+            type:
+            - string
+            - 'null'
+          includedSchemas:
+            type:
+            - array
+            - 'null'
+            items:
+              type: string
+          libraries:
+            type:
+            - array
+            - 'null'
+            items:
+              type: string
         additionalProperties: false
-    VariableCategory:
-      enum:
-      - Global
-      - Flow
-      - Execution
-      - Task
-      type: string
     ImportFlowTemplateRequestDto:
       type: object
       properties:
@@ -1886,29 +1792,123 @@ components:
           additionalProperties:
             type: string
       additionalProperties: false
-    AiRequestType:
-      enum:
-      - ExternalDataSearchAndCollect
-      - ExternalDataSearchCustomPrompt
-      - ExternalDataSearchGetSummary
-      - ExternalDataGetSchema
-      type: string
-    StraightValueDto:
+    SingleVariableDto:
       type: object
       properties:
-        type:
+        category:
           allOf:
-          - $ref: '#/components/schemas/StraightValueType'
-        value:
+          - $ref: '#/components/schemas/VariableCategory'
+        taskName:
           type:
           - string
           - 'null'
-        variables:
+        propertyName:
           type:
-          - object
+          - string
           - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/VariableDto'
+      additionalProperties: false
+    AiInvokerConfigV1Dto:
+      allOf:
+      - $ref: '#/components/schemas/TaskConfigBaseDto'
+      - required:
+        - taskType
+        type: object
+        properties:
+          taskType:
+            allOf:
+            - $ref: '#/components/schemas/TaskType'
+            readOnly: true
+          aiModel:
+            allOf:
+            - $ref: '#/components/schemas/AiModel'
+          requestType:
+            allOf:
+            - $ref: '#/components/schemas/AiRequestType'
+          id:
+            allOf:
+            - $ref: '#/components/schemas/StraightValueDto'
+          providerId:
+            allOf:
+            - $ref: '#/components/schemas/StraightValueDto'
+          apiKey:
+            allOf:
+            - $ref: '#/components/schemas/StraightValueDto'
+          userPrompt:
+            allOf:
+            - $ref: '#/components/schemas/StraightValueDto'
+          systemPrompt:
+            allOf:
+            - $ref: '#/components/schemas/StraightValueDto'
+          entityId:
+            allOf:
+            - $ref: '#/components/schemas/StraightValueDto'
+          searchCriteria:
+            type:
+            - object
+            - 'null'
+            additionalProperties:
+              $ref: '#/components/schemas/StraightValueDto'
+        additionalProperties: false
+    ReportTaskConfigV1Dto:
+      allOf:
+      - $ref: '#/components/schemas/TaskConfigBaseDto'
+      - required:
+        - taskType
+        type: object
+        properties:
+          taskType:
+            allOf:
+            - $ref: '#/components/schemas/TaskType'
+            readOnly: true
+          reportQueryId:
+            type: string
+            format: uuid
+          queryParameters:
+            type:
+            - object
+            - 'null'
+            additionalProperties:
+              $ref: '#/components/schemas/StraightValueDto'
+          reportFileName:
+            allOf:
+            - $ref: '#/components/schemas/StraightValueDto'
+          reportTTL:
+            allOf:
+            - $ref: '#/components/schemas/StorageTaskTTL'
+          reportSensitivity:
+            allOf:
+            - $ref: '#/components/schemas/StorageTaskSensitivity'
+        additionalProperties: false
+    RouterConfigV1Dto:
+      allOf:
+      - $ref: '#/components/schemas/TaskConfigBaseDto'
+      - required:
+        - taskType
+        type: object
+        properties:
+          taskType:
+            allOf:
+            - $ref: '#/components/schemas/TaskType'
+            readOnly: true
+          routes:
+            type:
+            - array
+            - 'null'
+            items:
+              $ref: '#/components/schemas/RouteDto'
+        additionalProperties: false
+    ImportFlowTemplateResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ImportFlowTemplateResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
   securitySchemes:
     Bearer:

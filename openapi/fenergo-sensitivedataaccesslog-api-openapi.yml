@@ -214,70 +214,24 @@ paths:
                   errorCode: OBSOLETE_ENDPOINT
 components:
   schemas:
-    PagerDto:
+    GetPiiAccessLogBaseRequestDto:
       type: object
       properties:
-        size:
-          type: integer
-          format: int32
-          exclusiveMinimum: 0
-        from:
-          minimum: 0
-          type: integer
-          format: int32
-        sortBy:
-          type:
-          - string
-          - 'null'
-        sortOrder:
+        pager:
           allOf:
-          - $ref: '#/components/schemas/SortOrder'
+          - $ref: '#/components/schemas/PagerDto'
+          description: A pager object to specify pagination parameters
+          example:
+            size: 10
+            from: 0
+            sortBy: date
+            sortOrder: Descending
       additionalProperties: false
-    GetPiiAccessLogResultDto:
-      type: object
-      properties:
-        items:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/QuerySideAuditEventDto'
-          description: Items for the current page.
-        totalItems:
-          type: integer
-          description: Total count of items.
-          format: int64
-          example: 1
-      additionalProperties: false
-      description: Response DTO representing get by resource ids results
-    GetPiiAccessLogBySearchTermRequestDto:
-      allOf:
-      - $ref: '#/components/schemas/GetPiiAccessLogBaseRequestDto'
-      - type: object
-        properties:
-          searchTerm:
-            type:
-            - string
-            - 'null'
-            description: A search term that can be used to further filter your results. Can be any data found in your Pii Audit Events, e.g. 'Username','Fieldname' etc.
-            example: passport
-        additionalProperties: false
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
+    SortOrder:
+      enum:
+      - Ascending
+      - Descending
+      type: string
     ValidationErrorModelListServiceResponse:
       type: object
       properties:
@@ -304,6 +258,32 @@ components:
         - message: Data is required
           type: Error
           errorCode: Error Code
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    GetPiiAccessLogByResourceIdsRequestDtoServiceRequest:
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetPiiAccessLogByResourceIdsRequestDto'
+      additionalProperties: false
     QuerySideAuditEventDto:
       type: object
       properties:
@@ -376,14 +356,19 @@ components:
           - 'null'
           description: Correlation Id
       additionalProperties: false
-    GetPiiAccessLogByResourceIdsRequestDtoServiceRequest:
-      required:
-      - data
+    GetPiiAccessLogBySearchTermRequestDtoServiceRequest:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/GetPiiAccessLogByResourceIdsRequestDto'
+          - $ref: '#/components/schemas/GetPiiAccessLogBySearchTermRequestDto'
+      additionalProperties: false
+    GetPiiAccessLogByUserIdRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetPiiAccessLogByUserIdRequestDto'
       additionalProperties: false
     StringServiceResponse:
       type: object
@@ -399,32 +384,59 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
+    GetPiiAccessLogResultDto:
+      type: object
+      properties:
+        items:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/QuerySideAuditEventDto'
+          description: Items for the current page.
+        totalItems:
+          type: integer
+          description: Total count of items.
+          format: int64
+          example: 1
+      additionalProperties: false
+      description: Response DTO representing get by resource ids results
+    GetPiiAccessLogBySearchTermRequestDto:
+      allOf:
+      - $ref: '#/components/schemas/GetPiiAccessLogBaseRequestDto'
+      - type: object
+        properties:
+          searchTerm:
+            type:
+            - string
+            - 'null'
+            description: A search term that can be used to further filter your results. Can be any data found in your Pii Audit Events, e.g. 'Username','Fieldname' etc.
+            example: passport
+        additionalProperties: false
+    PagerDto:
+      type: object
+      properties:
+        size:
+          type: integer
+          format: int32
+          exclusiveMinimum: 0
+        from:
+          minimum: 0
+          type: integer
+          format: int32
+        sortBy:
+          type:
+          - string
+          - 'null'
+        sortOrder:
+          allOf:
+          - $ref: '#/components/schemas/SortOrder'
+      additionalProperties: false
     GetPiiAccessLogByUserIdRequestDto:
       allOf:
       - $ref: '#/components/schemas/GetPiiAccessLogBaseRequestDto'
       - type: object
         additionalProperties: false
-    GetPiiAccessLogByUserIdRequestDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/GetPiiAccessLogByUserIdRequestDto'
-      additionalProperties: false
-    GetPiiAccessLogResultDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/GetPiiAccessLogResultDto'
-          description: Response DTO representing get by resource ids results
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
     GetPiiAccessLogByResourceIdsRequestDto:
       allOf:
       - $ref: '#/components/schemas/GetPiiAccessLogBaseRequestDto'
@@ -452,48 +464,36 @@ components:
             - passport
             - dateOfBirth
         additionalProperties: false
-    ValidationErrorModel:
+    ServiceResponseMessage:
       type: object
       properties:
-        propertyName:
+        message:
           type:
           - string
           - 'null'
-        errorMessage:
+        type:
           type:
           - string
           - 'null'
-        attemptedValue: {}
         errorCode:
           type:
           - string
           - 'null'
       additionalProperties: false
-    GetPiiAccessLogBaseRequestDto:
-      type: object
-      properties:
-        pager:
-          allOf:
-          - $ref: '#/components/schemas/PagerDto'
-          description: A pager object to specify pagination parameters
-          example:
-            size: 10
-            from: 0
-            sortBy: date
-            sortOrder: Descending
-      additionalProperties: false
-    GetPiiAccessLogBySearchTermRequestDtoServiceRequest:
+    GetPiiAccessLogResultDtoServiceResponse:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/GetPiiAccessLogBySearchTermRequestDto'
+          - $ref: '#/components/schemas/GetPiiAccessLogResultDto'
+          description: Response DTO representing get by resource ids results
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    SortOrder:
-      enum:
-      - Ascending
-      - Descending
-      type: string
   securitySchemes:
     Bearer:
       type: apiKey

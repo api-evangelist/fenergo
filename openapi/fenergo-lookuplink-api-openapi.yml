@@ -1655,74 +1655,112 @@ paths:
     - url: /lookupquery
 components:
   schemas:
-    LinkVersionSignResponse:
+    VersionStatus:
+      enum:
+      - Draft
+      - Pending
+      - Rejected
+      - Published
+      - Archived
+      - Deleted
+      type: string
+    LinkLookupPropertyDto:
       type: object
       properties:
-        id:
+        childValues:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+      additionalProperties: false
+    ValidationErrorModelListServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    UpdateLinkVersionDto:
+      required:
+      - lookupLinkId
+      - name
+      - properties
+      type: object
+      properties:
+        lookupLinkId:
+          minLength: 1
           type: string
-          description: The Id of the model the version belongs to
+          description: The UiD of the Lookup Link that the version belongs to
           format: uuid
+        name:
+          minLength: 1
+          type: string
+          description: Display name of the Lookup Link
+        parentLookupId:
+          type: string
+          description: Parent Lookup Id Linked
+          format: uuid
+        parentLookupVersion:
+          type: integer
+          description: Parent Lookup Version Linked
+          format: int32
+        childLookupId:
+          type: string
+          description: Child Lookup Id Linked
+          format: uuid
+        childLookupVersion:
+          type: integer
+          description: Child Lookup Version Linked
+          format: int32
+        properties:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/LinkLookupPropertyDto'
+          description: List of linked values for lookups
         versionNumber:
           type: integer
-          description: The number of the version that has been signed
+          description: The versions number
           format: int32
-        status:
-          allOf:
-          - $ref: '#/components/schemas/VersionStatus'
-          description: The new version status
-      additionalProperties: false
-    LookupLinkVersionDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/LookupLinkVersionDto'
-        messages:
+        notes:
+          maxLength: 400
+          type:
+          - string
+          - 'null'
+          description: Optional description of the references and details of changes made that will be visible to all users who can access the version. It's assumed that version notes won't contain 'personal identifiable information'. Please note that having many versions with very long notes could hurt API performance in the long term.
+          example: Example Notes
+        effectiveFrom:
+          type: string
+          description: The date that the version takes effect when published
+          format: date-time
+        signees:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+            $ref: '#/components/schemas/Signee'
+          description: The defined list of signees for the version
       additionalProperties: false
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    LookupLinkVersionDtoServiceRequest:
-      required:
-      - data
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/LookupLinkVersionDto'
-      additionalProperties: false
+      description: Set of properties which define new version of Link Lookup
     Approver:
       type: object
       properties:
@@ -1740,25 +1778,29 @@ components:
           type: boolean
           readOnly: true
       additionalProperties: false
-    CreateLinkVersionDtoServiceRequest:
-      required:
-      - data
+    StringServiceResponse:
       type: object
       properties:
         data:
-          allOf:
-          - $ref: '#/components/schemas/CreateLinkVersionDto'
-      additionalProperties: false
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
+          type:
+          - string
+          - 'null'
         messages:
           type:
           - array
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    UpdateLinkVersionDtoServiceRequest:
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/UpdateLinkVersionDto'
+          description: Set of properties which define new version of Link Lookup
       additionalProperties: false
     ServiceResponse:
       type: object
@@ -1774,11 +1816,126 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    Decision:
-      enum:
-      - Approve
-      - Reject
-      type: string
+    CreateLinkVersionDtoServiceRequest:
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateLinkVersionDto'
+      additionalProperties: false
+    CreateLinkVersionDto:
+      required:
+      - childLookupId
+      - childLookupVersion
+      - name
+      - parentLookupId
+      - parentLookupVersion
+      - properties
+      type: object
+      properties:
+        name:
+          minLength: 1
+          type: string
+          description: Lookup Link Name
+        parentLookupId:
+          minLength: 1
+          type: string
+          description: Parent Lookup Id Linked
+          format: uuid
+        parentLookupVersion:
+          type: integer
+          description: Parent Lookup Version Linked
+          format: int32
+        childLookupId:
+          minLength: 1
+          type: string
+          description: Child Lookup Id Linked
+          format: uuid
+        childLookupVersion:
+          type: integer
+          description: Child Lookup Version Linked
+          format: int32
+        properties:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/LinkLookupPropertyDto'
+          description: Linked Values Properties
+        effectiveFrom:
+          type: string
+          description: The date that the version takes effect when published
+          format: date-time
+        notes:
+          maxLength: 400
+          type:
+          - string
+          - 'null'
+          description: Optional description of the references and details of changes made that will be visible to all users who can access the version. It's assumed that version notes won't contain 'personal identifiable information'. Please note that having many versions with very long notes could hurt API performance in the long term.
+          example: Example Notes
+      additionalProperties: false
+    LookupLinkVersionDtoServiceRequest:
+      required:
+      - data
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/LookupLinkVersionDto'
+      additionalProperties: false
+    ApproveAction:
+      type: object
+      properties:
+        comment:
+          type:
+          - string
+          - 'null'
+        decision:
+          allOf:
+          - $ref: '#/components/schemas/Decision'
+        created:
+          type: string
+          format: date-time
+      additionalProperties: false
+    LinkVersionSignResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The Id of the model the version belongs to
+          format: uuid
+        versionNumber:
+          type: integer
+          description: The number of the version that has been signed
+          format: int32
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+          description: The new version status
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ApproveActionServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ApproveAction'
+      additionalProperties: false
     LookupLinkVersionDto:
       required:
       - name
@@ -1858,23 +2015,11 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    Signee:
-      type: object
-      properties:
-        subject:
-          type:
-          - string
-          - 'null'
-        successor:
-          allOf:
-          - $ref: '#/components/schemas/Approver'
-        action:
-          allOf:
-          - $ref: '#/components/schemas/ApproveAction'
-        hasProcessedRequest:
-          type: boolean
-          readOnly: true
-      additionalProperties: false
+    Decision:
+      enum:
+      - Approve
+      - Reject
+      type: string
     ValidationErrorModel:
       type: object
       properties:
@@ -1892,15 +2037,10 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    ValidationErrorModelListServiceResponse:
+    ObjectServiceResponse:
       type: object
       properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel'
+        data: {}
         messages:
           type:
           - array
@@ -1908,185 +2048,29 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
-    CreateLinkVersionDto:
-      required:
-      - childLookupId
-      - childLookupVersion
-      - name
-      - parentLookupId
-      - parentLookupVersion
-      - properties
+    Signee:
       type: object
       properties:
-        name:
-          minLength: 1
-          type: string
-          description: Lookup Link Name
-        parentLookupId:
-          minLength: 1
-          type: string
-          description: Parent Lookup Id Linked
-          format: uuid
-        parentLookupVersion:
-          type: integer
-          description: Parent Lookup Version Linked
-          format: int32
-        childLookupId:
-          minLength: 1
-          type: string
-          description: Child Lookup Id Linked
-          format: uuid
-        childLookupVersion:
-          type: integer
-          description: Child Lookup Version Linked
-          format: int32
-        properties:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/LinkLookupPropertyDto'
-          description: Linked Values Properties
-        effectiveFrom:
-          type: string
-          description: The date that the version takes effect when published
-          format: date-time
-        notes:
-          maxLength: 400
+        subject:
           type:
           - string
           - 'null'
-          description: Optional description of the references and details of changes made that will be visible to all users who can access the version. It's assumed that version notes won't contain 'personal identifiable information'. Please note that having many versions with very long notes could hurt API performance in the long term.
-          example: Example Notes
-      additionalProperties: false
-    ApproveAction:
-      type: object
-      properties:
-        comment:
-          type:
-          - string
-          - 'null'
-        decision:
+        successor:
           allOf:
-          - $ref: '#/components/schemas/Decision'
-        created:
-          type: string
-          format: date-time
-      additionalProperties: false
-    UpdateLinkVersionDto:
-      required:
-      - lookupLinkId
-      - name
-      - properties
-      type: object
-      properties:
-        lookupLinkId:
-          minLength: 1
-          type: string
-          description: The UiD of the Lookup Link that the version belongs to
-          format: uuid
-        name:
-          minLength: 1
-          type: string
-          description: Display name of the Lookup Link
-        parentLookupId:
-          type: string
-          description: Parent Lookup Id Linked
-          format: uuid
-        parentLookupVersion:
-          type: integer
-          description: Parent Lookup Version Linked
-          format: int32
-        childLookupId:
-          type: string
-          description: Child Lookup Id Linked
-          format: uuid
-        childLookupVersion:
-          type: integer
-          description: Child Lookup Version Linked
-          format: int32
-        properties:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/LinkLookupPropertyDto'
-          description: List of linked values for lookups
-        versionNumber:
-          type: integer
-          description: The versions number
-          format: int32
-        notes:
-          maxLength: 400
-          type:
-          - string
-          - 'null'
-          description: Optional description of the references and details of changes made that will be visible to all users who can access the version. It's assumed that version notes won't contain 'personal identifiable information'. Please note that having many versions with very long notes could hurt API performance in the long term.
-          example: Example Notes
-        effectiveFrom:
-          type: string
-          description: The date that the version takes effect when published
-          format: date-time
-        signees:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/Signee'
-          description: The defined list of signees for the version
-      additionalProperties: false
-      description: Set of properties which define new version of Link Lookup
-    VersionStatus:
-      enum:
-      - Draft
-      - Pending
-      - Rejected
-      - Published
-      - Archived
-      - Deleted
-      type: string
-    LinkLookupPropertyDto:
-      type: object
-      properties:
-        childValues:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-      additionalProperties: false
-    UpdateLinkVersionDtoServiceRequest:
-      required:
-      - data
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/UpdateLinkVersionDto'
-          description: Set of properties which define new version of Link Lookup
-      additionalProperties: false
-    ApproveActionServiceRequest:
-      type: object
-      properties:
-        data:
+          - $ref: '#/components/schemas/Approver'
+        action:
           allOf:
           - $ref: '#/components/schemas/ApproveAction'
+        hasProcessedRequest:
+          type: boolean
+          readOnly: true
       additionalProperties: false
-    LookupLinkVersionDtoIEnumerableServiceResponse:
+    LookupLinkVersionDtoServiceResponse:
       type: object
       properties:
         data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/LookupLinkVersionDto_2'
+          allOf:
+          - $ref: '#/components/schemas/LookupLinkVersionDto'
         messages:
           type:
           - array
@@ -2094,23 +2078,6 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    LinkLookupsByIdsAndVersionsRequest:
-      type: object
-      properties:
-        linkLookups:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type: integer
-            format: int32
-          description: The dictionary that contains link lookup IDs and version numbers to find
-          example:
-            6b6de3e3-48b1-46a1-adb0-701653a61c2c: 1
-            6b6de3e3-48b2-46a1-adb0-701653a61c2c: 2
-            6b6de3e3-48b3-46a1-adb0-701653a61c2c: 3
-      additionalProperties: false
-      description: Object for querying Link Lookup data
     LinkLookupProperty:
       type: object
       properties:
@@ -2120,6 +2087,30 @@ components:
           - 'null'
           items:
             type: string
+      additionalProperties: false
+    LookupLinkLiteDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/LookupLinkLiteDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    LinkLookupsByIdsAndVersionsRequestServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/LinkLookupsByIdsAndVersionsRequest'
+          description: Object for querying Link Lookup data
       additionalProperties: false
     ProblemDetails:
       type: object
@@ -2146,30 +2137,6 @@ components:
           - string
           - 'null'
       additionalProperties: {}
-    LinkLookupsByIdsAndVersionsRequestServiceRequest:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/LinkLookupsByIdsAndVersionsRequest'
-          description: Object for querying Link Lookup data
-      additionalProperties: false
-    LookupLinkLiteDtoIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/LookupLinkLiteDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
     IApprover:
       type: object
       properties:
@@ -2181,6 +2148,103 @@ components:
         hasProcessedRequest:
           type: boolean
           readOnly: true
+      additionalProperties: false
+    LookupLinkVersionIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/LookupLinkVersion'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    LookupLinkVersion:
+      type: object
+      properties:
+        versionNumber:
+          type: integer
+          format: int32
+        effectiveFrom:
+          type: string
+          format: date-time
+        status:
+          allOf:
+          - $ref: '#/components/schemas/VersionStatus'
+        nextApprover:
+          allOf:
+          - $ref: '#/components/schemas/IApprover'
+          readOnly: true
+        created:
+          type: string
+          format: date-time
+        notes:
+          type:
+          - string
+          - 'null'
+        id:
+          type: string
+          format: uuid
+        lookupLinkId:
+          type: string
+          format: uuid
+        name:
+          type:
+          - string
+          - 'null'
+        parentLookupId:
+          type: string
+          format: uuid
+        parentLookupVersion:
+          type: integer
+          format: int32
+        childLookupId:
+          type: string
+          format: uuid
+        childLookupVersion:
+          type: integer
+          format: int32
+        properties:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            $ref: '#/components/schemas/LinkLookupProperty'
+        signees:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/Signee'
+        approvers:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/IApprover'
+          readOnly: true
+      additionalProperties: false
+    LookupLinkDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/LookupLinkDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
     LookupLinkVersionDto_2:
       type: object
@@ -2296,87 +2360,6 @@ components:
             $ref: '#/components/schemas/Signee'
           description: The defined list of signees for the version
       additionalProperties: false
-    LookupLinkVersion:
-      type: object
-      properties:
-        versionNumber:
-          type: integer
-          format: int32
-        effectiveFrom:
-          type: string
-          format: date-time
-        status:
-          allOf:
-          - $ref: '#/components/schemas/VersionStatus'
-        nextApprover:
-          allOf:
-          - $ref: '#/components/schemas/IApprover'
-          readOnly: true
-        created:
-          type: string
-          format: date-time
-        notes:
-          type:
-          - string
-          - 'null'
-        id:
-          type: string
-          format: uuid
-        lookupLinkId:
-          type: string
-          format: uuid
-        name:
-          type:
-          - string
-          - 'null'
-        parentLookupId:
-          type: string
-          format: uuid
-        parentLookupVersion:
-          type: integer
-          format: int32
-        childLookupId:
-          type: string
-          format: uuid
-        childLookupVersion:
-          type: integer
-          format: int32
-        properties:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            $ref: '#/components/schemas/LinkLookupProperty'
-        signees:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/Signee'
-        approvers:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/IApprover'
-          readOnly: true
-      additionalProperties: false
-    LookupLinkVersionIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/LookupLinkVersion'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
     LookupLinkVersionBaseDto:
       type: object
       properties:
@@ -2479,7 +2462,7 @@ components:
             $ref: '#/components/schemas/LookupLinkVersionDto_2'
           description: List of available lookup links versions
       additionalProperties: false
-    LookupLinkDtoIEnumerableServiceResponse:
+    LookupLinkVersionDtoIEnumerableServiceResponse:
       type: object
       properties:
         data:
@@ -2487,7 +2470,7 @@ components:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/LookupLinkDto'
+            $ref: '#/components/schemas/LookupLinkVersionDto_2'
         messages:
           type:
           - array
@@ -2511,6 +2494,23 @@ components:
             $ref: '#/components/schemas/LookupLinkVersionBaseDto'
           description: List of available lookup links versions with basic details
       additionalProperties: false
+    LinkLookupsByIdsAndVersionsRequest:
+      type: object
+      properties:
+        linkLookups:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: integer
+            format: int32
+          description: The dictionary that contains link lookup IDs and version numbers to find
+          example:
+            6b6de3e3-48b1-46a1-adb0-701653a61c2c: 1
+            6b6de3e3-48b2-46a1-adb0-701653a61c2c: 2
+            6b6de3e3-48b3-46a1-adb0-701653a61c2c: 3
+      additionalProperties: false
+      description: Object for querying Link Lookup data
   securitySchemes:
     Bearer:
       type: apiKey

@@ -2523,27 +2523,35 @@ paths:
     - url: /creditscreeningquery
 components:
   schemas:
-    AdapterSchemaDtoServiceRequest:
+    MappingConfigurationDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/MappingConfigurationDto'
+      additionalProperties: false
+    ProviderDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ProviderDto'
+      additionalProperties: false
+    AdapterSchemaDtoServiceResponse:
       type: object
       properties:
         data:
           $ref: '#/components/schemas/AdapterSchemaDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    ServiceResponseMessage:
+    ProviderConfigurationDtoServiceRequest:
       type: object
       properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
+        data:
+          $ref: '#/components/schemas/ProviderConfigurationDto'
       additionalProperties: false
     ProviderDtoServiceResponse:
       type: object
@@ -2577,32 +2585,107 @@ components:
           $ref: '#/components/schemas/ProviderConfigurationSecurityKeysDto'
       additionalProperties: false
       description: Provider Configuration top layer schema
-    StringServiceResponse:
+    MappingConfigurationDto:
       type: object
       properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+        id:
+          type: string
+          description: The id of mapping configuration
+          format: uuid
+        providerId:
+          type: string
+          description: The corresponding provider id of mapping configuration
+          format: uuid
+        initiateCreditScreeningRequestDto:
+          $ref: '#/components/schemas/MappingDto'
+        initiateCreditScreeningResultDto:
+          $ref: '#/components/schemas/MappingDto'
       additionalProperties: false
-    AdapterSchemaDtoServiceResponse:
+      description: Mapping Configuration Schema
+    AdapterSchemaDtoServiceRequest:
       type: object
       properties:
         data:
           $ref: '#/components/schemas/AdapterSchemaDto'
-        messages:
+      additionalProperties: false
+    FieldDto:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+          description: Name of the field
+          example: Address
+        friendlyName:
+          type:
+          - string
+          - 'null'
+          description: 'Friendly name  of the field
+
+            For display purpose'
+          example: ''
+        isMandatory:
+          type:
+          - boolean
+          - 'null'
+          description: The flag to set if property is mandatory
+        type:
+          type:
+          - string
+          - 'null'
+          description: Type of the field
+          example: String
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of the field
+          example: Address line 1
+        nestedFields:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+            $ref: '#/components/schemas/FieldDto'
+          description: Nested field
       additionalProperties: false
+      description: The Field schema
+    MappingRuleSetDto:
+      type: object
+      properties:
+        mappingRules:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/MappingRuleDto'
+          description: The list that contains all of the mapping rules
+        targetProperty:
+          type:
+          - string
+          - 'null'
+          description: The targetProperty for mapping destination
+          example: address
+        targetPropertyFriendlyName:
+          type:
+          - string
+          - 'null'
+          description: The targetProperty friendly name for display
+          example: address
+        nestedMappingRules:
+          $ref: '#/components/schemas/MappingDto'
+        targetPropertyType:
+          type:
+          - string
+          - 'null'
+          description: The type of the targetProperty
+          example: String
+        hiddenIfNoValue:
+          type: boolean
+          description: hide this field in auto credit screening task if no value
+      additionalProperties: false
+      description: The schema that contains info of designated property
     ProblemDetails:
       type: object
       properties:
@@ -2651,23 +2734,105 @@ components:
           description: If true, it will find all properties (including nested properties) with this Property Name
       additionalProperties: false
       description: The mapping rule schema
-    MappingConfigurationDto:
+    ValidationErrorModelListServiceResponse:
       type: object
       properties:
-        id:
-          type: string
-          description: The id of mapping configuration
-          format: uuid
-        providerId:
-          type: string
-          description: The corresponding provider id of mapping configuration
-          format: uuid
-        initiateCreditScreeningRequestDto:
-          $ref: '#/components/schemas/MappingDto'
-        initiateCreditScreeningResultDto:
-          $ref: '#/components/schemas/MappingDto'
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ValidationErrorModel'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-      description: Mapping Configuration Schema
+      example:
+        data:
+        - propertyName: data
+          errorMessage: Data is required
+          attemptedValue: ''
+          errorCode: NotNullValidator
+        messages:
+        - message: Data is required
+          type: Error
+          errorCode: Error Code
+    EnabledDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/EnabledDto'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    EnabledDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/EnabledDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ProviderConfigurationSecurityKeysDto:
+      type: object
+      properties:
+        authenticationKey:
+          type:
+          - string
+          - 'null'
+        encryptionKey:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    EnabledDto:
+      type: object
+      properties:
+        enabled:
+          type:
+          - boolean
+          - 'null'
+          description: Flag to check if provider is Enabled or not
+          example: false
+      additionalProperties: false
+    SchemaEntryDto:
+      type: object
+      properties:
+        fields:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/FieldDto'
+      additionalProperties: false
+    SchemaDto:
+      type: object
+      properties:
+        initiateCreditScreeningRequest:
+          $ref: '#/components/schemas/SchemaEntryDto'
+        initiateCreditScreeningResult:
+          $ref: '#/components/schemas/SchemaEntryDto'
+      additionalProperties: false
+      description: Adapter Configuration Schema Detail
     AdapterSchemaDto:
       type: object
       properties:
@@ -2683,10 +2848,11 @@ components:
           $ref: '#/components/schemas/SchemaDto'
       additionalProperties: false
       description: Adapter Configuration Schema
-    ObjectServiceResponse:
+    ProviderConfigurationDtoServiceResponse:
       type: object
       properties:
-        data: {}
+        data:
+          $ref: '#/components/schemas/ProviderConfigurationDto'
         messages:
           type:
           - array
@@ -2694,20 +2860,6 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    MappingDto:
-      type: object
-      properties:
-        ruleSets:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/MappingRuleSetDto'
-          description: 'The list that contains all the mapping rules for a provider
-
-            It can be for request or result mapping configuration'
-      additionalProperties: false
-      description: The schema for mapping configuration request and result
     ProviderConfigurationDetailsDto:
       type: object
       properties:
@@ -2755,11 +2907,27 @@ components:
           example: false
       additionalProperties: false
       description: Provider Configuration Schema
-    EnabledDtoServiceResponse:
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    MappingConfigurationDtoServiceResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/EnabledDto'
+          $ref: '#/components/schemas/MappingConfigurationDto'
         messages:
           type:
           - array
@@ -2767,15 +2935,14 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    SchemaDto:
+    AdapterConfigurationDto:
       type: object
       properties:
-        initiateCreditScreeningRequest:
-          $ref: '#/components/schemas/SchemaEntryDto'
-        initiateCreditScreeningResult:
-          $ref: '#/components/schemas/SchemaEntryDto'
+        url:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
-      description: Adapter Configuration Schema Detail
     ProviderDto:
       type: object
       properties:
@@ -2806,28 +2973,20 @@ components:
           example: equifax-screening
       additionalProperties: false
       description: Provider Schema
-    ProviderConfigurationSecurityKeysDto:
+    MappingDto:
       type: object
       properties:
-        authenticationKey:
-          type:
-          - string
-          - 'null'
-        encryptionKey:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    SchemaEntryDto:
-      type: object
-      properties:
-        fields:
+        ruleSets:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/FieldDto'
+            $ref: '#/components/schemas/MappingRuleSetDto'
+          description: 'The list that contains all the mapping rules for a provider
+
+            It can be for request or result mapping configuration'
       additionalProperties: false
+      description: The schema for mapping configuration request and result
     ValidationErrorModel:
       type: object
       properties:
@@ -2845,64 +3004,10 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    EnabledDto:
+    ObjectServiceResponse:
       type: object
       properties:
-        enabled:
-          type:
-          - boolean
-          - 'null'
-          description: Flag to check if provider is Enabled or not
-          example: false
-      additionalProperties: false
-    AdapterConfigurationDto:
-      type: object
-      properties:
-        url:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    MappingRuleSetDto:
-      type: object
-      properties:
-        mappingRules:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/MappingRuleDto'
-          description: The list that contains all of the mapping rules
-        targetProperty:
-          type:
-          - string
-          - 'null'
-          description: The targetProperty for mapping destination
-          example: address
-        targetPropertyFriendlyName:
-          type:
-          - string
-          - 'null'
-          description: The targetProperty friendly name for display
-          example: address
-        nestedMappingRules:
-          $ref: '#/components/schemas/MappingDto'
-        targetPropertyType:
-          type:
-          - string
-          - 'null'
-          description: The type of the targetProperty
-          example: String
-        hiddenIfNoValue:
-          type: boolean
-          description: hide this field in auto credit screening task if no value
-      additionalProperties: false
-      description: The schema that contains info of designated property
-    MappingConfigurationDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/MappingConfigurationDto'
+        data: {}
         messages:
           type:
           - array
@@ -2910,120 +3015,13 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    ValidationErrorModelListServiceResponse:
+    AdapterSchemaDtoServiceResponse_2:
       type: object
       properties:
         data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ValidationErrorModel'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-      example:
-        data:
-        - propertyName: data
-          errorMessage: Data is required
-          attemptedValue: ''
-          errorCode: NotNullValidator
-        messages:
-        - message: Data is required
-          type: Error
-          errorCode: Error Code
-    ProviderConfigurationDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/ProviderConfigurationDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    FieldDto:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-          description: Name of the field
-          example: Address
-        friendlyName:
-          type:
-          - string
-          - 'null'
-          description: 'Friendly name  of the field
-
-            For display purpose'
-          example: ''
-        isMandatory:
-          type:
-          - boolean
-          - 'null'
-          description: The flag to set if property is mandatory
-        type:
-          type:
-          - string
-          - 'null'
-          description: Type of the field
-          example: String
-        description:
-          type:
-          - string
-          - 'null'
-          description: Description of the field
-          example: Address line 1
-        nestedFields:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/FieldDto'
-          description: Nested field
-      additionalProperties: false
-      description: The Field schema
-    MappingConfigurationDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/MappingConfigurationDto'
-      additionalProperties: false
-    EnabledDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/EnabledDto'
-      additionalProperties: false
-    ProviderConfigurationDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/ProviderConfigurationDto'
-      additionalProperties: false
-    ProviderDtoServiceRequest:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/ProviderDto'
-      additionalProperties: false
-    ProviderConfigurationSummaryDtoIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ProviderConfigurationSummaryDto'
+          allOf:
+          - $ref: '#/components/schemas/AdapterSchemaDto_2'
+          description: Adapter Configuration Schema
         messages:
           type:
           - array
@@ -3045,63 +3043,6 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    ProviderConfigurationDto_2:
-      type: object
-      properties:
-        providerId:
-          type: string
-          description: Provider Id
-          format: uuid
-        configurationList:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ProviderConfigurationDetailsDto_2'
-          description: List of Configuration Details Schema
-        adapterConfiguration:
-          allOf:
-          - $ref: '#/components/schemas/AdapterConfigurationDto'
-          description: Schema of Adapter Configuration
-        providerConfigurationSecurityKeys:
-          allOf:
-          - $ref: '#/components/schemas/ProviderConfigurationSecurityKeysDto'
-          description: Configuration keys for provider
-      additionalProperties: false
-      description: Provider Configuration top layer schema
-    AdapterSchemaDtoServiceResponse_2:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/AdapterSchemaDto_2'
-          description: Adapter Configuration Schema
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    MappingRuleDto_2:
-      type: object
-      properties:
-        order:
-          type: integer
-          description: This order will be used to generate mapping Path
-          format: int32
-        propertyName:
-          type:
-          - string
-          - 'null'
-          description: Property Name
-        isArrayProperty:
-          type: boolean
-        includingNestedPath:
-          type: boolean
-          description: If true, it will find all properties (including nested properties) with this Property Name
-      additionalProperties: false
-      description: The mapping rule schema
     ProviderTestResultDtoServiceResponse:
       type: object
       properties:
@@ -3135,6 +3076,136 @@ components:
           description: The mapping configuration result schema for request
       additionalProperties: false
       description: Mapping Configuration Schema
+    FieldDto_2:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+          description: Name of the field
+          example: ''
+        friendlyName:
+          type:
+          - string
+          - 'null'
+          description: 'Friendly name  of the field
+
+            For display purpose'
+          example: ''
+        isMandatory:
+          type: boolean
+          description: The flag to set if property is mandatory
+        type:
+          type:
+          - string
+          - 'null'
+          description: Type of the field
+          example: String
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of the field
+          example: Address line 1
+        nestedFields:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/FieldDto_2'
+          description: Nested field
+      additionalProperties: false
+      description: The Field schema
+    MappingRuleSetDto_2:
+      type: object
+      properties:
+        mappingRules:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/MappingRuleDto_2'
+          description: The list that contains all of the mapping rules
+        targetProperty:
+          type:
+          - string
+          - 'null'
+          description: The targetProperty for mapping destination
+          example: address
+        targetPropertyFriendlyName:
+          type:
+          - string
+          - 'null'
+          description: The targetProperty friendly name for display
+          example: address
+        nestedMappingRules:
+          allOf:
+          - $ref: '#/components/schemas/MappingDto'
+          description: The nested mapping rules for mapping a nested object
+        targetPropertyType:
+          type:
+          - string
+          - 'null'
+          description: The type of the targetProperty
+          example: String
+        hiddenIfNoValue:
+          type: boolean
+          description: hide this property in auto credit screening task if this flag is true and no value
+          example: true
+      additionalProperties: false
+      description: The schema that contains info of designated property
+    MappingRuleDto_2:
+      type: object
+      properties:
+        order:
+          type: integer
+          description: This order will be used to generate mapping Path
+          format: int32
+        propertyName:
+          type:
+          - string
+          - 'null'
+          description: Property Name
+        isArrayProperty:
+          type: boolean
+        includingNestedPath:
+          type: boolean
+          description: If true, it will find all properties (including nested properties) with this Property Name
+      additionalProperties: false
+      description: The mapping rule schema
+    ProviderDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ProviderDto_2'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ProviderConfigurationSummaryDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ProviderConfigurationSummaryDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
     MappingConfigurationDtoIEnumerableServiceResponse:
       type: object
       properties:
@@ -3150,6 +3221,61 @@ components:
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ProviderConfigurationSummaryDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ProviderConfigurationSummaryDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    SchemaEntryDto_2:
+      type: object
+      properties:
+        fields:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/FieldDto_2'
+          description: The list of all Fields
+      additionalProperties: false
+    ProviderConfigurationSummaryDto:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+        providerId:
+          type: string
+          format: uuid
+        mappingStatus:
+          type:
+          - string
+          - 'null'
+        adapterStatus:
+          type:
+          - string
+          - 'null'
+        authenticationStatus:
+          type:
+          - string
+          - 'null'
+        enabled:
+          type: boolean
+        isCustom:
+          type: boolean
+        internalIdentifier:
+          type:
+          - string
+          - 'null'
       additionalProperties: false
     ProviderTestResultDto:
       type: object
@@ -3190,7 +3316,34 @@ components:
           description: The schema contains request and result schema
       additionalProperties: false
       description: Adapter Configuration Schema
-    ProviderDtoIEnumerableServiceResponse:
+    SchemaDto_2:
+      type: object
+      properties:
+        initiateCreditScreeningRequest:
+          allOf:
+          - $ref: '#/components/schemas/SchemaEntryDto_2'
+          description: "Adapter Configuration request schema \nIt contains list of fields"
+        initiateCreditScreeningResult:
+          allOf:
+          - $ref: '#/components/schemas/SchemaEntryDto_2'
+          description: "Adapter Configuration result schema \nIt contains list of fields"
+      additionalProperties: false
+      description: Adapter Configuration Schema Detail
+    ProviderConfigurationDtoServiceResponse_2:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ProviderConfigurationDto_2'
+          description: Provider Configuration top layer schema
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ProviderConfigurationDtoIEnumerableServiceResponse:
       type: object
       properties:
         data:
@@ -3198,7 +3351,7 @@ components:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ProviderDto_2'
+            $ref: '#/components/schemas/ProviderConfigurationDto_2'
         messages:
           type:
           - array
@@ -3249,19 +3402,20 @@ components:
           example: false
       additionalProperties: false
       description: Provider Configuration Schema
-    SchemaDto_2:
+    MappingConfigurationDtoServiceResponse_2:
       type: object
       properties:
-        initiateCreditScreeningRequest:
+        data:
           allOf:
-          - $ref: '#/components/schemas/SchemaEntryDto_2'
-          description: "Adapter Configuration request schema \nIt contains list of fields"
-        initiateCreditScreeningResult:
-          allOf:
-          - $ref: '#/components/schemas/SchemaEntryDto_2'
-          description: "Adapter Configuration result schema \nIt contains list of fields"
+          - $ref: '#/components/schemas/MappingConfigurationDto_2'
+          description: Mapping Configuration Schema
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-      description: Adapter Configuration Schema Detail
     ProviderDto_2:
       type: object
       properties:
@@ -3292,184 +3446,30 @@ components:
           example: equifax-sample
       additionalProperties: false
       description: Provider Schema
-    ProviderConfigurationSummaryDto:
+    ProviderConfigurationDto_2:
       type: object
       properties:
-        name:
-          type:
-          - string
-          - 'null'
         providerId:
           type: string
+          description: Provider Id
           format: uuid
-        mappingStatus:
-          type:
-          - string
-          - 'null'
-        adapterStatus:
-          type:
-          - string
-          - 'null'
-        authenticationStatus:
-          type:
-          - string
-          - 'null'
-        enabled:
-          type: boolean
-        isCustom:
-          type: boolean
-        internalIdentifier:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    SchemaEntryDto_2:
-      type: object
-      properties:
-        fields:
+        configurationList:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/FieldDto_2'
-          description: The list of all Fields
-      additionalProperties: false
-    MappingRuleSetDto_2:
-      type: object
-      properties:
-        mappingRules:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/MappingRuleDto_2'
-          description: The list that contains all of the mapping rules
-        targetProperty:
-          type:
-          - string
-          - 'null'
-          description: The targetProperty for mapping destination
-          example: address
-        targetPropertyFriendlyName:
-          type:
-          - string
-          - 'null'
-          description: The targetProperty friendly name for display
-          example: address
-        nestedMappingRules:
+            $ref: '#/components/schemas/ProviderConfigurationDetailsDto_2'
+          description: List of Configuration Details Schema
+        adapterConfiguration:
           allOf:
-          - $ref: '#/components/schemas/MappingDto'
-          description: The nested mapping rules for mapping a nested object
-        targetPropertyType:
-          type:
-          - string
-          - 'null'
-          description: The type of the targetProperty
-          example: String
-        hiddenIfNoValue:
-          type: boolean
-          description: hide this property in auto credit screening task if this flag is true and no value
-          example: true
-      additionalProperties: false
-      description: The schema that contains info of designated property
-    MappingConfigurationDtoServiceResponse_2:
-      type: object
-      properties:
-        data:
+          - $ref: '#/components/schemas/AdapterConfigurationDto'
+          description: Schema of Adapter Configuration
+        providerConfigurationSecurityKeys:
           allOf:
-          - $ref: '#/components/schemas/MappingConfigurationDto_2'
-          description: Mapping Configuration Schema
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+          - $ref: '#/components/schemas/ProviderConfigurationSecurityKeysDto'
+          description: Configuration keys for provider
       additionalProperties: false
-    ProviderConfigurationDtoServiceResponse_2:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ProviderConfigurationDto_2'
-          description: Provider Configuration top layer schema
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    FieldDto_2:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-          description: Name of the field
-          example: ''
-        friendlyName:
-          type:
-          - string
-          - 'null'
-          description: 'Friendly name  of the field
-
-            For display purpose'
-          example: ''
-        isMandatory:
-          type: boolean
-          description: The flag to set if property is mandatory
-        type:
-          type:
-          - string
-          - 'null'
-          description: Type of the field
-          example: String
-        description:
-          type:
-          - string
-          - 'null'
-          description: Description of the field
-          example: Address line 1
-        nestedFields:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/FieldDto_2'
-          description: Nested field
-      additionalProperties: false
-      description: The Field schema
-    ProviderConfigurationDtoIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ProviderConfigurationDto_2'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    ProviderConfigurationSummaryDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ProviderConfigurationSummaryDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
+      description: Provider Configuration top layer schema
   securitySchemes:
     Bearer:
       type: apiKey

@@ -661,6 +661,44 @@ paths:
     - url: /advanceddashboardquery
 components:
   schemas:
+    ExecuteBulkActionRequestDto:
+      type: object
+      properties:
+        executionType:
+          allOf:
+          - $ref: '#/components/schemas/BulkActionType'
+        propertyValues:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type:
+            - string
+            - 'null'
+      additionalProperties: false
+    ExecuteBulkActionRequestDtoServiceRequest:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ExecuteBulkActionRequestDto'
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
     ValidationErrorModelListServiceResponse:
       type: object
       properties:
@@ -687,66 +725,18 @@ components:
         - message: Data is required
           type: Error
           errorCode: Error Code
-    ServiceResponseMessage:
-      type: object
-      properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    CreateBulkActionRequestDtoServiceRequest:
-      required:
-      - data
+    CreateBulkActionResponseDtoServiceResponse:
       type: object
       properties:
         data:
           allOf:
-          - $ref: '#/components/schemas/CreateBulkActionRequestDto'
-      additionalProperties: false
-    ServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
+          - $ref: '#/components/schemas/CreateBulkActionResponseDto'
         messages:
           type:
           - array
           - 'null'
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    CreateBulkActionResponseDto:
-      type: object
-      properties:
-        actionId:
-          type: string
-          format: uuid
-      additionalProperties: false
-    ExecuteBulkActionRequestDto:
-      type: object
-      properties:
-        executionType:
-          allOf:
-          - $ref: '#/components/schemas/BulkActionType'
-        propertyValues:
-          type:
-          - object
-          - 'null'
-          additionalProperties:
-            type:
-            - string
-            - 'null'
       additionalProperties: false
     StringServiceResponse:
       type: object
@@ -762,16 +752,29 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    CreateBulkActionRequestDto:
+    BulkActionType:
+      enum:
+      - Save
+      - Complete
+      - SaveAndComplete
+      type: string
+    ObjectServiceResponse:
       type: object
       properties:
-        taskIds:
+        data: {}
+        messages:
           type:
           - array
           - 'null'
           items:
-            type: string
-            format: uuid
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    CreateBulkActionResponseDto:
+      type: object
+      properties:
+        actionId:
+          type: string
+          format: uuid
       additionalProperties: false
     ValidationErrorModel:
       type: object
@@ -790,25 +793,13 @@ components:
           - string
           - 'null'
       additionalProperties: false
-    ExecuteBulkActionRequestDtoServiceRequest:
+    ServiceResponse:
       type: object
       properties:
         data:
-          allOf:
-          - $ref: '#/components/schemas/ExecuteBulkActionRequestDto'
-      additionalProperties: false
-    BulkActionType:
-      enum:
-      - Save
-      - Complete
-      - SaveAndComplete
-      type: string
-    CreateBulkActionResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/CreateBulkActionResponseDto'
+          type:
+          - string
+          - 'null'
         messages:
           type:
           - array
@@ -816,16 +807,47 @@ components:
           items:
             $ref: '#/components/schemas/ServiceResponseMessage'
       additionalProperties: false
-    ObjectServiceResponse:
+    CreateBulkActionRequestDtoServiceRequest:
+      required:
+      - data
       type: object
       properties:
-        data: {}
-        messages:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/CreateBulkActionRequestDto'
+      additionalProperties: false
+    CreateBulkActionRequestDto:
+      type: object
+      properties:
+        taskIds:
           type:
           - array
           - 'null'
           items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
+            type: string
+            format: uuid
+      additionalProperties: false
+    BulkActionDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type:
+          - string
+          - 'null'
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BulkActionStatus'
       additionalProperties: false
     BulkActionResultsDto:
       type: object
@@ -859,6 +881,45 @@ components:
           items:
             $ref: '#/components/schemas/BulkActionItemErrorDetail'
       additionalProperties: false
+    BulkActionItemResult:
+      type: object
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/BulkActionItemResultType'
+        reason:
+          allOf:
+          - $ref: '#/components/schemas/BulkActionItemResultReason'
+        isSuccess:
+          type: boolean
+          readOnly: true
+      additionalProperties: false
+    ActiveBulkActionDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/ActiveBulkActionDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    BulkActionItemResultReason:
+      enum:
+      - FailedToFetch
+      - MissingBulkCompletionFlag
+      - MissingPolicyCategory
+      - NoCommonPolicyCategory
+      - InvalidPolicyTarget
+      - InvalidRequirementType
+      - InvalidTaskStatus
+      - ValidationError
+      - UnknownError
+      - UserNotAuthorized
+      type: string
     ActiveBulkActionDto:
       type: object
       properties:
@@ -877,19 +938,85 @@ components:
         isDismissed:
           type: boolean
       additionalProperties: false
-    BulkActionItemResultReason:
+    BulkActionResultsDtoIEnumerableServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/BulkActionResultsDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    BulkActionItemErrorDetail:
+      type: object
+      properties:
+        errorCode:
+          type:
+          - string
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+        additionalInformation:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    BulkActionDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/BulkActionDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    GetBulkActionRequirementsResponseDto:
+      type: object
+      properties:
+        requirements:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/BulkActionRequirementDto'
+        canCompleteTasks:
+          type: boolean
+      additionalProperties: false
+    BulkActionStatus:
       enum:
-      - FailedToFetch
-      - MissingBulkCompletionFlag
-      - MissingPolicyCategory
-      - NoCommonPolicyCategory
-      - InvalidPolicyTarget
-      - InvalidRequirementType
-      - InvalidTaskStatus
-      - ValidationError
-      - UnknownError
-      - UserNotAuthorized
+      - Created
+      - Initializing
+      - Ready
+      - Running
+      - Completed
+      - Failed
       type: string
+    GetBulkActionRequirementsResponseDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetBulkActionRequirementsResponseDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
     BulkActionRequirementDto:
       type: object
       properties:
@@ -919,139 +1046,12 @@ components:
           - 'null'
           format: double
       additionalProperties: false
-    ActiveBulkActionDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/ActiveBulkActionDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    BulkActionItemResult:
-      type: object
-      properties:
-        type:
-          allOf:
-          - $ref: '#/components/schemas/BulkActionItemResultType'
-        reason:
-          allOf:
-          - $ref: '#/components/schemas/BulkActionItemResultReason'
-        isSuccess:
-          type: boolean
-          readOnly: true
-      additionalProperties: false
     BulkActionItemResultType:
       enum:
       - Completed
       - Skipped
       - Error
       type: string
-    GetBulkActionRequirementsResponseDto:
-      type: object
-      properties:
-        requirements:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/BulkActionRequirementDto'
-        canCompleteTasks:
-          type: boolean
-      additionalProperties: false
-    BulkActionResultsDtoIEnumerableServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/BulkActionResultsDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    BulkActionStatus:
-      enum:
-      - Created
-      - Initializing
-      - Ready
-      - Running
-      - Completed
-      - Failed
-      type: string
-    BulkActionDto:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        userId:
-          type:
-          - string
-          - 'null'
-        createdAt:
-          type: string
-          format: date-time
-        completedAt:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        status:
-          allOf:
-          - $ref: '#/components/schemas/BulkActionStatus'
-      additionalProperties: false
-    BulkActionDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/BulkActionDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    GetBulkActionRequirementsResponseDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/GetBulkActionRequirementsResponseDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    BulkActionItemErrorDetail:
-      type: object
-      properties:
-        errorCode:
-          type:
-          - string
-          - 'null'
-        description:
-          type:
-          - string
-          - 'null'
-        additionalInformation:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
   securitySchemes:
     Bearer:
       type: apiKey

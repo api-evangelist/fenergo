@@ -94,34 +94,43 @@ paths:
                   errorCode: OBSOLETE_ENDPOINT
 components:
   schemas:
-    GetNarrativeAuditEventsRequestDto:
-      allOf:
-      - $ref: '#/components/schemas/SearchTermPagedDto'
-      - type: object
-        properties:
-          entityId:
-            type: string
-            format: uuid
-        additionalProperties: false
-    PagerDto:
+    ResourceQueryDto:
       type: object
       properties:
-        size:
-          type: integer
-          format: int32
-          exclusiveMinimum: 0
-        from:
-          minimum: 0
-          type: integer
-          format: int32
-        sortBy:
+        ids:
           type:
-          - string
+          - array
           - 'null'
-        sortOrder:
-          allOf:
-          - $ref: '#/components/schemas/SortOrder'
+          items:
+            type: string
+          description: The list of resource IDs for which to fetch Audit Events.
+          example:
+          - 7304b842-769f-4c22-9499-7c5d069ffb8f
+          - ad6cf1b0-0925-4d65-98e7-a4e7901cce46
+          - abb80516-3914-4366-a061-2f10e018fdeb
       additionalProperties: false
+      description: The request object that contains a list of resource IDs for which to fetch Audit Events.
+    SortOrder:
+      enum:
+      - Ascending
+      - Descending
+      type: string
+    SearchTermPagedDto:
+      allOf:
+      - $ref: '#/components/schemas/SearchTermDto'
+      - type: object
+        properties:
+          pager:
+            allOf:
+            - $ref: '#/components/schemas/PagerDto'
+            description: A pager object to specify pagination parameters
+            example:
+              size: 10
+              from: 0
+              sortBy: date
+              sortOrder: Descending
+        additionalProperties: false
+      description: A search request object comprising a list of resource IDs, a search term, and a pager object to retrieve results.
     SearchTermDto:
       allOf:
       - $ref: '#/components/schemas/ResourceQueryDto'
@@ -161,21 +170,23 @@ components:
         - message: Data is required
           type: Error
           errorCode: Error Code
-    ServiceResponseMessage:
+    GetNarrativeAuditEventsRequestDto:
+      allOf:
+      - $ref: '#/components/schemas/SearchTermPagedDto'
+      - type: object
+        properties:
+          entityId:
+            type: string
+            format: uuid
+        additionalProperties: false
+    GetNarrativeAuditEventsRequestDtoServiceRequest:
+      required:
+      - data
       type: object
       properties:
-        message:
-          type:
-          - string
-          - 'null'
-        type:
-          type:
-          - string
-          - 'null'
-        errorCode:
-          type:
-          - string
-          - 'null'
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetNarrativeAuditEventsRequestDto'
       additionalProperties: false
     GetNarrativeAuditEventsResultDto:
       type: object
@@ -193,22 +204,195 @@ components:
           format: int64
           example: 1
       additionalProperties: false
-    SearchTermPagedDto:
-      allOf:
-      - $ref: '#/components/schemas/SearchTermDto'
-      - type: object
-        properties:
-          pager:
-            allOf:
-            - $ref: '#/components/schemas/PagerDto'
-            description: A pager object to specify pagination parameters
-            example:
-              size: 10
-              from: 0
-              sortBy: date
-              sortOrder: Descending
-        additionalProperties: false
-      description: A search request object comprising a list of resource IDs, a search term, and a pager object to retrieve results.
+    GetNarrativeAuditEventsResultDtoServiceResponse:
+      type: object
+      properties:
+        data:
+          allOf:
+          - $ref: '#/components/schemas/GetNarrativeAuditEventsResultDto'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    AuditMetadata:
+      type: object
+      properties:
+        stages:
+          type:
+          - array
+          - 'null'
+          items:
+            type: object
+            additionalProperties: {}
+        userName:
+          type:
+          - string
+          - 'null'
+        tenantName:
+          type:
+          - string
+          - 'null'
+        journeyName:
+          type:
+          - string
+          - 'null'
+        eventName:
+          type:
+          - string
+          - 'null'
+        taskReassignedUserBefore:
+          type:
+          - string
+          - 'null'
+        taskReassignedUserAfter:
+          type:
+          - string
+          - 'null'
+        taskReassignedTeamNameBefore:
+          type:
+          - string
+          - 'null'
+        taskReassignedTeamNameAfter:
+          type:
+          - string
+          - 'null'
+        reopenedByNameBefore:
+          type:
+          - string
+          - 'null'
+        reopenedByNameAfter:
+          type:
+          - string
+          - 'null'
+        completedByNameBefore:
+          type:
+          - string
+          - 'null'
+        completedByNameAfter:
+          type:
+          - string
+          - 'null'
+        taskUnpausedByNameBefore:
+          type:
+          - string
+          - 'null'
+        taskUnpausedByNameAfter:
+          type:
+          - string
+          - 'null'
+        taskPausedByNameBefore:
+          type:
+          - string
+          - 'null'
+        taskPausedByNameAfter:
+          type:
+          - string
+          - 'null'
+        dateIsoFormat:
+          type:
+          - string
+          - 'null'
+        journeyOwnerReassignedTeamNameBefore:
+          type:
+          - string
+          - 'null'
+        journeyOwnerReassignedTeamNameAfter:
+          type:
+          - string
+          - 'null'
+        journeyOwnerReassignedUserBefore:
+          type:
+          - string
+          - 'null'
+        journeyOwnerReassignedUserAfter:
+          type:
+          - string
+          - 'null'
+        originatedEventId:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    StringServiceResponse:
+      type: object
+      properties:
+        data:
+          type:
+          - string
+          - 'null'
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    PagerDto:
+      type: object
+      properties:
+        size:
+          type: integer
+          format: int32
+          exclusiveMinimum: 0
+        from:
+          minimum: 0
+          type: integer
+          format: int32
+        sortBy:
+          type:
+          - string
+          - 'null'
+        sortOrder:
+          allOf:
+          - $ref: '#/components/schemas/SortOrder'
+      additionalProperties: false
+    ObjectServiceResponse:
+      type: object
+      properties:
+        data: {}
+        messages:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ServiceResponseMessage'
+      additionalProperties: false
+    ValidationErrorModel:
+      type: object
+      properties:
+        propertyName:
+          type:
+          - string
+          - 'null'
+        errorMessage:
+          type:
+          - string
+          - 'null'
+        attemptedValue: {}
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
+    ServiceResponseMessage:
+      type: object
+      properties:
+        message:
+          type:
+          - string
+          - 'null'
+        type:
+          type:
+          - string
+          - 'null'
+        errorCode:
+          type:
+          - string
+          - 'null'
+      additionalProperties: false
     AuditEventDto:
       type: object
       properties:
@@ -328,190 +512,6 @@ components:
           description: Additional optional Audit Event Metadata
       additionalProperties: false
       description: An object representing a single Audit Event
-    StringServiceResponse:
-      type: object
-      properties:
-        data:
-          type:
-          - string
-          - 'null'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    GetNarrativeAuditEventsResultDtoServiceResponse:
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/GetNarrativeAuditEventsResultDto'
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
-    GetNarrativeAuditEventsRequestDtoServiceRequest:
-      required:
-      - data
-      type: object
-      properties:
-        data:
-          allOf:
-          - $ref: '#/components/schemas/GetNarrativeAuditEventsRequestDto'
-      additionalProperties: false
-    AuditMetadata:
-      type: object
-      properties:
-        stages:
-          type:
-          - array
-          - 'null'
-          items:
-            type: object
-            additionalProperties: {}
-        userName:
-          type:
-          - string
-          - 'null'
-        tenantName:
-          type:
-          - string
-          - 'null'
-        journeyName:
-          type:
-          - string
-          - 'null'
-        eventName:
-          type:
-          - string
-          - 'null'
-        taskReassignedUserBefore:
-          type:
-          - string
-          - 'null'
-        taskReassignedUserAfter:
-          type:
-          - string
-          - 'null'
-        taskReassignedTeamNameBefore:
-          type:
-          - string
-          - 'null'
-        taskReassignedTeamNameAfter:
-          type:
-          - string
-          - 'null'
-        reopenedByNameBefore:
-          type:
-          - string
-          - 'null'
-        reopenedByNameAfter:
-          type:
-          - string
-          - 'null'
-        completedByNameBefore:
-          type:
-          - string
-          - 'null'
-        completedByNameAfter:
-          type:
-          - string
-          - 'null'
-        taskUnpausedByNameBefore:
-          type:
-          - string
-          - 'null'
-        taskUnpausedByNameAfter:
-          type:
-          - string
-          - 'null'
-        taskPausedByNameBefore:
-          type:
-          - string
-          - 'null'
-        taskPausedByNameAfter:
-          type:
-          - string
-          - 'null'
-        dateIsoFormat:
-          type:
-          - string
-          - 'null'
-        journeyOwnerReassignedTeamNameBefore:
-          type:
-          - string
-          - 'null'
-        journeyOwnerReassignedTeamNameAfter:
-          type:
-          - string
-          - 'null'
-        journeyOwnerReassignedUserBefore:
-          type:
-          - string
-          - 'null'
-        journeyOwnerReassignedUserAfter:
-          type:
-          - string
-          - 'null'
-        originatedEventId:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ValidationErrorModel:
-      type: object
-      properties:
-        propertyName:
-          type:
-          - string
-          - 'null'
-        errorMessage:
-          type:
-          - string
-          - 'null'
-        attemptedValue: {}
-        errorCode:
-          type:
-          - string
-          - 'null'
-      additionalProperties: false
-    ResourceQueryDto:
-      type: object
-      properties:
-        ids:
-          type:
-          - array
-          - 'null'
-          items:
-            type: string
-          description: The list of resource IDs for which to fetch Audit Events.
-          example:
-          - 7304b842-769f-4c22-9499-7c5d069ffb8f
-          - ad6cf1b0-0925-4d65-98e7-a4e7901cce46
-          - abb80516-3914-4366-a061-2f10e018fdeb
-      additionalProperties: false
-      description: The request object that contains a list of resource IDs for which to fetch Audit Events.
-    SortOrder:
-      enum:
-      - Ascending
-      - Descending
-      type: string
-    ObjectServiceResponse:
-      type: object
-      properties:
-        data: {}
-        messages:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/ServiceResponseMessage'
-      additionalProperties: false
   securitySchemes:
     Bearer:
       type: apiKey
